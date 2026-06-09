@@ -31,6 +31,8 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
           chatHistoryEnabled: data.CHAT_HISTORY_ENABLED ?? false,
           setupCompleted: data.SETUP_COMPLETED ?? false,
           setupCurrentStep: data.SETUP_CURRENT_STEP ?? 'admin',
+          logoSmallDarkUrl: data.LOGO_SMALL_DARK_URL ?? null,
+          logoLargeDarkUrl: data.LOGO_LARGE_DARK_URL ?? null,
         };
       }
       return {
@@ -40,6 +42,8 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
         chatHistoryEnabled: false,
         setupCompleted: false,
         setupCurrentStep: 'admin',
+        logoSmallDarkUrl: null,
+        logoLargeDarkUrl: null,
       };
     } catch {
       return {
@@ -49,6 +53,8 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
         chatHistoryEnabled: false,
         setupCompleted: false,
         setupCurrentStep: 'admin',
+        logoSmallDarkUrl: null,
+        logoLargeDarkUrl: null,
       };
     }
   },
@@ -68,6 +74,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       systemDescription: settings.systemDescription,
       aiAssistantEnabled: settings.aiAssistantEnabled,
       chatHistoryEnabled: settings.chatHistoryEnabled,
+      logoSmallDarkUrl: settings.logoSmallDarkUrl,
+      logoLargeDarkUrl: settings.logoLargeDarkUrl,
     };
   },
   component: RootDocument,

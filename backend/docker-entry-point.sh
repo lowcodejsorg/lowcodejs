@@ -3,6 +3,13 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# Em dev a imagem copia este entrypoint para "/" (raiz), mas o código da app
+# (scripts/migrations, database/seeders) vive em /app. Cai para /app quando os
+# scripts não estão ao lado do entrypoint.
+if [ ! -d "$SCRIPT_DIR/scripts/migrations" ] && [ -d /app/scripts/migrations ]; then
+  SCRIPT_DIR=/app
+fi
+
 chown -R 1001:1001 "$SCRIPT_DIR/_storage" 2>/dev/null || true
 
 runas() {

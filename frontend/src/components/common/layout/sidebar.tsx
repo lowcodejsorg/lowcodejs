@@ -366,7 +366,16 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
             <img
               src={setting.data.LOGO_LARGE_URL ?? ''}
               alt="Logo"
-              className="w-32"
+              className="w-32 dark:hidden"
+            />
+            <img
+              src={
+                setting.data.LOGO_LARGE_DARK_URL ??
+                setting.data.LOGO_LARGE_URL ??
+                ''
+              }
+              alt="Logo"
+              className="hidden w-32 dark:block"
             />
           </button>
         )}

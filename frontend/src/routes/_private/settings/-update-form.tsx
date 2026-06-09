@@ -67,6 +67,8 @@ export const SettingUpdateSchema = z.object({
   STORAGE_SECRET_KEY: z.string(),
   LOGO_SMALL_URL: z.string().nullable(),
   LOGO_LARGE_URL: z.string().nullable(),
+  LOGO_SMALL_DARK_URL: z.string().nullable(),
+  LOGO_LARGE_DARK_URL: z.string().nullable(),
   FILE_UPLOAD_MAX_SIZE: z
     .string()
     .min(1, 'O tamanho máximo de arquivo é obrigatório'),
@@ -96,6 +98,8 @@ export const SettingUpdateSchema = z.object({
   LLM_BASE_URL: z.string(),
   logoSmallFile: z.array(z.instanceof(File)),
   logoLargeFile: z.array(z.instanceof(File)),
+  logoSmallDarkFile: z.array(z.instanceof(File)),
+  logoLargeDarkFile: z.array(z.instanceof(File)),
 });
 
 // Form usa string para números (inputs), payload usa number
@@ -112,6 +116,8 @@ export type SettingUpdateFormValues = Merge<
     STORAGE_SECRET_KEY: string;
     LOGO_SMALL_URL: string | null;
     LOGO_LARGE_URL: string | null;
+    LOGO_SMALL_DARK_URL: string | null;
+    LOGO_LARGE_DARK_URL: string | null;
     FILE_UPLOAD_MAX_SIZE: string;
     FILE_UPLOAD_MAX_FILES_PER_UPLOAD: string;
     FILE_UPLOAD_ACCEPTED: string;
@@ -134,7 +140,12 @@ export type SettingUpdateFormValues = Merge<
     LLM_MODEL: string;
     LLM_BASE_URL: string;
   },
-  { logoSmallFile: Array<File>; logoLargeFile: Array<File> }
+  {
+    logoSmallFile: Array<File>;
+    logoLargeFile: Array<File>;
+    logoSmallDarkFile: Array<File>;
+    logoLargeDarkFile: Array<File>;
+  }
 >;
 
 export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
@@ -149,6 +160,8 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   STORAGE_SECRET_KEY: '',
   LOGO_SMALL_URL: null,
   LOGO_LARGE_URL: null,
+  LOGO_SMALL_DARK_URL: null,
+  LOGO_LARGE_DARK_URL: null,
   FILE_UPLOAD_MAX_SIZE: '10485760',
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: '5',
   FILE_UPLOAD_ACCEPTED: 'pdf;csv;png;jpeg;jpg;webp',
@@ -172,6 +185,8 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   LLM_BASE_URL: 'http://127.0.0.1:11434/v1',
   logoSmallFile: [],
   logoLargeFile: [],
+  logoSmallDarkFile: [],
+  logoLargeDarkFile: [],
 };
 
 export const UpdateSettingFormFields = withForm({
@@ -754,6 +769,88 @@ export const UpdateSettingFormFields = withForm({
                             src={settingData.LOGO_LARGE_URL}
                             alt="Logo grande atual"
                             className="h-16 w-auto border rounded"
+                          />
+                        </div>
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+
+              {/* Logo Pequeno (Modo Escuro) */}
+              <form.Field
+                name="logoSmallDarkFile"
+                children={(field) => {
+                  return (
+                    <Field>
+                      <FieldLabel>Logo Pequeno (Modo Escuro)</FieldLabel>
+                      {mode === 'edit' && (
+                        <FileUploadWithStorage
+                          value={field.state.value}
+                          onValueChange={field.handleChange}
+                          onStorageChange={(storages: Array<IStorage>) => {
+                            if (storages[0]?.url) {
+                              form.setFieldValue(
+                                'LOGO_SMALL_DARK_URL',
+                                storages[0].url,
+                              );
+                            }
+                          }}
+                          accept="image/*"
+                          maxFiles={1}
+                          maxSize={4 * 1024 * 1024}
+                          placeholder="Arraste ou selecione o logo pequeno (modo escuro)"
+                          shouldDeleteFromStorage={false}
+                          staticName="logo-small-dark"
+                        />
+                      )}
+                      {mode === 'show' && settingData?.LOGO_SMALL_DARK_URL && (
+                        <div className="mt-2 rounded border bg-zinc-900 p-2">
+                          <img
+                            src={settingData.LOGO_SMALL_DARK_URL}
+                            alt="Logo pequeno (modo escuro) atual"
+                            className="h-12 w-auto"
+                          />
+                        </div>
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+
+              {/* Logo Grande (Modo Escuro) */}
+              <form.Field
+                name="logoLargeDarkFile"
+                children={(field) => {
+                  return (
+                    <Field>
+                      <FieldLabel>Logo Grande (Modo Escuro)</FieldLabel>
+                      {mode === 'edit' && (
+                        <FileUploadWithStorage
+                          value={field.state.value}
+                          onValueChange={field.handleChange}
+                          onStorageChange={(storages: Array<IStorage>) => {
+                            if (storages[0]?.url) {
+                              form.setFieldValue(
+                                'LOGO_LARGE_DARK_URL',
+                                storages[0].url,
+                              );
+                            }
+                          }}
+                          accept="image/*"
+                          maxFiles={1}
+                          maxSize={4 * 1024 * 1024}
+                          placeholder="Arraste ou selecione o logo grande (modo escuro)"
+                          shouldDeleteFromStorage={false}
+                          staticName="logo-large-dark"
+                        />
+                      )}
+                      {mode === 'show' && settingData?.LOGO_LARGE_DARK_URL && (
+                        <div className="mt-2 rounded border bg-zinc-900 p-2">
+                          <img
+                            src={settingData.LOGO_LARGE_DARK_URL}
+                            alt="Logo grande (modo escuro) atual"
+                            className="h-16 w-auto"
                           />
                         </div>
                       )}

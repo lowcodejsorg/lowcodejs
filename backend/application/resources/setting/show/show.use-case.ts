@@ -110,6 +110,8 @@ export default class SettingShowUseCase {
           PAGINATION_PER_PAGE: 20,
           LOGO_SMALL_URL: null,
           LOGO_LARGE_URL: null,
+          LOGO_SMALL_DARK_URL: null,
+          LOGO_LARGE_DARK_URL: null,
           EMAIL_PROVIDER_HOST: null,
           EMAIL_PROVIDER_PORT: null,
           EMAIL_PROVIDER_USER: null,

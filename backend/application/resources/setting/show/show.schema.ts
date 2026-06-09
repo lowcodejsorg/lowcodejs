@@ -100,6 +100,18 @@ export const SettingShowSchema: FastifySchema = {
           description: 'URL do logo grande',
           examples: ['/assets/logo-large.webp'],
         },
+        LOGO_SMALL_DARK_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL do logo pequeno para o modo escuro',
+          examples: ['/assets/logo-small-dark.webp'],
+        },
+        LOGO_LARGE_DARK_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL do logo grande para o modo escuro',
+          examples: ['/assets/logo-large-dark.webp'],
+        },
         OPENAI_API_KEY: {
           type: 'string',
           nullable: true,

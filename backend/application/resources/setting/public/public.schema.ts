@@ -32,6 +32,18 @@ export const SettingPublicSchema: FastifySchema = {
           description: 'URL do logo grande',
           examples: ['/storage/logo-large.webp'],
         },
+        LOGO_SMALL_DARK_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL do logo pequeno para o modo escuro',
+          examples: ['/storage/logo-small-dark.webp'],
+        },
+        LOGO_LARGE_DARK_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL do logo grande para o modo escuro',
+          examples: ['/storage/logo-large-dark.webp'],
+        },
         AI_ASSISTANT_ENABLED: {
           type: 'boolean',
           description: 'Indica se o assistente IA está habilitado',
