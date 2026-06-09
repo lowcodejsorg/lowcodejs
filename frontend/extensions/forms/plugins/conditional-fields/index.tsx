@@ -10,6 +10,7 @@ import {
   TrashIcon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -48,7 +49,6 @@ import type {
 import { findConditionalRuleConflicts } from '@/lib/conditional-form-rules';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { ICategory, IField, ITable } from '@/lib/interfaces';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 interface Props {
   table?: ITable;
@@ -243,16 +243,14 @@ function useSaveConditionalFieldsConfig(
       queryClient.invalidateQueries({
         queryKey: conditionalFieldsRuntimeConfigQueryKey(slug),
       });
-      toastSuccess(
-        'Configuração salva',
-        'As regras de campos condicionais foram atualizadas.',
-      );
+      toast.success('Configuração salva', {
+        description: 'As regras de campos condicionais foram atualizadas.',
+      });
     },
     onError() {
-      toastError(
-        'Não foi possível salvar',
-        'Revise as regras configuradas e tente novamente.',
-      );
+      toast.error('Não foi possível salvar', {
+        description: 'Revise as regras configuradas e tente novamente.',
+      });
     },
   });
 }
@@ -752,10 +750,9 @@ export default function ConditionalFieldsPlugin({
                 }
                 onClick={() => {
                   if (hasConflicts) {
-                    toastError(
-                      'Conflito nas regras',
-                      'Resolva os conflitos antes de salvar.',
-                    );
+                    toast.error('Conflito nas regras', {
+                      description: 'Resolva os conflitos antes de salvar.',
+                    });
                     return;
                   }
 
