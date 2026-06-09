@@ -134,7 +134,7 @@ export function ImportCsvDialog({ slug }: Props): React.JSX.Element {
           size="sm"
         >
           <UploadIcon className="size-4 mr-1" />
-          Importar CSV
+          Importar
         </Button>
       </DialogTrigger>
 

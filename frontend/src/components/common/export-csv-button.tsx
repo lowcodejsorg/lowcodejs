@@ -15,7 +15,7 @@ export function ExportCsvButton({
   onClick,
   disabled,
   isPending,
-  label = 'Exportar CSV',
+  label = 'Exportar',
   testId = 'export-csv-btn',
 }: Props): React.JSX.Element {
   return (
