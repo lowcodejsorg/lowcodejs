@@ -316,7 +316,6 @@ export type ITable = Merge<
     groups: Array<IGroupConfiguration>;
     order: { field: string; direction: 'asc' | 'desc' } | null;
     layoutFields: ILayoutFields;
-    defaultPerPage: number;
     slugFieldId: string | null;
   }
 >;

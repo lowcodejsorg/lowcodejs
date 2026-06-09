@@ -152,6 +152,7 @@ function TableUpdateContent({
         participants: data.layoutFields?.participants ?? '',
         reminder: data.layoutFields?.reminder ?? '',
       },
+      slugFieldId: data.slugFieldId ?? null,
     },
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: TableUpdateSchema, onSubmit: TableUpdateSchema },
@@ -197,6 +198,7 @@ function TableUpdateContent({
           participants: value.layoutFields.participants || null,
           reminder: value.layoutFields.reminder || null,
         },
+        slugFieldId: value.slugFieldId || null,
       });
     },
   });

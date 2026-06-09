@@ -59,7 +59,6 @@ export const TableUpdateSchema = z.object({
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
   order: z.string().default('none'),
-  defaultPerPage: z.number().min(1).max(100).default(20),
   slugFieldId: z.string().nullable().default(null),
   layoutFields: LayoutFieldsSchema.default({
     title: '',
@@ -87,7 +86,6 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   logoFile: [],
   administrators: [],
   order: 'none',
-  defaultPerPage: 20,
   slugFieldId: null,
   layoutFields: {
     title: '',
@@ -423,17 +421,6 @@ export const UpdateTableFormFields = withForm({
               placeholder="Selecione uma ordenação"
               disabled={isDisabled}
               options={orderOptions}
-            />
-          )}
-        </form.AppField>
-
-        {/* Itens por página padrão */}
-        <form.AppField name="defaultPerPage">
-          {(field) => (
-            <field.FieldNumber
-              label="Itens por página padrão"
-              placeholder="Ex: 20"
-              disabled={isDisabled}
             />
           )}
         </form.AppField>

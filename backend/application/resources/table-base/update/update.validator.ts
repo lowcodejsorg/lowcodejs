@@ -41,6 +41,7 @@ export const TableUpdateBodyValidator = z
     methods: TableMethodSchema,
     order: TableOrderSchema,
     layoutFields: TableLayoutFieldsSchema.optional(),
+    slugFieldId: z.string().trim().nullable().optional(),
     groups: z.array(GroupConfigurationSchema).optional(),
   })
   .transform((data) => {

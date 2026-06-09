@@ -49,6 +49,7 @@ import {
 } from '@/components/ui/empty';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
 import { useTableRowsExportCsv } from '@/hooks/tanstack-query/use-table-rows-export-csv';
@@ -165,6 +166,7 @@ function RouteComponent(): React.JSX.Element {
     from: '/_private/tables/$slug/',
   });
   const table = useReadTable({ slug });
+  const setting = useSettingRead();
   const tableStyle = table.data?.style;
   const isKanban = tableStyle === E_TABLE_STYLE.KANBAN;
   const shouldDisablePagination =
@@ -195,7 +197,7 @@ function RouteComponent(): React.JSX.Element {
   const rows = useReadTableRowPaginated({
     slug,
     search: rowsSearch,
-    defaultPerPage: table.data?.defaultPerPage,
+    fallbackPerPage: setting.data?.PAGINATION_PER_PAGE,
   });
   const permission = useTablePermission(table.data);
 
