@@ -28,9 +28,9 @@ type BulkActionBarProps = {
 - Lista lixeira (`isTrashView=true`): exibe "Restaurar" e, se `canDelete`,
   "Excluir permanentemente".
 - Botão "X" sempre disponível para limpar seleção.
-- `extraActions` é um slot livre para ações específicas de cada tela. Ex.: a tela
-  de Usuários injeta um dropdown "Alterar status" (Ativar/Desativar) que chama
-  `useUserBulkUpdate`.
+- `extraActions` é um slot livre para ações específicas de cada tela. Ex.: a
+  tela de Usuários injeta um dropdown "Alterar status" (Ativar/Desativar) que
+  chama `useUserBulkUpdate`.
 
 ## Padrão
 

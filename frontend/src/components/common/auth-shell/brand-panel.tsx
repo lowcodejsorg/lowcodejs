@@ -1,5 +1,5 @@
-import { DatabaseIcon, LayoutDashboardIcon, WorkflowIcon } from 'lucide-react';
 import { getRouteApi } from '@tanstack/react-router';
+import { DatabaseIcon, LayoutDashboardIcon, WorkflowIcon } from 'lucide-react';
 import type * as React from 'react';
 
 import { AppPreview } from './app-preview';

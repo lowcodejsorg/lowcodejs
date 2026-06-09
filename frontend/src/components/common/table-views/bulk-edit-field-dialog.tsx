@@ -1,5 +1,6 @@
 import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -28,7 +29,6 @@ import {
   buildFieldValidator,
   buildRowPayload,
 } from '@/lib/table';
-import { toast } from 'sonner';
 
 /**
  * Tipos de campo suportados na edicao em massa: status/dropdown + campos

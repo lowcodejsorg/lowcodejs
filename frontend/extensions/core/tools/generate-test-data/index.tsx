@@ -295,7 +295,9 @@ export default function GenerateTestDataTool(): React.JSX.Element {
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={!selectedTableId || isEstimating || isGenerating}
+                      disabled={
+                        !selectedTableId || isEstimating || isGenerating
+                      }
                       onClick={handleEstimate}
                       data-test-id="estimate-test-data-btn"
                     >
@@ -339,16 +341,16 @@ export default function GenerateTestDataTool(): React.JSX.Element {
                       <div
                         className={cn(
                           'h-full rounded-full transition-all',
-                          status === 'failed'
-                            ? 'bg-destructive'
-                            : 'bg-primary',
+                          status === 'failed' ? 'bg-destructive' : 'bg-primary',
                         )}
                         style={{ width: `${Math.min(percentage, 100)}%` }}
                       />
                     </div>
 
                     <div className="text-muted-foreground flex justify-between text-xs tabular-nums">
-                      <span>{processed.toLocaleString('pt-BR')} processados</span>
+                      <span>
+                        {processed.toLocaleString('pt-BR')} processados
+                      </span>
                       <span>{total.toLocaleString('pt-BR')} no total</span>
                     </div>
 

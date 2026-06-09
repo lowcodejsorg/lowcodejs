@@ -102,6 +102,11 @@ export default class TableRowAutoSaveUseCase {
         table: draftTable,
       });
 
+      if (!updated)
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
+
       return right(updated);
     } catch (error) {
       console.error('[table-rows > auto-save][error]:', error);

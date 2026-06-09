@@ -325,9 +325,12 @@ function RouteComponent(): React.JSX.Element {
             />
 
             {permission.can('CREATE_ROW') &&
-              (table.data?.fields?.filter((f) => !f.native)?.length ?? 0) > 0 && (
+              (table.data?.fields?.filter((f) => !f.native)?.length ?? 0) >
+                0 && (
                 <Button
-                  disabled={rows.status === 'pending' || rows.status === 'error'}
+                  disabled={
+                    rows.status === 'pending' || rows.status === 'error'
+                  }
                   className="disabled:cursor-not-allowed shadow-none p-1 h-auto"
                   onClick={() => {
                     sidebar.setOpen(false);

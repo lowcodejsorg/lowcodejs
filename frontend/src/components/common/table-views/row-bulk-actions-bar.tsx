@@ -7,6 +7,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import {
   BulkEditFieldDialog,
@@ -30,7 +31,6 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
-import { toast } from 'sonner';
 
 interface RowBulkActionsBarProps {
   slug: string;

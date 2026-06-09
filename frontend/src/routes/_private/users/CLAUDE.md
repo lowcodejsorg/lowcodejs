@@ -24,12 +24,12 @@ empty-trash).
 
 ## Arquivos
 
-| Arquivo                     | Descricao                                                                                                                                                               |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.tsx`                 | Route config: beforeLoad (guard de role), validateSearch (paginacao + ordenacao + `trashed`), loader via `userListOptions`                                              |
-| `index.lazy.tsx`            | Componente principal: tabela, filtros laterais, paginacao, TrashButton, botao "Novo Usuario" (lista ativa) ou "Esvaziar lixeira" (lista lixeira, MASTER) e dialogs      |
+| Arquivo                     | Descricao                                                                                                                                                                                                                                                        |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index.tsx`                 | Route config: beforeLoad (guard de role), validateSearch (paginacao + ordenacao + `trashed`), loader via `userListOptions`                                                                                                                                       |
+| `index.lazy.tsx`            | Componente principal: tabela, filtros laterais, paginacao, TrashButton, botao "Novo Usuario" (lista ativa) ou "Esvaziar lixeira" (lista lixeira, MASTER) e dialogs                                                                                               |
 | `-table-users.tsx`          | Tabela DataTable com checkbox de selecao, colunas Nome/E-mail/Grupo/Status e dropdown de acoes (visualizar / editar / enviar para lixeira / restaurar / excluir permanentemente). Na BulkActionBar injeta o dropdown "Alterar status" (Ativar/Desativar em lote) |
-| `-table-users-skeleton.tsx` | Skeleton de carregamento da tabela (pendingComponent)                                                                                                                   |
+| `-table-users-skeleton.tsx` | Skeleton de carregamento da tabela (pendingComponent)                                                                                                                                                                                                            |
 
 ## Subdiretorios
 
