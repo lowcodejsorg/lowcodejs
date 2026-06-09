@@ -53,8 +53,8 @@ describe('E2E Bulk Update Controller', () => {
         multiple: false,
         required: false,
         relationship: null,
-        name: 'Status',
-        slug: 'status',
+        name: 'Situacao',
+        slug: 'situacao',
         type: E_FIELD_TYPE.TEXT_SHORT,
         widthInForm: null,
         widthInList: null,
@@ -95,19 +95,19 @@ describe('E2E Bulk Update Controller', () => {
       const row1 = await supertest(kernel.server)
         .post('/tables/products/rows')
         .set('Cookie', cookies)
-        .send({ status: 'aberto' });
+        .send({ situacao: 'aberto' });
 
       const row2 = await supertest(kernel.server)
         .post('/tables/products/rows')
         .set('Cookie', cookies)
-        .send({ status: 'aberto' });
+        .send({ situacao: 'aberto' });
 
       const response = await supertest(kernel.server)
         .patch('/tables/products/rows/bulk-update')
         .set('Cookie', cookies)
         .send({
           ids: [row1.body._id, row2.body._id],
-          data: { status: 'concluido' },
+          data: { situacao: 'concluido' },
         });
 
       expect(response.statusCode).toBe(200);
@@ -117,7 +117,7 @@ describe('E2E Bulk Update Controller', () => {
         .get(`/tables/products/rows/${row1.body._id}`)
         .set('Cookie', cookies);
 
-      expect(updated.body.status).toBe('concluido');
+      expect(updated.body.situacao).toBe('concluido');
     });
 
     it('deve retornar 400 quando data estiver vazio', async () => {
