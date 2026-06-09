@@ -238,6 +238,28 @@ code {
   --surface-invert: oklch(0.14 0.01 260);
 }
 
+/* Autofill do navegador respeitando o tema (claro/escuro).
+   Os tokens --card/--foreground invertem sozinhos via a classe .dark no
+   <html>, entao uma unica regra global cobre os dois modos. Sem isso, o
+   autofill do Chrome força fundo claro e o texto fica ilegivel no dark. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--foreground) !important;
+  caret-color: var(--foreground);
+  -webkit-box-shadow: 0 0 0 1000px var(--card) inset !important;
+  box-shadow: 0 0 0 1000px var(--card) inset !important;
+  /* impede o flash de fundo amarelo do Chrome ao autopreencher */
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 .animate-shimmer {
   background-size: 200% 200%;
   animation: shimmer 3s ease infinite;
