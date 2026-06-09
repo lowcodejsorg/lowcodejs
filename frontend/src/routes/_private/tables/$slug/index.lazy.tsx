@@ -49,6 +49,7 @@ import {
 } from '@/components/ui/empty';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
 import { useTableRowsExportCsv } from '@/hooks/tanstack-query/use-table-rows-export-csv';
@@ -165,6 +166,7 @@ function RouteComponent(): React.JSX.Element {
     from: '/_private/tables/$slug/',
   });
   const table = useReadTable({ slug });
+  const setting = useSettingRead();
   const tableStyle = table.data?.style;
   const isKanban = tableStyle === E_TABLE_STYLE.KANBAN;
   const shouldDisablePagination =
@@ -192,7 +194,11 @@ function RouteComponent(): React.JSX.Element {
       viewStyle: tableStyle ?? E_TABLE_STYLE.LIST,
     };
   }, [search, shouldDisablePagination, isKanban, tableStyle]);
-  const rows = useReadTableRowPaginated({ slug, search: rowsSearch });
+  const rows = useReadTableRowPaginated({
+    slug,
+    search: rowsSearch,
+    fallbackPerPage: setting.data?.PAGINATION_PER_PAGE,
+  });
   const permission = useTablePermission(table.data);
 
   const auth = useAuthStore();
@@ -257,7 +263,10 @@ function RouteComponent(): React.JSX.Element {
             className="shadow-none p-1 h-auto"
             // size="icon-sm"
             onClick={() => {
-              navigator.clipboard.writeText(window.location.href);
+              // Compartilha apenas a URL limpa da tabela, sem query params
+              // (perPage, filtros, ordenação) — a paginação padrão vem do Setting.
+              const url = `${window.location.origin}/tables/${slug}`;
+              navigator.clipboard.writeText(url);
               toast.info('Link da tabela copiado', {
                 description:
                   'O link da tabela foi copiado para a área de transferência',

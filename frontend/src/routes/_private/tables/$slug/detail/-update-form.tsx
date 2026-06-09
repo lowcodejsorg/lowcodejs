@@ -59,6 +59,7 @@ export const TableUpdateSchema = z.object({
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
   order: z.string().default('none'),
+  rowSlugFieldId: z.string().nullable().default(null),
   layoutFields: LayoutFieldsSchema.default({
     title: '',
     description: '',
@@ -85,6 +86,7 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   logoFile: [],
   administrators: [],
   order: 'none',
+  rowSlugFieldId: null,
   layoutFields: {
     title: '',
     description: '',
@@ -421,6 +423,27 @@ export const UpdateTableFormFields = withForm({
               options={orderOptions}
             />
           )}
+        </form.AppField>
+
+        {/* Campo para gerar slug da URL de registro */}
+        <form.AppField name="rowSlugFieldId">
+          {(field) => {
+            const textShortFields = activeFields.filter(
+              (f: IField) => f.type === E_FIELD_TYPE.TEXT_SHORT,
+            );
+            return (
+              <field.TableLayoutFieldSelect
+                label="Campo para slug da URL de registro"
+                placeholder="Nenhum"
+                emptyLabel="Nenhum"
+                disabled={isDisabled || textShortFields.length === 0}
+                options={textShortFields.map((f: IField) => ({
+                  label: f.name,
+                  value: f._id,
+                }))}
+              />
+            );
+          }}
         </form.AppField>
       </section>
     );

@@ -19,6 +19,8 @@ export const queryKeys = {
       [...queryKeys.rows.all(tableSlug), 'detail'] as const,
     detail: (tableSlug: string, rowId: string) =>
       [...queryKeys.rows.details(tableSlug), rowId] as const,
+    bySlug: (tableSlug: string, rowSlug: string) =>
+      [...queryKeys.rows.all(tableSlug), 'by-slug', rowSlug] as const,
   },
   relationships: {
     all: ['relationships'] as const,
