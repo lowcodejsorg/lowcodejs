@@ -364,6 +364,7 @@ export type ITable = Merge<
     groups: IGroupConfiguration[];
     order: { field: string; direction: 'asc' | 'desc' } | null;
     layoutFields: ILayoutFields;
+    rowSlugFieldId: string | null;
   }
 >;
 
@@ -470,6 +471,7 @@ export type IRow = Merge<
   Record<string, unknown> & {
     status?: ValueOf<typeof E_ROW_STATUS>;
     draftAt?: Date | null;
+    sharedRowSlug?: string | null;
   }
 >;
 
@@ -582,6 +584,9 @@ export type ISetting = {
   MODEL_CLONE_TABLES: ITable[];
   LOGO_SMALL_URL?: string | null;
   LOGO_LARGE_URL?: string | null;
+  LOGO_SMALL_DARK_URL?: string | null;
+  LOGO_LARGE_DARK_URL?: string | null;
+  LOGIN_BACKGROUND_URL?: string | null;
   EMAIL_PROVIDER_HOST: string | null;
   EMAIL_PROVIDER_PORT: number | null;
   EMAIL_PROVIDER_USER: string | null;

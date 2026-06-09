@@ -157,6 +157,11 @@ export const Schema = new mongoose.Schema(
         reminder: null,
       },
     },
+    rowSlugFieldId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Field',
+      default: null,
+    },
 
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },

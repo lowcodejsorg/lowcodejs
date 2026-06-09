@@ -185,6 +185,22 @@ export default class RowMongooseRepository implements RowContractRepository {
     return result !== null;
   }
 
+  async listSlugs(
+    table: RowTableContext,
+    excludeId?: string,
+  ): Promise<string[]> {
+    const model = await this.getModel(table);
+
+    const filter: Record<string, unknown> = {};
+    if (excludeId) filter._id = { $ne: excludeId };
+
+    const slugs = await model.distinct('sharedRowSlug', filter);
+
+    return slugs.filter(
+      (value): value is string => typeof value === 'string' && value.length > 0,
+    );
+  }
+
   // ── Trash (bulk) ──────────────────────────────────────────
 
   async bulkTrash(payload: RowBulkUpdatePayload): Promise<number> {

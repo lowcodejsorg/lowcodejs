@@ -1,6 +1,7 @@
 import { useRouter } from '@tanstack/react-router';
 import { WrenchIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { TableMultiSelect } from '@/components/common/dynamic-table/table-selectors/table-multi-select';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
@@ -22,7 +23,6 @@ import { useCloneTable } from '@/hooks/tanstack-query/use-clone-table';
 import { usePermission } from '@/hooks/use-table-permission';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 function CloneTableSkeleton(): React.JSX.Element {
   return (
@@ -47,12 +47,12 @@ export default function CloneTableTool(): React.JSX.Element {
   const _clone = useCloneTable({
     onSuccess(data) {
       const total = data.tables?.length ?? 1;
-      toastSuccess(
-        total > 1 ? 'Tabelas clonadas' : 'Tabela clonada',
-        total > 1
-          ? `${total} tabelas foram clonadas com sucesso`
-          : 'A tabela foi clonada com sucesso',
-      );
+      toast.success(total > 1 ? 'Tabelas clonadas' : 'Tabela clonada', {
+        description:
+          total > 1
+            ? `${total} tabelas foram clonadas com sucesso`
+            : 'A tabela foi clonada com sucesso',
+      });
 
       setModels([]);
       setSelectedTables([]);
@@ -71,15 +71,13 @@ export default function CloneTableTool(): React.JSX.Element {
         context: 'Erro ao clonar tabela',
         causeHandlers: {
           TABLE_NOT_FOUND: () =>
-            toastError(
-              'Modelo não encontrado',
-              'A tabela modelo selecionada não foi encontrada',
-            ),
+            toast.error('Modelo não encontrado', {
+              description: 'A tabela modelo selecionada não foi encontrada',
+            }),
           EXTENSION_NOT_ACTIVE: () =>
-            toastError(
-              'Ferramenta inativa',
-              'A extensão Clonar Tabela foi desativada',
-            ),
+            toast.error('Ferramenta inativa', {
+              description: 'A extensão Clonar Tabela foi desativada',
+            }),
         },
       });
     },

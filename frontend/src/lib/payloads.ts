@@ -160,6 +160,7 @@ export type TableUpdatePayload = {
     participants: string | null;
     reminder: string | null;
   };
+  rowSlugFieldId?: string | null;
 };
 
 // ============== FIELD ==============
@@ -271,6 +272,12 @@ export type RowAutoSavePayload = {
   data: Record<string, unknown>;
 };
 
+export type RowBulkUpdatePayload = {
+  slug: string;
+  ids: Array<string>;
+  data: Record<string, unknown>;
+};
+
 // ============== PROFILE ==============
 export type ProfileUpdatePayload = {
   name: string;
@@ -297,6 +304,9 @@ export type SettingUpdatePayload = Partial<{
   PAGINATION_PER_PAGE: number;
   LOGO_SMALL_URL: string;
   LOGO_LARGE_URL: string;
+  LOGO_SMALL_DARK_URL: string;
+  LOGO_LARGE_DARK_URL: string;
+  LOGIN_BACKGROUND_URL: string;
   MODEL_CLONE_TABLES: Array<string>;
   EMAIL_PROVIDER_HOST: string | null;
   EMAIL_PROVIDER_PORT: number | null;

@@ -144,6 +144,16 @@ suportados na importação — internamente são normalizados para o formato v2.
 > RELATIONSHIP entre tabelas do pacote continuam sendo religados na Fase B com
 > os novos `tableId`/slug.
 
+> **Importação "somente dados".** Quando o pacote não traz estrutura em
+> nenhuma tabela (export `exportType: 'data'`), o fluxo desvia para
+> `importDataOnly`: casa cada tabela por `tableSlug` com uma tabela **já
+> existente** no destino e insere as linhas (Fases C/D apenas — sem criar
+> estrutura nem menus, sem renomeação). Por isso o export sempre grava
+> `tableSlug`/`tableName` em cada tabela exportada (identidade), mesmo no modo
+> só-dados. Tabela alvo ausente → `IMPORT_TABLES_NOT_FOUND` (`errors.tables`
+> com os slugs faltantes). O frontend, ao detectar `exportType === 'data'`,
+> esconde os inputs de renome e lista os slugs de destino (read-only).
+
 ### Fluxo
 1. Auth + `ExtensionActiveMiddleware` (bodyLimit 50 MB)
 2. Valida `header.platform === 'lowcodejs'`
@@ -201,7 +211,9 @@ suportados na importação — internamente são normalizados para o formato v2.
 | 400 | IMPORT_CONFLICTS | Conflitos detectados (tabelas e/ou itens de menu folha). `errors.tables` e `errors.menus` trazem os slugs **originais** em conflito |
 | 400 | DUPLICATE_TABLE_SLUGS | Duas tabelas do pacote gerariam o mesmo slug após renomeação. `errors.tables` traz os slugs originais colidentes |
 | 400 | DUPLICATE_MENU_SLUGS | Dois itens de menu do pacote gerariam o mesmo slug após renomeação. `errors.menus` traz os slugs originais colidentes |
-| 400 | STRUCTURE_REQUIRED | Arquivo sem `structure` (em nenhuma tabela) |
+| 400 | STRUCTURE_REQUIRED | Arquivo sem `structure` **e** sem identidade de tabela (pacote vazio) |
+| 400 | IMPORT_TABLES_NOT_FOUND | Import "somente dados": tabela(s) alvo não existe(m) no destino. `errors.tables` traz os slugs faltantes |
+| 400 | DATA_TABLE_IDENTITY_MISSING | Import "somente dados" de arquivo antigo, sem `tableSlug` por tabela — reexportar |
 | 500 | IMPORT_TABLE_ERROR | Erro interno |
 
 > O frontend (`import-section.tsx`) usa esses códigos para destacar as tabelas

@@ -184,13 +184,21 @@ export const tableListInfiniteOptions = (params: TableQueryPayload = {}) =>
 
 // ============== ROWS ==============
 
-export const rowListOptions = (slug: string, params: Record<string, unknown>) =>
+export const rowListOptions = (
+  slug: string,
+  params: Record<string, unknown>,
+  fallbackPerPage?: number,
+) =>
   queryOptions({
     queryKey: queryKeys.rows.list(slug, params),
     queryFn: async () => {
+      const finalParams = {
+        ...params,
+        perPage: params.perPage || fallbackPerPage || 20,
+      };
       const response = await API.get<Paginated<IRow>>(
         `/tables/${slug}/rows/paginated`,
-        { params },
+        { params: finalParams },
       );
       return response.data;
     },
@@ -206,6 +214,19 @@ export const rowDetailOptions = (slug: string, rowId: string) =>
       return response.data;
     },
     enabled: Boolean(slug) && Boolean(rowId),
+    staleTime: 30 * 1000,
+  });
+
+export const rowBySlugOptions = (slug: string, rowSlug: string) =>
+  queryOptions({
+    queryKey: queryKeys.rows.bySlug(slug, rowSlug),
+    queryFn: async () => {
+      const response = await API.get<IRow>(
+        `/tables/${slug}/rows/by-slug/${rowSlug}`,
+      );
+      return response.data;
+    },
+    enabled: Boolean(slug) && Boolean(rowSlug),
     staleTime: 30 * 1000,
   });
 

@@ -42,6 +42,7 @@ export const TableUpdateBodyValidator = z
     order: TableOrderSchema,
     layoutFields: TableLayoutFieldsSchema.optional(),
     groups: z.array(GroupConfigurationSchema).optional(),
+    rowSlugFieldId: z.string().trim().nullable().optional(),
   })
   .transform((data) => {
     let slug = slugify(data.name, { lower: true, strict: true, trim: true });

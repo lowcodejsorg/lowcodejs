@@ -1,9 +1,9 @@
 import { LinkIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import type { IRow, ITable } from '@/lib/interfaces';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 interface Props {
   /** Tabela em foco. Recebida via context do `<ExtensionSlot id="table.row.actions">`. */
@@ -20,19 +20,24 @@ export default function CopyRecordLinkPlugin({
 }: Props): React.JSX.Element {
   async function handleCopy(): Promise<void> {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const url = `${origin}/tables/${slug}/row/${row._id}`;
+
+    // Com slug amigavel (campo configurado na tabela), o link usa a URL limpa
+    // /tables/<slug>/<sharedRowSlug> — a rota frontend resolve via backend e
+    // redireciona para /row?_id=. Sem slug, cai no fallback direto por _id.
+    let url = `${origin}/tables/${slug}/row?_id=${row._id}&mode=view`;
+    if (row.sharedRowSlug) {
+      url = `${origin}/tables/${slug}/${row.sharedRowSlug}`;
+    }
 
     try {
       await navigator.clipboard.writeText(url);
-      toastSuccess(
-        'Link copiado',
-        'O link do registro está na área de transferência.',
-      );
+      toast.success('Link copiado', {
+        description: 'O link do registro está na área de transferência.',
+      });
     } catch {
-      toastError(
-        'Não foi possível copiar',
-        'Copie manualmente o link da barra de endereços.',
-      );
+      toast.error('Não foi possível copiar', {
+        description: 'Copie manualmente o link da barra de endereços.',
+      });
     }
   }
 

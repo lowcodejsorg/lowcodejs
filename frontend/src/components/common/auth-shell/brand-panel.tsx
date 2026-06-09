@@ -1,3 +1,4 @@
+import { getRouteApi } from '@tanstack/react-router';
 import { DatabaseIcon, LayoutDashboardIcon, WorkflowIcon } from 'lucide-react';
 import type * as React from 'react';
 
@@ -5,6 +6,8 @@ import { AppPreview } from './app-preview';
 
 import { Logo } from '@/components/common/layout/logo';
 import { cn } from '@/lib/utils';
+
+const rootApi = getRouteApi('__root__');
 
 interface BrandPanelProps {
   className?: string;
@@ -35,6 +38,31 @@ const FEATURES: Array<Feature> = [
 ];
 
 export function BrandPanel({ className }: BrandPanelProps): React.JSX.Element {
+  const { baseUrl, loginBackgroundUrl } = rootApi.useLoaderData();
+
+  // Quando o MASTER configura uma imagem de fundo, ela substitui o painel
+  // inteiro. `object-cover` garante que qualquer proporção/tamanho preenche o
+  // espaço sem distorcer nem quebrar o layout.
+  if (loginBackgroundUrl) {
+    const src = /^https?:\/\//.test(loginBackgroundUrl)
+      ? loginBackgroundUrl
+      : `${baseUrl}${loginBackgroundUrl}`;
+
+    return (
+      <aside
+        data-slot="brand-panel"
+        className={cn('relative isolate overflow-hidden', className)}
+      >
+        <img
+          src={src}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 size-full object-cover"
+        />
+      </aside>
+    );
+  }
+
   return (
     <aside
       data-slot="brand-panel"
@@ -99,8 +127,15 @@ export function BrandPanel({ className }: BrandPanelProps): React.JSX.Element {
       </div>
 
       <div className="relative z-10 flex items-center gap-2 text-sm text-white/80">
-        <span className="animate-pulse-soft bg-brand-orange inline-block size-2 rounded-full" />
-        lowcodejs.org.br
+        <a
+          href="https://lowcodejs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2"
+        >
+          <span className="animate-pulse-soft bg-brand-orange inline-block size-2 rounded-full" />
+          lowcodejs.org
+        </a>
       </div>
     </aside>
   );

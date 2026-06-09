@@ -88,6 +88,14 @@ export default class MongooseModelBuilder implements ModelBuilderContractService
     delete schemaDefinition['_id'];
     delete schemaDefinition['createdAt'];
 
+    // Slug nativo do registro (link de compartilhamento amigavel). Igual a
+    // trashed/createdAt: propriedade-base injetada em toda build, sem migracao.
+    schemaDefinition['sharedRowSlug'] = {
+      type: String,
+      default: null,
+      index: true,
+    };
+
     const schema = new mongoose.Schema(schemaDefinition, {
       timestamps: true,
       toJSON: { virtuals: true },

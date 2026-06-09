@@ -78,9 +78,15 @@ export abstract class RowContractRepository {
     rawFilters?: Record<string, unknown>,
   ): Promise<number>;
 
-  abstract update(payload: RowUpdatePayload): Promise<IRow>;
+  abstract update(payload: RowUpdatePayload): Promise<IRow | null>;
 
   abstract deleteOne(table: RowTableContext, _id: string): Promise<boolean>;
+
+  /** Lista os `sharedRowSlug` ja usados na tabela (para garantir unicidade). */
+  abstract listSlugs(
+    table: RowTableContext,
+    excludeId?: string,
+  ): Promise<string[]>;
 
   // ── Trash (bulk) ──────────────────────────────────────────
 

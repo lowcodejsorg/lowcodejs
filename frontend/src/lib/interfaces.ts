@@ -316,6 +316,7 @@ export type ITable = Merge<
     groups: Array<IGroupConfiguration>;
     order: { field: string; direction: 'asc' | 'desc' } | null;
     layoutFields: ILayoutFields;
+    rowSlugFieldId: string | null;
   }
 >;
 
@@ -331,6 +332,9 @@ export type ISetting = {
   STORAGE_SECRET_KEY?: string;
   LOGO_SMALL_URL: string | null;
   LOGO_LARGE_URL: string | null;
+  LOGO_SMALL_DARK_URL: string | null;
+  LOGO_LARGE_DARK_URL: string | null;
+  LOGIN_BACKGROUND_URL: string | null;
   FILE_UPLOAD_MAX_SIZE: number;
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
   FILE_UPLOAD_ACCEPTED: Array<string>;
@@ -389,6 +393,7 @@ export type IRow = Merge<
     creator: IUser;
     status?: ValueOf<typeof E_ROW_STATUS>;
     draftAt?: string | null;
+    sharedRowSlug?: string | null;
     [x: string]: any;
   }
 >;

@@ -137,11 +137,11 @@ export default class RowInMemoryRepository implements RowContractRepository {
     }).length;
   }
 
-  async update(payload: RowUpdatePayload): Promise<IRow> {
+  async update(payload: RowUpdatePayload): Promise<IRow | null> {
     const collection = this.getCollection(payload.table.slug);
     const index = collection.findIndex((item) => item._id === payload._id);
 
-    // if (index === -1) return null;
+    if (index === -1) return null;
 
     collection[index] = {
       ...collection[index],
@@ -160,6 +160,22 @@ export default class RowInMemoryRepository implements RowContractRepository {
 
     collection.splice(index, 1);
     return true;
+  }
+
+  async listSlugs(
+    table: RowTableContext,
+    excludeId?: string,
+  ): Promise<string[]> {
+    const collection = this.getCollection(table.slug);
+
+    const slugs: string[] = [];
+    for (const item of collection) {
+      if (excludeId && item._id === excludeId) continue;
+      const value = item.sharedRowSlug;
+      if (typeof value === 'string' && value.length > 0) slugs.push(value);
+    }
+
+    return slugs;
   }
 
   // ── Trash (bulk) ──────────────────────────────────────────

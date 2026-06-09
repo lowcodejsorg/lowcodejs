@@ -40,13 +40,14 @@ export function TableRowFileCell({
                 <a
                   href={value.url}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className={cn(
                     'flex flex-col items-center gap-1 text-center underline underline-offset-2',
                     isCardOrMosaic &&
                       'h-full w-full overflow-hidden no-underline justify-center',
                   )}
                   onClick={(e) => e.stopPropagation()}
+                  title={`Abrir ${value.originalName} em nova aba`}
                 >
                   <img
                     src={value.url}
@@ -75,9 +76,10 @@ export function TableRowFileCell({
                 <a
                   href={value.url}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="flex flex-col items-center gap-1 text-center underline underline-offset-2"
                   onClick={(e) => e.stopPropagation()}
+                  title={`Abrir ${value.originalName} em nova aba`}
                 >
                   <FileIcon
                     className="size-16 text-muted-foreground"
@@ -101,9 +103,10 @@ export function TableRowFileCell({
               <a
                 href={value.url}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="text-sm text-primary underline underline-offset-2"
                 onClick={(e) => e.stopPropagation()}
+                title={`Abrir ${value.originalName} em nova aba (botão direito para salvar)`}
               >
                 {value.originalName}
               </a>

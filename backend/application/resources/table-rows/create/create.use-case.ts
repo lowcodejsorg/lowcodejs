@@ -6,6 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
 import { E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { FieldSlug } from '@application/core/field-slug.core';
 import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -56,6 +57,19 @@ export default class TableRowCreateUseCase {
             errors,
           ),
         );
+      }
+
+      if (table.rowSlugFieldId) {
+        const slugField = table.fields.find(
+          (f) => f._id === table.rowSlugFieldId,
+        );
+        if (slugField && payload[slugField.slug]) {
+          const existing = await this.rowRepository.listSlugs(table);
+          payload.sharedRowSlug = FieldSlug.suggestUnique(
+            String(payload[slugField.slug]),
+            existing,
+          );
+        }
       }
 
       await this.rowPasswordService.hash(payload, table.fields);
