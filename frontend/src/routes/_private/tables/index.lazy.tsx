@@ -13,7 +13,7 @@ import { TableTables } from './-table-tables';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
-import { ExportCsvButton } from '@/components/common/export-csv-button';
+import { CsvDropdown } from '@/components/common/csv-dropdown';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
@@ -119,10 +119,10 @@ function RouteComponent(): React.JSX.Element {
             isOpen={filterOpen}
           />
           {canExportCsv && (
-            <ExportCsvButton
-              testId="export-tables-csv-btn"
-              isPending={exportCsv.isPending}
-              onClick={() => exportCsv.mutate(search)}
+            <CsvDropdown
+              testId="tables-csv"
+              exportPending={exportCsv.isPending}
+              onExport={() => exportCsv.mutate(search)}
             />
           )}
           {aiAssistantEnabled && (
