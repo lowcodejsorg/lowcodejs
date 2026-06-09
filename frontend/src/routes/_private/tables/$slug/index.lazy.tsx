@@ -16,8 +16,8 @@ import { TableConfigurationDropdown } from './-table-configuration';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
+import { CsvDropdown } from '@/components/common/csv-dropdown';
 import { TableStyleViewDropdown } from '@/components/common/dynamic-table/table-selectors/table-style-view';
-import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { ExtensionSlot } from '@/components/common/extension-slot';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
@@ -204,6 +204,7 @@ function RouteComponent(): React.JSX.Element {
       handleApiError(error, { context: 'Erro ao exportar CSV' });
     },
   });
+  const [importCsvOpen, setImportCsvOpen] = React.useState(false);
 
   const router = useRouter();
   const sidebar = useSidebar();
@@ -284,10 +285,11 @@ function RouteComponent(): React.JSX.Element {
 
           <TableStyleViewDropdown slug={slug} />
           {canExportCsv && (
-            <ExportCsvButton
-              testId="export-table-rows-csv-btn"
-              isPending={exportCsv.isPending}
-              onClick={() =>
+            <CsvDropdown
+              testId="table-rows-csv"
+              exportPending={exportCsv.isPending}
+              onImport={() => setImportCsvOpen(true)}
+              onExport={() =>
                 exportCsv.mutate({
                   slug,
                   ...(search as Record<string, unknown>),
@@ -295,7 +297,13 @@ function RouteComponent(): React.JSX.Element {
               }
             />
           )}
-          {canExportCsv && <ImportCsvDialog slug={slug} />}
+          {canExportCsv && (
+            <ImportCsvDialog
+              slug={slug}
+              open={importCsvOpen}
+              onOpenChange={setImportCsvOpen}
+            />
+          )}
           <TableConfigurationDropdown tableSlug={slug} />
           {aiAssistantEnabled && (
             <ChatTrigger
