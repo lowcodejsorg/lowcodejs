@@ -5,7 +5,9 @@ import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { KanbanCommentMentionContractService } from '@application/services/kanban-comment-mention/kanban-comment-mention-contract.service';
+import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
 
@@ -33,16 +35,20 @@ export default class BulkUpdateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
+    private readonly userRepository: UserContractRepository,
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly scriptExecutionService: ScriptExecutionContractService,
     private readonly kanbanCommentMentionService: KanbanCommentMentionContractService,
+    private readonly rowMemberNotificationService: RowMemberNotificationContractService,
   ) {
     this.updateUseCase = new TableRowUpdateUseCase(
       tableRepository,
       rowRepository,
+      userRepository,
       rowPasswordService,
       scriptExecutionService,
       kanbanCommentMentionService,
+      rowMemberNotificationService,
     );
   }
 
