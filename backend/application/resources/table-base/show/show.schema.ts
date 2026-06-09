@@ -470,6 +470,11 @@ export const TableShowSchema: FastifySchema = {
             'Generated MongoDB schema based on fields with trashedAt and trashed properties',
           additionalProperties: true,
         },
+        rowSlugFieldId: {
+          type: 'string',
+          nullable: true,
+          description: 'Field ID used to generate friendly row slugs',
+        },
         trashed: {
           type: 'boolean',
           description: 'Is table in trash',

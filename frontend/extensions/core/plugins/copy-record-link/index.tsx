@@ -1,9 +1,9 @@
 import { LinkIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import type { IRow, ITable } from '@/lib/interfaces';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 interface Props {
   /** Tabela em foco. Recebida via context do `<ExtensionSlot id="table.row.actions">`. */
@@ -31,15 +31,13 @@ export default function CopyRecordLinkPlugin({
 
     try {
       await navigator.clipboard.writeText(url);
-      toastSuccess(
-        'Link copiado',
-        'O link do registro está na área de transferência.',
-      );
+      toast.success('Link copiado', {
+        description: 'O link do registro está na área de transferência.',
+      });
     } catch {
-      toastError(
-        'Não foi possível copiar',
-        'Copie manualmente o link da barra de endereços.',
-      );
+      toast.error('Não foi possível copiar', {
+        description: 'Copie manualmente o link da barra de endereços.',
+      });
     }
   }
 

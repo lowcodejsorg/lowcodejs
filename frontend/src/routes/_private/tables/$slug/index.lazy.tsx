@@ -197,7 +197,7 @@ function RouteComponent(): React.JSX.Element {
   const rows = useReadTableRowPaginated({
     slug,
     search: rowsSearch,
-    defaultPerPage: setting.data?.PAGINATION_PER_PAGE,
+    fallbackPerPage: setting.data?.PAGINATION_PER_PAGE,
   });
   const permission = useTablePermission(table.data);
 

@@ -2,11 +2,12 @@ import { createFileRoute, stripSearchParams } from '@tanstack/react-router';
 import z from 'zod';
 
 import { TableSkeleton } from '@/components/common/table-views';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import {
   rowListOptions,
-  settingOptions,
   tableDetailOptions,
 } from '@/hooks/tanstack-query/_query-options';
+import type { ISetting } from '@/lib/interfaces';
 import { createRouteHead } from '@/lib/seo';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -36,16 +37,19 @@ export const Route = createFileRoute('/_private/tables/$slug/')({
     middlewares: [stripSearchParams(defaultSearch)],
   },
   loaderDeps: ({ search }) => search,
-  loader: async ({ context, params, deps }) => {
+  loader: ({ context, params, deps }) => {
     const isAuthenticated = Boolean(useAuthStore.getState().user);
     if (!isAuthenticated) return;
 
-    const setting = await context.queryClient.ensureQueryData(settingOptions());
-    const defaultPerPage = setting?.PAGINATION_PER_PAGE ?? 20;
+    // Paginação padrão vem da configuração global (Setting.PAGINATION_PER_PAGE),
+    // não da URL nem de configuração por tabela.
+    const settings = context.queryClient.getQueryData<ISetting>(
+      queryKeys.settings.all,
+    );
 
     context.queryClient.prefetchQuery(tableDetailOptions(params.slug));
     context.queryClient.prefetchQuery(
-      rowListOptions(params.slug, deps, defaultPerPage),
+      rowListOptions(params.slug, deps, settings?.PAGINATION_PER_PAGE),
     );
   },
 });
