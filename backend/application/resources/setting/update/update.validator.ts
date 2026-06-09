@@ -98,7 +98,9 @@ export const SettingUpdateBodyValidator = z.object({
     .nullable()
     .optional(),
   LOGO_SMALL_DARK_URL: z
-    .string({ message: 'A URL do logo pequeno (modo escuro) deve ser um texto' })
+    .string({
+      message: 'A URL do logo pequeno (modo escuro) deve ser um texto',
+    })
     .trim()
     .nullable()
     .optional(),

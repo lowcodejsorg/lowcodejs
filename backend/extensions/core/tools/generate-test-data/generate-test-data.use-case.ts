@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import mongoose from 'mongoose';
 
@@ -14,8 +15,8 @@ import {
   resolveRealTargetQuantity,
   type TestDataEstimate,
 } from './generate-test-data.estimate';
-import { GenerationJobRegistry } from './generation-job-registry';
 import type { GenerateTestDataPayload } from './generate-test-data.types';
+import { GenerationJobRegistry } from './generation-job-registry';
 
 @Service()
 export default class GenerateTestDataUseCase {

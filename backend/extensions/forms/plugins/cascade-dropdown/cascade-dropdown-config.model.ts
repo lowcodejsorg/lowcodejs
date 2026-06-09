@@ -114,6 +114,10 @@ export async function deleteCascadeDropdownConfigsForField(params: {
     );
   }
 
+  // Sem conexao Mongo (ex.: testes unitarios com repos in-memory), o mongoose
+  // bufferiza o comando e trava ate o timeout. Curto-circuita como no-op.
+  if (mongoose.connection.readyState !== 1) return 0;
+
   const result = await CascadeDropdownConfigModel.deleteMany({
     $or: fieldRefs,
   });

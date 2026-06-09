@@ -68,7 +68,9 @@ describe('Generate Test Data Use Case', () => {
     if (!result.isRight()) throw new Error('Expected Right');
 
     expect(result.value.jobId).toBeDefined();
-    expect(result.value.message).toContain('Geração de dados de teste iniciada');
+    expect(result.value.message).toContain(
+      'Geração de dados de teste iniciada',
+    );
 
     // Aguarda o job em background (roda via setTimeout) concluir
     await new Promise((resolve) => setTimeout(resolve, 150));

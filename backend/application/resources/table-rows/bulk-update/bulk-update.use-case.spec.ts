@@ -63,17 +63,17 @@ describe('Bulk Update Use Case', () => {
 
     const row1 = await rowRepository.create({
       table,
-      data: { status: 'aberto' },
+      data: { situacao: 'aberto' },
     });
     const row2 = await rowRepository.create({
       table,
-      data: { status: 'aberto' },
+      data: { situacao: 'aberto' },
     });
 
     const result = await sut.execute({
       slug: 'clientes',
       ids: [row1._id, row2._id],
-      data: { status: 'em-andamento' },
+      data: { situacao: 'em-andamento' },
     });
 
     expect(result.isRight()).toBe(true);
@@ -86,7 +86,7 @@ describe('Bulk Update Use Case', () => {
       table,
       query: { _id: row1._id },
     });
-    expect((updated1 as Record<string, unknown>).status).toBe('em-andamento');
+    expect((updated1 as Record<string, unknown>).situacao).toBe('em-andamento');
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {

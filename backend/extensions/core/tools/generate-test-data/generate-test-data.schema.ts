@@ -70,7 +70,11 @@ export const GenerateTestDataEstimateSchema: FastifySchema = {
     type: 'object',
     required: ['tableId', 'quantity'],
     properties: {
-      tableId: { type: 'string', minLength: 1, description: 'ID da tabela alvo' },
+      tableId: {
+        type: 'string',
+        minLength: 1,
+        description: 'ID da tabela alvo',
+      },
       quantity: {
         type: 'number',
         minimum: 1,
