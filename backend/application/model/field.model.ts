@@ -115,6 +115,15 @@ const Dropdown = new mongoose.Schema(
       type: String,
       default: null,
     },
+    sortField: {
+      type: String,
+      default: null,
+    },
+    sortDirection: {
+      type: String,
+      enum: ['asc', 'desc'],
+      default: null,
+    },
   },
   {
     _id: false,

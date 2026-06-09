@@ -377,6 +377,10 @@ export type IDropdown = {
   id: string;
   label: string;
   color?: string | null;
+  /** Slug do campo usado para ordenar os cards desta lista no Kanban. */
+  sortField?: string | null;
+  /** Direção da ordenação dos cards desta lista no Kanban. */
+  sortDirection?: 'asc' | 'desc' | null;
 };
 
 export type IRelationshipLabelPart = {

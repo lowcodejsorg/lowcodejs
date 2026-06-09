@@ -2,7 +2,13 @@ import type { CSSProperties } from 'react';
 
 import { hexToRgb } from '@/components/common/dynamic-table/table-cells/utils';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow, IStorage, IUser } from '@/lib/interfaces';
+import type {
+  IDropdown,
+  IField,
+  IRow,
+  IStorage,
+  IUser,
+} from '@/lib/interfaces';
 
 export const ORDER_FIELD_SLUG = 'ordem-kanban';
 export const ORDER_FIELD_NAME = 'Ordem Kanban';
@@ -158,11 +164,51 @@ export function getTitleValue(row: IRow, field?: IField): string {
   return String(raw);
 }
 
+/**
+ * Monta o payload de atualização do campo "lista" (dropdown) do Kanban.
+ * O GET serializa `category` como null em campos sem categoria, mas o validador
+ * do backend espera um array — então normaliza para [] (mesmo padrão do
+ * `buildFieldPayload` usado no gerenciamento de campos).
+ */
+export function buildListFieldPayload(
+  listField: IField,
+  dropdown: Array<IDropdown>,
+): Record<string, unknown> {
+  return {
+    ...listField,
+    dropdown,
+    category: listField.category ?? [],
+  };
+}
+
 export function parseOrderValue(value: unknown): number | null {
   if (value === null || value === undefined || value === '') return null;
   const parsed = typeof value === 'number' ? value : Number(value);
   if (Number.isNaN(parsed)) return null;
   return parsed;
+}
+
+/**
+ * Compara dois registros por um campo, para ordenação ASC/DESC de cards
+ * dentro de uma lista do Kanban. Valores vazios vão sempre para o final.
+ * Usa localeCompare com `numeric` para tratar números e datas ISO.
+ */
+export function compareRowsByField(
+  a: IRow,
+  b: IRow,
+  fieldSlug: string,
+  direction: 'asc' | 'desc',
+): number {
+  const aValue = normalizeRowValue(a[fieldSlug])[0] ?? null;
+  const bValue = normalizeRowValue(b[fieldSlug])[0] ?? null;
+  if (aValue === null && bValue === null) return 0;
+  if (aValue === null) return 1;
+  if (bValue === null) return -1;
+  const comparison = aValue.localeCompare(bValue, 'pt-BR', {
+    numeric: true,
+    sensitivity: 'base',
+  });
+  return direction === 'desc' ? -comparison : comparison;
 }
 
 export function columnStyleFromColor(
