@@ -160,6 +160,7 @@ export type TableUpdatePayload = {
     participants: string | null;
     reminder: string | null;
   };
+  rowSlugFieldId?: string | null;
 };
 
 // ============== FIELD ==============

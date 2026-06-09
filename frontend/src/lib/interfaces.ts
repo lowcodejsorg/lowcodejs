@@ -316,6 +316,7 @@ export type ITable = Merge<
     groups: Array<IGroupConfiguration>;
     order: { field: string; direction: 'asc' | 'desc' } | null;
     layoutFields: ILayoutFields;
+    rowSlugFieldId: string | null;
   }
 >;
 
@@ -389,6 +390,7 @@ export type IRow = Merge<
     creator: IUser;
     status?: ValueOf<typeof E_ROW_STATUS>;
     draftAt?: string | null;
+    sharedRowSlug?: string | null;
     [x: string]: any;
   }
 >;

@@ -1,10 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run *)",
-      "PowerShell(docker compose down)",
-      "PowerShell(Stop-Process -Name \"node\" -ErrorAction SilentlyContinue)",
-      "PowerShell(Get-Process node -ErrorAction SilentlyContinue)"
     ]
   }
 }
