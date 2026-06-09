@@ -54,6 +54,7 @@ import { Route as PrivateTablesSlugMethodsRouteImport } from './routes/_private/
 import { Route as PrivateToolsPackageIdIndexRouteImport } from './routes/_private/tools/$package/$id/index'
 import { Route as PrivateTablesSlugRowIndexRouteImport } from './routes/_private/tables/$slug/row/index'
 import { Route as PrivateTablesSlugDetailIndexRouteImport } from './routes/_private/tables/$slug/detail/index'
+import { Route as PrivateTablesSlugRowSlugIndexRouteImport } from './routes/_private/tables/$slug/$rowSlug/index'
 import { Route as PrivateEPackageIdIndexRouteImport } from './routes/_private/e/$package/$id/index'
 import { Route as PrivateTablesSlugFieldCreateIndexRouteImport } from './routes/_private/tables/$slug/field/create/index'
 import { Route as PrivateTablesSlugFieldFieldIdIndexRouteImport } from './routes/_private/tables/$slug/field/$fieldId/index'
@@ -392,6 +393,12 @@ const PrivateTablesSlugDetailIndexRoute =
       (d) => d.Route,
     ),
   )
+const PrivateTablesSlugRowSlugIndexRoute =
+  PrivateTablesSlugRowSlugIndexRouteImport.update({
+    id: '/tables/$slug/$rowSlug/',
+    path: '/tables/$slug/$rowSlug/',
+    getParentRoute: () => PrivateLayoutRoute,
+  } as any)
 const PrivateEPackageIdIndexRoute = PrivateEPackageIdIndexRouteImport.update({
   id: '/e/$package/$id/',
   path: '/e/$package/$id/',
@@ -462,6 +469,7 @@ export interface FileRoutesByFullPath {
   '/users/$userId/': typeof PrivateUsersUserIdIndexRoute
   '/users/create/': typeof PrivateUsersCreateIndexRoute
   '/e/$package/$id/': typeof PrivateEPackageIdIndexRoute
+  '/tables/$slug/$rowSlug/': typeof PrivateTablesSlugRowSlugIndexRoute
   '/tables/$slug/detail/': typeof PrivateTablesSlugDetailIndexRoute
   '/tables/$slug/row/': typeof PrivateTablesSlugRowIndexRoute
   '/tools/$package/$id/': typeof PrivateToolsPackageIdIndexRoute
@@ -510,6 +518,7 @@ export interface FileRoutesByTo {
   '/users/$userId': typeof PrivateUsersUserIdIndexRoute
   '/users/create': typeof PrivateUsersCreateIndexRoute
   '/e/$package/$id': typeof PrivateEPackageIdIndexRoute
+  '/tables/$slug/$rowSlug': typeof PrivateTablesSlugRowSlugIndexRoute
   '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute
   '/tables/$slug/row': typeof PrivateTablesSlugRowIndexRoute
   '/tools/$package/$id': typeof PrivateToolsPackageIdIndexRoute
@@ -561,6 +570,7 @@ export interface FileRoutesById {
   '/_private/users/$userId/': typeof PrivateUsersUserIdIndexRoute
   '/_private/users/create/': typeof PrivateUsersCreateIndexRoute
   '/_private/e/$package/$id/': typeof PrivateEPackageIdIndexRoute
+  '/_private/tables/$slug/$rowSlug/': typeof PrivateTablesSlugRowSlugIndexRoute
   '/_private/tables/$slug/detail/': typeof PrivateTablesSlugDetailIndexRoute
   '/_private/tables/$slug/row/': typeof PrivateTablesSlugRowIndexRoute
   '/_private/tools/$package/$id/': typeof PrivateToolsPackageIdIndexRoute
@@ -611,6 +621,7 @@ export interface FileRouteTypes {
     | '/users/$userId/'
     | '/users/create/'
     | '/e/$package/$id/'
+    | '/tables/$slug/$rowSlug/'
     | '/tables/$slug/detail/'
     | '/tables/$slug/row/'
     | '/tools/$package/$id/'
@@ -659,6 +670,7 @@ export interface FileRouteTypes {
     | '/users/$userId'
     | '/users/create'
     | '/e/$package/$id'
+    | '/tables/$slug/$rowSlug'
     | '/tables/$slug/detail'
     | '/tables/$slug/row'
     | '/tools/$package/$id'
@@ -709,6 +721,7 @@ export interface FileRouteTypes {
     | '/_private/users/$userId/'
     | '/_private/users/create/'
     | '/_private/e/$package/$id/'
+    | '/_private/tables/$slug/$rowSlug/'
     | '/_private/tables/$slug/detail/'
     | '/_private/tables/$slug/row/'
     | '/_private/tools/$package/$id/'
@@ -1041,6 +1054,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateTablesSlugDetailIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
+    '/_private/tables/$slug/$rowSlug/': {
+      id: '/_private/tables/$slug/$rowSlug/'
+      path: '/tables/$slug/$rowSlug'
+      fullPath: '/tables/$slug/$rowSlug/'
+      preLoaderRoute: typeof PrivateTablesSlugRowSlugIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/e/$package/$id/': {
       id: '/_private/e/$package/$id/'
       path: '/e/$package/$id'
@@ -1115,6 +1135,7 @@ interface PrivateLayoutRouteChildren {
   PrivateUsersUserIdIndexRoute: typeof PrivateUsersUserIdIndexRoute
   PrivateUsersCreateIndexRoute: typeof PrivateUsersCreateIndexRoute
   PrivateEPackageIdIndexRoute: typeof PrivateEPackageIdIndexRoute
+  PrivateTablesSlugRowSlugIndexRoute: typeof PrivateTablesSlugRowSlugIndexRoute
   PrivateTablesSlugDetailIndexRoute: typeof PrivateTablesSlugDetailIndexRoute
   PrivateTablesSlugRowIndexRoute: typeof PrivateTablesSlugRowIndexRoute
   PrivateToolsPackageIdIndexRoute: typeof PrivateToolsPackageIdIndexRoute
@@ -1148,6 +1169,7 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateUsersUserIdIndexRoute: PrivateUsersUserIdIndexRoute,
   PrivateUsersCreateIndexRoute: PrivateUsersCreateIndexRoute,
   PrivateEPackageIdIndexRoute: PrivateEPackageIdIndexRoute,
+  PrivateTablesSlugRowSlugIndexRoute: PrivateTablesSlugRowSlugIndexRoute,
   PrivateTablesSlugDetailIndexRoute: PrivateTablesSlugDetailIndexRoute,
   PrivateTablesSlugRowIndexRoute: PrivateTablesSlugRowIndexRoute,
   PrivateToolsPackageIdIndexRoute: PrivateToolsPackageIdIndexRoute,

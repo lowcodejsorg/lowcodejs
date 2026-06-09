@@ -162,6 +162,22 @@ export default class RowInMemoryRepository implements RowContractRepository {
     return true;
   }
 
+  async listSlugs(
+    table: RowTableContext,
+    excludeId?: string,
+  ): Promise<string[]> {
+    const collection = this.getCollection(table.slug);
+
+    const slugs: string[] = [];
+    for (const item of collection) {
+      if (excludeId && item._id === excludeId) continue;
+      const value = item.sharedRowSlug;
+      if (typeof value === 'string' && value.length > 0) slugs.push(value);
+    }
+
+    return slugs;
+  }
+
   // ── Trash (bulk) ──────────────────────────────────────────
 
   async bulkTrash(payload: RowBulkUpdatePayload): Promise<number> {

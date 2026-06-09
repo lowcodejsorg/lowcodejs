@@ -99,8 +99,15 @@ export function BrandPanel({ className }: BrandPanelProps): React.JSX.Element {
       </div>
 
       <div className="relative z-10 flex items-center gap-2 text-sm text-white/80">
-        <span className="animate-pulse-soft bg-brand-orange inline-block size-2 rounded-full" />
-        lowcodejs.org.br
+        <a
+          href="https://lowcodejs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2"
+        >
+          <span className="animate-pulse-soft bg-brand-orange inline-block size-2 rounded-full" />
+          lowcodejs.org
+        </a>
       </div>
     </aside>
   );

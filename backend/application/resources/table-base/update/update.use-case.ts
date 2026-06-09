@@ -87,12 +87,18 @@ export default class TableUpdateUseCase {
         );
       }
 
+      let rowSlugFieldId = table.rowSlugFieldId;
+      if (payload.rowSlugFieldId !== undefined) {
+        rowSlugFieldId = payload.rowSlugFieldId;
+      }
+
       // Mapear propriedades populadas para strings (IDs)
       const updated = await this.tableRepository.update({
         _id: table._id,
         ...payload,
         slug: newSlug,
         owner: table.owner._id,
+        rowSlugFieldId,
         style: payload.style ?? table.style,
         visibility: payload.visibility ?? table.visibility,
         collaboration: payload.collaboration ?? table.collaboration,
