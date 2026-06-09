@@ -15,13 +15,12 @@ import {
 import React from 'react';
 import { toast } from 'sonner';
 
+import type { ActionType } from './-constants';
 import {
   ACTION_OPTIONS,
   OBJECT_OPTIONS,
-  ROUTE_ID,
-  parseCsvList,
+  ROUTE_ID
 } from './-constants';
-import type { ActionType } from './-constants';
 import { downloadCsv, entriesToCsv } from './-csv';
 import { JsonDialog } from './-json-dialog';
 import { StatCard } from './-stat-card';
@@ -207,7 +206,7 @@ function RouteComponent(): React.JSX.Element {
               className="cursor-pointer"
             >
               <DownloadIcon className="size-4" />
-              <span>Exportar CSV</span>
+              <span>Exportar</span>
             </Button>
           </div>
         </div>
