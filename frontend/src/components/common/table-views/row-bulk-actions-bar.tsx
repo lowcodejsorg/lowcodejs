@@ -30,7 +30,7 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
-import { toastSuccess } from '@/lib/toast';
+import { toast } from 'sonner';
 
 interface RowBulkActionsBarProps {
   slug: string;
@@ -72,11 +72,11 @@ export function RowBulkActionsBar({
       setShowConfirmDialog(false);
       selection?.clear();
       QueryClient.invalidateQueries({ queryKey: queryKeys.rows.lists(slug) });
-      toastSuccess(
+      toast.success(
         result.modified === 1
           ? '1 registro enviado para lixeira!'
           : `${result.modified} registros enviados para lixeira!`,
-        'Os registros foram movidos para a lixeira',
+        { description: 'Os registros foram movidos para a lixeira' },
       );
     },
   });
@@ -91,11 +91,11 @@ export function RowBulkActionsBar({
       setShowConfirmDialog(false);
       selection?.clear();
       QueryClient.invalidateQueries({ queryKey: queryKeys.rows.lists(slug) });
-      toastSuccess(
+      toast.success(
         result.modified === 1
           ? '1 registro restaurado!'
           : `${result.modified} registros restaurados!`,
-        'Os registros foram restaurados da lixeira',
+        { description: 'Os registros foram restaurados da lixeira' },
       );
     },
   });
@@ -112,7 +112,7 @@ export function RowBulkActionsBar({
       setShowConfirmDialog(false);
       selection?.clear();
       QueryClient.invalidateQueries({ queryKey: queryKeys.rows.lists(slug) });
-      toastSuccess(
+      toast.success(
         result.deleted === 1
           ? '1 registro excluído permanentemente!'
           : `${result.deleted} registros excluídos permanentemente!`,

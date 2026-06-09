@@ -523,7 +523,9 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
         result.modified === 1
           ? '1 usuário atualizado!'
           : result.modified.toString().concat(' usuários atualizados!');
-      toastSuccess(message, 'O status dos usuários foi alterado');
+      toast.success(message, {
+        description: 'O status dos usuários foi alterado',
+      });
     },
     onError(error) {
       handleApiError(error, {

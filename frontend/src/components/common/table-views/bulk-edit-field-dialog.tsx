@@ -28,7 +28,7 @@ import {
   buildFieldValidator,
   buildRowPayload,
 } from '@/lib/table';
-import { toastSuccess, toastWarning } from '@/lib/toast';
+import { toast } from 'sonner';
 
 /**
  * Tipos de campo suportados na edicao em massa: status/dropdown + campos
@@ -191,15 +191,15 @@ function BulkEditValueForm({
     onSuccess(result) {
       const failed = result.errors ? Object.keys(result.errors).length : 0;
 
-      toastSuccess(
+      toast.success(
         result.modified === 1
           ? '1 registro atualizado!'
           : `${result.modified} registros atualizados!`,
-        'O campo selecionado foi aplicado aos registros.',
+        { description: 'O campo selecionado foi aplicado aos registros.' },
       );
 
       if (failed > 0) {
-        toastWarning(
+        toast.warning(
           failed === 1
             ? '1 registro não pôde ser atualizado'
             : `${failed} registros não puderam ser atualizados`,
