@@ -1,112 +1,143 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-import type { IRow, ITable } from '@application/core/entity.core';
-import HTTPException from '@application/core/exception.core';
+import {
+  E_TABLE_COLLABORATION,
+  E_TABLE_STYLE,
+  E_TABLE_VISIBILITY,
+} from '@application/core/entity.core';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
+import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
+import InMemoryRowContextBuilder from '@application/services/table/in-memory-row-context-builder.service';
 
 import TableRowShowBySlugUseCase from './show-by-slug.use-case';
 
-describe('TableRowShowBySlugUseCase', () => {
-  let useCase: TableRowShowBySlugUseCase;
-  let tableRepository: any;
-  let rowRepository: any;
-  let rowPasswordService: any;
-  let rowContextBuilder: any;
+let tableInMemoryRepository: TableInMemoryRepository;
+let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
+let rowContextBuilder: InMemoryRowContextBuilder;
+let sut: TableRowShowBySlugUseCase;
 
+const baseTable = {
+  _schema: {},
+  fields: [],
+  owner: 'owner-id',
+  administrators: [],
+  style: E_TABLE_STYLE.LIST,
+  visibility: E_TABLE_VISIBILITY.RESTRICTED,
+  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+  fieldOrderList: [],
+  fieldOrderForm: [],
+};
+
+describe('Table Row Show By Slug Use Case', () => {
   beforeEach(() => {
-    tableRepository = {
-      findBySlug: vi.fn(),
-    };
-    rowRepository = {
-      findOne: vi.fn(),
-    };
-    rowPasswordService = {
-      mask: vi.fn(),
-    };
-    rowContextBuilder = {
-      transform: vi.fn((row) => row),
-    };
+    tableInMemoryRepository = new TableInMemoryRepository();
+    rowRepository = new RowInMemoryRepository();
+    rowPasswordService = new InMemoryRowPasswordService();
+    rowContextBuilder = new InMemoryRowContextBuilder();
 
-    useCase = new TableRowShowBySlugUseCase(
-      tableRepository,
+    sut = new TableRowShowBySlugUseCase(
+      tableInMemoryRepository,
       rowRepository,
       rowPasswordService,
       rowContextBuilder,
     );
   });
 
-  it('should return TABLE_NOT_FOUND when table does not exist', async () => {
-    tableRepository.findBySlug.mockResolvedValue(null);
-
-    const result = await useCase.execute({
-      slug: 'nonexistent',
-      rowSlug: 'test-slug',
+  it('deve retornar TABLE_NOT_FOUND quando a tabela nao existir', async () => {
+    const result = await sut.execute({
+      slug: 'inexistente',
+      rowSlug: 'qualquer',
     });
 
     expect(result.isLeft()).toBe(true);
-    expect(result.value).toBeInstanceOf(HTTPException);
-    expect(result.value.cause).toBe('TABLE_NOT_FOUND');
+    if (result.isLeft()) {
+      expect(result.value.code).toBe(404);
+      expect(result.value.cause).toBe('TABLE_NOT_FOUND');
+    }
   });
 
-  it('should return TABLE_SLUG_FIELD_NOT_CONFIGURED when slugFieldId is not set', async () => {
-    const table = {
-      slug: 'test',
-      slugFieldId: null,
-      fields: [],
-    } as unknown as ITable;
+  it('deve retornar TABLE_SLUG_FIELD_NOT_CONFIGURED quando rowSlugFieldId nao estiver definido', async () => {
+    await tableInMemoryRepository.create({
+      ...baseTable,
+      name: 'Tarefas',
+      slug: 'tarefas',
+      rowSlugFieldId: null,
+    });
 
-    tableRepository.findBySlug.mockResolvedValue(table);
-
-    const result = await useCase.execute({
-      slug: 'test',
-      rowSlug: 'test-slug',
+    const result = await sut.execute({
+      slug: 'tarefas',
+      rowSlug: 'nome-tarefa-xyz',
     });
 
     expect(result.isLeft()).toBe(true);
-    expect(result.value.cause).toBe('TABLE_SLUG_FIELD_NOT_CONFIGURED');
+    if (result.isLeft()) {
+      expect(result.value.code).toBe(400);
+      expect(result.value.cause).toBe('TABLE_SLUG_FIELD_NOT_CONFIGURED');
+    }
   });
 
-  it('should return ROW_NOT_FOUND when row does not exist', async () => {
-    const table = {
-      slug: 'test',
-      slugFieldId: 'field-123',
-      fields: [{ _id: 'field-123', slug: 'name' }],
-    } as any as ITable;
+  it('deve retornar ROW_NOT_FOUND quando nenhum registro tiver o slug', async () => {
+    await tableInMemoryRepository.create({
+      ...baseTable,
+      name: 'Tarefas',
+      slug: 'tarefas',
+      rowSlugFieldId: 'field-nome',
+    });
 
-    tableRepository.findBySlug.mockResolvedValue(table);
-    rowRepository.findOne.mockResolvedValue(null);
-
-    const result = await useCase.execute({
-      slug: 'test',
-      rowSlug: 'test-slug',
+    const result = await sut.execute({
+      slug: 'tarefas',
+      rowSlug: 'nome-tarefa-xyz',
     });
 
     expect(result.isLeft()).toBe(true);
-    expect(result.value.cause).toBe('ROW_NOT_FOUND');
+    if (result.isLeft()) {
+      expect(result.value.code).toBe(404);
+      expect(result.value.cause).toBe('ROW_NOT_FOUND');
+    }
   });
 
-  it('should return row when found by slug', async () => {
-    const table = {
-      slug: 'test',
-      slugFieldId: 'field-123',
-      fields: [{ _id: 'field-123', slug: 'name' }],
-    } as any as ITable;
+  it('deve retornar o registro encontrado pelo sharedRowSlug', async () => {
+    const table = await tableInMemoryRepository.create({
+      ...baseTable,
+      name: 'Tarefas',
+      slug: 'tarefas',
+      rowSlugFieldId: 'field-nome',
+    });
 
-    const row = { _id: 'row-123', name: 'test-slug' } as unknown as IRow;
+    await rowRepository.create({
+      table,
+      data: { nome: 'Nome Tarefa XYZ', sharedRowSlug: 'nome-tarefa-xyz' },
+    });
 
-    tableRepository.findBySlug.mockResolvedValue(table);
-    rowRepository.findOne.mockResolvedValue(row);
-
-    const result = await useCase.execute({
-      slug: 'test',
-      rowSlug: 'test-slug',
+    const result = await sut.execute({
+      slug: 'tarefas',
+      rowSlug: 'nome-tarefa-xyz',
       user: 'user-123',
     });
 
     expect(result.isRight()).toBe(true);
-    expect(result.value).toEqual(row);
-    expect(rowRepository.findOne).toHaveBeenCalledWith({
-      table,
-      query: { name: 'test-slug' },
+    if (result.isRight()) {
+      expect(result.value.sharedRowSlug).toBe('nome-tarefa-xyz');
+    }
+  });
+
+  it('deve retornar GET_ROW_BY_SLUG_ERROR quando houver falha interna', async () => {
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
+      new Error('Database error'),
+    );
+
+    const result = await sut.execute({
+      slug: 'tarefas',
+      rowSlug: 'nome-tarefa-xyz',
     });
+
+    expect(result.isLeft()).toBe(true);
+    if (result.isLeft()) {
+      expect(result.value.code).toBe(500);
+      expect(result.value.cause).toBe('GET_ROW_BY_SLUG_ERROR');
+    }
   });
 });

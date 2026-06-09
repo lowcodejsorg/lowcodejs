@@ -81,8 +81,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
         participants: null,
         reminder: null,
       },
-      defaultPerPage: payload.defaultPerPage ?? 20,
-      slugFieldId: payload.slugFieldId ?? null,
+      rowSlugFieldId: payload.rowSlugFieldId ?? null,
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -214,10 +213,8 @@ export default class TableInMemoryRepository implements TableContractRepository 
     if (payload.type !== undefined) table.type = payload.type;
     if (payload._schema !== undefined) table._schema = payload._schema;
     if (payload.methods !== undefined) table.methods = payload.methods;
-    if (payload.defaultPerPage !== undefined)
-      table.defaultPerPage = payload.defaultPerPage;
-    if (payload.slugFieldId !== undefined)
-      table.slugFieldId = payload.slugFieldId;
+    if (payload.rowSlugFieldId !== undefined)
+      table.rowSlugFieldId = payload.rowSlugFieldId;
     if (payload.trashed !== undefined) table.trashed = payload.trashed;
     if (payload.trashedAt !== undefined) table.trashedAt = payload.trashedAt;
 

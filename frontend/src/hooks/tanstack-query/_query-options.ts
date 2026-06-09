@@ -217,6 +217,19 @@ export const rowDetailOptions = (slug: string, rowId: string) =>
     staleTime: 30 * 1000,
   });
 
+export const rowBySlugOptions = (slug: string, rowSlug: string) =>
+  queryOptions({
+    queryKey: queryKeys.rows.bySlug(slug, rowSlug),
+    queryFn: async () => {
+      const response = await API.get<IRow>(
+        `/tables/${slug}/rows/by-slug/${rowSlug}`,
+      );
+      return response.data;
+    },
+    enabled: Boolean(slug) && Boolean(rowSlug),
+    staleTime: 30 * 1000,
+  });
+
 // ============== FIELDS ==============
 
 export const fieldDetailOptions = (tableSlug: string, fieldId: string) =>

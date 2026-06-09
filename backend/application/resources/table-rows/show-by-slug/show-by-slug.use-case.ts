@@ -35,7 +35,7 @@ export default class TableRowShowBySlugUseCase {
         );
       }
 
-      if (!table.slugFieldId) {
+      if (!table.rowSlugFieldId) {
         return left(
           HTTPException.BadRequest(
             'Tabela não configurada para slugs',
@@ -44,19 +44,9 @@ export default class TableRowShowBySlugUseCase {
         );
       }
 
-      const slugField = table.fields.find((f) => f._id === table.slugFieldId);
-      if (!slugField) {
-        return left(
-          HTTPException.BadRequest(
-            'Campo de slug não encontrado',
-            'SLUG_FIELD_NOT_FOUND',
-          ),
-        );
-      }
-
       const row = await this.rowRepository.findOne({
         table,
-        query: { [slugField.slug]: payload.rowSlug },
+        query: { sharedRowSlug: payload.rowSlug },
       });
 
       if (!row) {

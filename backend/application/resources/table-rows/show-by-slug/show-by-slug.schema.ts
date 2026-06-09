@@ -1,18 +1,17 @@
 export const TableRowShowBySlugSchema = {
-  description: 'Buscar registro por slug amigável',
+  description:
+    'Resolve um registro pelo slug amigável (sharedRowSlug) e retorna o JSON do registro. A navegação (abrir /tables/:slug/row?_id=...) fica a cargo do frontend.',
   tags: ['Registros'],
   params: {
     type: 'object',
     properties: {
       slug: {
         type: 'string',
-        example: 'tarefas',
-        description: 'Slug da tabela',
+        description: 'Slug da tabela (ex: tarefas)',
       },
       rowSlug: {
         type: 'string',
-        example: 'nome-tarefa-xyz',
-        description: 'Slug amigável do registro',
+        description: 'Slug amigável do registro (ex: nome-tarefa-xyz)',
       },
     },
     required: ['slug', 'rowSlug'],
@@ -40,7 +39,7 @@ export const TableRowShowBySlugSchema = {
         code: { type: 'number' },
         cause: {
           type: 'string',
-          enum: ['TABLE_SLUG_FIELD_NOT_CONFIGURED', 'SLUG_FIELD_NOT_FOUND'],
+          enum: ['TABLE_SLUG_FIELD_NOT_CONFIGURED'],
         },
       },
     },

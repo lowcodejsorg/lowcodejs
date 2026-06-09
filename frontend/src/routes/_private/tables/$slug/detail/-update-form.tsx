@@ -59,8 +59,7 @@ export const TableUpdateSchema = z.object({
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
   order: z.string().default('none'),
-  defaultPerPage: z.number().min(1).max(100).default(20),
-  slugFieldId: z.string().nullable().default(null),
+  rowSlugFieldId: z.string().nullable().default(null),
   layoutFields: LayoutFieldsSchema.default({
     title: '',
     description: '',
@@ -87,8 +86,7 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   logoFile: [],
   administrators: [],
   order: 'none',
-  defaultPerPage: 20,
-  slugFieldId: null,
+  rowSlugFieldId: null,
   layoutFields: {
     title: '',
     description: '',
@@ -427,26 +425,15 @@ export const UpdateTableFormFields = withForm({
           )}
         </form.AppField>
 
-        {/* Itens por página padrão */}
-        <form.AppField name="defaultPerPage">
-          {(field) => (
-            <field.FieldNumber
-              label="Itens por página padrão"
-              placeholder="Ex: 20"
-              disabled={isDisabled}
-            />
-          )}
-        </form.AppField>
-
-        {/* Campo para gerar slug da URL */}
-        <form.AppField name="slugFieldId">
+        {/* Campo para gerar slug da URL de registro */}
+        <form.AppField name="rowSlugFieldId">
           {(field) => {
             const textShortFields = activeFields.filter(
               (f: IField) => f.type === E_FIELD_TYPE.TEXT_SHORT,
             );
             return (
               <field.TableLayoutFieldSelect
-                label="Campo para slug da URL"
+                label="Campo para slug da URL de registro"
                 disabled={isDisabled || textShortFields.length === 0}
                 options={[
                   { label: 'Nenhum', value: '' },

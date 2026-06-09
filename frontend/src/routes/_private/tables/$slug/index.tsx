@@ -2,9 +2,9 @@ import { createFileRoute, stripSearchParams } from '@tanstack/react-router';
 import z from 'zod';
 
 import { TableSkeleton } from '@/components/common/table-views';
-import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import {
   rowListOptions,
+  settingOptions,
   tableDetailOptions,
 } from '@/hooks/tanstack-query/_query-options';
 import { createRouteHead } from '@/lib/seo';
@@ -40,11 +40,12 @@ export const Route = createFileRoute('/_private/tables/$slug/')({
     const isAuthenticated = Boolean(useAuthStore.getState().user);
     if (!isAuthenticated) return;
 
-    const tableData = await context.queryClient.fetchQuery(
-      tableDetailOptions(params.slug),
-    );
+    const setting = await context.queryClient.ensureQueryData(settingOptions());
+    const defaultPerPage = setting?.PAGINATION_PER_PAGE ?? 20;
+
+    context.queryClient.prefetchQuery(tableDetailOptions(params.slug));
     context.queryClient.prefetchQuery(
-      rowListOptions(params.slug, deps, tableData.defaultPerPage),
+      rowListOptions(params.slug, deps, defaultPerPage),
     );
   },
 });

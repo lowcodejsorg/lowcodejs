@@ -364,8 +364,7 @@ export type ITable = Merge<
     groups: IGroupConfiguration[];
     order: { field: string; direction: 'asc' | 'desc' } | null;
     layoutFields: ILayoutFields;
-    defaultPerPage: number;
-    slugFieldId: string | null;
+    rowSlugFieldId: string | null;
   }
 >;
 
@@ -472,6 +471,7 @@ export type IRow = Merge<
   Record<string, unknown> & {
     status?: ValueOf<typeof E_ROW_STATUS>;
     draftAt?: Date | null;
+    sharedRowSlug?: string | null;
   }
 >;
 

@@ -51,6 +51,9 @@ export default class {
       });
     }
 
+    // Resolve o registro pelo slug amigavel e devolve o JSON. A navegacao
+    // (abrir /tables/:slug/row?_id=...) fica a cargo do frontend, que pode ser
+    // customizado por instalacao.
     return response.status(200).send(result.value);
   }
 }
