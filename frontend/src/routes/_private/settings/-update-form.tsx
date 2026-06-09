@@ -69,6 +69,7 @@ export const SettingUpdateSchema = z.object({
   LOGO_LARGE_URL: z.string().nullable(),
   LOGO_SMALL_DARK_URL: z.string().nullable(),
   LOGO_LARGE_DARK_URL: z.string().nullable(),
+  LOGIN_BACKGROUND_URL: z.string().nullable(),
   FILE_UPLOAD_MAX_SIZE: z
     .string()
     .min(1, 'O tamanho máximo de arquivo é obrigatório'),
@@ -100,6 +101,7 @@ export const SettingUpdateSchema = z.object({
   logoLargeFile: z.array(z.instanceof(File)),
   logoSmallDarkFile: z.array(z.instanceof(File)),
   logoLargeDarkFile: z.array(z.instanceof(File)),
+  loginBackgroundFile: z.array(z.instanceof(File)),
 });
 
 // Form usa string para números (inputs), payload usa number
@@ -118,6 +120,7 @@ export type SettingUpdateFormValues = Merge<
     LOGO_LARGE_URL: string | null;
     LOGO_SMALL_DARK_URL: string | null;
     LOGO_LARGE_DARK_URL: string | null;
+    LOGIN_BACKGROUND_URL: string | null;
     FILE_UPLOAD_MAX_SIZE: string;
     FILE_UPLOAD_MAX_FILES_PER_UPLOAD: string;
     FILE_UPLOAD_ACCEPTED: string;
@@ -145,6 +148,7 @@ export type SettingUpdateFormValues = Merge<
     logoLargeFile: Array<File>;
     logoSmallDarkFile: Array<File>;
     logoLargeDarkFile: Array<File>;
+    loginBackgroundFile: Array<File>;
   }
 >;
 
@@ -162,6 +166,7 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   LOGO_LARGE_URL: null,
   LOGO_SMALL_DARK_URL: null,
   LOGO_LARGE_DARK_URL: null,
+  LOGIN_BACKGROUND_URL: null,
   FILE_UPLOAD_MAX_SIZE: '10485760',
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: '5',
   FILE_UPLOAD_ACCEPTED: 'pdf;csv;png;jpeg;jpg;webp',
@@ -187,6 +192,7 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   logoLargeFile: [],
   logoSmallDarkFile: [],
   logoLargeDarkFile: [],
+  loginBackgroundFile: [],
 };
 
 export const UpdateSettingFormFields = withForm({
@@ -859,6 +865,63 @@ export const UpdateSettingFormFields = withForm({
                 }}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Imagem de Fundo do Login */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="w-5 h-5" />
+              Imagem de Fundo do Login
+            </CardTitle>
+            <CardDescription>
+              Imagem exibida na metade ilustrativa da tela de login. Quando
+              definida, substitui o painel padrão (gradiente + texto). Use uma
+              imagem em alta resolução — ela é redimensionada para cobrir o
+              espaço sem distorcer.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form.Field
+              name="loginBackgroundFile"
+              children={(field) => {
+                return (
+                  <Field>
+                    <FieldLabel>Imagem de Fundo</FieldLabel>
+                    {mode === 'edit' && (
+                      <FileUploadWithStorage
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        onStorageChange={(storages: Array<IStorage>) => {
+                          if (storages[0]?.url) {
+                            form.setFieldValue(
+                              'LOGIN_BACKGROUND_URL',
+                              storages[0].url,
+                            );
+                          }
+                        }}
+                        accept="image/*"
+                        maxFiles={1}
+                        maxSize={8 * 1024 * 1024}
+                        placeholder="Arraste ou selecione a imagem de fundo do login"
+                        shouldDeleteFromStorage={false}
+                        staticName="login-background"
+                      />
+                    )}
+                    {mode === 'show' && settingData?.LOGIN_BACKGROUND_URL && (
+                      <div className="mt-2 overflow-hidden rounded border">
+                        <img
+                          src={settingData.LOGIN_BACKGROUND_URL}
+                          alt="Imagem de fundo do login atual"
+                          className="h-40 w-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </Field>
+                );
+              }}
+            />
           </CardContent>
         </Card>
 

@@ -199,6 +199,14 @@ export const SettingUpdateSchema: FastifySchema = {
           type: 'A URL do logo grande (modo escuro) deve ser um texto',
         },
       },
+      LOGIN_BACKGROUND_URL: {
+        type: 'string',
+        nullable: true,
+        description: 'URL da imagem de fundo da tela de login',
+        errorMessage: {
+          type: 'A URL da imagem de fundo do login deve ser um texto',
+        },
+      },
       STORAGE_DRIVER: {
         type: 'string',
         enum: ['local', 's3'],
@@ -385,6 +393,11 @@ export const SettingUpdateSchema: FastifySchema = {
           type: 'string',
           nullable: true,
           description: 'URL do logo grande para o modo escuro',
+        },
+        LOGIN_BACKGROUND_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL da imagem de fundo da tela de login',
         },
         STORAGE_DRIVER: {
           type: 'string',

@@ -72,6 +72,7 @@ function buildSettingFormValues(data: ISetting): SettingUpdateFormValues {
     LOGO_LARGE_URL: data.LOGO_LARGE_URL,
     LOGO_SMALL_DARK_URL: data.LOGO_SMALL_DARK_URL ?? null,
     LOGO_LARGE_DARK_URL: data.LOGO_LARGE_DARK_URL ?? null,
+    LOGIN_BACKGROUND_URL: data.LOGIN_BACKGROUND_URL ?? null,
     FILE_UPLOAD_MAX_SIZE: String(data.FILE_UPLOAD_MAX_SIZE),
     FILE_UPLOAD_MAX_FILES_PER_UPLOAD: String(
       data.FILE_UPLOAD_MAX_FILES_PER_UPLOAD,
@@ -99,6 +100,7 @@ function buildSettingFormValues(data: ISetting): SettingUpdateFormValues {
     logoLargeFile: [],
     logoSmallDarkFile: [],
     logoLargeDarkFile: [],
+    loginBackgroundFile: [],
   };
 }
 
@@ -213,6 +215,7 @@ function SettingUpdateContent({
         LOGO_LARGE_URL: value.LOGO_LARGE_URL ?? undefined,
         LOGO_SMALL_DARK_URL: value.LOGO_SMALL_DARK_URL ?? undefined,
         LOGO_LARGE_DARK_URL: value.LOGO_LARGE_DARK_URL ?? undefined,
+        LOGIN_BACKGROUND_URL: value.LOGIN_BACKGROUND_URL ?? undefined,
         FILE_UPLOAD_MAX_SIZE: Number(value.FILE_UPLOAD_MAX_SIZE),
         FILE_UPLOAD_MAX_FILES_PER_UPLOAD: Number(
           value.FILE_UPLOAD_MAX_FILES_PER_UPLOAD,

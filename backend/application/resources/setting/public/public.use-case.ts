@@ -13,6 +13,7 @@ export type PublicSetting = {
   LOGO_LARGE_URL: string | null;
   LOGO_SMALL_DARK_URL: string | null;
   LOGO_LARGE_DARK_URL: string | null;
+  LOGIN_BACKGROUND_URL: string | null;
   AI_ASSISTANT_ENABLED: boolean;
   CHAT_HISTORY_ENABLED: boolean;
   SETUP_COMPLETED: boolean;
@@ -28,6 +29,7 @@ const PUBLIC_DEFAULTS: PublicSetting = {
   LOGO_LARGE_URL: null,
   LOGO_SMALL_DARK_URL: null,
   LOGO_LARGE_DARK_URL: null,
+  LOGIN_BACKGROUND_URL: null,
   AI_ASSISTANT_ENABLED: false,
   CHAT_HISTORY_ENABLED: false,
   SETUP_COMPLETED: false,
@@ -52,6 +54,7 @@ export default class SettingPublicUseCase {
         LOGO_LARGE_URL: setting.LOGO_LARGE_URL ?? null,
         LOGO_SMALL_DARK_URL: setting.LOGO_SMALL_DARK_URL ?? null,
         LOGO_LARGE_DARK_URL: setting.LOGO_LARGE_DARK_URL ?? null,
+        LOGIN_BACKGROUND_URL: setting.LOGIN_BACKGROUND_URL ?? null,
         AI_ASSISTANT_ENABLED: setting.AI_ASSISTANT_ENABLED ?? false,
         CHAT_HISTORY_ENABLED: setting.CHAT_HISTORY_ENABLED ?? false,
         SETUP_COMPLETED: setting.SETUP_COMPLETED ?? false,

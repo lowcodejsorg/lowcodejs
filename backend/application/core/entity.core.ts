@@ -584,6 +584,7 @@ export type ISetting = {
   LOGO_LARGE_URL?: string | null;
   LOGO_SMALL_DARK_URL?: string | null;
   LOGO_LARGE_DARK_URL?: string | null;
+  LOGIN_BACKGROUND_URL?: string | null;
   EMAIL_PROVIDER_HOST: string | null;
   EMAIL_PROVIDER_PORT: number | null;
   EMAIL_PROVIDER_USER: string | null;

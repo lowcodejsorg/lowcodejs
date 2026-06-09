@@ -107,6 +107,11 @@ export const SettingUpdateBodyValidator = z.object({
     .trim()
     .nullable()
     .optional(),
+  LOGIN_BACKGROUND_URL: z
+    .string({ message: 'A URL da imagem de fundo do login deve ser um texto' })
+    .trim()
+    .nullable()
+    .optional(),
 });
 
 export type SettingUpdatePayload = z.infer<typeof SettingUpdateBodyValidator>;

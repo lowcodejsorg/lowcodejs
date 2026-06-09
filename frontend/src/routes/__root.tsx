@@ -33,6 +33,7 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
           setupCurrentStep: data.SETUP_CURRENT_STEP ?? 'admin',
           logoSmallDarkUrl: data.LOGO_SMALL_DARK_URL ?? null,
           logoLargeDarkUrl: data.LOGO_LARGE_DARK_URL ?? null,
+          loginBackgroundUrl: data.LOGIN_BACKGROUND_URL ?? null,
         };
       }
       return {
@@ -44,6 +45,7 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
         setupCurrentStep: 'admin',
         logoSmallDarkUrl: null,
         logoLargeDarkUrl: null,
+        loginBackgroundUrl: null,
       };
     } catch {
       return {
@@ -55,6 +57,7 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
         setupCurrentStep: 'admin',
         logoSmallDarkUrl: null,
         logoLargeDarkUrl: null,
+        loginBackgroundUrl: null,
       };
     }
   },
@@ -76,6 +79,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       chatHistoryEnabled: settings.chatHistoryEnabled,
       logoSmallDarkUrl: settings.logoSmallDarkUrl,
       logoLargeDarkUrl: settings.logoLargeDarkUrl,
+      loginBackgroundUrl: settings.loginBackgroundUrl,
     };
   },
   component: RootDocument,

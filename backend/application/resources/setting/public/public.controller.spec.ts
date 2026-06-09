@@ -30,6 +30,7 @@ describe('E2E Setting Public Controller', () => {
         LOGO_LARGE_URL: null,
         LOGO_SMALL_DARK_URL: null,
         LOGO_LARGE_DARK_URL: null,
+        LOGIN_BACKGROUND_URL: null,
         AI_ASSISTANT_ENABLED: false,
         CHAT_HISTORY_ENABLED: false,
         SETUP_COMPLETED: false,

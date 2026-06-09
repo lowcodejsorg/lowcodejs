@@ -333,6 +333,7 @@ export type ISetting = {
   LOGO_LARGE_URL: string | null;
   LOGO_SMALL_DARK_URL: string | null;
   LOGO_LARGE_DARK_URL: string | null;
+  LOGIN_BACKGROUND_URL: string | null;
   FILE_UPLOAD_MAX_SIZE: number;
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
   FILE_UPLOAD_ACCEPTED: Array<string>;
