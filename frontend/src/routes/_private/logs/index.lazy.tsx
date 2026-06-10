@@ -7,7 +7,6 @@ import { format } from 'date-fns';
 import {
   ActivityIcon,
   CalendarClockIcon,
-  DownloadIcon,
   PencilIcon,
   PlusIcon,
   UserIcon,
@@ -15,24 +14,19 @@ import {
 import React from 'react';
 import { toast } from 'sonner';
 
-import {
-  ACTION_OPTIONS,
-  OBJECT_OPTIONS,
-  ROUTE_ID,
-  parseCsvList,
-} from './-constants';
 import type { ActionType } from './-constants';
+import { ACTION_OPTIONS, OBJECT_OPTIONS, ROUTE_ID } from './-constants';
 import { downloadCsv, entriesToCsv } from './-csv';
 import { JsonDialog } from './-json-dialog';
 import { StatCard } from './-stat-card';
 import { TableHistory } from './-table-history';
 
+import { CsvDropdown } from '@/components/common/csv-dropdown';
 import { FilterSidebar, FilterTrigger } from '@/components/common/filters';
 import { InputSearch } from '@/components/common/input-search';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Pagination } from '@/components/common/pagination';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useLoggerReadPaginated } from '@/hooks/tanstack-query/use-logger-read-paginated';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import {
@@ -199,16 +193,11 @@ function RouteComponent(): React.JSX.Element {
               onClick={() => filterSidebar.onOpenChange(!filterSidebar.open)}
               isOpen={filterSidebar.open}
             />
-            <Button
-              variant="outline"
-              onClick={handleExport}
+            <CsvDropdown
+              testId="history-csv"
               disabled={entries.length === 0}
-              data-test-id="history-export-btn"
-              className="cursor-pointer"
-            >
-              <DownloadIcon className="size-4" />
-              <span>Exportar CSV</span>
-            </Button>
+              onExport={handleExport}
+            />
           </div>
         </div>
 

@@ -16,8 +16,8 @@ import { TableConfigurationDropdown } from './-table-configuration';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
+import { CsvDropdown } from '@/components/common/csv-dropdown';
 import { TableStyleViewDropdown } from '@/components/common/dynamic-table/table-selectors/table-style-view';
-import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { ExtensionSlot } from '@/components/common/extension-slot';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
@@ -215,6 +215,7 @@ function RouteComponent(): React.JSX.Element {
       handleApiError(error, { context: 'Erro ao exportar CSV' });
     },
   });
+  const [importCsvOpen, setImportCsvOpen] = React.useState(false);
 
   const router = useRouter();
   const sidebar = useSidebar();
@@ -324,37 +325,32 @@ function RouteComponent(): React.JSX.Element {
               context={{ table: table.data, slug }}
             />
 
-            {permission.can('CREATE_ROW') &&
-              (table.data?.fields?.filter((f) => !f.native)?.length ?? 0) >
-                0 && (
-                <Button
-                  disabled={
-                    rows.status === 'pending' || rows.status === 'error'
-                  }
-                  className="disabled:cursor-not-allowed shadow-none p-1 h-auto"
-                  onClick={() => {
-                    sidebar.setOpen(false);
-                    router.navigate({
-                      to: '/tables/$slug/row',
-                      replace: true,
-                      params: { slug },
-                    });
-                  }}
-                >
-                  <PlusIcon />
-                  <span>Registro</span>
-                </Button>
-              )}
-          </div>
-        </PageShell.Header>
-
-        <div className="flex-1 flex flex-row min-h-0">
-          {table.status === 'success' && filterFields.length > 0 && (
-            <FilterSidebar
-              fields={filterFields}
-              open={filterOpen}
-              onOpenChange={handleFilterOpenChange}
-              table={table.data}
+          <TableStyleViewDropdown slug={slug} />
+          {canExportCsv && (
+            <CsvDropdown
+              testId="table-rows-csv"
+              exportPending={exportCsv.isPending}
+              onImport={() => setImportCsvOpen(true)}
+              onExport={() =>
+                exportCsv.mutate({
+                  slug,
+                  ...(search as Record<string, unknown>),
+                })
+              }
+            />
+          )}
+          {canExportCsv && (
+            <ImportCsvDialog
+              slug={slug}
+              open={importCsvOpen}
+              onOpenChange={setImportCsvOpen}
+            />
+          )}
+          <TableConfigurationDropdown tableSlug={slug} />
+          {aiAssistantEnabled && (
+            <ChatTrigger
+              onClick={() => handleChatOpenChange(!chatOpen)}
+              isOpen={chatOpen}
             />
           )}
           <PageShell.Content>
