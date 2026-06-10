@@ -6,6 +6,7 @@ import {
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
@@ -15,6 +16,7 @@ import TableUpdateUseCase from './update.use-case';
 let tableInMemoryRepository: TableInMemoryRepository;
 let userInMemoryRepository: UserInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let rowInMemoryRepository: RowInMemoryRepository;
 let modelBuilder: InMemoryModelBuilder;
 let sut: TableUpdateUseCase;
 
@@ -23,12 +25,14 @@ describe('Table Update Use Case', () => {
     tableInMemoryRepository = new TableInMemoryRepository();
     userInMemoryRepository = new UserInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    rowInMemoryRepository = new RowInMemoryRepository();
     modelBuilder = new InMemoryModelBuilder();
 
     sut = new TableUpdateUseCase(
       tableInMemoryRepository,
       userInMemoryRepository,
       fieldInMemoryRepository,
+      rowInMemoryRepository,
       modelBuilder,
     );
   });

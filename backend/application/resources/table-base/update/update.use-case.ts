@@ -10,7 +10,9 @@ import {
   type ITable as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
@@ -26,6 +28,7 @@ export default class TableUpdateUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly userRepository: UserContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly rowRepository: RowContractRepository,
     private readonly modelBuilder: ModelBuilderContractService,
   ) {}
 
@@ -136,6 +139,17 @@ export default class TableUpdateUseCase {
 
       await this.modelBuilder.build(updated);
 
+      // Backfill: ao configurar/alterar o campo de slug do registro, gera o
+      // sharedRowSlug para os registros existentes que ainda nao tem (sem isso,
+      // so registros criados/editados depois ganhariam a URL amigavel).
+      const rowSlugConfigured =
+        payload.rowSlugFieldId !== undefined &&
+        Boolean(rowSlugFieldId) &&
+        rowSlugFieldId !== table.rowSlugFieldId;
+      if (rowSlugConfigured) {
+        await this.backfillRowSlugs(updated);
+      }
+
       // Reconstruir tabelas que têm RELATIONSHIP apontando para esta
       if (slugChanged) {
         const pointingFields =
@@ -161,6 +175,32 @@ export default class TableUpdateUseCase {
           'UPDATE_TABLE_ERROR',
         ),
       );
+    }
+  }
+
+  // Gera sharedRowSlug para registros existentes sem slug, a partir do valor do
+  // campo configurado. Idempotente: nunca sobrescreve slugs ja existentes.
+  private async backfillRowSlugs(table: Entity): Promise<void> {
+    if (!table.rowSlugFieldId) return;
+    const slugField = table.fields.find((f) => f._id === table.rowSlugFieldId);
+    if (!slugField) return;
+
+    const rows = await this.rowRepository.findAllRaw(table);
+    const used = new Set<string>(await this.rowRepository.listSlugs(table));
+
+    for (const row of rows) {
+      if (row.trashed) continue;
+      if (row.sharedRowSlug) continue;
+      const value = row[slugField.slug];
+      if (value === null || value === undefined || value === '') continue;
+
+      const slug = FieldSlug.suggestUnique(String(value), Array.from(used));
+      used.add(slug);
+      await this.rowRepository.update({
+        table,
+        _id: String(row._id),
+        data: { sharedRowSlug: slug },
+      });
     }
   }
 }
