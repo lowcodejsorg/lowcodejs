@@ -93,28 +93,36 @@ frontend/
 │   │       └── extensions/         # Workshop de extensoes (MASTER)
 │   │
 │   ├── components/
-│   │   ├── ui/                     # Design system (34 componentes shadcn/Radix)
-│   │   └── common/                 # Componentes de negocio (16 subdiretorios)
+│   │   ├── ui/                     # Design system (36 componentes shadcn/Radix)
+│   │   └── common/                 # Componentes de negocio (24 subdiretorios)
 │   │       ├── dynamic-table/      # Sistema central de tabelas dinamicas (9 subdirs)
+│   │       ├── action-dialog/      # Dialog de acao reutilizavel
+│   │       ├── auth-shell/         # Shell das telas de autenticacao
+│   │       ├── bulk-action-bar/    # Barra de acoes em lote
 │   │       ├── calendar/           # Visualizacao calendario
 │   │       ├── chat/               # Chat em tempo real
 │   │       ├── code-editor/        # Monaco Editor wrapper
 │   │       ├── data-table/         # Tabela generica TanStack Table
 │   │       ├── datepicker/         # Seletor de data
 │   │       ├── document/           # Visualizacao documento
+│   │       ├── extension-slot/     # Slot de renderizacao de extensoes
 │   │       ├── file-upload/        # Upload de arquivos
 │   │       ├── filters/            # Filtros laterais
+│   │       ├── form-footer/        # Rodape de formulario
 │   │       ├── forum/              # Forum com canais
 │   │       ├── gantt/              # Grafico de Gantt
 │   │       ├── layout/             # Header, Sidebar, Logo
+│   │       ├── page-shell/         # Shell de pagina
+│   │       ├── permanent-delete-confirm-dialog/ # Confirmacao de exclusao definitiva
 │   │       ├── rich-editor/        # Tiptap WYSIWYG
 │   │       ├── route-status/       # Telas de erro/loading
 │   │       ├── selectors/          # Comboboxes de dominio
+│   │       ├── table-views/        # Visualizacoes de tabela
 │   │       └── tree-editor/        # Editor de arvore
 │   │
 │   ├── hooks/                      # Custom React hooks
-│   │   ├── use-*.ts               # 11 hooks de dominio
-│   │   └── tanstack-query/         # 46+ hooks de API por recurso
+│   │   ├── use-*.ts               # 16 hooks de dominio
+│   │   └── tanstack-query/         # 110 hooks de API por recurso
 │   │       ├── _query-keys.ts      # Factory de query keys hierarquicas
 │   │       └── _query-options.ts   # Query options reutilizaveis
 │   │
@@ -137,7 +145,7 @@ frontend/
 │   │
 │   └── integrations/               # Configuracoes de integracao
 │       ├── tanstack-query/         # QueryClientProvider + devtools
-│       └── tanstack-form/          # createFormHook + 40 field components
+│       └── tanstack-form/          # createFormHook + 45 field components
 │
 ├── extensions/                     # Codigo UI das extensoes — ver extensions/CLAUDE.md
 ├── vite.config.ts                  # Vite + Nitro + TanStack Start + Tailwind
@@ -264,7 +272,7 @@ Visibilidade de tabela (para visitantes nao autenticados):
 
 Sistema central em `integrations/tanstack-form/`:
 
-- `form-hook.ts`: createFormHook registra 40 field components - exporta
+- `form-hook.ts`: createFormHook registra 45 field components - exporta
   useAppForm + withForm
 - `form-context.ts`: createFormHookContexts - fieldContext, formContext
 - `use-field-validation.ts`: hook retorna { field, isInvalid, errors }
@@ -274,10 +282,10 @@ Sistema central em `integrations/tanstack-form/`:
 
 | Categoria      | Arquivo                | Quantidade | Exemplos                                                        |
 | -------------- | ---------------------- | ---------- | --------------------------------------------------------------- |
-| Base (leves)   | fields/base.ts         | 14         | FieldText, FieldEmail, FieldSwitch, FieldFileUpload             |
+| Base (leves)   | fields/base.ts         | 16         | FieldText, FieldEmail, FieldSwitch, FieldFileUpload             |
 | Rich (pesados) | fields/rich.ts         | 2          | FieldCodeEditor (Monaco), FieldEditor (Tiptap)                  |
-| Table Config   | fields/table-config.ts | 14         | TableFieldTypeSelect, TableFieldDropdownOptions                 |
-| Table Row      | fields/table-row.ts    | 10         | TableRowTextField, TableRowDateField, TableRowRelationshipField |
+| Table Config   | fields/table-config.ts | 18         | TableFieldTypeSelect, TableFieldDropdownOptions                 |
+| Table Row      | fields/table-row.ts    | 9          | TableRowTextField, TableRowDateField, TableRowRelationshipField |
 
 Componentes pesados (Monaco ~2MB, Tiptap ~500KB) usam React.lazy para nao
 impactar bundle inicial.
@@ -324,7 +332,7 @@ documento Setting do MongoDB e sao carregados em runtime via server function
 
 ## Componentes UI (Design System)
 
-34 componentes em `components/ui/` baseados em Radix UI + shadcn pattern.
+36 componentes em `components/ui/` baseados em Radix UI + shadcn pattern.
 
 Padroes:
 
@@ -336,7 +344,7 @@ Padroes:
 
 ## Componentes de Negocio
 
-16 subdiretorios em `components/common/`. O mais importante e `dynamic-table/`
+24 subdiretorios em `components/common/`. O mais importante e `dynamic-table/`
 (9 subdirs) que implementa o sistema central de tabelas dinamicas do low-code.
 
 Cada subdiretorio tem seu proprio CLAUDE.md com documentacao detalhada.

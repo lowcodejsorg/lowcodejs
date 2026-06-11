@@ -9,9 +9,9 @@ da aplicação Fastify + Mongoose.
 | --------------- | ----------------------------------------------------------------------- |
 | `core/`         | Enums, Either pattern, exceções, builders de schema/query               |
 | `middlewares/`  | Auth JWT + controle de acesso a tabelas (middleware por rota)           |
-| `model/`        | Schemas Mongoose para 11 entidades (User, Table, Field, Menu, etc.)    |
+| `model/`        | Schemas Mongoose para 14 entidades (User, Table, Field, Menu, etc.)    |
 | `repositories/` | Contratos abstratos + implementações (mongoose + in-memory para testes) |
-| `resources/`    | 16 recursos REST com controllers, use-cases, validators e schemas       |
+| `resources/`    | 20 recursos REST com controllers, use-cases, validators e schemas       |
 | `services/`     | Serviços de domínio (email, password, permission, storage)              |
 | `utils/`        | Utilitários de JWT e cookies                                            |
 

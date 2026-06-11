@@ -29,8 +29,12 @@ rotas filhas herdam a protecao de autenticacao definida no `beforeLoad`.
 | Diretorio    | URL                                                                        | Descricao                                     | Roles               |
 | ------------ | -------------------------------------------------------------------------- | --------------------------------------------- | ------------------- |
 | `dashboard/` | `/dashboard`                                                               | Painel com estatisticas e graficos            | MASTER              |
+| `e/`         | `/e/:package/:id`                                                          | Loader dinamico de modulos de extensao        | Varia por extensao  |
+| `extensions/`| `/extensions`                                                              | Workshop de gestao de extensoes               | MASTER              |
 | `groups/`    | `/groups`, `/groups/create`, `/groups/:id`                                 | CRUD de grupos de permissao                   | MASTER              |
+| `logs/`      | `/logs`                                                                    | Historico de atividade do sistema             | MASTER              |
 | `menus/`     | `/menus`, `/menus/create`, `/menus/:id`                                    | CRUD de itens de menu                         | MASTER              |
+| `notifications/` | `/notifications`                                                       | Central de notificacoes do usuario            | Todos autenticados  |
 | `pages/`     | `/pages/:slug`                                                             | Paginas customizadas (tipo PAGE do menu)      | Todos autenticados  |
 | `profile/`   | `/profile`                                                                 | Visualizacao e edicao do perfil do usuario    | Todos autenticados  |
 | `settings/`  | `/settings`                                                                | Configuracoes gerais do sistema               | MASTER              |

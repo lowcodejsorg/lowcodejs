@@ -57,11 +57,11 @@ backend/
 ├── application/
 │   ├── core/                      # Logica central (entity types, Either, exception, builders, sandbox)
 │   ├── middlewares/               # Auth JWT + Table access/permissions
-│   ├── model/                     # Mongoose schemas (11 models, todos no DB system)
-│   ├── repositories/              # Contract + Mongoose + InMemory (11 entidades)
+│   ├── model/                     # Mongoose schemas (14 models, todos no DB system)
+│   ├── repositories/              # Contract + Mongoose + InMemory (15 entidades)
 │   ├── services/                  # Email (contract + nodemailer + in-memory), Storage (flydrive)
 │   ├── utils/                     # JWT tokens, cookies
-│   └── resources/                 # 16 recursos REST (cada um com operacoes isoladas)
+│   └── resources/                 # 20 recursos REST (cada um com operacoes isoladas)
 ├── database/
 │   ├── seeders/                   # Permissions, user groups, settings (idempotente)
 │   └── migrations/                # Migracoes one-time (dual-connection)
@@ -233,11 +233,11 @@ Impl)` e chamado para cada par encontrado.
 
 - Repositorios: User, UserGroup, Permission, Table, Field, Storage,
   ValidationToken, Menu, Reaction, Evaluation, Setting, Logger, Notification,
-  Extension
+  Extension, Row
 - Servicos: Email, EmailQueue (use-cases injetam este, nao Email diretamente),
   CsvImportQueue, StorageMigrationQueue, Password, Permission, RowPassword,
   ScriptExecution, Notification, KanbanCommentMention, RowMemberNotification,
-  Storage
+  Storage, Llm, Table
 - Builders de tabela dinamica (`services/table/`): SchemaBuilder, ModelBuilder,
   QueryBuilder, PopulateBuilder, RowContextBuilder
 
@@ -273,17 +273,16 @@ Em container Docker, o `docker-entrypoint.sh` roda ANTES do servidor:
 2. `npm run seed` (idempotente — upsert)
 3. Inicia o servidor
 
-kernel.ts registra 9 plugins em ordem:
+kernel.ts registra 8 plugins em ordem:
 
 1. CORS (origens dinamicas + fixas de ALLOWED_ORIGINS)
 2. Cookie (signed com COOKIE_SECRET)
 3. JWT (RS256 com chaves base64, expiry 24h)
 4. Multipart (limite 5MB)
-5. Static files (local) OU HTTP proxy (S3) - baseado em STORAGE_DRIVER
-6. Swagger/OpenAPI
-7. Scalar API reference (/documentation)
-8. WebSocket
-9. fastify-decorators bootstrap (carrega controllers)
+5. Swagger/OpenAPI
+6. Scalar API reference (/documentation)
+7. WebSocket
+8. fastify-decorators bootstrap (carrega controllers)
 
 Global error handler: HTTPException -> ZodError -> FST_ERR_VALIDATION -> fallback 500
 

@@ -6,6 +6,14 @@ esta pasta no boot, valida cada `manifest.json` e faz upsert na collection
 `extensions` do MongoDB. O frontend espelha apenas o código (`frontend/extensions/`),
 mas a "fonte de verdade" para o registro no DB é este diretório.
 
+## Pacotes
+
+| Pacote | Ativação | CLAUDE.md | Conteúdo |
+|--------|----------|-----------|----------|
+| `core` | auto-ativado no boot (exceção de ativação) | `core/CLAUDE.md` | tools/plugins/modules shipados com a plataforma |
+| `apps` | opcional (começa desativado) | `apps/CLAUDE.md` | extensões oficiais opcionais (ex: dashboard) |
+| `forms` | opcional (começa desativado) | `forms/CLAUDE.md` | plugins que enriquecem os formulários das tabelas |
+
 ## Tipos de extensão
 
 | Tipo | Descrição | Exemplo | Onde aparece |
@@ -161,6 +169,11 @@ Slots são pontos no JSX do core onde plugins são injetados via
 
 Slots reservados podem ser instalados conforme demanda. A SKILL (Fase 5)
 valida `placement.slots` contra os slots ativos.
+
+> Extensões podem registrar **slots adicionais** fora deste catálogo. O pacote
+> `forms` provê `table.fields.manage` (plugin `conditional-fields`) e
+> `table.field.relationship.config` (plugin `cascade-dropdown`) — ver
+> `backend/extensions/forms/CLAUDE.md`.
 
 ## Ciclo de vida
 

@@ -236,6 +236,24 @@ suportados na importação — internamente são normalizados para o formato v2.
 }
 ```
 
+### Progresso em tempo real (WebSocket)
+
+A importação emite progresso ao vivo pelo namespace Socket.IO `/table-import`
+(`import-table.socket.ts`), no mesmo Socket.IO server do chat. O cliente gera
+um `job_id` (UUID), abre o modal, conecta no namespace e dispara o `POST
+/tools/import-table` com o mesmo `job_id`. Os eventos são emitidos na room
+`user:<sub>` do usuário que importa; o frontend filtra pelos eventos cujo
+`job_id` bate com o seu.
+
+| Evento (server → client) | Payload | Quando |
+|--------------------------|---------|--------|
+| `progress` | `{ job_id, phase, processed, total, current_table, failed }` | A cada avanço de fase (`structure`/`rows`/`relationships`/`menus`) |
+| `completed` | `{ job_id, importedFields, importedRows, importedMenus, tables }` | Import concluído com sucesso |
+| `error` | `{ job_id, message }` | Falha durante a importação |
+
+Auth do namespace via cookie `accessToken` (mesmo JWT do HTTP). `emitTableImportEvent`
+é no-op quando o namespace ainda não foi inicializado (ex.: testes unitários).
+
 ## Testes
 - Unit: `export-table.use-case.spec.ts`, `import-table.use-case.spec.ts`
   (cobertura inclui detecção de relationships ausentes, exportação de menus

@@ -14,6 +14,12 @@ _authentication/
   sign-up/            # Rota /sign-up
     index.tsx
     index.lazy.tsx
+    success/          # Rota /sign-up/success (confirmacao de cadastro)
+  forgot-password/    # Rota /forgot-password (solicitar recuperacao)
+    index.tsx
+    index.lazy.tsx
+    validate-code/    # Rota /forgot-password/validate-code
+    reset-password/   # Rota /forgot-password/reset-password
 ```
 
 ## Guard de Layout
@@ -25,10 +31,14 @@ O `beforeLoad` em `layout.tsx` verifica se o usuario ja esta logado via
 
 ## Tabela de Rotas
 
-| Diretorio   | Path                      | Descricao          |
-| ----------- | ------------------------- | ------------------ |
-| `_sign-in/` | `/` (pathless, rota raiz) | Pagina de login    |
-| `sign-up/`  | `/sign-up`                | Pagina de cadastro |
+| Diretorio                          | Path                              | Descricao                          |
+| ---------------------------------- | --------------------------------- | ---------------------------------- |
+| `_sign-in/`                        | `/` (pathless, rota raiz)         | Pagina de login                    |
+| `sign-up/`                         | `/sign-up`                        | Pagina de cadastro                 |
+| `sign-up/success/`                 | `/sign-up/success`                | Confirmacao de conta criada        |
+| `forgot-password/`                 | `/forgot-password`                | Solicitar recuperacao de senha     |
+| `forgot-password/validate-code/`   | `/forgot-password/validate-code`  | Validar codigo enviado por email   |
+| `forgot-password/reset-password/`  | `/forgot-password/reset-password` | Definir nova senha                 |
 
 ## Padrao de Arquivos
 
