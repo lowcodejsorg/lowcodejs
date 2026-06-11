@@ -46,9 +46,13 @@ export const Route = createFileRoute('/_private')({
 
       // Permitir acesso público a rotas de visualização de tabela
       // O componente e o backend controlam por visibility
-      const isTableViewRoute = /^\/tables\/[^/]+(?:\/?|\/row\/?.*)$/.test(
-        location.pathname,
-      );
+      const isTableViewRoute =
+        /^\/tables\/[^/]+(?:\/?|\/row\/?.*)$/.test(location.pathname) ||
+        // URL amigavel do registro: /tables/:slug/:rowSlug — mesmo tratamento
+        // publico de /tables/:slug/row (exclui sub-rotas reservadas).
+        /^\/tables\/[^/]+\/(?!(?:row|detail|field|methods|group)(?:\/|$))[^/]+\/?$/.test(
+          location.pathname,
+        );
       if (isTableViewRoute) {
         return;
       }
