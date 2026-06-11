@@ -32,6 +32,8 @@ const Dropdown = z.object({
   id: z.string().trim(),
   label: z.string().trim(),
   color: z.string().nullable().optional(),
+  sortField: z.string().nullable().optional(),
+  sortDirection: z.enum(['asc', 'desc']).nullable().optional(),
 });
 
 // Propriedades flat do campo (não aninhadas em configuration)
@@ -65,12 +67,20 @@ export const FieldDefaultValueSchema = z
   .nullable()
   .default(null);
 export const FieldRelationshipSchema = Relationship.nullable().default(null);
-export const FieldDropdownSchema = z.array(Dropdown).default([]);
+// Aceita null além de undefined: alguns clientes (ex.: Kanban) reenviam o campo
+// cru do GET, onde dropdown/category vêm como null, e normaliza para [].
+export const FieldDropdownSchema = z
+  .array(Dropdown)
+  .nullish()
+  .transform((value) => value ?? []);
 export const FieldAllowCustomDropdownOptionsSchema = z.boolean().default(false);
 export const FieldAllowCreateRelationshipRecordsSchema = z
   .boolean()
   .default(false);
-export const FieldCategorySchema = z.array(Category).default([]);
+export const FieldCategorySchema = z
+  .array(Category)
+  .nullish()
+  .transform((value) => value ?? []);
 // For API input: can be just a slug string or the full object
 export const FieldGroupSchema = z
   .union([

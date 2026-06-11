@@ -211,6 +211,12 @@ export const TableShowSchema: FastifySchema = {
                     id: { type: 'string' },
                     label: { type: 'string' },
                     color: { type: 'string' },
+                    sortField: { type: 'string', nullable: true },
+                    sortDirection: {
+                      type: 'string',
+                      enum: ['asc', 'desc', null],
+                      nullable: true,
+                    },
                   },
                 },
               },

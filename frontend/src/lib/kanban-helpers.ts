@@ -2,10 +2,28 @@ import type { CSSProperties } from 'react';
 
 import { hexToRgb } from '@/components/common/dynamic-table/table-cells/utils';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow, IStorage, IUser } from '@/lib/interfaces';
+import type {
+  IDropdown,
+  IField,
+  IRow,
+  IStorage,
+  IUser,
+} from '@/lib/interfaces';
 
 export const ORDER_FIELD_SLUG = 'ordem-kanban';
 export const ORDER_FIELD_NAME = 'Ordem Kanban';
+
+// Tipos de campo cuja ordenação client-side de cards (compareRowsByField) produz
+// uma ordem significativa. Texto/número (via format) e data comparam direto pelo
+// valor; dropdown compara pelo label da opção. Os demais tipos (relationship,
+// usuário, categoria, arquivo, grupo) guardam objetos no row e não ordenam de
+// forma útil — ficam fora do select "Ordenar por".
+export const SORTABLE_FIELD_TYPES = new Set<IField['type']>([
+  E_FIELD_TYPE.TEXT_SHORT,
+  E_FIELD_TYPE.TEXT_LONG,
+  E_FIELD_TYPE.DATE,
+  E_FIELD_TYPE.DROPDOWN,
+]);
 
 export const TEMPLATE_FIELD_SLUGS = new Set([
   'titulo',
@@ -158,11 +176,67 @@ export function getTitleValue(row: IRow, field?: IField): string {
   return String(raw);
 }
 
+/**
+ * Monta o payload de atualização do campo "lista" (dropdown) do Kanban.
+ * O GET serializa `category` como null em campos sem categoria, mas o validador
+ * do backend espera um array — então normaliza para [] (mesmo padrão do
+ * `buildFieldPayload` usado no gerenciamento de campos).
+ */
+export function buildListFieldPayload(
+  listField: IField,
+  dropdown: Array<IDropdown>,
+): Record<string, unknown> {
+  return {
+    ...listField,
+    dropdown,
+    category: listField.category ?? [],
+  };
+}
+
 export function parseOrderValue(value: unknown): number | null {
   if (value === null || value === undefined || value === '') return null;
   const parsed = typeof value === 'number' ? value : Number(value);
   if (Number.isNaN(parsed)) return null;
   return parsed;
+}
+
+/**
+ * Extrai o valor escalar de um campo para ordenação client-side. Dropdown guarda
+ * o id da opção no row, então resolve o label correspondente (fallback para o id
+ * em dados legados); demais tipos usam o valor normalizado direto.
+ */
+function rowSortValue(row: IRow, field: IField): string | null {
+  const raw = normalizeRowValue(row[field.slug])[0] ?? null;
+  if (raw === null) return null;
+  if (field.type === E_FIELD_TYPE.DROPDOWN) {
+    const option = field.dropdown?.find((opt) => opt.id === raw);
+    return option?.label ?? raw;
+  }
+  return raw;
+}
+
+/**
+ * Compara dois registros por um campo, para ordenação ASC/DESC de cards
+ * dentro de uma lista do Kanban. Valores vazios vão sempre para o final.
+ * Usa localeCompare com `numeric` para tratar números e datas ISO.
+ */
+export function compareRowsByField(
+  a: IRow,
+  b: IRow,
+  field: IField,
+  direction: 'asc' | 'desc',
+): number {
+  const aValue = rowSortValue(a, field);
+  const bValue = rowSortValue(b, field);
+  if (aValue === null && bValue === null) return 0;
+  if (aValue === null) return 1;
+  if (bValue === null) return -1;
+  const comparison = aValue.localeCompare(bValue, 'pt-BR', {
+    numeric: true,
+    sensitivity: 'base',
+  });
+  if (direction === 'desc') return -comparison;
+  return comparison;
 }
 
 export function columnStyleFromColor(
