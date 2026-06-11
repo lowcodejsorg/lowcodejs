@@ -4,7 +4,10 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
-import { E_ROW_STATUS } from '@application/core/entity.core';
+import {
+  E_ROW_STATUS,
+  ROW_SLUG_SUPPORTED_STYLES,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldSlug } from '@application/core/field-slug.core';
 import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
@@ -65,7 +68,10 @@ export default class TableRowUpdateUseCase {
         );
       }
 
-      if (table.rowSlugFieldId) {
+      if (
+        table.rowSlugFieldId &&
+        ROW_SLUG_SUPPORTED_STYLES.some((style) => style === table.style)
+      ) {
         const slugField = table.fields.find(
           (f) => f._id === table.rowSlugFieldId,
         );

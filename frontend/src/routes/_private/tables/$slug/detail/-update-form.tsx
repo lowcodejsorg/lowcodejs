@@ -8,6 +8,7 @@ import {
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
+  ROW_SLUG_SUPPORTED_STYLES,
   TABLE_NAME_REGEX,
 } from '@/lib/constant';
 import type { IField, ILayoutFields, ITable } from '@/lib/interfaces';
@@ -425,26 +426,37 @@ export const UpdateTableFormFields = withForm({
           )}
         </form.AppField>
 
-        {/* Campo para gerar slug da URL de registro */}
-        <form.AppField name="rowSlugFieldId">
-          {(field) => {
-            const textShortFields = activeFields.filter(
-              (f: IField) => f.type === E_FIELD_TYPE.TEXT_SHORT,
+        {/* Campo para gerar slug da URL de registro — só para estilos com
+            página de detalhe de 1 registro (LIST/GALLERY/CARD/MOSAIC). */}
+        <form.Subscribe selector={(state) => state.values.style}>
+          {(currentStyle) => {
+            const supportsRowSlug = ROW_SLUG_SUPPORTED_STYLES.some(
+              (style) => style === currentStyle,
             );
+            if (!supportsRowSlug) return null;
             return (
-              <field.TableLayoutFieldSelect
-                label="Campo para slug da URL de registro"
-                placeholder="Nenhum"
-                emptyLabel="Nenhum"
-                disabled={isDisabled || textShortFields.length === 0}
-                options={textShortFields.map((f: IField) => ({
-                  label: f.name,
-                  value: f._id,
-                }))}
-              />
+              <form.AppField name="rowSlugFieldId">
+                {(field) => {
+                  const textShortFields = activeFields.filter(
+                    (f: IField) => f.type === E_FIELD_TYPE.TEXT_SHORT,
+                  );
+                  return (
+                    <field.TableLayoutFieldSelect
+                      label="Campo para slug da URL de registro"
+                      placeholder="Nenhum"
+                      emptyLabel="Nenhum"
+                      disabled={isDisabled || textShortFields.length === 0}
+                      options={textShortFields.map((f: IField) => ({
+                        label: f.name,
+                        value: f._id,
+                      }))}
+                    />
+                  );
+                }}
+              </form.AppField>
             );
           }}
-        </form.AppField>
+        </form.Subscribe>
       </section>
     );
   },

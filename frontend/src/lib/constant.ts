@@ -99,6 +99,16 @@ export const E_TABLE_STYLE = {
   GANTT: 'GANTT',
 } as const;
 
+// Estilos com pagina de detalhe de 1 registro (abrem via /tables/:slug/row?_id=).
+// So esses suportam URL amigavel (rowSlugFieldId + sharedRowSlug). FORUM/KANBAN/
+// CALENDAR/GANTT/DOCUMENT abrem o registro in-place (sidebar/modal).
+export const ROW_SLUG_SUPPORTED_STYLES = [
+  E_TABLE_STYLE.LIST,
+  E_TABLE_STYLE.GALLERY,
+  E_TABLE_STYLE.CARD,
+  E_TABLE_STYLE.MOSAIC,
+] as const;
+
 export const E_TABLE_VISIBILITY = {
   PUBLIC: 'PUBLIC',
   RESTRICTED: 'RESTRICTED',
