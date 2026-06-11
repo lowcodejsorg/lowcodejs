@@ -2,9 +2,9 @@ import type { FastifySchema } from 'fastify';
 
 export const TableRemoveFromTrashSchema: FastifySchema = {
   tags: ['Tables'],
-  summary: 'Remove table from trash',
+  summary: 'Restaurar tabela da lixeira',
   description:
-    'Restores a table from trash, making it active again with all its original functionality.',
+    'Restaura uma tabela da lixeira, tornando-a ativa novamente. Bloqueia a restauração quando já existe uma tabela ativa com o mesmo slug.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -312,12 +312,38 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autenticado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [401] },
-        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        cause: {
+          type: 'string',
+          enum: ['AUTHENTICATION_REQUIRED', 'USER_NOT_AUTHENTICATED'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    403: {
+      description: 'Acesso negado - Permissão insuficiente',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [403] },
+        cause: {
+          type: 'string',
+          enum: [
+            'USER_NOT_FOUND',
+            'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
+            'OWNER_OR_ADMIN_REQUIRED',
+            'TABLE_PRIVATE',
+          ],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -325,35 +351,44 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
       },
     },
     404: {
-      description:
-        'Not found - table with specified slug does not exist or is not in trash',
+      description: 'Tabela não encontrada',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['table not found'] },
+        message: { type: 'string', enum: ['Tabela não encontrada'] },
         code: { type: 'number', enum: [404] },
-        cause: { type: 'string', enum: ['table_NOT_FOUND'] },
+        cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
         },
       },
-      examples: [
-        {
-          message: 'table not found',
-          code: 404,
-          cause: 'table_NOT_FOUND',
-        },
-      ],
     },
-    500: {
-      description: 'Internal server error - Database or server issues',
+    409: {
+      description:
+        'Conflito - A tabela não está na lixeira ou já existe uma tabela ativa com o mesmo slug',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string' },
+        code: { type: 'number', enum: [409] },
+        cause: {
+          type: 'string',
+          enum: ['NOT_TRASHED', 'SLUG_ALREADY_ACTIVE'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    500: {
+      description: 'Erro interno do servidor',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: {
           type: 'string',
-          enum: ['REMOVE_table_FROM_TRASH_ERROR'],
+          enum: ['REMOVE_TABLE_FROM_TRASH_ERROR'],
         },
         errors: {
           type: 'object',

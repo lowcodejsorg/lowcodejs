@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const TableRowSendToTrashSchema: FastifySchema = {
-  tags: ['Rows'],
+  tags: ['Registros'],
   summary: 'Send row to trash',
   description:
     'Moves a row to trash by setting the trashedAt timestamp. The row can be restored later or permanently deleted.',
@@ -48,12 +48,40 @@ export const TableRowSendToTrashSchema: FastifySchema = {
       additionalProperties: true,
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [401] },
-        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        cause: {
+          type: 'string',
+          enum: ['AUTHENTICATION_REQUIRED', 'USER_NOT_AUTHENTICATED'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    403: {
+      description: 'Acesso negado - Permissão insuficiente ou tabela restrita',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [403] },
+        cause: {
+          type: 'string',
+          enum: [
+            'USER_NOT_FOUND',
+            'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
+            'OWNER_OR_ADMIN_REQUIRED',
+            'TABLE_PRIVATE',
+            'RESTRICTED_CREATE',
+            'FORM_VIEW_RESTRICTED',
+          ],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -61,13 +89,10 @@ export const TableRowSendToTrashSchema: FastifySchema = {
       },
     },
     404: {
-      description: 'Not found - Table or row does not exist',
+      description: 'Não encontrado - Tabela ou registro não existe',
       type: 'object',
       properties: {
-        message: {
-          type: 'string',
-          enum: ['Table not found', 'Row not found'],
-        },
+        message: { type: 'string' },
         code: { type: 'number', enum: [404] },
         cause: {
           type: 'string',
@@ -78,21 +103,27 @@ export const TableRowSendToTrashSchema: FastifySchema = {
           additionalProperties: { type: 'string' },
         },
       },
-      examples: [
-        {
-          message: 'Row not found',
-          code: 404,
-          cause: 'ROW_NOT_FOUND',
-        },
-      ],
     },
-    500: {
-      description: 'Internal server error - Database or server issues',
+    409: {
+      description: 'Conflito - Registro já está na lixeira',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string' },
+        code: { type: 'number', enum: [409] },
+        cause: { type: 'string', enum: ['ALREADY_TRASHED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    500: {
+      description: 'Erro interno do servidor',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['SEND_ROW_TO_TRASH_ERROR'] },
+        cause: { type: 'string', enum: ['SEND_ROW_TABLE_TO_TRASH_ERROR'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },

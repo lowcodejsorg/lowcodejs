@@ -1,14 +1,14 @@
 # setup/storage — Armazenamento (etapa 3)
 
-Define onde os arquivos da plataforma são gravados: filesystem local (padrão)
-ou S3-compatível. Grava `STORAGE_*` no documento Setting; no boot o backend
+Define onde os arquivos da plataforma são gravados: filesystem local (padrão) ou
+S3-compatível. Grava `STORAGE_*` no documento Setting; no boot o backend
 sincroniza esses campos para `process.env` via `syncStorageEnv()`.
 
 ## Arquivos
 
-| Arquivo          | Tipo       | Descrição                                              |
-| ---------------- | ---------- | ------------------------------------------------------ |
-| `index.tsx`      | Route      | `head` com título "Setup - Armazenamento"             |
+| Arquivo          | Tipo       | Descrição                                                 |
+| ---------------- | ---------- | --------------------------------------------------------- |
+| `index.tsx`      | Route      | `head` com título "Setup - Armazenamento"                 |
 | `index.lazy.tsx` | Componente | Toggle S3 + campos condicionais + `useSetupSubmitStorage` |
 
 ## Lógica
@@ -18,8 +18,8 @@ sincroniza esses campos para `process.env` via `syncStorageEnv()`.
   `us-east-1`), Bucket, Access Key, Secret Key. Access/Secret têm toggle de
   visibilidade (password ↔ text).
 - **Validação client-side** antes do submit: com S3 ligado, `endpoint`,
-  `bucket`, `accessKey` e `secretKey` são obrigatórios — senão `toast.error`
-  e aborta. Região cai para `us-east-1` se vazia.
+  `bucket`, `accessKey` e `secretKey` são obrigatórios — senão `toast.error` e
+  aborta. Região cai para `us-east-1` se vazia.
 
 ## Payload
 
@@ -44,6 +44,6 @@ wizard (`completed → '/'`, senão `→ /setup/${data.currentStep}`, normalment
 
 ## Gotchas
 
-- Este passo precisa rodar **antes** de `logos` (etapa 4): os logos são
-  enviados ao storage recém-configurado. Por isso o gating do wizard impede
-  acessar `logos` antes de concluir `storage`.
+- Este passo precisa rodar **antes** de `logos` (etapa 4): os logos são enviados
+  ao storage recém-configurado. Por isso o gating do wizard impede acessar
+  `logos` antes de concluir `storage`.

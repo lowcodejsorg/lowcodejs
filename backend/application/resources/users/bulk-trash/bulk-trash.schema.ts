@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const UserBulkTrashSchema: FastifySchema = {
-  tags: ['Users'],
+  tags: ['Usuários'],
   summary: 'Enviar múltiplos usuários para a lixeira',
   security: [{ cookieAuth: [] }],
   body: {

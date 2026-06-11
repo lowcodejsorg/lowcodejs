@@ -7,6 +7,8 @@ import { AuthenticationMiddleware } from '@application/middlewares/authenticatio
 import { NotificationContractRepository } from '@application/repositories/notification/notification-contract.repository';
 import NotificationMongooseRepository from '@application/repositories/notification/notification.repository';
 
+import { NotificationDeleteSchema } from './delete.schema';
+
 const ParamsValidator = z.object({ _id: z.string().trim().min(1) });
 
 @Controller({
@@ -23,6 +25,7 @@ export default class {
     url: '/:_id',
     options: {
       onRequest: [AuthenticationMiddleware({ optional: false })],
+      schema: NotificationDeleteSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

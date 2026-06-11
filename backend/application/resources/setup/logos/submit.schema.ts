@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const SetupLogosSubmitSchema: FastifySchema = {
-  tags: ['Setup'],
+  tags: ['Configuração Inicial'],
   summary: 'Configurar logos do sistema no setup wizard',
   description:
     'Define as URLs dos logos pequeno e grande. Etapa 3 do setup wizard.',
@@ -53,7 +53,7 @@ export const SetupLogosSubmitSchema: FastifySchema = {
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [401] },
-        cause: { type: 'string' },
+        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -66,7 +66,7 @@ export const SetupLogosSubmitSchema: FastifySchema = {
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [403] },
-        cause: { type: 'string' },
+        cause: { type: 'string', enum: ['FORBIDDEN'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },

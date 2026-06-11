@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const UserBulkRestoreSchema: FastifySchema = {
-  tags: ['Users'],
+  tags: ['Usuários'],
   summary: 'Restaurar múltiplos usuários da lixeira',
   security: [{ cookieAuth: [] }],
   body: {

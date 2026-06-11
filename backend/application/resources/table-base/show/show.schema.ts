@@ -2,9 +2,9 @@ import type { FastifySchema } from 'fastify';
 
 export const TableShowSchema: FastifySchema = {
   tags: ['Tables'],
-  summary: 'Get table by slug',
+  summary: 'Buscar tabela por slug',
   description:
-    'Retrieves a table by its slug with populated fields and administrators. Supports public visibility filtering.',
+    'Retorna uma tabela pelo slug com campos e administradores populados. Autenticação opcional: tabelas públicas podem ser acessadas por visitantes.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -504,33 +504,48 @@ export const TableShowSchema: FastifySchema = {
       },
     },
     400: {
-      description:
-        'Bad request - Table is not public when requesting public access',
+      description: 'Requisição inválida - Parâmetros inválidos',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Table is not public'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['TABLE_NOT_PUBLIC'] },
+        cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
         },
       },
-      examples: [
-        {
-          message: 'Table is not public',
-          code: 400,
-          cause: 'TABLE_NOT_PUBLIC',
-        },
-      ],
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autenticado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [401] },
-        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        cause: { type: 'string', enum: ['USER_NOT_AUTHENTICATED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    403: {
+      description: 'Acesso negado - Visibilidade ou permissão restringe o acesso',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [403] },
+        cause: {
+          type: 'string',
+          enum: [
+            'USER_NOT_FOUND',
+            'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
+            'TABLE_PRIVATE',
+            'FORM_VIEW_RESTRICTED',
+          ],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -538,10 +553,10 @@ export const TableShowSchema: FastifySchema = {
       },
     },
     404: {
-      description: 'Not found - Table with specified slug does not exist',
+      description: 'Tabela não encontrada',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Table not found'] },
+        message: { type: 'string', enum: ['Tabela não encontrada'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
         errors: {
@@ -549,19 +564,12 @@ export const TableShowSchema: FastifySchema = {
           additionalProperties: { type: 'string' },
         },
       },
-      examples: [
-        {
-          message: 'Table not found',
-          code: 404,
-          cause: 'TABLE_NOT_FOUND',
-        },
-      ],
     },
     500: {
-      description: 'Internal server error - Database or server issues',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['GET_TABLE_BY_SLUG_ERROR'] },
         errors: {

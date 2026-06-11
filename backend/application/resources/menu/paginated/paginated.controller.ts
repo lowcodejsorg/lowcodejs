@@ -4,6 +4,7 @@ import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
+import { MenuPaginatedSchema } from './paginated.schema';
 import MenuPaginatedUseCase from './paginated.use-case';
 import { MenuPaginatedQueryValidator } from './paginated.validator';
 
@@ -25,6 +26,7 @@ export default class {
           optional: false,
         }),
       ],
+      schema: MenuPaginatedSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

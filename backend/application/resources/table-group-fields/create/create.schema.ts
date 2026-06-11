@@ -1,10 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
 export const GroupFieldCreateSchema: FastifySchema = {
-  tags: ['Group Fields'],
-  summary: 'Create field in group',
+  tags: ['Campos de Grupo'],
+  summary: 'Criar campo no grupo',
   description:
-    'Creates a new field inside a FIELD_GROUP. The display title is stored in name, while slug is the safe technical key.',
+    'Cria um novo campo dentro de um FIELD_GROUP. O título de exibição é armazenado em name, enquanto slug é a chave técnica segura.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -12,11 +12,11 @@ export const GroupFieldCreateSchema: FastifySchema = {
     properties: {
       slug: {
         type: 'string',
-        description: 'Table slug',
+        description: 'Slug da tabela',
       },
       groupSlug: {
         type: 'string',
-        description: 'Group slug within the table',
+        description: 'Slug do grupo dentro da tabela',
       },
     },
     additionalProperties: false,
@@ -29,7 +29,7 @@ export const GroupFieldCreateSchema: FastifySchema = {
         type: 'string',
         minLength: 1,
         maxLength: 500,
-        description: 'Field display title shown to end users',
+        description: 'Título de exibição do campo mostrado aos usuários finais',
       },
       slug: {
         type: 'string',
@@ -37,7 +37,7 @@ export const GroupFieldCreateSchema: FastifySchema = {
         maxLength: 80,
         pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
         description:
-          'Safe technical field key. If omitted, the API generates it from name.',
+          'Chave técnica segura do campo. Se omitida, a API a gera a partir do name.',
       },
       type: {
         type: 'string',
@@ -51,7 +51,7 @@ export const GroupFieldCreateSchema: FastifySchema = {
           'CATEGORY',
           'USER',
         ],
-        description: 'Field type',
+        description: 'Tipo do campo',
       },
       required: { type: 'boolean', default: false },
       multiple: { type: 'boolean', default: false },
@@ -82,7 +82,7 @@ export const GroupFieldCreateSchema: FastifySchema = {
   },
   response: {
     201: {
-      description: 'Field created successfully in group',
+      description: 'Campo criado com sucesso no grupo',
       type: 'object',
       properties: {
         _id: { type: 'string' },
@@ -182,13 +182,62 @@ export const GroupFieldCreateSchema: FastifySchema = {
         updatedAt: { type: 'string', format: 'date-time' },
       },
     },
+    400: {
+      description:
+        'Requisição inválida - payload Zod inválido, parâmetros inválidos ou regra de negócio',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [400] },
+        cause: {
+          type: 'string',
+          enum: [
+            'INVALID_PAYLOAD_FORMAT',
+            'INVALID_PARAMETERS',
+            'INVALID_TABLE_SLUG',
+            'FIELD_TYPE_NOT_ALLOWED_IN_GROUP',
+            'INVALID_FIELD_SLUG',
+          ],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    401: {
+      description: 'Não autorizado - autenticação necessária',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [401] },
+        cause: {
+          type: 'string',
+          enum: ['AUTHENTICATION_REQUIRED', 'USER_NOT_AUTHENTICATED'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
     403: {
-      description: 'Forbidden - Group field is in trash',
+      description: 'Proibido - permissões insuficientes ou grupo na lixeira',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [403] },
-        cause: { type: 'string', enum: ['GROUP_IS_TRASHED'] },
+        cause: {
+          type: 'string',
+          enum: [
+            'USER_NOT_FOUND',
+            'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
+            'OWNER_OR_ADMIN_REQUIRED',
+            'GROUP_IS_TRASHED',
+          ],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -196,7 +245,7 @@ export const GroupFieldCreateSchema: FastifySchema = {
       },
     },
     404: {
-      description: 'Table or group not found',
+      description: 'Tabela ou grupo não encontrado',
       type: 'object',
       properties: {
         message: { type: 'string' },
@@ -209,12 +258,15 @@ export const GroupFieldCreateSchema: FastifySchema = {
       },
     },
     409: {
-      description: 'Field already exists in group',
+      description: 'Conflito - campo ou opção de dropdown já existe',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [409] },
-        cause: { type: 'string', enum: ['FIELD_ALREADY_EXIST'] },
+        cause: {
+          type: 'string',
+          enum: ['FIELD_ALREADY_EXIST', 'DROPDOWN_OPTION_ALREADY_EXISTS'],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -222,7 +274,7 @@ export const GroupFieldCreateSchema: FastifySchema = {
       },
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
         message: { type: 'string' },

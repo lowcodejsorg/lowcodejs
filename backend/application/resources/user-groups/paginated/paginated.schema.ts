@@ -34,12 +34,12 @@ export const UserGroupPaginatedSchema: FastifySchema = {
       'order-description': {
         type: 'string',
         enum: ['asc', 'desc'],
-        description: 'Ordenar por descricao',
+        description: 'Ordenar por descrição',
       },
       'order-created-at': {
         type: 'string',
         enum: ['asc', 'desc'],
-        description: 'Ordenar por data de criacao',
+        description: 'Ordenar por data de criação',
       },
     },
   },

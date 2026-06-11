@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const UserEmptyTrashSchema: FastifySchema = {
-  tags: ['Users'],
+  tags: ['Usuários'],
   summary: 'Esvaziar lixeira de usuários',
   security: [{ cookieAuth: [] }],
   response: {

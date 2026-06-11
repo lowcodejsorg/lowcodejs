@@ -1,10 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
 export const TableFieldShowSchema: FastifySchema = {
-  tags: ['Fields'],
-  summary: 'Get field by ID',
+  tags: ['Campos'],
+  summary: 'Obter campo por ID',
   description:
-    'Retrieves a specific field by its ID from a table. Returns complete field configuration and metadata.',
+    'Recupera um campo específico de uma tabela pelo seu ID. Retorna a configuração completa e os metadados do campo.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -12,12 +12,12 @@ export const TableFieldShowSchema: FastifySchema = {
     properties: {
       slug: {
         type: 'string',
-        description: 'Table slug containing the field',
+        description: 'Slug da tabela que contém o campo',
         examples: ['users', 'products', 'blog-posts'],
       },
       _id: {
         type: 'string',
-        description: 'Field ID to retrieve',
+        description: 'ID do campo a ser recuperado',
         examples: ['507f1f77bcf86cd799439011'],
       },
     },
@@ -25,12 +25,12 @@ export const TableFieldShowSchema: FastifySchema = {
   },
   response: {
     200: {
-      description: 'Field retrieved successfully with complete configuration',
+      description: 'Campo recuperado com sucesso, com a configuração completa',
       type: 'object',
       properties: {
-        _id: { type: 'string', description: 'Field ID' },
-        name: { type: 'string', description: 'Field name' },
-        slug: { type: 'string', description: 'Field slug' },
+        _id: { type: 'string', description: 'ID do campo' },
+        name: { type: 'string', description: 'Nome do campo' },
+        slug: { type: 'string', description: 'Slug do campo' },
         type: {
           type: 'string',
           enum: [
@@ -45,61 +45,63 @@ export const TableFieldShowSchema: FastifySchema = {
             'EVALUATION',
             'CATEGORY',
           ],
-          description: 'Field type from FIELD_TYPE enum',
+          description: 'Tipo do campo, conforme o enum FIELD_TYPE',
         },
         required: {
           type: 'boolean',
-          description: 'Field is required',
+          description: 'Campo é obrigatório',
         },
         multiple: {
           type: 'boolean',
-          description: 'Field accepts multiple values',
+          description: 'Campo permite múltiplos valores',
         },
         showInList: {
           type: 'boolean',
-          description: 'Show field in list view',
+          description: 'Exibir campo na visualização de listagem',
         },
         showInForm: {
           type: 'boolean',
-          description: 'Show field in form view',
+          description: 'Exibir campo na visualização de formulário',
         },
         showInDetail: {
           type: 'boolean',
-          description: 'Show field in detail view',
+          description: 'Exibir campo na visualização de detalhe',
         },
         showInFilter: {
           type: 'boolean',
-          description: 'Allow filtering by this field',
+          description: 'Permitir filtrar por este campo',
         },
         widthInForm: {
           type: 'number',
           nullable: true,
-          description: 'Field width in forms, integer 0-100 (%)',
+          description: 'Largura do campo em formulários, inteiro 0-100 (%)',
         },
         widthInList: {
           type: 'number',
           nullable: true,
-          description: 'Field width in list/grid views, integer 0-100 (px)',
+          description:
+            'Largura do campo em visualizações de lista/grade, inteiro 0-100 (px)',
         },
         widthInDetail: {
           type: 'number',
           nullable: true,
-          description: 'Field width in detail views, integer 0-100 (%)',
+          description:
+            'Largura do campo em visualizações de detalhe, inteiro 0-100 (%)',
         },
         tip: {
           type: 'string',
           nullable: true,
-          description: 'Optional help text shown in row forms',
+          description: 'Texto de ajuda opcional exibido nos formulários',
         },
         locked: {
           type: 'boolean',
-          description: 'Field is locked and cannot be modified',
+          description: 'Campo está bloqueado e não pode ser modificado',
         },
-        native: { type: 'boolean', description: 'Field is native' },
+        native: { type: 'boolean', description: 'Campo é nativo' },
         format: {
           type: 'string',
           nullable: true,
-          description: 'Field format',
+          description: 'Formato do campo',
         },
         defaultValue: {
           anyOf: [
@@ -107,12 +109,12 @@ export const TableFieldShowSchema: FastifySchema = {
             { type: 'array', items: { type: 'string' } },
             { type: 'null' },
           ],
-          description: 'Default field value',
+          description: 'Valor padrão do campo',
         },
         dropdown: {
           type: 'array',
           nullable: true,
-          description: 'Dropdown options',
+          description: 'Opções de seleção (dropdown)',
           items: {
             type: 'object',
             properties: {
@@ -125,17 +127,17 @@ export const TableFieldShowSchema: FastifySchema = {
         allowCustomDropdownOptions: {
           type: 'boolean',
           description:
-            'Allow users to create new dropdown options from row input',
+            'Permitir que usuários criem novas opções de seleção a partir do formulário',
         },
         allowCreateRelationshipRecords: {
           type: 'boolean',
           description:
-            'Allow users to create records in the related table from row input',
+            'Permitir que usuários criem registros na tabela relacionada a partir do formulário',
         },
         relationship: {
           type: 'object',
           nullable: true,
-          description: 'Relationship configuration',
+          description: 'Configuração de relacionamento',
           properties: {
             table: {
               type: 'object',
@@ -169,7 +171,7 @@ export const TableFieldShowSchema: FastifySchema = {
         group: {
           type: 'object',
           nullable: true,
-          description: 'Field group configuration',
+          description: 'Configuração do grupo de campos',
           properties: {
             _id: { type: 'string' },
             slug: { type: 'string' },
@@ -178,7 +180,7 @@ export const TableFieldShowSchema: FastifySchema = {
         category: {
           type: 'array',
           nullable: true,
-          description: 'Category options',
+          description: 'Opções de categoria',
           items: {
             type: 'object',
             properties: {
@@ -188,32 +190,72 @@ export const TableFieldShowSchema: FastifySchema = {
             },
           },
         },
-        trashed: { type: 'boolean', description: 'Is field in trash' },
+        trashed: { type: 'boolean', description: 'Campo está na lixeira' },
         trashedAt: {
           type: 'string',
           format: 'date-time',
           nullable: true,
-          description: 'When field was trashed',
+          description: 'Data de envio para a lixeira',
         },
         createdAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Creation timestamp',
+          description: 'Data de criação',
         },
         updatedAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Last update timestamp',
+          description: 'Data da última atualização',
+        },
+      },
+    },
+    400: {
+      description: 'Requisição inválida - Falha na validação',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [400] },
+        cause: {
+          type: 'string',
+          enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [401] },
-        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        cause: {
+          type: 'string',
+          enum: ['AUTHENTICATION_REQUIRED', 'USER_NOT_AUTHENTICATED'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    403: {
+      description: 'Acesso negado - Permissões insuficientes',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [403] },
+        cause: {
+          type: 'string',
+          enum: [
+            'USER_NOT_FOUND',
+            'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
+          ],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -221,13 +263,10 @@ export const TableFieldShowSchema: FastifySchema = {
       },
     },
     404: {
-      description: 'Not found - Table or field does not exist',
+      description: 'Tabela ou campo não encontrado',
       type: 'object',
       properties: {
-        message: {
-          type: 'string',
-          enum: ['Table not found', 'Field not found'],
-        },
+        message: { type: 'string' },
         code: { type: 'number', enum: [404] },
         cause: {
           type: 'string',
@@ -238,24 +277,12 @@ export const TableFieldShowSchema: FastifySchema = {
           additionalProperties: { type: 'string' },
         },
       },
-      examples: [
-        {
-          message: 'Table not found',
-          code: 404,
-          cause: 'TABLE_NOT_FOUND',
-        },
-        {
-          message: 'Field not found',
-          code: 404,
-          cause: 'FIELD_NOT_FOUND',
-        },
-      ],
     },
     500: {
-      description: 'Internal server error - Database or server issues',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['GET_FIELD_BY_ID_ERROR'] },
         errors: {

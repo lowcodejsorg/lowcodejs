@@ -9,6 +9,8 @@ import { NotificationContractRepository } from '@application/repositories/notifi
 import NotificationMongooseRepository from '@application/repositories/notification/notification.repository';
 import { getNotificationsNamespace } from '@application/resources/notifications/notifications.socket';
 
+import { NotificationMarkAsReadSchema } from './mark-as-read.schema';
+
 const ParamsValidator = z.object({ _id: z.string().trim().min(1) });
 
 @Controller({
@@ -25,6 +27,7 @@ export default class {
     url: '/:_id/read',
     options: {
       onRequest: [AuthenticationMiddleware({ optional: false })],
+      schema: NotificationMarkAsReadSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

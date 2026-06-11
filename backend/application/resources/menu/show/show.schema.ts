@@ -131,7 +131,7 @@ export const MenuShowSchema: FastifySchema = {
       description: 'Menu não encontrado',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Menu not found'] },
+        message: { type: 'string', enum: ['Menu não encontrado'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['MENU_NOT_FOUND'] },
         errors: {

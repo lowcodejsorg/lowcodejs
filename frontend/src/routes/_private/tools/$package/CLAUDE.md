@@ -13,15 +13,15 @@ pai).
 
 ## Arquivos
 
-| Arquivo                | Tipo       | Descrição                                                                                              |
-| ---------------------- | ---------- | ----------------------------------------------------------------------------------------------------- |
-| `$id/index.tsx`        | Loader     | `createFileRoute` com head `Ferramenta`. `loader` faz prefetch de `extensionListOptions()` (todas)     |
-| `$id/index.lazy.tsx`   | Componente | Lê params `$package`/`$id`, busca extensões e lazy-importa a entry da tool via `React.lazy`             |
+| Arquivo              | Tipo       | Descrição                                                                                          |
+| -------------------- | ---------- | -------------------------------------------------------------------------------------------------- |
+| `$id/index.tsx`      | Loader     | `createFileRoute` com head `Ferramenta`. `loader` faz prefetch de `extensionListOptions()` (todas) |
+| `$id/index.lazy.tsx` | Componente | Lê params `$package`/`$id`, busca extensões e lazy-importa a entry da tool via `React.lazy`        |
 
 ## Fluxo
 
-1. Usuário acessa `/tools/<pkg>/<id>` → loader pré-carrega `extensionListOptions()`
-   (lista completa, para validação)
+1. Usuário acessa `/tools/<pkg>/<id>` → loader pré-carrega
+   `extensionListOptions()` (lista completa, para validação)
 2. O componente lê os params (`Route.useParams()`) e
    `useSuspenseQuery(extensionListOptions())`
 3. `React.useMemo` procura a extensão por `pkg` + `extensionId` +

@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const UserSendToTrashSchema: FastifySchema = {
-  tags: ['Users'],
+  tags: ['Usuários'],
   summary: 'Enviar usuário para a lixeira (soft delete)',
   security: [{ cookieAuth: [] }],
   params: {

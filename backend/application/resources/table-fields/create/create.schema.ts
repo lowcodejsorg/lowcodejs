@@ -1,10 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
 export const TableFieldCreateSchema: FastifySchema = {
-  tags: ['Fields'],
-  summary: 'Create field',
+  tags: ['Campos'],
+  summary: 'Criar campo',
   description:
-    'Creates a new field in a table. The display title is stored in name, while slug is the safe technical key. If slug is omitted, the API generates it from name. For FIELD_GROUP type, creates a new field group.',
+    'Cria um novo campo em uma tabela. O título de exibição é armazenado em name, enquanto slug é a chave técnica segura. Se slug for omitido, a API o gera a partir de name. Para o tipo FIELD_GROUP, cria um novo grupo de campos.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -12,7 +12,7 @@ export const TableFieldCreateSchema: FastifySchema = {
     properties: {
       slug: {
         type: 'string',
-        description: 'Table slug where the field will be created',
+        description: 'Slug da tabela onde o campo será criado',
         examples: ['users', 'products', 'blog-posts'],
       },
     },
@@ -26,7 +26,7 @@ export const TableFieldCreateSchema: FastifySchema = {
         type: 'string',
         minLength: 1,
         maxLength: 500,
-        description: 'Field display title shown to end users',
+        description: 'Título de exibição do campo mostrado aos usuários finais',
         examples: [
           'Full Name',
           'Pesquise na base do USPTO e digite os resultados encontrados na busca de anterioridade (padrão). Você tem condições?',
@@ -38,7 +38,7 @@ export const TableFieldCreateSchema: FastifySchema = {
         maxLength: 80,
         pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
         description:
-          'Safe technical field key. Use only lowercase letters, numbers and hyphens. If omitted, the API suggests one from name.',
+          'Chave técnica segura do campo. Use apenas letras minúsculas, números e hífens. Se omitido, a API sugere uma a partir de name.',
         examples: ['full-name', 'nome-slug-campo'],
       },
       type: {
@@ -56,73 +56,75 @@ export const TableFieldCreateSchema: FastifySchema = {
           'CATEGORY',
           'USER',
         ],
-        description: 'Field type from FIELD_TYPE enum',
+        description: 'Tipo do campo, conforme o enum FIELD_TYPE',
       },
       required: {
         type: 'boolean',
         default: false,
-        description: 'Field is required for data entry',
+        description: 'Campo é obrigatório no preenchimento',
       },
       multiple: {
         type: 'boolean',
         default: false,
-        description: 'Field accepts multiple values',
+        description: 'Campo permite múltiplos valores',
       },
       showInFilter: {
         type: 'boolean',
         default: false,
-        description: 'Allow filtering by this field',
+        description: 'Permitir filtrar por este campo',
       },
       showInForm: {
         type: 'boolean',
         default: false,
-        description: 'Show field in create/edit forms',
+        description: 'Exibir campo nos formulários de criação/edição',
       },
       showInDetail: {
         type: 'boolean',
         default: false,
-        description: 'Show field in detail pages',
+        description: 'Exibir campo nas páginas de detalhe',
       },
       showInList: {
         type: 'boolean',
         default: false,
-        description: 'Show field in list/grid/kanban views',
+        description: 'Exibir campo nas visualizações de lista/grade/kanban',
       },
       widthInForm: {
         type: 'number',
         nullable: true,
         default: 50,
-        description: 'Field width in forms, integer 0-100 (%)',
+        description: 'Largura do campo em formulários, inteiro 0-100 (%)',
       },
       widthInList: {
         type: 'number',
         nullable: true,
         default: 10,
-        description: 'Field width in list/grid views, integer 0-100 (px)',
+        description:
+          'Largura do campo em visualizações de lista/grade, inteiro 0-100 (px)',
       },
       widthInDetail: {
         type: 'number',
         nullable: true,
         default: 50,
-        description: 'Field width in detail views, integer 0-100 (%)',
+        description:
+          'Largura do campo em visualizações de detalhe, inteiro 0-100 (%)',
       },
       tip: {
         type: 'string',
         nullable: true,
         default: null,
-        description: 'Optional help text shown in row forms',
+        description: 'Texto de ajuda opcional exibido nos formulários',
       },
       locked: {
         type: 'boolean',
         default: false,
-        description: 'Field is locked and cannot be modified',
+        description: 'Campo está bloqueado e não pode ser modificado',
       },
       format: {
         type: 'string',
         nullable: true,
         default: null,
         description:
-          'Field format (for TEXT_SHORT: ALPHA_NUMERIC, INTEGER, DECIMAL, URL, EMAIL; for DATE: various date formats)',
+          'Formato do campo (para TEXT_SHORT: ALPHA_NUMERIC, INTEGER, DECIMAL, URL, EMAIL; para DATE: diversos formatos de data)',
         examples: ['EMAIL', 'dd/MM/yyyy', 'DECIMAL'],
       },
       defaultValue: {
@@ -132,20 +134,20 @@ export const TableFieldCreateSchema: FastifySchema = {
           { type: 'null' },
         ],
         default: null,
-        description: 'Default field value',
+        description: 'Valor padrão do campo',
       },
       dropdown: {
         type: 'array',
         nullable: true,
         default: [],
-        description: 'Options for DROPDOWN type fields',
+        description: 'Opções para campos do tipo DROPDOWN',
         items: {
           type: 'object',
           required: ['id', 'label'],
           properties: {
-            id: { type: 'string', description: 'Dropdown option ID' },
-            label: { type: 'string', description: 'Dropdown option label' },
-            color: { type: 'string', description: 'Dropdown option color' },
+            id: { type: 'string', description: 'ID da opção de seleção' },
+            label: { type: 'string', description: 'Rótulo da opção de seleção' },
+            color: { type: 'string', description: 'Cor da opção de seleção' },
           },
         },
       },
@@ -153,19 +155,19 @@ export const TableFieldCreateSchema: FastifySchema = {
         type: 'boolean',
         default: false,
         description:
-          'Allow users to create new dropdown options from row input',
+          'Permitir que usuários criem novas opções de seleção a partir do formulário',
       },
       allowCreateRelationshipRecords: {
         type: 'boolean',
         default: false,
         description:
-          'Allow users to create records in the related table from row input',
+          'Permitir que usuários criem registros na tabela relacionada a partir do formulário',
       },
       relationship: {
         type: 'object',
         nullable: true,
         default: null,
-        description: 'Configuration for RELATIONSHIP type',
+        description: 'Configuração para o tipo RELATIONSHIP',
         properties: {
           table: {
             type: 'object',
@@ -173,11 +175,11 @@ export const TableFieldCreateSchema: FastifySchema = {
             properties: {
               _id: {
                 type: 'string',
-                description: 'Target table ID',
+                description: 'ID da tabela de destino',
               },
               slug: {
                 type: 'string',
-                description: 'Target table slug',
+                description: 'Slug da tabela de destino',
               },
             },
           },
@@ -185,10 +187,10 @@ export const TableFieldCreateSchema: FastifySchema = {
             type: 'object',
             required: ['_id', 'slug'],
             properties: {
-              _id: { type: 'string', description: 'Target field ID' },
+              _id: { type: 'string', description: 'ID do campo de destino' },
               slug: {
                 type: 'string',
-                description: 'Target field slug',
+                description: 'Slug do campo de destino',
               },
             },
           },
@@ -196,16 +198,18 @@ export const TableFieldCreateSchema: FastifySchema = {
             type: 'string',
             enum: ['asc', 'desc'],
             default: 'asc',
-            description: 'Sort order for relationship data',
+            description: 'Ordem de classificação dos dados do relacionamento',
           },
           customLabel: {
             type: 'boolean',
             default: false,
-            description: 'Enable composite/custom label for select options',
+            description:
+              'Habilitar rótulo composto/personalizado para as opções de seleção',
           },
           labelParts: {
             type: 'array',
-            description: 'Ordered dot-paths composing the custom label',
+            description:
+              'Caminhos (dot-paths) ordenados que compõem o rótulo personalizado',
             items: {
               type: 'object',
               required: ['path'],
@@ -218,39 +222,46 @@ export const TableFieldCreateSchema: FastifySchema = {
           labelSeparator: {
             type: 'string',
             default: ' - ',
-            description: 'Separator between label parts',
+            description: 'Separador entre as partes do rótulo',
           },
         },
       },
       group: {
         anyOf: [
           { type: 'null' },
-          { type: 'string', description: 'Group slug' },
+          { type: 'string', description: 'Slug do grupo' },
           {
             type: 'object',
             properties: {
-              _id: { type: 'string', description: 'Field group table ID' },
-              slug: { type: 'string', description: 'Field group table slug' },
+              _id: {
+                type: 'string',
+                description: 'ID da tabela do grupo de campos',
+              },
+              slug: {
+                type: 'string',
+                description: 'Slug da tabela do grupo de campos',
+              },
             },
           },
         ],
         default: null,
-        description: 'Configuration for FIELD_GROUP type (slug or object)',
+        description:
+          'Configuração para o tipo FIELD_GROUP (slug ou objeto)',
       },
       category: {
         type: 'array',
         nullable: true,
         default: [],
-        description: 'Categories for CATEGORY type',
+        description: 'Categorias para o tipo CATEGORY',
         items: {
           type: 'object',
           required: ['id', 'label'],
           properties: {
-            id: { type: 'string', description: 'Category ID' },
-            label: { type: 'string', description: 'Category label' },
+            id: { type: 'string', description: 'ID da categoria' },
+            label: { type: 'string', description: 'Rótulo da categoria' },
             children: {
               type: 'array',
-              description: 'Nested categories',
+              description: 'Categorias aninhadas',
             },
           },
         },
@@ -447,55 +458,58 @@ export const TableFieldCreateSchema: FastifySchema = {
     },
     400: {
       description:
-        'Bad request - Field already exists in table or validation error',
-      type: 'object',
-      properties: {
-        message: {
-          type: 'string',
-          enum: [
-            'Field already exist',
-            'Invalid field configuration',
-            'Required fields missing',
-          ],
-        },
-        code: { type: 'number', enum: [400] },
-        cause: {
-          type: 'string',
-          enum: ['FIELD_ALREADY_EXIST', 'INVALID_PARAMETERS'],
-        },
-        errors: {
-          type: 'object',
-          additionalProperties: { type: 'string' },
-        },
-      },
-      examples: [
-        {
-          message: 'Field already exist',
-          code: 400,
-          cause: 'FIELD_ALREADY_EXIST',
-        },
-      ],
-    },
-    401: {
-      description: 'Unauthorized - Authentication required',
-      type: 'object',
-      properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
-        code: { type: 'number', enum: [401] },
-        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
-        errors: {
-          type: 'object',
-          additionalProperties: { type: 'string' },
-        },
-      },
-    },
-    409: {
-      description: 'Conflict - Field with same slug already exists in table',
+        'Requisição inválida - Falha na validação do payload ou slug/tabela inválidos',
       type: 'object',
       properties: {
         message: { type: 'string' },
-        code: { type: 'number', enum: [409] },
-        cause: { type: 'string', enum: ['FIELD_ALREADY_EXIST'] },
+        code: { type: 'number', enum: [400] },
+        cause: {
+          type: 'string',
+          enum: [
+            'INVALID_PAYLOAD_FORMAT',
+            'INVALID_PARAMETERS',
+            'INVALID_TABLE_SLUG',
+            'INVALID_FIELD_SLUG',
+          ],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    401: {
+      description: 'Não autorizado - Autenticação necessária',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [401] },
+        cause: {
+          type: 'string',
+          enum: ['AUTHENTICATION_REQUIRED', 'USER_NOT_AUTHENTICATED'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    403: {
+      description: 'Acesso negado - Permissões insuficientes',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [403] },
+        cause: {
+          type: 'string',
+          enum: [
+            'USER_NOT_FOUND',
+            'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
+            'OWNER_OR_ADMIN_REQUIRED',
+          ],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -503,10 +517,10 @@ export const TableFieldCreateSchema: FastifySchema = {
       },
     },
     404: {
-      description: 'Not found - Table with specified slug does not exist',
+      description: 'Tabela não encontrada',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Table not found'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
         errors: {
@@ -514,19 +528,29 @@ export const TableFieldCreateSchema: FastifySchema = {
           additionalProperties: { type: 'string' },
         },
       },
-      examples: [
-        {
-          message: 'Table not found',
-          code: 404,
-          cause: 'TABLE_NOT_FOUND',
-        },
-      ],
     },
-    500: {
-      description: 'Internal server error - Database or server issues',
+    409: {
+      description:
+        'Conflito - Campo já existe ou opções de dropdown duplicadas',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string' },
+        code: { type: 'number', enum: [409] },
+        cause: {
+          type: 'string',
+          enum: ['FIELD_ALREADY_EXIST', 'DROPDOWN_OPTION_ALREADY_EXISTS'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    500: {
+      description: 'Erro interno do servidor',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['CREATE_FIELD_ERROR'] },
         errors: {

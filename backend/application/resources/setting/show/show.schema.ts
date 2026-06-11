@@ -180,7 +180,15 @@ export const SettingShowSchema: FastifySchema = {
         SETUP_CURRENT_STEP: {
           type: 'string',
           nullable: true,
-          enum: ['admin', 'name', 'logos', 'upload', 'paging', 'email'],
+          enum: [
+            'admin',
+            'name',
+            'storage',
+            'logos',
+            'upload',
+            'paging',
+            'email',
+          ],
           description: 'Etapa atual do setup wizard (null se concluído)',
         },
         STORAGE_DRIVER: {
@@ -222,31 +230,24 @@ export const SettingShowSchema: FastifySchema = {
         },
       ],
     },
-    404: {
-      description: 'Arquivo de configurações não encontrado',
+    401: {
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Arquivo não encontrado'] },
-        code: { type: 'number', enum: [404] },
-        cause: { type: 'string', enum: ['SETTINGS_FILE_NOT_FOUND'] },
+        message: { type: 'string' },
+        code: { type: 'number', enum: [401] },
+        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
         },
       },
-      examples: [
-        {
-          message: 'Arquivo não encontrado',
-          code: 404,
-          cause: 'SETTINGS_FILE_NOT_FOUND',
-        },
-      ],
     },
     500: {
       description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Erro interno do servidor'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['SETTINGS_READ_ERROR'] },
         errors: {

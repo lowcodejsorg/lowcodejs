@@ -4,21 +4,21 @@ export const SignOutSchema: FastifySchema = {
   tags: ['Autenticação'],
   summary: 'Logout do usuário',
   description:
-    'Realiza o logout do usuário atual limpando os cookies de autenticação. Requer token de acesso válido',
+    'Realiza o logout do usuário autenticado limpando os cookies de autenticação (efeito colateral). Requer access token válido',
   security: [{ cookieAuth: [] }],
   response: {
     200: {
-      description: 'Logout realizado com sucesso',
+      description: 'Logout realizado com sucesso - limpa os cookies httpOnly',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Logout realizado com sucesso'] },
+        message: { type: 'string' },
       },
     },
     401: {
-      description: 'Não autorizado - Token de acesso inválido ou ausente',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Autenticação necessária'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
         errors: {
@@ -26,13 +26,6 @@ export const SignOutSchema: FastifySchema = {
           additionalProperties: { type: 'string' },
         },
       },
-      examples: [
-        {
-          message: 'Autenticação necessária',
-          code: 401,
-          cause: 'AUTHENTICATION_REQUIRED',
-        },
-      ],
     },
   },
 };

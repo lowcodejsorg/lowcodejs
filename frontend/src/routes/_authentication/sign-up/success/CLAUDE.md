@@ -5,16 +5,16 @@ autocontida, sem formulário nem search params. Rota `/sign-up/success`.
 
 ## Rota
 
-| Rota                 | Descrição                                  |
-| -------------------- | ------------------------------------------ |
-| `/sign-up/success`   | Confirmação de conta criada com sucesso     |
+| Rota               | Descrição                               |
+| ------------------ | --------------------------------------- |
+| `/sign-up/success` | Confirmação de conta criada com sucesso |
 
 ## Arquivos
 
-| Arquivo          | Tipo       | Descrição                                                                                           |
-| ---------------- | ---------- | -------------------------------------------------------------------------------------------------- |
-| `index.tsx`      | Loader     | `createFileRoute` com head `Conta criada` (apenas metadados; sem `beforeLoad` nem loader)           |
-| `index.lazy.tsx` | Componente | Badge animado com `CheckIcon`, título "Conta criada com sucesso!", subtítulo e botão "Começar"      |
+| Arquivo          | Tipo       | Descrição                                                                                      |
+| ---------------- | ---------- | ---------------------------------------------------------------------------------------------- |
+| `index.tsx`      | Loader     | `createFileRoute` com head `Conta criada` (apenas metadados; sem `beforeLoad` nem loader)      |
+| `index.lazy.tsx` | Componente | Badge animado com `CheckIcon`, título "Conta criada com sucesso!", subtítulo e botão "Começar" |
 
 ## Fluxo
 

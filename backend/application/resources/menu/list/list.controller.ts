@@ -4,6 +4,7 @@ import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
+import { MenuListSchema } from './list.schema';
 import MenuPaginatedUseCase from './list.use-case';
 
 @Controller({
@@ -24,6 +25,7 @@ export default class {
           optional: false,
         }),
       ],
+      schema: MenuListSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

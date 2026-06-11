@@ -6,10 +6,10 @@ injetados em slots do core via `<ExtensionSlot id="...">`. A declaração canôn
 
 ## Extensões
 
-| ID                 | Slot                | Entry                          | Descrição                                                                  |
-| ------------------ | ------------------- | ------------------------------ | -------------------------------------------------------------------------- |
-| `print-table`      | `table.actions`     | `print-table/index.tsx`        | Botão na toolbar da tabela que chama `window.print()`. Plugin de referência |
-| `copy-record-link` | `table.row.actions` | `copy-record-link/index.tsx`   | Item no dropdown da linha que copia o link direto do registro              |
+| ID                 | Slot                | Entry                        | Descrição                                                                   |
+| ------------------ | ------------------- | ---------------------------- | --------------------------------------------------------------------------- |
+| `print-table`      | `table.actions`     | `print-table/index.tsx`      | Botão na toolbar da tabela que chama `window.print()`. Plugin de referência |
+| `copy-record-link` | `table.row.actions` | `copy-record-link/index.tsx` | Item no dropdown da linha que copia o link direto do registro               |
 
 ## print-table
 

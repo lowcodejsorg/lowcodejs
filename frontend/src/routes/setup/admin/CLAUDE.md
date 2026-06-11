@@ -6,10 +6,10 @@ campo vindos da API — as demais etapas só gravam configurações.
 
 ## Arquivos
 
-| Arquivo          | Tipo       | Descrição                                                        |
-| ---------------- | ---------- | ---------------------------------------------------------------- |
-| `index.tsx`      | Route      | `head` com título "Setup - Administrador"                       |
-| `index.lazy.tsx` | Componente | Formulário TanStack Form + `useSetupSubmitAdmin`                |
+| Arquivo          | Tipo       | Descrição                                        |
+| ---------------- | ---------- | ------------------------------------------------ |
+| `index.tsx`      | Route      | `head` com título "Setup - Administrador"        |
+| `index.lazy.tsx` | Componente | Formulário TanStack Form + `useSetupSubmitAdmin` |
 
 ## Validação (Zod)
 
@@ -24,13 +24,14 @@ campo vindos da API — as demais etapas só gravam configurações.
 ## Erros de Campo da API
 
 Diferente das etapas finas (que só dão `toast.error`), aqui o `onError` usa
-`handleApiError` com `onFieldErrors: (errors) => applyApiFieldErrors(form, ...)`,
-projetando erros por campo do backend (ex: email duplicado) de volta no form.
+`handleApiError` com
+`onFieldErrors: (errors) => applyApiFieldErrors(form, ...)`, projetando erros
+por campo do backend (ex: email duplicado) de volta no form.
 `useApiErrorAutoClear(form)` limpa esses erros conforme o usuário edita.
 
 ## Navegação
 
 `useSetupSubmitAdmin` faz `POST /setup/admin`. No sucesso segue o padrão do
-wizard: `data.completed → '/'`, senão `→ /setup/${data.currentStep}` (normalmente
-`name`). Toggle de visibilidade independente para senha e confirmação via
-estado local (`showPassword`, `showConfirmPassword`).
+wizard: `data.completed → '/'`, senão `→ /setup/${data.currentStep}`
+(normalmente `name`). Toggle de visibilidade independente para senha e
+confirmação via estado local (`showPassword`, `showConfirmPassword`).

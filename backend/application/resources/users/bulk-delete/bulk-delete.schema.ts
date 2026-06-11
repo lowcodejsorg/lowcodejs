@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const UserBulkDeleteSchema: FastifySchema = {
-  tags: ['Users'],
+  tags: ['Usuários'],
   summary: 'Excluir permanentemente múltiplos usuários',
   security: [{ cookieAuth: [] }],
   body: {

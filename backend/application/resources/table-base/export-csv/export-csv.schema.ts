@@ -25,24 +25,27 @@ export const TableExportCsvSchema: FastifySchema = {
   response: {
     200: { description: 'Arquivo CSV', type: 'string', format: 'binary' },
     401: {
+      description: 'Não autenticado - Autenticação necessária',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [401] },
-        cause: { type: 'string' },
+        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
         errors: { type: 'object', additionalProperties: { type: 'string' } },
       },
     },
     403: {
+      description: 'Acesso negado - Restrito a MASTER e ADMINISTRATOR',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [403] },
-        cause: { type: 'string' },
+        cause: { type: 'string', enum: ['FORBIDDEN'] },
         errors: { type: 'object', additionalProperties: { type: 'string' } },
       },
     },
     422: {
+      description: 'Resultado excede o limite de linhas para exportação',
       type: 'object',
       properties: {
         message: { type: 'string' },
@@ -52,6 +55,7 @@ export const TableExportCsvSchema: FastifySchema = {
       },
     },
     500: {
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
         message: { type: 'string' },

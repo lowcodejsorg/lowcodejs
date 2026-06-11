@@ -18,20 +18,21 @@ forms/
 
 ## Extensões
 
-| Tipo      | ID                   | Slot                                | Descrição                                                                                                |
-| --------- | -------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `plugins` | `conditional-fields` | `table.fields.manage`               | Regras por tabela que mostram/ocultam campos e grupos no formulário a partir do valor de um dropdown/categoria |
-| `plugins` | `cascade-dropdown`   | `table.field.relationship.config`   | Configura um campo RELATIONSHIP para depender de outro (seleção em cascata pai → filho)                   |
+| Tipo      | ID                   | Slot                              | Descrição                                                                                                      |
+| --------- | -------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `plugins` | `conditional-fields` | `table.fields.manage`             | Regras por tabela que mostram/ocultam campos e grupos no formulário a partir do valor de um dropdown/categoria |
+| `plugins` | `cascade-dropdown`   | `table.field.relationship.config` | Configura um campo RELATIONSHIP para depender de outro (seleção em cascata pai → filho)                        |
 
 ## conditional-fields
 
 Item de dropdown ("Configurar condicionais") que abre um `Sheet` listando as
-regras da tabela. Cada regra tem um **campo controlador** (DROPDOWN ou CATEGORY),
-um valor-gatilho e listas de campos a **mostrar**/**ocultar** — incluindo campos
-dentro de grupos. Regras são reordenáveis (move up/down) e validadas contra
-conflitos (`findConditionalRuleConflicts` de `@/lib/conditional-form-rules`):
-um campo não pode estar marcado para mostrar e ocultar ao mesmo tempo. Persiste
-em `GET/PUT /plugins/conditional-fields/tables/<slug>/config`. Só renderiza para
+regras da tabela. Cada regra tem um **campo controlador** (DROPDOWN ou
+CATEGORY), um valor-gatilho e listas de campos a **mostrar**/**ocultar** —
+incluindo campos dentro de grupos. Regras são reordenáveis (move up/down) e
+validadas contra conflitos (`findConditionalRuleConflicts` de
+`@/lib/conditional-form-rules`): um campo não pode estar marcado para mostrar e
+ocultar ao mesmo tempo. Persiste em
+`GET/PUT /plugins/conditional-fields/tables/<slug>/config`. Só renderiza para
 quem tem permissão `UPDATE_TABLE`.
 
 ## cascade-dropdown

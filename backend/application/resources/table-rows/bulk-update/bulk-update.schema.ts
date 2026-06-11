@@ -1,10 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
 export const BulkUpdateSchema: FastifySchema = {
-  tags: ['Rows'],
-  summary: 'Bulk update field values on rows',
+  tags: ['Registros'],
+  summary: 'Atualizar campos de registros em lote',
   description:
-    'Applies the same partial `data` payload to multiple rows in one request. Each row is updated through the single-row update flow (validation, password hashing, beforeSave script and mention notifications). Best-effort: rows that fail are reported in `errors` (id -> cause) and do not abort the batch.',
+    'Aplica o mesmo payload parcial `data` a múltiplos registros em uma requisição. Cada registro passa pelo fluxo de atualização individual (validação, hash de senha, script beforeSave e notificação de menções). Best-effort: registros que falham são reportados em `errors` (id -> cause) e não abortam o lote.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -12,8 +12,7 @@ export const BulkUpdateSchema: FastifySchema = {
     properties: {
       slug: {
         type: 'string',
-        description: 'Table slug containing the rows',
-        examples: ['users', 'products', 'blog-posts'],
+        description: 'Slug da tabela que contém os registros',
       },
     },
     additionalProperties: false,
@@ -27,43 +26,47 @@ export const BulkUpdateSchema: FastifySchema = {
         items: { type: 'string' },
         minItems: 1,
         maxItems: 200,
-        description: 'Array of row IDs to update',
-        examples: [['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012']],
+        description: 'IDs dos registros a atualizar',
       },
       data: {
         type: 'object',
         minProperties: 1,
         additionalProperties: true,
-        description:
-          'Partial field map applied to every row (e.g. { "status": ["in-progress"] })',
-        examples: [{ status: ['in-progress'] }],
+        description: 'Mapa parcial de campos aplicado a cada registro',
       },
     },
     additionalProperties: false,
   },
   response: {
     200: {
-      description: 'Rows updated (best-effort)',
+      description: 'Registros atualizados (best-effort)',
       type: 'object',
       properties: {
         modified: {
           type: 'number',
-          description: 'Number of rows successfully updated',
+          description: 'Quantidade de registros atualizados com sucesso',
         },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
-          description: 'Map of row id -> failure cause for rows that failed',
+          description: 'Mapa id do registro -> causa da falha',
         },
       },
     },
     400: {
-      description: 'Bad request - Invalid parameters',
+      description: 'Requisição inválida - Falha na validação',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string' },
+        cause: {
+          type: 'string',
+          enum: [
+            'INVALID_PAYLOAD_FORMAT',
+            'INVALID_PARAMETERS',
+            'TABLE_REQUIRED',
+          ],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -71,12 +74,15 @@ export const BulkUpdateSchema: FastifySchema = {
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [401] },
-        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        cause: {
+          type: 'string',
+          enum: ['AUTHENTICATION_REQUIRED', 'USER_NOT_AUTHENTICATED'],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -84,12 +90,24 @@ export const BulkUpdateSchema: FastifySchema = {
       },
     },
     403: {
-      description: 'Forbidden - Insufficient permissions',
+      description: 'Acesso negado - Permissões insuficientes',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [403] },
-        cause: { type: 'string' },
+        cause: {
+          type: 'string',
+          enum: [
+            'USER_NOT_FOUND',
+            'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
+            'OWNER_OR_ADMIN_REQUIRED',
+            'TABLE_PRIVATE',
+            'RESTRICTED_CREATE',
+            'FORM_VIEW_RESTRICTED',
+          ],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -97,10 +115,10 @@ export const BulkUpdateSchema: FastifySchema = {
       },
     },
     404: {
-      description: 'Not found - Table does not exist',
+      description: 'Tabela não encontrada',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Table not found'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
         errors: {
@@ -110,10 +128,10 @@ export const BulkUpdateSchema: FastifySchema = {
       },
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['BULK_UPDATE_ROWS_ERROR'] },
         errors: {

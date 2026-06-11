@@ -7,22 +7,23 @@ _extension_.
 
 ## Rota
 
-| Rota               | Descrição                              |
-| ------------------ | -------------------------------------- |
-| `/e/$package/$id`  | Renderiza um módulo de extensão ativo  |
+| Rota              | Descrição                             |
+| ----------------- | ------------------------------------- |
+| `/e/$package/$id` | Renderiza um módulo de extensão ativo |
 
 ## Arquivos
 
-| Arquivo                       | Tipo       | Descrição                                                                                                       |
-| ----------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------- |
-| `$package/$id/index.tsx`      | Loader     | `createFileRoute` com head `Módulo`. `loader` faz prefetch de `extensionActiveListOptions()`                    |
-| `$package/$id/index.lazy.tsx` | Componente | Resolve o módulo: lê params `$package`/`$id`, busca extensões ativas e lazy-importa a entry via `React.lazy`    |
+| Arquivo                       | Tipo       | Descrição                                                                                                    |
+| ----------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------ |
+| `$package/$id/index.tsx`      | Loader     | `createFileRoute` com head `Módulo`. `loader` faz prefetch de `extensionActiveListOptions()`                 |
+| `$package/$id/index.lazy.tsx` | Componente | Resolve o módulo: lê params `$package`/`$id`, busca extensões ativas e lazy-importa a entry via `React.lazy` |
 
 ## Fluxo
 
 1. Usuário acessa `/e/<pkg>/<id>` → loader pré-carrega a lista de extensões
    ativas
-2. O componente lê os params (`Route.useParams()`) e `useSuspenseQuery(extensionActiveListOptions())`
+2. O componente lê os params (`Route.useParams()`) e
+   `useSuspenseQuery(extensionActiveListOptions())`
 3. `React.useMemo` procura a extensão correspondente por `pkg` + `extensionId` +
    `E_EXTENSION_TYPE.MODULE`
 4. Se encontrada: `loadExtensionEntry(pkg, 'modules', id)` (de

@@ -2,9 +2,9 @@ import type { FastifySchema } from 'fastify';
 
 export const TablePaginatedSchema: FastifySchema = {
   tags: ['Tables'],
-  summary: 'List tables paginated',
+  summary: 'Listar tabelas com paginação',
   description:
-    'Get a paginated list of Tables with optional search and filtering',
+    'Retorna uma lista paginada de tabelas com busca, filtros e ordenação opcionais. Apenas tabelas do tipo TABLE são retornadas.',
   security: [{ cookieAuth: [] }],
   querystring: {
     type: 'object',
@@ -515,10 +515,10 @@ export const TablePaginatedSchema: FastifySchema = {
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autenticado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
         errors: {
@@ -526,19 +526,12 @@ export const TablePaginatedSchema: FastifySchema = {
           additionalProperties: { type: 'string' },
         },
       },
-      examples: [
-        {
-          message: 'Unauthorized',
-          code: 401,
-          cause: 'AUTHENTICATION_REQUIRED',
-        },
-      ],
     },
     500: {
-      description: 'Internal server error - Database or server issues',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: {
           type: 'string',

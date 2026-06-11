@@ -9,6 +9,8 @@ import { PDFParse } from 'pdf-parse';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
+import { ChatUploadSchema } from './chat.upload.schema';
+
 const ALLOWED_IMAGE_TYPES = new Set([
   'image/png',
   'image/jpeg',
@@ -26,6 +28,7 @@ export default class {
     url: '/chat/upload',
     options: {
       onRequest: [AuthenticationMiddleware({ optional: false })],
+      schema: ChatUploadSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

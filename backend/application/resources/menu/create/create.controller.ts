@@ -4,6 +4,7 @@ import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
+import { MenuCreateSchema } from './create.schema';
 import MenuCreateUseCase from './create.use-case';
 import { MenuCreateBodyValidator } from './create.validator';
 
@@ -23,6 +24,7 @@ export default class {
           optional: false,
         }),
       ],
+      schema: MenuCreateSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

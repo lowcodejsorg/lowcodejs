@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const UserDeleteSchema: FastifySchema = {
-  tags: ['Users'],
+  tags: ['Usuários'],
   summary: 'Excluir usuário permanentemente',
   security: [{ cookieAuth: [] }],
   params: {

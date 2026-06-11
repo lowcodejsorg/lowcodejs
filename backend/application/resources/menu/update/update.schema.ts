@@ -165,6 +165,7 @@ export const MenuUpdateSchema: FastifySchema = {
             'INVALID_PAYLOAD_FORMAT',
             'INVALID_PARAMETERS',
             'CIRCULAR_REFERENCE',
+            'EXTENSION_NOT_ACTIVE',
           ],
         },
         errors: {
@@ -193,12 +194,22 @@ export const MenuUpdateSchema: FastifySchema = {
       properties: {
         message: {
           type: 'string',
-          enum: ['Menu not found', 'Table not found', 'Parent menu not found'],
+          enum: [
+            'Menu não encontrado',
+            'Tabela não encontrada',
+            'Menu pai não encontrado',
+            'Módulo de extensão não encontrado',
+          ],
         },
         code: { type: 'number', enum: [404] },
         cause: {
           type: 'string',
-          enum: ['MENU_NOT_FOUND', 'TABLE_NOT_FOUND', 'PARENT_MENU_NOT_FOUND'],
+          enum: [
+            'MENU_NOT_FOUND',
+            'TABLE_NOT_FOUND',
+            'PARENT_MENU_NOT_FOUND',
+            'EXTENSION_NOT_FOUND',
+          ],
         },
         errors: {
           type: 'object',
@@ -207,12 +218,21 @@ export const MenuUpdateSchema: FastifySchema = {
       },
     },
     409: {
-      description: 'Conflito - Menu com este nome já existe',
+      description: 'Conflito - Menu já existe ou separador com submenus ativos',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Menu already exists'] },
+        message: {
+          type: 'string',
+          enum: [
+            'Menu já existe',
+            'Separador com submenus ativos não pode mudar de tipo',
+          ],
+        },
         code: { type: 'number', enum: [409] },
-        cause: { type: 'string', enum: ['MENU_ALREADY_EXISTS'] },
+        cause: {
+          type: 'string',
+          enum: ['MENU_ALREADY_EXISTS', 'SEPARATOR_HAS_CHILDREN'],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -223,7 +243,7 @@ export const MenuUpdateSchema: FastifySchema = {
       description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['UPDATE_MENU_ERROR'] },
         errors: {

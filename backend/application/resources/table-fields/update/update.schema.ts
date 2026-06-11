@@ -453,15 +453,21 @@ export const TableFieldUpdateSchema: FastifySchema = {
       },
     },
     400: {
-      description: 'Bad request - Validation error',
+      description:
+        'Requisição inválida - Falha na validação do payload ou slug/tabela inválidos',
       type: 'object',
       properties: {
-        message: {
-          type: 'string',
-          enum: ['Invalid field configuration', 'Required fields missing'],
-        },
+        message: { type: 'string' },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+        cause: {
+          type: 'string',
+          enum: [
+            'INVALID_PAYLOAD_FORMAT',
+            'INVALID_PARAMETERS',
+            'INVALID_TABLE_SLUG',
+            'INVALID_FIELD_SLUG',
+          ],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -469,12 +475,40 @@ export const TableFieldUpdateSchema: FastifySchema = {
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [401] },
-        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        cause: {
+          type: 'string',
+          enum: ['AUTHENTICATION_REQUIRED', 'USER_NOT_AUTHENTICATED'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    403: {
+      description:
+        'Acesso negado - Permissões insuficientes ou campo protegido',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [403] },
+        cause: {
+          type: 'string',
+          enum: [
+            'USER_NOT_FOUND',
+            'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
+            'OWNER_OR_ADMIN_REQUIRED',
+            'NATIVE_FIELD_CANNOT_BE_TRASHED',
+            'FIELD_LOCKED',
+          ],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -482,13 +516,10 @@ export const TableFieldUpdateSchema: FastifySchema = {
       },
     },
     404: {
-      description: 'Not found - Table or field does not exist',
+      description: 'Tabela ou campo não encontrado',
       type: 'object',
       properties: {
-        message: {
-          type: 'string',
-          enum: ['Table not found', 'Field not found'],
-        },
+        message: { type: 'string' },
         code: { type: 'number', enum: [404] },
         cause: {
           type: 'string',
@@ -499,45 +530,33 @@ export const TableFieldUpdateSchema: FastifySchema = {
           additionalProperties: { type: 'string' },
         },
       },
-      examples: [
-        {
-          message: 'Field not found',
-          code: 404,
-          cause: 'FIELD_NOT_FOUND',
-        },
-      ],
     },
     409: {
-      description: 'Last active field, should not be sent to trash',
+      description:
+        'Conflito - Último campo ativo, campo já existe ou opções de dropdown duplicadas',
       type: 'object',
       properties: {
-        message: {
-          type: 'string',
-          enum: ['Last active field, should not be sent to trash'],
-        },
+        message: { type: 'string' },
         code: { type: 'number', enum: [409] },
         cause: {
           type: 'string',
-          enum: ['LAST_ACTIVE_FIELD'],
+          enum: [
+            'LAST_ACTIVE_FIELD',
+            'FIELD_ALREADY_EXIST',
+            'DROPDOWN_OPTION_ALREADY_EXISTS',
+          ],
         },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
         },
       },
-      examples: [
-        {
-          message: 'Last active field, should not be sent to trash',
-          code: 409,
-          cause: 'LAST_ACTIVE_FIELD',
-        },
-      ],
     },
     500: {
-      description: 'Internal server error - Database or server issues',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: {
           type: 'string',

@@ -115,8 +115,57 @@ export const GroupFieldRemoveFromTrashSchema: FastifySchema = {
         updatedAt: { type: 'string', format: 'date-time' },
       },
     },
+    400: {
+      description: 'Requisição inválida - parâmetros inválidos',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [400] },
+        cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    401: {
+      description: 'Não autorizado - autenticação necessária',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [401] },
+        cause: {
+          type: 'string',
+          enum: ['AUTHENTICATION_REQUIRED', 'USER_NOT_AUTHENTICATED'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    403: {
+      description: 'Proibido - permissão insuficiente',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [403] },
+        cause: {
+          type: 'string',
+          enum: [
+            'USER_NOT_FOUND',
+            'USER_NOT_ACTIVE',
+            'OWNER_OR_ADMIN_REQUIRED',
+          ],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
     404: {
-      description: 'Table, group, or field not found',
+      description: 'Tabela, grupo ou campo não encontrado',
       type: 'object',
       properties: {
         message: { type: 'string' },
@@ -132,7 +181,7 @@ export const GroupFieldRemoveFromTrashSchema: FastifySchema = {
       },
     },
     409: {
-      description: 'Field is not in trash',
+      description: 'Campo não está na lixeira',
       type: 'object',
       properties: {
         message: { type: 'string' },
@@ -145,7 +194,7 @@ export const GroupFieldRemoveFromTrashSchema: FastifySchema = {
       },
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
         message: { type: 'string' },

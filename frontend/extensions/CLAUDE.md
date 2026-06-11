@@ -17,10 +17,10 @@ frontend/extensions/
 
 ## Pacotes
 
-| Pacote  | Conteúdo                                                                                       |
-| ------- | ---------------------------------------------------------------------------------------------- |
-| `core/` | Extensões oficiais (tools, plugins, módulos) — ver `core/CLAUDE.md`                            |
-| `forms/`| Extensões opcionais de configuração de formulários (cascade-dropdown, conditional-fields) — ver `forms/CLAUDE.md` |
+| Pacote   | Conteúdo                                                                                                          |
+| -------- | ----------------------------------------------------------------------------------------------------------------- |
+| `core/`  | Extensões oficiais (tools, plugins, módulos) — ver `core/CLAUDE.md`                                               |
+| `forms/` | Extensões opcionais de configuração de formulários (cascade-dropdown, conditional-fields) — ver `forms/CLAUDE.md` |
 
 O frontend descobre as extensões com `import.meta.glob`:
 

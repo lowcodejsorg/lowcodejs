@@ -1,14 +1,15 @@
 # `core/modules` (frontend)
 
 Entries React dos módulos do pacote `core`. Módulos são telas com URL própria
-(`/e/<pkg>/<id>`), montadas pela rota dinâmica `routes/_private/e/$package/$id/`.
-A declaração canônica vive em `backend/extensions/core/modules/`.
+(`/e/<pkg>/<id>`), montadas pela rota dinâmica
+`routes/_private/e/$package/$id/`. A declaração canônica vive em
+`backend/extensions/core/modules/`.
 
 ## Extensões
 
-| ID        | URL default       | Entry                       | Descrição                                                                 |
-| --------- | ----------------- | --------------------------- | ------------------------------------------------------------------------- |
-| `welcome` | `/e/core/welcome` | `welcome/index.tsx`         | Página de boas-vindas com atalhos para Tabelas, Ferramentas e Extensões   |
+| ID        | URL default       | Entry               | Descrição                                                               |
+| --------- | ----------------- | ------------------- | ----------------------------------------------------------------------- |
+| `welcome` | `/e/core/welcome` | `welcome/index.tsx` | Página de boas-vindas com atalhos para Tabelas, Ferramentas e Extensões |
 
 ## welcome
 

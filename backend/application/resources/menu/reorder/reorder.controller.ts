@@ -4,6 +4,7 @@ import { Controller, getInstanceByToken, PATCH } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
+import { MenuReorderSchema } from './reorder.schema';
 import MenuReorderUseCase from './reorder.use-case';
 import { MenuReorderBodyValidator } from './reorder.validator';
 
@@ -23,6 +24,7 @@ export default class {
           optional: false,
         }),
       ],
+      schema: MenuReorderSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
