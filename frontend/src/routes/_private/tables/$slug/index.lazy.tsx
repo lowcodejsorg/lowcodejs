@@ -300,10 +300,11 @@ function RouteComponent(): React.JSX.Element {
 
             <TableStyleViewDropdown slug={slug} />
             {canExportCsv && (
-              <ExportCsvButton
-                testId="export-table-rows-csv-btn"
-                isPending={exportCsv.isPending}
-                onClick={() =>
+              <CsvDropdown
+                testId="table-rows-csv"
+                exportPending={exportCsv.isPending}
+                onImport={() => setImportCsvOpen(true)}
+                onExport={() =>
                   exportCsv.mutate({
                     slug,
                     ...(search as Record<string, unknown>),
@@ -311,7 +312,13 @@ function RouteComponent(): React.JSX.Element {
                 }
               />
             )}
-            {canExportCsv && <ImportCsvDialog slug={slug} />}
+            {canExportCsv && (
+              <ImportCsvDialog
+                slug={slug}
+                open={importCsvOpen}
+                onOpenChange={setImportCsvOpen}
+              />
+            )}
             <TableConfigurationDropdown tableSlug={slug} />
             {aiAssistantEnabled && (
               <ChatTrigger
@@ -324,33 +331,15 @@ function RouteComponent(): React.JSX.Element {
               id="table.actions"
               context={{ table: table.data, slug }}
             />
+          </div>
+        </PageShell.Header>
 
-          <TableStyleViewDropdown slug={slug} />
-          {canExportCsv && (
-            <CsvDropdown
-              testId="table-rows-csv"
-              exportPending={exportCsv.isPending}
-              onImport={() => setImportCsvOpen(true)}
-              onExport={() =>
-                exportCsv.mutate({
-                  slug,
-                  ...(search as Record<string, unknown>),
-                })
-              }
-            />
-          )}
-          {canExportCsv && (
-            <ImportCsvDialog
-              slug={slug}
-              open={importCsvOpen}
-              onOpenChange={setImportCsvOpen}
-            />
-          )}
-          <TableConfigurationDropdown tableSlug={slug} />
-          {aiAssistantEnabled && (
-            <ChatTrigger
-              onClick={() => handleChatOpenChange(!chatOpen)}
-              isOpen={chatOpen}
+        <div className="flex-1 flex flex-row min-h-0">
+          {table.status === 'success' && filterFields.length > 0 && (
+            <FilterSidebar
+              fields={filterFields}
+              open={filterOpen}
+              onOpenChange={handleFilterOpenChange}
             />
           )}
           <PageShell.Content>

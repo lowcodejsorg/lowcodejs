@@ -753,7 +753,9 @@ describe('Import Table Use Case', () => {
       name: 'Produtos',
       slug: 'produtos',
       _schema: {},
-      fields: [{ ...baseStructure.fields[0], name: 'Nome', slug: 'nome' }],
+      fields: [
+        { ...baseStructure.fields[0], name: 'Nome', slug: 'nome' },
+      ] as unknown as string[],
       owner: 'owner-id',
       administrators: [],
       style: E_TABLE_STYLE.LIST,
