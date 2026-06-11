@@ -13,6 +13,18 @@ import type {
 export const ORDER_FIELD_SLUG = 'ordem-kanban';
 export const ORDER_FIELD_NAME = 'Ordem Kanban';
 
+// Tipos de campo cuja ordenação client-side de cards (compareRowsByField) produz
+// uma ordem significativa. Texto/número (via format) e data comparam direto pelo
+// valor; dropdown compara pelo label da opção. Os demais tipos (relationship,
+// usuário, categoria, arquivo, grupo) guardam objetos no row e não ordenam de
+// forma útil — ficam fora do select "Ordenar por".
+export const SORTABLE_FIELD_TYPES = new Set<IField['type']>([
+  E_FIELD_TYPE.TEXT_SHORT,
+  E_FIELD_TYPE.TEXT_LONG,
+  E_FIELD_TYPE.DATE,
+  E_FIELD_TYPE.DROPDOWN,
+]);
+
 export const TEMPLATE_FIELD_SLUGS = new Set([
   'titulo',
   'descricao',
@@ -189,6 +201,21 @@ export function parseOrderValue(value: unknown): number | null {
 }
 
 /**
+ * Extrai o valor escalar de um campo para ordenação client-side. Dropdown guarda
+ * o id da opção no row, então resolve o label correspondente (fallback para o id
+ * em dados legados); demais tipos usam o valor normalizado direto.
+ */
+function rowSortValue(row: IRow, field: IField): string | null {
+  const raw = normalizeRowValue(row[field.slug])[0] ?? null;
+  if (raw === null) return null;
+  if (field.type === E_FIELD_TYPE.DROPDOWN) {
+    const option = field.dropdown?.find((opt) => opt.id === raw);
+    return option?.label ?? raw;
+  }
+  return raw;
+}
+
+/**
  * Compara dois registros por um campo, para ordenação ASC/DESC de cards
  * dentro de uma lista do Kanban. Valores vazios vão sempre para o final.
  * Usa localeCompare com `numeric` para tratar números e datas ISO.
@@ -196,11 +223,11 @@ export function parseOrderValue(value: unknown): number | null {
 export function compareRowsByField(
   a: IRow,
   b: IRow,
-  fieldSlug: string,
+  field: IField,
   direction: 'asc' | 'desc',
 ): number {
-  const aValue = normalizeRowValue(a[fieldSlug])[0] ?? null;
-  const bValue = normalizeRowValue(b[fieldSlug])[0] ?? null;
+  const aValue = rowSortValue(a, field);
+  const bValue = rowSortValue(b, field);
   if (aValue === null && bValue === null) return 0;
   if (aValue === null) return 1;
   if (bValue === null) return -1;
@@ -208,7 +235,8 @@ export function compareRowsByField(
     numeric: true,
     sensitivity: 'base',
   });
-  return direction === 'desc' ? -comparison : comparison;
+  if (direction === 'desc') return -comparison;
+  return comparison;
 }
 
 export function columnStyleFromColor(

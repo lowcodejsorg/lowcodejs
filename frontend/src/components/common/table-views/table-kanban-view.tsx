@@ -39,6 +39,7 @@ import type { IField, IRow, ITable } from '@/lib/interfaces';
 import {
   ORDER_FIELD_NAME,
   ORDER_FIELD_SLUG,
+  SORTABLE_FIELD_TYPES,
   TEMPLATE_FIELD_SLUGS,
   buildListFieldPayload,
   compareRowsByField,
@@ -172,7 +173,9 @@ export function TableKanbanView({
       activeFields
         .filter(
           (field) =>
-            field.slug !== ORDER_FIELD_SLUG && field.slug !== fields.list?.slug,
+            field.slug !== ORDER_FIELD_SLUG &&
+            field.slug !== fields.list?.slug &&
+            SORTABLE_FIELD_TYPES.has(field.type),
         )
         .map((field) => ({ label: field.name, value: field.slug })),
     [activeFields, fields.list?.slug],
@@ -362,14 +365,20 @@ export function TableKanbanView({
 
     Object.keys(byStatus).forEach((key) => {
       const option = optionById.get(key);
-      // Ordenação por campo configurada na lista tem prioridade sobre a
-      // ordem manual de drag-drop.
-      if (option?.sortField) {
-        const direction = option.sortDirection === 'desc' ? 'desc' : 'asc';
-        byStatus[key].sort((a, b) =>
-          compareRowsByField(a, b, option.sortField as string, direction),
-        );
-        return;
+      const sortField = option?.sortField;
+      // Ordenação por campo configurada na lista tem prioridade sobre a ordem
+      // manual de drag-drop. Se o campo configurado foi removido, cai na ordem
+      // manual.
+      if (sortField) {
+        const field = getFieldBySlug(activeFields, sortField);
+        if (field) {
+          let direction: 'asc' | 'desc' = 'asc';
+          if (option?.sortDirection === 'desc') direction = 'desc';
+          byStatus[key].sort((a, b) =>
+            compareRowsByField(a, b, field, direction),
+          );
+          return;
+        }
       }
       sortByManualOrder(byStatus[key]);
     });
@@ -378,7 +387,13 @@ export function TableKanbanView({
       byStatus,
       unassigned,
     };
-  }, [fields.list, orderedListOptions, orderFieldSlug, rowsState]);
+  }, [
+    activeFields,
+    fields.list,
+    orderedListOptions,
+    orderFieldSlug,
+    rowsState,
+  ]);
 
   React.useEffect(() => {
     if (!activeRowId) return;

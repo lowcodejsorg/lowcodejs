@@ -1,6 +1,10 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVerticalIcon } from 'lucide-react';
+import {
+  ArrowDownWideNarrowIcon,
+  ArrowUpNarrowWideIcon,
+  GripVerticalIcon,
+} from 'lucide-react';
 import React from 'react';
 
 import {
@@ -120,6 +124,13 @@ export function KanbanColumn({
     setIsEditing(false);
   }
 
+  // Hint de ordenação automática: quando a lista tem campo de ordenação, a ordem
+  // manual de drag-drop é ignorada — sinaliza isso no header.
+  const sortLabel = sortFieldOptions.find(
+    (field) => field.value === option.sortField,
+  )?.label;
+  const hasSort = Boolean(option.sortField) && Boolean(sortLabel);
+
   return (
     <section
       data-slot="kanban-column"
@@ -152,10 +163,21 @@ export function KanbanColumn({
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="text-base font-semibold cursor-pointer text-left"
+                className="flex flex-col items-start text-left cursor-pointer"
                 title="Configurar lista"
               >
-                {option.label}
+                <span className="text-base font-semibold">{option.label}</span>
+                {hasSort && (
+                  <span className="flex items-center gap-1 text-[10px] font-normal text-muted-foreground">
+                    {option.sortDirection === 'desc' && (
+                      <ArrowDownWideNarrowIcon className="size-3" />
+                    )}
+                    {option.sortDirection !== 'desc' && (
+                      <ArrowUpNarrowWideIcon className="size-3" />
+                    )}
+                    {sortLabel}
+                  </span>
+                )}
               </button>
             </PopoverTrigger>
             <PopoverContent
