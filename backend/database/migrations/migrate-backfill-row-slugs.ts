@@ -17,8 +17,10 @@
  * rowSlugFieldId já setado, pula registros na lixeira e registros sem valor no
  * campo). Markers no Setting evitam o full-scan em todo boot:
  *   MIGRATION_ROW_SLUG_BACKFILL_AT
- *   MIGRATION_ROW_SLUG_BACKFILL_FALLBACK_AT  (re-roda 1x em installs que rodaram
- *                                            a versão antiga, aplicando o fallback)
+ *   MIGRATION_ROW_SLUG_BACKFILL_FALLBACK_AT   (re-roda 1x aplicando o fallback)
+ *   MIGRATION_ROW_SLUG_BACKFILL_UNIVERSAL_AT  (re-roda 1x re-aplicando o backfill
+ *                                             universal após o heal por estilo ter
+ *                                             removido slugs de DOCUMENT/FORUM/etc.)
  *
  * Re-rodar é seguro e necessário quando um MASTER ativa o campo de slug numa
  * tabela JÁ populada depois do primeiro backfill — use `--force`.
@@ -49,6 +51,7 @@ const FORCE = process.argv.includes('--force');
 type SettingMarkerDoc = {
   MIGRATION_ROW_SLUG_BACKFILL_AT?: Date | null;
   MIGRATION_ROW_SLUG_BACKFILL_FALLBACK_AT?: Date | null;
+  MIGRATION_ROW_SLUG_BACKFILL_UNIVERSAL_AT?: Date | null;
 };
 
 type MigrationStats = {
@@ -174,6 +177,7 @@ async function migrate(): Promise<void> {
     {
       MIGRATION_ROW_SLUG_BACKFILL_AT: { type: Date, default: null },
       MIGRATION_ROW_SLUG_BACKFILL_FALLBACK_AT: { type: Date, default: null },
+      MIGRATION_ROW_SLUG_BACKFILL_UNIVERSAL_AT: { type: Date, default: null },
     },
     { strict: false, collection: 'settings' },
   );
@@ -187,7 +191,8 @@ async function migrate(): Promise<void> {
   try {
     const alreadyDone =
       setting?.MIGRATION_ROW_SLUG_BACKFILL_AT &&
-      setting?.MIGRATION_ROW_SLUG_BACKFILL_FALLBACK_AT;
+      setting?.MIGRATION_ROW_SLUG_BACKFILL_FALLBACK_AT &&
+      setting?.MIGRATION_ROW_SLUG_BACKFILL_UNIVERSAL_AT;
 
     if (alreadyDone && !FORCE) {
       console.info(
@@ -258,12 +263,13 @@ async function migrate(): Promise<void> {
         $set: {
           MIGRATION_ROW_SLUG_BACKFILL_AT: now,
           MIGRATION_ROW_SLUG_BACKFILL_FALLBACK_AT: now,
+          MIGRATION_ROW_SLUG_BACKFILL_UNIVERSAL_AT: now,
         },
       },
       { upsert: true, setDefaultsOnInsert: true },
     );
     console.info(
-      'Markers MIGRATION_ROW_SLUG_BACKFILL_AT + _FALLBACK_AT recorded.',
+      'Markers MIGRATION_ROW_SLUG_BACKFILL_AT + _FALLBACK_AT + _UNIVERSAL_AT recorded.',
     );
   } finally {
     await systemConn.close();
