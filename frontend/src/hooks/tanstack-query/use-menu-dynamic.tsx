@@ -97,7 +97,7 @@ function convertMenuToItem(menu: MenuWithChildren): MenuItem | null {
         title: menu.name,
         icon: Icon,
         iconUrl,
-        url: menu.url as LinkProps['to'],
+        url: menu.url,
         type: menu.type,
         items: childItems,
       };
@@ -108,7 +108,7 @@ function convertMenuToItem(menu: MenuWithChildren): MenuItem | null {
       title: menu.name,
       icon: Icon,
       iconUrl,
-      url: menu.url as LinkProps['to'],
+      url: menu.url,
       type: menu.type,
     };
   }
@@ -191,7 +191,7 @@ function buildToolItems(extensions: Array<IActiveExtension>): Array<MenuItem> {
     .map<MenuItem>((extension) => ({
       title: extension.name,
       icon: resolveLucideIcon(extension.icon),
-      url: `/tools/${extension.pkg}/${extension.extensionId}` as LinkProps['to'],
+      url: `/tools/${extension.pkg}/${extension.extensionId}`,
     }));
 }
 
