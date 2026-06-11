@@ -15,12 +15,17 @@
  */
 
 import type {
+  E_EXTENSION_TYPE,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
   E_JWT_TYPE,
+  E_LOGGER_ACTION_TYPE,
+  E_LOGGER_OBJECT_TYPE,
   E_MENU_ITEM_TYPE,
+  E_NOTIFICATION_TYPE,
   E_REACTION_TYPE,
   E_ROLE,
+  E_ROW_STATUS,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
@@ -100,6 +105,35 @@ export type IUser = Merge<
     password: string;
     status: ValueOf<typeof E_USER_STATUS>;
     group: IGroup;
+    notificationsEnabled: boolean;
+  }
+>;
+
+export type INotificationAction = {
+  type: 'route' | 'url';
+  href: string;
+  label?: string | null;
+} | null;
+
+export type INotificationSource = {
+  pkg?: string | null;
+  tableSlug?: string | null;
+  rowId?: string | null;
+  anchorId?: string | null;
+} | null;
+
+export type INotification = Merge<
+  Base,
+  {
+    userId: string;
+    type: ValueOf<typeof E_NOTIFICATION_TYPE>;
+    title: string;
+    body: string | null;
+    action: INotificationAction;
+    source: INotificationSource;
+    actorUserId: string | null;
+    read: boolean;
+    readAt: string | null;
   }
 >;
 
@@ -119,6 +153,11 @@ export type IJWTPayload = {
   type: ValueOf<typeof E_JWT_TYPE>;
 };
 
+export type IMenuExtensionRef = {
+  pkg: string;
+  extensionId: string;
+};
+
 export type IMenu = Merge<
   Base,
   {
@@ -129,8 +168,12 @@ export type IMenu = Merge<
     parent: IMenu | null;
     url: string | null;
     html: string | null;
+    icon: string | null;
     owner: IUser | null;
     order: number;
+    isInitial: boolean;
+    extension: IMenuExtensionRef | null;
+    children?: Array<IMenu>;
   }
 >;
 
@@ -146,13 +189,33 @@ export type IDropdown = {
   color: string | null;
 };
 
+export type IRelationshipLabelPart = {
+  /**
+   * Caminho separado por pontos, relativo à tabela relacionada.
+   * Ex: "nome", "categoria.nome", "fornecedor.cidade.uf".
+   */
+  path: string;
+  /** Rótulo amigável do caminho (para exibição na UI de configuração). */
+  label?: string;
+};
+
 export type IFieldConfigurationRelationship = {
   table: Pick<ITable, '_id' | 'slug'>;
   field: Pick<IField, '_id' | 'slug'>;
   order: 'asc' | 'desc';
+  /**
+   * Quando true, o label das opções é composto por `labelParts` + `labelSeparator`.
+   * Quando false/ausente, mantém o comportamento legado (label = `field.slug`).
+   */
+  customLabel?: boolean;
+  /** Lista ordenada de caminhos que compõem o label customizado. */
+  labelParts?: Array<IRelationshipLabelPart>;
+  /** Separador usado entre os `labelParts`. Default: " - ". */
+  labelSeparator?: string;
 };
 
 export type IFieldConfigurationGroup = {
+  _id?: string;
   slug: string;
   fields?: Array<IField>;
 };
@@ -173,11 +236,14 @@ export type IField = Merge<
     widthInForm: number | null;
     widthInList: number | null;
     widthInDetail: number | null;
+    tip?: string | null;
     defaultValue: string | Array<string> | null;
     locked?: boolean;
     native?: boolean;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: Array<IDropdown>;
+    allowCustomDropdownOptions?: boolean;
+    allowCreateRelationshipRecords?: boolean;
     category: Array<ICategory>;
     group: IFieldConfigurationGroup | null;
   }
@@ -189,6 +255,7 @@ export type IFilterField = Pick<
 > & {
   dropdown?: Array<IDropdown>;
   category?: Array<ICategory>;
+  relationship?: IFieldConfigurationRelationship | null;
 };
 
 export type ISchema = {
@@ -201,6 +268,7 @@ export type ISchema = {
 export type ITableSchema = Record<string, ISchema | Array<ISchema>>;
 
 export type IGroupConfiguration = {
+  _id?: string;
   slug: string;
   name: string;
   fields: Array<IField>;
@@ -248,11 +316,13 @@ export type ITable = Merge<
     groups: Array<IGroupConfiguration>;
     order: { field: string; direction: 'asc' | 'desc' } | null;
     layoutFields: ILayoutFields;
+    rowSlugFieldId: string | null;
   }
 >;
 
 export type ISetting = {
   SYSTEM_NAME: string;
+  SYSTEM_DESCRIPTION: string;
   LOCALE: string;
   STORAGE_DRIVER: 'local' | 's3';
   STORAGE_ENDPOINT?: string;
@@ -262,6 +332,9 @@ export type ISetting = {
   STORAGE_SECRET_KEY?: string;
   LOGO_SMALL_URL: string | null;
   LOGO_LARGE_URL: string | null;
+  LOGO_SMALL_DARK_URL: string | null;
+  LOGO_LARGE_DARK_URL: string | null;
+  LOGIN_BACKGROUND_URL: string | null;
   FILE_UPLOAD_MAX_SIZE: number;
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
   FILE_UPLOAD_ACCEPTED: Array<string>;
@@ -275,6 +348,33 @@ export type ISetting = {
   EMAIL_PROVIDER_FROM: string | null;
   OPENAI_API_KEY: string;
   AI_ASSISTANT_ENABLED: boolean;
+  CHAT_HISTORY_ENABLED: boolean;
+  MCP_SERVER_URL: string | null;
+  MCP_SERVER_TOKEN: string | null;
+  MCP_LOWCODE_API_URL: string | null;
+  OPENAI_MODEL: string;
+  AI_LLM_PROVIDER: string;
+  LLM_API_KEY: string | null;
+  LLM_MODEL: string;
+  LLM_BASE_URL: string | null;
+  SETUP_COMPLETED: boolean;
+  SETUP_CURRENT_STEP: string | null;
+};
+
+export type SetupStep =
+  | 'admin'
+  | 'name'
+  | 'storage'
+  | 'logos'
+  | 'upload'
+  | 'paging'
+  | 'email';
+
+export type ISetupStatus = {
+  completed: boolean;
+  currentStep: SetupStep | null;
+  hasAdmin: boolean;
+  steps: ReadonlyArray<SetupStep>;
 };
 
 // type RowResponseValue =
@@ -288,9 +388,12 @@ export type ISetting = {
 // | Array<Record<string, RowResponseValue>>;
 
 export type IRow = Merge<
-  Base,
+  Omit<Base, 'trashed'>,
   {
     creator: IUser;
+    status?: ValueOf<typeof E_ROW_STATUS>;
+    draftAt?: string | null;
+    sharedRowSlug?: string | null;
     [x: string]: any;
   }
 >;
@@ -365,8 +468,67 @@ export type IHTTPException = {
 
 export type IHTTPExeptionError<T> = Merge<IHTTPException, { errors: T }>;
 
+export type IExtensionTableScope = {
+  mode: 'all' | 'specific';
+  tableIds: Array<string>;
+};
+
+export type IExtensionRequires = {
+  lowcodejs?: string;
+  extensions?: Array<string>;
+};
+
+export type IExtensionPermissions = {
+  view: Array<string>;
+};
+
+export type IExtension = Merge<
+  Base,
+  {
+    pkg: string;
+    type: ValueOf<typeof E_EXTENSION_TYPE>;
+    extensionId: string;
+    name: string;
+    description: string | null;
+    version: string;
+    author: string | null;
+    icon: string | null;
+    image: string | null;
+    slots: Array<string>;
+    route: string | null;
+    configRoute: string | null;
+    submenu: string | null;
+    enabled: boolean;
+    available: boolean;
+    tableScope: IExtensionTableScope;
+    manifestSnapshot: Record<string, unknown>;
+    requires: IExtensionRequires;
+    permissions: IExtensionPermissions;
+  }
+>;
+
+export type ILoggerUserRef = Pick<IUser, '_id' | 'name' | 'email'>;
+
+export type ILogger = Merge<
+  Base,
+  {
+    url: string;
+    user: ILoggerUserRef | null;
+    action: ValueOf<typeof E_LOGGER_ACTION_TYPE>;
+    object: ValueOf<typeof E_LOGGER_OBJECT_TYPE> | null;
+    object_id: string | null;
+    content: Record<string, unknown> | null;
+  }
+>;
+
 export interface ICloneTableResponse {
   tableId: string;
   slug: string;
+  tables?: Array<{
+    tableId: string;
+    slug: string;
+    name: string;
+  }>;
   fieldIdMap: Record<string, string>;
+  fieldIdMaps?: Record<string, Record<string, string>>;
 }

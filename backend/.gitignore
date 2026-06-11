@@ -12,6 +12,8 @@
 **/coverage/
 **/.DS_Store
 **/logs
+!application/resources/logs
+!application/resources/logs/**
 **/.env
 
 **/coverage

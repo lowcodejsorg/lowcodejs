@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 

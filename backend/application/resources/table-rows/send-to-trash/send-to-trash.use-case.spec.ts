@@ -55,7 +55,7 @@ describe('Table Row Send To Trash Use Case', () => {
     expect(result.isRight()).toBe(true);
 
     if (result.isRight()) {
-      expect(result.value.trashed).toBe(true);
+      expect(result.value.trashedAt).not.toBeNull();
     }
   });
 
@@ -98,7 +98,7 @@ describe('Table Row Send To Trash Use Case', () => {
     await rowInMemoryRepository.update({
       table,
       _id: row._id,
-      data: { trashed: true, trashedAt: new Date() },
+      data: { trashedAt: new Date() },
     });
 
     const result = await sut.execute({

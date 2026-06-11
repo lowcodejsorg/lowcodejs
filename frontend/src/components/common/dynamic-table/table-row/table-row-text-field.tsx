@@ -1,10 +1,11 @@
 import { HashIcon, LinkIcon, MailIcon, TextIcon } from 'lucide-react';
 import React from 'react';
 
+import { TableRowFieldLabel } from './table-row-field-label';
 import { TableRowMaskedTextField } from './table-row-masked-text-field';
 import { TableRowPasswordField } from './table-row-password-field';
 
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Field, FieldError } from '@/components/ui/field';
 import {
   InputGroup,
   InputGroupAddon,
@@ -47,7 +48,6 @@ function TableRowTextFieldDefault({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const isRequired = field.required;
 
   const inputType = getInputTypeForFormat(field.format);
   const inputMode = getInputModeForFormat(field.format);
@@ -94,10 +94,10 @@ function TableRowTextFieldDefault({
       data-test-id="table-row-text-input"
       data-invalid={isInvalid}
     >
-      <FieldLabel htmlFor={formField.name}>
-        {field.name}
-        {isRequired && <span className="text-destructive"> *</span>}
-      </FieldLabel>
+      <TableRowFieldLabel
+        field={field}
+        htmlFor={formField.name}
+      />
       <InputGroup data-disabled={disabled}>
         <InputGroupInput
           data-test-id="table-row-text-input"
@@ -114,7 +114,7 @@ function TableRowTextFieldDefault({
           onChange={(e) => formField.handleChange(e.target.value)}
           onKeyDown={handleKeyDown}
           aria-invalid={isInvalid}
-          aria-required={isRequired || undefined}
+          aria-required={field.required || undefined}
           aria-describedby={ariaDescribedBy}
         />
         <InputGroupAddon>{getFormatIcon(field.format)}</InputGroupAddon>

@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, PUT } from 'fastify-decorators';
 
@@ -42,7 +41,7 @@ export default class {
     const params = TableUpdateParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute({
-      ...params,
+      routeSlug: params.slug,
       ...payload,
     });
 

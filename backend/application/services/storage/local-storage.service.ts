@@ -1,17 +1,22 @@
+/* eslint-disable no-unused-vars */
 import type { MultipartFile } from '@fastify/multipart';
 import { Service } from 'fastify-decorators';
-import { existsSync } from 'node:fs';
-import { access, mkdir, unlink, writeFile } from 'node:fs/promises';
+import { createReadStream, existsSync } from 'node:fs';
+import { access, mkdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { getLocalStoragePath } from '@config/storage.config';
 
 import { processFile } from './process-file';
-import type { StorageUploadResponse } from './storage-contract.service';
+import type {
+  StorageReadResponse,
+  StorageUploadResponse,
+  StorageWriteRawResponse,
+} from './storage-contract.service';
 import { StorageContractService } from './storage-contract.service';
 
 @Service()
-export default class LocalStorageService extends StorageContractService {
+export default class LocalStorageService implements StorageContractService {
   async ensureBucket(): Promise<void> {
     const storagePath = getLocalStoragePath();
     if (!existsSync(storagePath)) {
@@ -54,5 +59,28 @@ export default class LocalStorageService extends StorageContractService {
     } catch {
       return false;
     }
+  }
+
+  async read(filename: string): Promise<StorageReadResponse> {
+    const path = join(getLocalStoragePath(), filename);
+    const stats = await stat(path);
+    return {
+      stream: createReadStream(path),
+      size: stats.size,
+      mimetype: 'application/octet-stream',
+    };
+  }
+
+  async writeRaw(
+    filename: string,
+    body: Buffer,
+
+    _mimetype: string,
+  ): Promise<StorageWriteRawResponse> {
+    await this.ensureBucket();
+    const path = join(getLocalStoragePath(), filename);
+    await writeFile(path, body);
+    const stats = await stat(path);
+    return { size: stats.size };
   }
 }

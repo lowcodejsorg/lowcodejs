@@ -39,6 +39,14 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
+import {
+  AI_LLM_PROVIDER_OPTIONS,
+  LLM_MODEL_OPTIONS,
+  providerRequiresApiKey,
+  providerShowsBaseUrl,
+} from '@/lib/ai-llm-providers';
+import type { AiLlmProvider } from '@/lib/ai-llm-providers';
+import { E_AI_LLM_PROVIDER } from '@/lib/constant';
 import type { ISetting, IStorage, Merge } from '@/lib/interfaces';
 
 // Schema com campos de UI (logoSmallFile/logoLargeFile são para upload no frontend)
@@ -47,6 +55,9 @@ export const SettingUpdateSchema = z.object({
     .string()
     .min(1, 'O nome do sistema é obrigatório')
     .max(100, 'O nome do sistema deve ter no máximo 100 caracteres'),
+  SYSTEM_DESCRIPTION: z
+    .string()
+    .max(200, 'A descrição do sistema deve ter no máximo 200 caracteres'),
   LOCALE: z.string().min(1, 'O idioma é obrigatório'),
   STORAGE_DRIVER: z.enum(['local', 's3']),
   STORAGE_ENDPOINT: z.string(),
@@ -54,12 +65,11 @@ export const SettingUpdateSchema = z.object({
   STORAGE_BUCKET: z.string(),
   STORAGE_ACCESS_KEY: z.string(),
   STORAGE_SECRET_KEY: z.string(),
-  LOGO_SMALL_URL: z
-    .string({ message: 'A URL do logo pequeno é obrigatória' })
-    .min(1, 'A URL do logo pequeno é obrigatória'),
-  LOGO_LARGE_URL: z
-    .string({ message: 'A URL do logo grande é obrigatória' })
-    .min(1, 'A URL do logo grande é obrigatória'),
+  LOGO_SMALL_URL: z.string().nullable(),
+  LOGO_LARGE_URL: z.string().nullable(),
+  LOGO_SMALL_DARK_URL: z.string().nullable(),
+  LOGO_LARGE_DARK_URL: z.string().nullable(),
+  LOGIN_BACKGROUND_URL: z.string().nullable(),
   FILE_UPLOAD_MAX_SIZE: z
     .string()
     .min(1, 'O tamanho máximo de arquivo é obrigatório'),
@@ -70,24 +80,35 @@ export const SettingUpdateSchema = z.object({
     .string()
     .min(1, 'As extensões aceitas são obrigatórias'),
   PAGINATION_PER_PAGE: z.string().min(1, 'A paginação é obrigatória'),
-  MODEL_CLONE_TABLES: z
-    .array(z.string())
-    .min(1, 'Selecione ao menos um modelo de tabela'),
-  EMAIL_PROVIDER_HOST: z.string().min(1, 'O host SMTP é obrigatório'),
-  EMAIL_PROVIDER_PORT: z.string().min(1, 'A porta SMTP é obrigatória'),
-  EMAIL_PROVIDER_USER: z.string().min(1, 'O usuário SMTP é obrigatório'),
-  EMAIL_PROVIDER_PASSWORD: z.string().min(1, 'A senha SMTP é obrigatória'),
-  EMAIL_PROVIDER_FROM: z.string().min(1, 'O remetente (FROM) é obrigatório'),
+  MODEL_CLONE_TABLES: z.array(z.string()),
+  EMAIL_PROVIDER_HOST: z.string(),
+  EMAIL_PROVIDER_PORT: z.string(),
+  EMAIL_PROVIDER_USER: z.string(),
+  EMAIL_PROVIDER_PASSWORD: z.string(),
+  EMAIL_PROVIDER_FROM: z.string(),
   OPENAI_API_KEY: z.string(),
   AI_ASSISTANT_ENABLED: z.boolean(),
+  CHAT_HISTORY_ENABLED: z.boolean(),
+  MCP_SERVER_URL: z.string(),
+  MCP_SERVER_TOKEN: z.string(),
+  MCP_LOWCODE_API_URL: z.string(),
+  OPENAI_MODEL: z.string(),
+  AI_LLM_PROVIDER: z.string(),
+  LLM_API_KEY: z.string(),
+  LLM_MODEL: z.string(),
+  LLM_BASE_URL: z.string(),
   logoSmallFile: z.array(z.instanceof(File)),
   logoLargeFile: z.array(z.instanceof(File)),
+  logoSmallDarkFile: z.array(z.instanceof(File)),
+  logoLargeDarkFile: z.array(z.instanceof(File)),
+  loginBackgroundFile: z.array(z.instanceof(File)),
 });
 
 // Form usa string para números (inputs), payload usa number
 export type SettingUpdateFormValues = Merge<
   {
     SYSTEM_NAME: string;
+    SYSTEM_DESCRIPTION: string;
     LOCALE: string;
     STORAGE_DRIVER: 'local' | 's3';
     STORAGE_ENDPOINT: string;
@@ -97,6 +118,9 @@ export type SettingUpdateFormValues = Merge<
     STORAGE_SECRET_KEY: string;
     LOGO_SMALL_URL: string | null;
     LOGO_LARGE_URL: string | null;
+    LOGO_SMALL_DARK_URL: string | null;
+    LOGO_LARGE_DARK_URL: string | null;
+    LOGIN_BACKGROUND_URL: string | null;
     FILE_UPLOAD_MAX_SIZE: string;
     FILE_UPLOAD_MAX_FILES_PER_UPLOAD: string;
     FILE_UPLOAD_ACCEPTED: string;
@@ -109,12 +133,28 @@ export type SettingUpdateFormValues = Merge<
     EMAIL_PROVIDER_FROM: string;
     OPENAI_API_KEY: string;
     AI_ASSISTANT_ENABLED: boolean;
+    CHAT_HISTORY_ENABLED: boolean;
+    MCP_SERVER_URL: string;
+    MCP_SERVER_TOKEN: string;
+    MCP_LOWCODE_API_URL: string;
+    OPENAI_MODEL: string;
+    AI_LLM_PROVIDER: string;
+    LLM_API_KEY: string;
+    LLM_MODEL: string;
+    LLM_BASE_URL: string;
   },
-  { logoSmallFile: Array<File>; logoLargeFile: Array<File> }
+  {
+    logoSmallFile: Array<File>;
+    logoLargeFile: Array<File>;
+    logoSmallDarkFile: Array<File>;
+    logoLargeDarkFile: Array<File>;
+    loginBackgroundFile: Array<File>;
+  }
 >;
 
 export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   SYSTEM_NAME: 'LowCodeJs',
+  SYSTEM_DESCRIPTION: 'Plataforma Oficial',
   LOCALE: 'pt-br',
   STORAGE_DRIVER: 'local',
   STORAGE_ENDPOINT: '',
@@ -124,6 +164,9 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   STORAGE_SECRET_KEY: '',
   LOGO_SMALL_URL: null,
   LOGO_LARGE_URL: null,
+  LOGO_SMALL_DARK_URL: null,
+  LOGO_LARGE_DARK_URL: null,
+  LOGIN_BACKGROUND_URL: null,
   FILE_UPLOAD_MAX_SIZE: '10485760',
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: '5',
   FILE_UPLOAD_ACCEPTED: 'pdf;csv;png;jpeg;jpg;webp',
@@ -136,8 +179,20 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   EMAIL_PROVIDER_FROM: '',
   OPENAI_API_KEY: '',
   AI_ASSISTANT_ENABLED: false,
+  CHAT_HISTORY_ENABLED: false,
+  MCP_SERVER_URL: '',
+  MCP_SERVER_TOKEN: '',
+  MCP_LOWCODE_API_URL: '',
+  OPENAI_MODEL: 'gpt-4.1-nano',
+  AI_LLM_PROVIDER: 'openai',
+  LLM_API_KEY: '',
+  LLM_MODEL: 'gpt-4.1-nano',
+  LLM_BASE_URL: 'http://127.0.0.1:11434/v1',
   logoSmallFile: [],
   logoLargeFile: [],
+  logoSmallDarkFile: [],
+  logoLargeDarkFile: [],
+  loginBackgroundFile: [],
 };
 
 export const UpdateSettingFormFields = withForm({
@@ -153,7 +208,8 @@ export const UpdateSettingFormFields = withForm({
     const [show, setShow] = React.useState({
       databaseUrl: false,
       emailPassword: false,
-      openaiApiKey: false,
+      llmApiKey: false,
+      mcpToken: false,
       storageAccessKey: false,
       storageSecretKey: false,
     });
@@ -184,7 +240,7 @@ export const UpdateSettingFormFields = withForm({
               Configure o nome exibido no título da plataforma
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <form.Field
               name="SYSTEM_NAME"
               validators={{
@@ -230,6 +286,59 @@ export const UpdateSettingFormFields = withForm({
                         name={field.name}
                         type="text"
                         placeholder="LowCodeJs"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                      />
+                    </InputGroup>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+
+            <form.Field
+              name="SYSTEM_DESCRIPTION"
+              validators={{
+                onChange: ({ value }) => {
+                  if (value && value.length > 200) {
+                    return {
+                      message:
+                        'A descrição do sistema deve ter no máximo 200 caracteres',
+                    };
+                  }
+                  return undefined;
+                },
+                onBlur: ({ value }) => {
+                  if (value && value.length > 200) {
+                    return {
+                      message:
+                        'A descrição do sistema deve ter no máximo 200 caracteres',
+                    };
+                  }
+                  return undefined;
+                },
+              }}
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Descrição do sistema
+                    </FieldLabel>
+                    <InputGroup>
+                      <InputGroupInput
+                        data-test-id="settings-system-description-input"
+                        disabled={isDisabled}
+                        id={field.name}
+                        name={field.name}
+                        type="text"
+                        placeholder="Plataforma Oficial"
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
@@ -323,19 +432,17 @@ export const UpdateSettingFormFields = withForm({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Toggle S3/MinIO */}
+            {/* Toggle S3 */}
             <form.Field
               name="STORAGE_DRIVER"
               children={(field) => {
                 const isS3 = field.state.value === 's3';
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>
-                      Habilitar S3 / MinIO
-                    </FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Habilitar S3</FieldLabel>
                     <div className="text-sm text-muted-foreground mb-2">
-                      Ativa o armazenamento remoto via S3/MinIO. Alterar o
-                      driver requer reinício do servidor para servir arquivos
+                      Ativa o armazenamento remoto via S3. Alterar o driver
+                      requer reinício do servidor para servir arquivos
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-muted-foreground">
@@ -375,14 +482,14 @@ export const UpdateSettingFormFields = withForm({
                               Endpoint
                             </FieldLabel>
                             <div className="text-sm text-muted-foreground mb-2">
-                              URL do servidor S3/MinIO (ex: http://minio:9000)
+                              URL do endpoint S3 (ex: https://s3.amazonaws.com)
                             </div>
                             <Input
                               data-test-id="settings-storage-endpoint-input"
                               disabled={isDisabled}
                               id={field.name}
                               name={field.name}
-                              placeholder="http://minio:9000"
+                              placeholder="https://s3.amazonaws.com"
                               value={field.state.value}
                               onBlur={field.handleBlur}
                               onChange={(e) =>
@@ -675,7 +782,146 @@ export const UpdateSettingFormFields = withForm({
                   );
                 }}
               />
+
+              {/* Logo Pequeno (Modo Escuro) */}
+              <form.Field
+                name="logoSmallDarkFile"
+                children={(field) => {
+                  return (
+                    <Field>
+                      <FieldLabel>Logo Pequeno (Modo Escuro)</FieldLabel>
+                      {mode === 'edit' && (
+                        <FileUploadWithStorage
+                          value={field.state.value}
+                          onValueChange={field.handleChange}
+                          onStorageChange={(storages: Array<IStorage>) => {
+                            if (storages[0]?.url) {
+                              form.setFieldValue(
+                                'LOGO_SMALL_DARK_URL',
+                                storages[0].url,
+                              );
+                            }
+                          }}
+                          accept="image/*"
+                          maxFiles={1}
+                          maxSize={4 * 1024 * 1024}
+                          placeholder="Arraste ou selecione o logo pequeno (modo escuro)"
+                          shouldDeleteFromStorage={false}
+                          staticName="logo-small-dark"
+                        />
+                      )}
+                      {mode === 'show' && settingData?.LOGO_SMALL_DARK_URL && (
+                        <div className="mt-2 rounded border bg-zinc-900 p-2">
+                          <img
+                            src={settingData.LOGO_SMALL_DARK_URL}
+                            alt="Logo pequeno (modo escuro) atual"
+                            className="h-12 w-auto"
+                          />
+                        </div>
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+
+              {/* Logo Grande (Modo Escuro) */}
+              <form.Field
+                name="logoLargeDarkFile"
+                children={(field) => {
+                  return (
+                    <Field>
+                      <FieldLabel>Logo Grande (Modo Escuro)</FieldLabel>
+                      {mode === 'edit' && (
+                        <FileUploadWithStorage
+                          value={field.state.value}
+                          onValueChange={field.handleChange}
+                          onStorageChange={(storages: Array<IStorage>) => {
+                            if (storages[0]?.url) {
+                              form.setFieldValue(
+                                'LOGO_LARGE_DARK_URL',
+                                storages[0].url,
+                              );
+                            }
+                          }}
+                          accept="image/*"
+                          maxFiles={1}
+                          maxSize={4 * 1024 * 1024}
+                          placeholder="Arraste ou selecione o logo grande (modo escuro)"
+                          shouldDeleteFromStorage={false}
+                          staticName="logo-large-dark"
+                        />
+                      )}
+                      {mode === 'show' && settingData?.LOGO_LARGE_DARK_URL && (
+                        <div className="mt-2 rounded border bg-zinc-900 p-2">
+                          <img
+                            src={settingData.LOGO_LARGE_DARK_URL}
+                            alt="Logo grande (modo escuro) atual"
+                            className="h-16 w-auto"
+                          />
+                        </div>
+                      )}
+                    </Field>
+                  );
+                }}
+              />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Imagem de Fundo do Login */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="w-5 h-5" />
+              Imagem de Fundo do Login
+            </CardTitle>
+            <CardDescription>
+              Imagem exibida na metade ilustrativa da tela de login. Quando
+              definida, substitui o painel padrão (gradiente + texto). Use uma
+              imagem em alta resolução — ela é redimensionada para cobrir o
+              espaço sem distorcer.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form.Field
+              name="loginBackgroundFile"
+              children={(field) => {
+                return (
+                  <Field>
+                    <FieldLabel>Imagem de Fundo</FieldLabel>
+                    {mode === 'edit' && (
+                      <FileUploadWithStorage
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        onStorageChange={(storages: Array<IStorage>) => {
+                          if (storages[0]?.url) {
+                            form.setFieldValue(
+                              'LOGIN_BACKGROUND_URL',
+                              storages[0].url,
+                            );
+                          }
+                        }}
+                        accept="image/*"
+                        maxFiles={1}
+                        maxSize={8 * 1024 * 1024}
+                        placeholder="Arraste ou selecione a imagem de fundo do login"
+                        shouldDeleteFromStorage={false}
+                        staticName="login-background"
+                      />
+                    )}
+                    {mode === 'show' && settingData?.LOGIN_BACKGROUND_URL && (
+                      <div className="mt-2 overflow-hidden rounded border">
+                        <img
+                          src={settingData.LOGIN_BACKGROUND_URL}
+                          alt="Imagem de fundo do login atual"
+                          className="h-40 w-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </Field>
+                );
+              }}
+            />
           </CardContent>
         </Card>
 
@@ -987,9 +1233,198 @@ export const UpdateSettingFormFields = withForm({
               )}
             </form.AppField>
 
-            {/* OpenAI API Key */}
+            {/* Toggle Histórico */}
+            <form.AppField name="CHAT_HISTORY_ENABLED">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label="Salvar histórico do chat"
+                  description="Preserva mensagens entre atualizações de página"
+                  disabled={isDisabled}
+                  yesLabel="Ativo"
+                  noLabel="Inativo"
+                />
+              )}
+            </form.AppField>
+
+            {/* Provedor LLM */}
             <form.Field
-              name="OPENAI_API_KEY"
+              name="AI_LLM_PROVIDER"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Provedor de IA</FieldLabel>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Serviço de linguagem usado pelo assistente no chat
+                    </div>
+                    <Select
+                      disabled={isDisabled}
+                      value={field.state.value}
+                      onValueChange={(value) => {
+                        field.handleChange(value);
+                        const models =
+                          LLM_MODEL_OPTIONS[value as AiLlmProvider];
+                        if (models?.[0]) {
+                          form.setFieldValue('LLM_MODEL', models[0].value);
+                        }
+                      }}
+                    >
+                      <SelectTrigger
+                        data-test-id="settings-llm-provider-select"
+                        id={field.name}
+                        aria-invalid={isInvalid}
+                      >
+                        <SelectValue placeholder="Selecione o provedor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AI_LLM_PROVIDER_OPTIONS.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+
+            <form.Subscribe selector={(state) => state.values.AI_LLM_PROVIDER}>
+              {(providerRaw) => {
+                const provider = (providerRaw ||
+                  E_AI_LLM_PROVIDER.OPENAI) as AiLlmProvider;
+                const needsKey = providerRequiresApiKey(provider);
+                const needsBaseUrl = providerShowsBaseUrl(provider);
+                const modelOptions = LLM_MODEL_OPTIONS[provider] ?? [];
+                const providerMeta = AI_LLM_PROVIDER_OPTIONS.find(
+                  (o) => o.value === provider,
+                );
+
+                return (
+                  <>
+                    {providerMeta && (
+                      <p className="text-sm text-muted-foreground -mt-2">
+                        {providerMeta.description}
+                      </p>
+                    )}
+
+                    {needsKey && (
+                      <form.Field
+                        name="LLM_API_KEY"
+                        children={(field) => {
+                          const isInvalid =
+                            field.state.meta.isTouched &&
+                            !field.state.meta.isValid;
+
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>
+                                Chave da API
+                              </FieldLabel>
+                              <div className="text-sm text-muted-foreground mb-2">
+                                Chave do provedor selecionado (
+                                {providerMeta?.label})
+                              </div>
+                              <InputGroup>
+                                <InputGroupInput
+                                  data-test-id="settings-llm-api-key-input"
+                                  disabled={isDisabled}
+                                  id={field.name}
+                                  name={field.name}
+                                  type={show.llmApiKey ? 'text' : 'password'}
+                                  placeholder="Cole a chave da API..."
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                  }
+                                  aria-invalid={isInvalid}
+                                />
+                                <InputGroupAddon align="inline-end">
+                                  <InputGroupButton
+                                    data-test-id="settings-llm-api-key-toggle-btn"
+                                    disabled={isDisabled}
+                                    type="button"
+                                    aria-label="toggle api key visibility"
+                                    onClick={() =>
+                                      setShow((state) => ({
+                                        ...state,
+                                        llmApiKey: !state.llmApiKey,
+                                      }))
+                                    }
+                                  >
+                                    {show.llmApiKey ? (
+                                      <EyeClosedIcon />
+                                    ) : (
+                                      <EyeIcon />
+                                    )}
+                                  </InputGroupButton>
+                                </InputGroupAddon>
+                              </InputGroup>
+                              {isInvalid && (
+                                <FieldError errors={field.state.meta.errors} />
+                              )}
+                            </Field>
+                          );
+                        }}
+                      />
+                    )}
+
+                    {needsBaseUrl && (
+                      <form.Field
+                        name="LLM_BASE_URL"
+                        children={(field) => {
+                          const isInvalid =
+                            field.state.meta.isTouched &&
+                            !field.state.meta.isValid;
+
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>
+                                URL base do Ollama
+                              </FieldLabel>
+                              <div className="text-sm text-muted-foreground mb-2">
+                                Endpoint OpenAI-compatível do Ollama (ex.:
+                                http://127.0.0.1:11434/v1)
+                              </div>
+                              <Input
+                                data-test-id="settings-llm-base-url-input"
+                                disabled={isDisabled}
+                                id={field.name}
+                                name={field.name}
+                                type="url"
+                                placeholder="http://127.0.0.1:11434/v1"
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                                aria-invalid={isInvalid}
+                              />
+                              {isInvalid && (
+                                <FieldError errors={field.state.meta.errors} />
+                              )}
+                            </Field>
+                          );
+                        }}
+                      />
+                    )}
+                  </>
+                );
+              }}
+            </form.Subscribe>
+
+            {/* MCP Server URL */}
+            <form.Field
+              name="MCP_SERVER_URL"
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -997,19 +1432,91 @@ export const UpdateSettingFormFields = withForm({
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>
-                      Chave da API OpenAI
+                      URL do Servidor MCP
                     </FieldLabel>
                     <div className="text-sm text-muted-foreground mb-2">
-                      Necessária para o funcionamento do assistente IA
+                      Endereço do servidor MCP para o assistente IA
+                    </div>
+                    <Input
+                      data-test-id="settings-mcp-server-url-input"
+                      disabled={isDisabled}
+                      id={field.name}
+                      name={field.name}
+                      type="url"
+                      placeholder="http://localhost:3001/mcp"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+
+            {/* URL da API LowCodeJS para o MCP */}
+            <form.Field
+              name="MCP_LOWCODE_API_URL"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      URL da API (MCP)
+                    </FieldLabel>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Enviada ao servidor MCP no header{' '}
+                      <code>X-Lowcode-Api-Url</code>. Deixe vazio para usar a
+                      URL padrão do servidor (<code>APP_SERVER_URL</code>).
+                    </div>
+                    <Input
+                      data-test-id="settings-mcp-lowcode-api-url-input"
+                      disabled={isDisabled}
+                      id={field.name}
+                      name={field.name}
+                      type="url"
+                      placeholder="https://api.seudominio.com"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+
+            {/* MCP Auth Token */}
+            <form.Field
+              name="MCP_SERVER_TOKEN"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Token MCP (opcional)
+                    </FieldLabel>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Enviado como <code>Authorization: Bearer ...</code>
                     </div>
                     <InputGroup>
                       <InputGroupInput
-                        data-test-id="settings-openai-api-key-input"
+                        data-test-id="settings-mcp-token-input"
                         disabled={isDisabled}
                         id={field.name}
                         name={field.name}
-                        type={show.openaiApiKey ? 'text' : 'password'}
-                        placeholder="sk-..."
+                        type={show.mcpToken ? 'text' : 'password'}
+                        placeholder="seu-token-secreto"
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
@@ -1017,20 +1524,14 @@ export const UpdateSettingFormFields = withForm({
                       />
                       <InputGroupAddon align="inline-end">
                         <InputGroupButton
-                          data-test-id="settings-openai-api-key-toggle-btn"
                           disabled={isDisabled}
                           type="button"
-                          aria-label="toggle api key visibility"
-                          title="toggle api key visibility"
+                          aria-label="toggle token visibility"
                           onClick={() =>
-                            setShow((state) => ({
-                              ...state,
-                              openaiApiKey: !state.openaiApiKey,
-                            }))
+                            setShow((s) => ({ ...s, mcpToken: !s.mcpToken }))
                           }
                         >
-                          {show.openaiApiKey && <EyeClosedIcon />}
-                          {!show.openaiApiKey && <EyeIcon />}
+                          {show.mcpToken ? <EyeClosedIcon /> : <EyeIcon />}
                         </InputGroupButton>
                       </InputGroupAddon>
                     </InputGroup>
@@ -1041,6 +1542,83 @@ export const UpdateSettingFormFields = withForm({
                 );
               }}
             />
+
+            <form.Subscribe selector={(state) => state.values.AI_LLM_PROVIDER}>
+              {(providerRaw) => {
+                const provider = (providerRaw ||
+                  E_AI_LLM_PROVIDER.OPENAI) as AiLlmProvider;
+                const modelOptions = LLM_MODEL_OPTIONS[provider] ?? [];
+                const useFreeTextModel =
+                  provider === E_AI_LLM_PROVIDER.OPENROUTER ||
+                  provider === E_AI_LLM_PROVIDER.OLLAMA;
+
+                return (
+                  <form.Field
+                    name="LLM_MODEL"
+                    children={(field) => {
+                      const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
+
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>Modelo</FieldLabel>
+                          <div className="text-sm text-muted-foreground mb-2">
+                            Identificador do modelo no provedor selecionado
+                          </div>
+                          {useFreeTextModel && (
+                            <Input
+                              data-test-id="settings-llm-model-input"
+                              disabled={isDisabled}
+                              id={field.name}
+                              name={field.name}
+                              placeholder={
+                                provider === E_AI_LLM_PROVIDER.OLLAMA
+                                  ? 'llama3.2'
+                                  : 'openai/gpt-4o-mini'
+                              }
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              aria-invalid={isInvalid}
+                            />
+                          )}
+                          {!useFreeTextModel && (
+                            <Select
+                              disabled={isDisabled}
+                              value={field.state.value}
+                              onValueChange={field.handleChange}
+                            >
+                              <SelectTrigger
+                                data-test-id="settings-llm-model-select"
+                                id={field.name}
+                                aria-invalid={isInvalid}
+                              >
+                                <SelectValue placeholder="Selecione um modelo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {modelOptions.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </Field>
+                      );
+                    }}
+                  />
+                );
+              }}
+            </form.Subscribe>
           </CardContent>
         </Card>
 

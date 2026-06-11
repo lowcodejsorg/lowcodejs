@@ -6,11 +6,11 @@ import {
 } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import type * as React from 'react';
-import { Toaster } from 'sonner';
 
 import { RouteError } from '@/components/common/route-status/route-error';
 import { RouteNotFound } from '@/components/common/route-status/route-not-found';
 import { RoutePending } from '@/components/common/route-status/route-pending';
+import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { getApiBaseUrl, getAppBaseUrl } from '@/lib/get-api-config';
 import type { RouterContext } from '@/router';
@@ -21,25 +21,43 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
     try {
       const { Env } = await import('@/env');
       const baseUrl = Env.VITE_API_BASE_URL;
-      const response = await fetch(`${baseUrl}/setting`);
+      const response = await fetch(`${baseUrl}/setting/public`);
       if (response.ok) {
         const data = await response.json();
         return {
           systemName: data.SYSTEM_NAME || 'LowCodeJs',
           systemDescription: data.SYSTEM_DESCRIPTION || 'Plataforma Oficial',
           aiAssistantEnabled: data.AI_ASSISTANT_ENABLED ?? false,
+          chatHistoryEnabled: data.CHAT_HISTORY_ENABLED ?? false,
+          setupCompleted: data.SETUP_COMPLETED ?? false,
+          setupCurrentStep: data.SETUP_CURRENT_STEP ?? 'admin',
+          logoSmallDarkUrl: data.LOGO_SMALL_DARK_URL ?? null,
+          logoLargeDarkUrl: data.LOGO_LARGE_DARK_URL ?? null,
+          loginBackgroundUrl: data.LOGIN_BACKGROUND_URL ?? null,
         };
       }
       return {
         systemName: 'LowCodeJs',
         systemDescription: 'Plataforma Oficial',
         aiAssistantEnabled: false,
+        chatHistoryEnabled: false,
+        setupCompleted: false,
+        setupCurrentStep: 'admin',
+        logoSmallDarkUrl: null,
+        logoLargeDarkUrl: null,
+        loginBackgroundUrl: null,
       };
     } catch {
       return {
         systemName: 'LowCodeJs',
         systemDescription: 'Plataforma Oficial',
         aiAssistantEnabled: false,
+        chatHistoryEnabled: false,
+        setupCompleted: false,
+        setupCurrentStep: 'admin',
+        logoSmallDarkUrl: null,
+        logoLargeDarkUrl: null,
+        loginBackgroundUrl: null,
       };
     }
   },
@@ -58,6 +76,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       systemName: settings.systemName,
       systemDescription: settings.systemDescription,
       aiAssistantEnabled: settings.aiAssistantEnabled,
+      chatHistoryEnabled: settings.chatHistoryEnabled,
+      logoSmallDarkUrl: settings.logoSmallDarkUrl,
+      logoLargeDarkUrl: settings.logoLargeDarkUrl,
+      loginBackgroundUrl: settings.loginBackgroundUrl,
     };
   },
   component: RootDocument,
@@ -123,6 +145,19 @@ function RootDocument(): React.JSX.Element {
     <html lang="pt-br">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.getItem('theme-preference') === 'dark' || (!('theme-preference' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
       </head>
       <body className="antialiased">
         <TooltipProvider>

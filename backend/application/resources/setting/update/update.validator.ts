@@ -1,11 +1,19 @@
 import z from 'zod';
 
+import { E_AI_LLM_PROVIDER } from '@application/core/entity.core';
+
 export const SettingUpdateBodyValidator = z.object({
   SYSTEM_NAME: z
     .string()
     .trim()
     .min(1, 'O nome do sistema deve ter ao menos 1 caractere')
     .max(100, 'O nome do sistema deve ter no máximo 100 caracteres')
+    .optional(),
+  SYSTEM_DESCRIPTION: z
+    .string()
+    .trim()
+    .min(1, 'A descrição do sistema deve ter ao menos 1 caractere')
+    .max(200, 'A descrição do sistema deve ter no máximo 200 caracteres')
     .optional(),
   LOCALE: z
     .enum(['pt-br', 'en-us'], {
@@ -47,6 +55,38 @@ export const SettingUpdateBodyValidator = z.object({
   EMAIL_PROVIDER_FROM: z.string().trim().nullable().optional(),
   OPENAI_API_KEY: z.string().trim().nullable().optional(),
   AI_ASSISTANT_ENABLED: z.boolean().optional(),
+  CHAT_HISTORY_ENABLED: z.boolean().optional(),
+  MCP_SERVER_URL: z
+    .string()
+    .trim()
+    .url('URL do servidor MCP inválida')
+    .nullable()
+    .optional(),
+  MCP_SERVER_TOKEN: z.string().trim().nullable().optional(),
+  MCP_LOWCODE_API_URL: z
+    .string()
+    .trim()
+    .url('URL da API LowCodeJS inválida')
+    .nullable()
+    .optional(),
+  OPENAI_MODEL: z.string().trim().min(1).optional(),
+  AI_LLM_PROVIDER: z
+    .enum([
+      E_AI_LLM_PROVIDER.OPENAI,
+      E_AI_LLM_PROVIDER.GEMINI,
+      E_AI_LLM_PROVIDER.CLAUDE,
+      E_AI_LLM_PROVIDER.OPENROUTER,
+      E_AI_LLM_PROVIDER.OLLAMA,
+    ])
+    .optional(),
+  LLM_API_KEY: z.string().trim().nullable().optional(),
+  LLM_MODEL: z.string().trim().min(1).optional(),
+  LLM_BASE_URL: z
+    .string()
+    .trim()
+    .url('URL base do LLM inválida')
+    .nullable()
+    .optional(),
   LOGO_SMALL_URL: z
     .string({ message: 'A URL do logo pequeno deve ser um texto' })
     .trim()
@@ -54,6 +94,23 @@ export const SettingUpdateBodyValidator = z.object({
     .optional(),
   LOGO_LARGE_URL: z
     .string({ message: 'A URL do logo grande deve ser um texto' })
+    .trim()
+    .nullable()
+    .optional(),
+  LOGO_SMALL_DARK_URL: z
+    .string({
+      message: 'A URL do logo pequeno (modo escuro) deve ser um texto',
+    })
+    .trim()
+    .nullable()
+    .optional(),
+  LOGO_LARGE_DARK_URL: z
+    .string({ message: 'A URL do logo grande (modo escuro) deve ser um texto' })
+    .trim()
+    .nullable()
+    .optional(),
+  LOGIN_BACKGROUND_URL: z
+    .string({ message: 'A URL da imagem de fundo do login deve ser um texto' })
     .trim()
     .nullable()
     .optional(),

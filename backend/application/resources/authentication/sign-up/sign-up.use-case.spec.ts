@@ -3,14 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { E_ROLE, E_USER_STATUS } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
-import InMemoryEmailService from '@application/services/email/in-memory-email.service';
+import InMemoryEmailQueueService from '@application/services/email-queue/in-memory-email-queue.service';
 import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
 
 import SignUpUseCase from './sign-up.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
 let userGroupInMemoryRepository: UserGroupInMemoryRepository;
-let emailService: InMemoryEmailService;
+let emailQueue: InMemoryEmailQueueService;
 let passwordService: InMemoryPasswordService;
 let sut: SignUpUseCase;
 
@@ -18,12 +18,12 @@ describe('Sign Up Use Case', () => {
   beforeEach(async () => {
     userInMemoryRepository = new UserInMemoryRepository();
     userGroupInMemoryRepository = new UserGroupInMemoryRepository();
-    emailService = new InMemoryEmailService();
+    emailQueue = new InMemoryEmailQueueService();
     passwordService = new InMemoryPasswordService();
     sut = new SignUpUseCase(
       userInMemoryRepository,
       userGroupInMemoryRepository,
-      emailService,
+      emailQueue,
       passwordService,
     );
 
@@ -52,19 +52,18 @@ describe('Sign Up Use Case', () => {
     expect(found?._id).toBe(result.value._id);
   });
 
-  it('deve disparar envio de email de boas-vindas apos registro', async () => {
+  it('deve enfileirar email de boas-vindas apos registro', async () => {
     await sut.execute({
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password123',
     });
 
-    // Email is fire-and-forget, wait for the promise chain
-    await new Promise((resolve) => setTimeout(resolve, 10));
-
-    const emails = emailService.getEmails();
-    expect(emails).toHaveLength(1);
-    expect(emails[0].to).toContain('john@example.com');
+    const jobs = emailQueue.getJobs();
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0].template).toBe('sign-up');
+    expect(jobs[0].to).toContain('john@example.com');
+    expect(jobs[0].subject).toBe('Bem-vindo ao LowCodeJS!');
   });
 
   it('deve retornar erro USER_ALREADY_EXISTS quando email ja existir', async () => {
@@ -94,12 +93,12 @@ describe('Sign Up Use Case', () => {
   it('deve retornar erro GROUP_NOT_FOUND quando grupo REGISTERED nao existir', async () => {
     const newUserRepo = new UserInMemoryRepository();
     const newGroupRepo = new UserGroupInMemoryRepository();
-    const newEmailService = new InMemoryEmailService();
+    const newEmailQueue = new InMemoryEmailQueueService();
     const newPasswordService = new InMemoryPasswordService();
     const newSut = new SignUpUseCase(
       newUserRepo,
       newGroupRepo,
-      newEmailService,
+      newEmailQueue,
       newPasswordService,
     );
 

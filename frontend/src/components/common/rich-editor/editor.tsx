@@ -1,4 +1,4 @@
-import type { Editor as TiptapEditor } from '@tiptap/core';
+import type { Extensions, Editor as TiptapEditor } from '@tiptap/core';
 import CharacterCount from '@tiptap/extension-character-count';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
@@ -18,6 +18,7 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { CodeIcon } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { Markdown as TiptapMarkdown } from 'tiptap-markdown';
 
 import { ImageBubble } from './bubble/image-bubble';
@@ -25,7 +26,10 @@ import { LinkBubble } from './bubble/link-bubble';
 import { TableBubble } from './bubble/table-bubble';
 import { TextBubble } from './bubble/text-bubble';
 import './editor.css';
+import type { MentionConfig } from './extensions/mention';
+import { buildMentionExtension } from './extensions/mention';
 import { EditorToolbar } from './toolbar';
+import { uploadFile } from './upload';
 import { ContentViewer } from './viewer';
 
 import { cn } from '@/lib/utils';
@@ -213,6 +217,50 @@ function getMarkdownFromEditor(editor: TiptapEditor): string {
   return editor.getHTML();
 }
 
+function getImageFilesFromDataTransfer(
+  dataTransfer: DataTransfer | null,
+): Array<File> {
+  if (!dataTransfer) return [];
+  const collected: Array<File> = [];
+
+  if (dataTransfer.files && dataTransfer.files.length > 0) {
+    for (let i = 0; i < dataTransfer.files.length; i++) {
+      const file = dataTransfer.files.item(i);
+      if (file && file.type.startsWith('image/')) {
+        collected.push(file);
+      }
+    }
+  }
+
+  if (collected.length === 0 && dataTransfer.items?.length) {
+    for (const item of dataTransfer.items) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) collected.push(file);
+      }
+    }
+  }
+
+  return collected;
+}
+
+async function uploadAndInsertImages(
+  editor: TiptapEditor,
+  files: Array<File>,
+): Promise<void> {
+  for (const file of files) {
+    const toastId = toast.loading('Enviando imagem...');
+    try {
+      const url = await uploadFile(file);
+      editor.chain().focus().setImage({ src: url }).run();
+      toast.success('Imagem inserida', { id: toastId });
+    } catch (error) {
+      console.error('[rich-editor][paste-image]', error);
+      toast.error('Erro ao enviar imagem', { id: toastId });
+    }
+  }
+}
+
 // --- Main Editor ---
 
 export interface EditorProps {
@@ -231,6 +279,8 @@ export interface EditorProps {
   showModeToggle?: boolean;
   defaultMode?: EditorMode;
   availableModes?: Array<EditorMode>;
+  mentions?: MentionConfig;
+  onEditorReady?: (editor: TiptapEditor) => void;
 }
 
 function debounce<T extends (...args: Array<any>) => void>(
@@ -259,6 +309,8 @@ export function Editor({
   showModeToggle = true,
   defaultMode = 'rich',
   availableModes = ['rich', 'markdown', 'html', 'preview'],
+  mentions,
+  onEditorReady,
 }: EditorProps): React.JSX.Element | null {
   const [mode, setMode] = useState<EditorMode>(defaultMode);
   const [rawMd, setRawMd] = useState('');
@@ -283,8 +335,14 @@ export function Editor({
     [debounceMs],
   );
 
-  const extensions = useMemo(
-    () => [
+  const mentionsEnabled = mentions?.enabled ?? false;
+  const resolvePageRef = useRef(mentions?.resolvePage);
+  React.useEffect((): void => {
+    resolvePageRef.current = mentions?.resolvePage;
+  }, [mentions?.resolvePage]);
+
+  const extensions = useMemo(() => {
+    const list: Extensions = [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
         code: false,
@@ -310,21 +368,57 @@ export function Editor({
       Placeholder.configure({ placeholder }),
       CharacterCount,
       TiptapMarkdown,
-    ],
-    [placeholder],
-  );
+    ];
+    if (mentionsEnabled) {
+      list.push(
+        buildMentionExtension(async (query, page) => {
+          const resolver = resolvePageRef.current;
+          if (!resolver) return { items: [], hasMore: false };
+          return resolver(query, page);
+        }),
+      );
+    }
+    return list;
+  }, [placeholder, mentionsEnabled]);
+
+  const editorRef = useRef<TiptapEditor | null>(null);
 
   const ed = useEditor(
     {
       extensions,
       immediatelyRender: false,
       content: (isControlled && value) || '',
+      editorProps: {
+        handlePaste: (_view, event) => {
+          const files = getImageFilesFromDataTransfer(event.clipboardData);
+          if (files.length === 0) return false;
+          const editor = editorRef.current;
+          if (!editor) return false;
+          event.preventDefault();
+          void uploadAndInsertImages(editor, files);
+          return true;
+        },
+        handleDrop: (_view, event, _slice, moved) => {
+          if (moved) return false;
+          const files = getImageFilesFromDataTransfer(event.dataTransfer);
+          if (files.length === 0) return false;
+          const editor = editorRef.current;
+          if (!editor) return false;
+          event.preventDefault();
+          void uploadAndInsertImages(editor, files);
+          return true;
+        },
+      },
       onUpdate: ({ editor: editorInstance }) => {
         onValueChange(editorInstance);
       },
     },
     [],
   );
+
+  React.useEffect(() => {
+    editorRef.current = ed ?? null;
+  }, [ed]);
 
   // Sync external value (only in rich mode)
   React.useEffect(() => {
@@ -352,6 +446,12 @@ export function Editor({
     if (!ed || !autoFocus) return;
     ed.commands.focus('end');
   }, [autoFocus, ed, focusKey]);
+
+  // Notify parent when editor instance is ready
+  React.useEffect(() => {
+    if (!ed) return;
+    onEditorReady?.(ed);
+  }, [ed, onEditorReady]);
 
   // --- Mode switching logic ---
   const handleModeChange = useCallback(

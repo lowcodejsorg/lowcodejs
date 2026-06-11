@@ -1,8 +1,11 @@
+import { useRouterState } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
+import type { Editor as TiptapEditor } from '@tiptap/core';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ArrowDownIcon, AtSignIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import {
   ForumAddChannelDialog,
@@ -16,6 +19,7 @@ import {
   ForumSidebar,
 } from '@/components/common/forum';
 import type { ForumDocument, ForumMessage } from '@/components/common/forum';
+import { extractMentionIds } from '@/components/common/rich-editor';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
@@ -42,7 +46,6 @@ import type {
   Paginated,
 } from '@/lib/interfaces';
 import { getFieldBySlug, getFirstFieldByType } from '@/lib/kanban-helpers';
-import { toastError, toastSuccess, toastWarning } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -137,6 +140,7 @@ export function TableForumView({
     null,
   );
   const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
+  const composerEditorRef = React.useRef<TiptapEditor | null>(null);
   const pollingRef = React.useRef<{ inFlight: boolean; rowId: string | null }>({
     inFlight: false,
     rowId: null,
@@ -175,6 +179,30 @@ export function TableForumView({
   const [highlightMentionMessageId, setHighlightMentionMessageId] =
     React.useState<string | null>(null);
   const [highlightMentionTick, setHighlightMentionTick] = React.useState(0);
+
+  // Deep-link via query params (?channelId=...&messageId=...) — usado pelas
+  // notificações de menção do fórum para abrir o canal certo e rolar até a
+  // mensagem específica.
+  const searchParams = useRouterState({ select: (s) => s.location.search });
+  React.useEffect(() => {
+    const channelId =
+      typeof searchParams === 'object' && searchParams !== null
+        ? (searchParams as Record<string, unknown>).channelId
+        : undefined;
+    const messageId =
+      typeof searchParams === 'object' && searchParams !== null
+        ? (searchParams as Record<string, unknown>).messageId
+        : undefined;
+    if (typeof channelId === 'string' && channelId) {
+      setActiveRowId(channelId);
+    }
+    if (typeof messageId === 'string' && messageId) {
+      setMentionJumpMessageId(messageId);
+      setMentionJumpTick((value) => value + 1);
+      setHighlightMentionMessageId(messageId);
+      setHighlightMentionTick((value) => value + 1);
+    }
+  }, [searchParams]);
 
   const bumpFocus = React.useCallback(() => {
     setFocusTick((value) => value + 1);
@@ -651,10 +679,9 @@ export function TableForumView({
       );
     },
     onError() {
-      toastError(
-        'Erro ao atualizar mensagens',
-        'Nao foi possivel atualizar o canal',
-      );
+      toast.error('Erro ao atualizar mensagens', {
+        description: 'Nao foi possivel atualizar o canal',
+      });
     },
   });
 
@@ -663,10 +690,14 @@ export function TableForumView({
       setRowsState((prev) => [...prev, newRow]);
       setActiveRowId(newRow._id);
       setIsAddChannelOpen(false);
-      toastSuccess('Canal criado', 'O canal foi criado com sucesso');
+      toast.success('Canal criado', {
+        description: 'O canal foi criado com sucesso',
+      });
     },
     onError() {
-      toastError('Erro ao criar canal', 'Nao foi possivel criar o canal');
+      toast.error('Erro ao criar canal', {
+        description: 'Nao foi possivel criar o canal',
+      });
     },
   });
 
@@ -755,7 +786,7 @@ export function TableForumView({
       const label = value.label.trim();
       if (!label || updateRow.status === 'pending') return;
       if (!editingChannelRow || !canManageChannel(editingChannelRow)) {
-        toastWarning('Apenas o criador pode editar este canal');
+        toast.warning('Apenas o criador pode editar este canal');
         return;
       }
       const members = Array.from(new Set(value.members.filter(Boolean)));
@@ -783,7 +814,9 @@ export function TableForumView({
       });
       setIsEditChannelOpen(false);
       setEditingChannelId(null);
-      toastSuccess('Canal atualizado', 'O canal foi atualizado com sucesso');
+      toast.success('Canal atualizado', {
+        description: 'O canal foi atualizado com sucesso',
+      });
     },
   });
 
@@ -917,10 +950,9 @@ export function TableForumView({
       const row = rowsState.find((item) => item._id === rowId);
       if (!row) return;
       if (!canAccessChannel(row)) {
-        toastWarning(
-          'Canal privado',
-          'Apenas membros deste canal podem acessar as mensagens',
-        );
+        toast.warning('Canal privado', {
+          description: 'Apenas membros deste canal podem acessar as mensagens',
+        });
         return;
       }
       setActiveRowId(rowId);
@@ -932,7 +964,7 @@ export function TableForumView({
   const handleChannelEdit = React.useCallback(
     (row: IRow) => {
       if (!canManageChannel(row)) {
-        toastWarning('Apenas o criador pode editar este canal');
+        toast.warning('Apenas o criador pode editar este canal');
         return;
       }
       const label = resolveChannelLabel(row);
@@ -968,7 +1000,7 @@ export function TableForumView({
     async (rowId: string) => {
       const row = rowsState.find((item) => item._id === rowId);
       if (!row || !canManageChannel(row)) {
-        toastWarning('Apenas o criador pode editar este canal');
+        toast.warning('Apenas o criador pode editar este canal');
         setDeleteChannelId(null);
         return;
       }
@@ -1051,21 +1083,25 @@ export function TableForumView({
   const handleSend = React.useCallback(async () => {
     if (!activeRow || !messagesField) return;
     if (!canAccessChannel(activeRow)) {
-      toastWarning('Apenas membros deste canal podem enviar mensagens');
+      toast.warning('Apenas membros deste canal podem enviar mensagens');
       return;
     }
     if (!currentUserId) {
-      toastWarning('Usuario nao identificado');
+      toast.warning('Usuario nao identificado');
       return;
     }
 
     const { text: formText, mentions: formMentions } =
       composerForm.state.values;
+    const editorMentionIds = extractMentionIds(composerEditorRef.current);
+    const mentions = Array.from(
+      new Set([...editorMentionIds, ...formMentions]),
+    );
     const hasText = stripHtml(formText).length > 0;
     const hasAttachments = composerStorages.length > 0;
 
     if (!hasText && !hasAttachments) {
-      toastWarning('Escreva uma mensagem ou adicione um anexo');
+      toast.warning('Escreva uma mensagem ou adicione um anexo');
       return;
     }
 
@@ -1073,7 +1109,7 @@ export function TableForumView({
       const attachments = composerStorages.map((storage) => storage._id);
       const payload = {
         text: formText || '',
-        mentions: formMentions,
+        mentions,
         attachments,
         replyTo: replyToId ?? null,
       };
@@ -1096,10 +1132,9 @@ export function TableForumView({
       resetComposer();
       bumpFocus();
     } catch {
-      toastError(
-        'Erro ao enviar mensagem',
-        'Nao foi possivel salvar a mensagem neste canal',
-      );
+      toast.error('Erro ao enviar mensagem', {
+        description: 'Nao foi possivel salvar a mensagem neste canal',
+      });
     }
   }, [
     activeRow,
@@ -1117,6 +1152,10 @@ export function TableForumView({
     tableSlug,
   ]);
 
+  const handleEditorReady = React.useCallback((editor: TiptapEditor): void => {
+    composerEditorRef.current = editor;
+  }, []);
+
   const handleDelete = React.useCallback(
     async (index: number) => {
       if (!activeRow) return;
@@ -1129,10 +1168,9 @@ export function TableForumView({
         );
         await refreshRowById(activeRow._id);
       } catch {
-        toastError(
-          'Erro ao excluir mensagem',
-          'Voce so pode excluir mensagens enviadas por voce',
-        );
+        toast.error('Erro ao excluir mensagem', {
+          description: 'Voce so pode excluir mensagens enviadas por voce',
+        });
       }
     },
     [activeRow, messages, refreshRowById, tableSlug],
@@ -1468,6 +1506,7 @@ export function TableForumView({
                   onSend={handleSend}
                   isEditing={editingIndex !== null}
                   onCancelEdit={resetComposer}
+                  onEditorReady={handleEditorReady}
                 />
               </div>
             ) : (

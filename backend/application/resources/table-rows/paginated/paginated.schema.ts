@@ -30,11 +30,12 @@ export const TableRowPaginatedSchema: FastifySchema = {
       },
       perPage: {
         type: 'number',
-        minimum: 1,
+        minimum: -1,
         maximum: 100,
         default: 50,
-        description: 'Number of items per page (max 100)',
-        examples: [10, 25, 50, 100],
+        description:
+          'Number of items per page (max 100). Use -1 to fetch all rows (no pagination).',
+        examples: [10, 25, 50, 100, -1],
       },
       search: {
         type: 'string',

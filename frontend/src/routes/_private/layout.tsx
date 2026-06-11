@@ -11,6 +11,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import {
   profileDetailOptions,
   settingOptions,
+  setupStatusOptions,
 } from '@/hooks/tanstack-query/_query-options';
 import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';
 import { E_ROLE } from '@/lib/constant';
@@ -25,6 +26,15 @@ export const Route = createFileRoute('/_private')({
     meta: [{ name: 'robots', content: 'noindex, nofollow' }],
   }),
   beforeLoad: async ({ context, location }) => {
+    const setupStatus =
+      await context.queryClient.fetchQuery(setupStatusOptions());
+
+    if (!setupStatus.completed) {
+      throw redirect({
+        to: `/setup/${setupStatus.currentStep ?? 'admin'}`,
+      });
+    }
+
     try {
       const user = await context.queryClient.ensureQueryData(
         profileDetailOptions(),
@@ -36,7 +46,7 @@ export const Route = createFileRoute('/_private')({
 
       // Permitir acesso público a rotas de visualização de tabela
       // O componente e o backend controlam por visibility
-      const isTableViewRoute = /^\/tables\/[^/]+(?:\/?|\/row\/[^/]+\/?)$/.test(
+      const isTableViewRoute = /^\/tables\/[^/]+(?:\/?|\/row\/?.*)$/.test(
         location.pathname,
       );
       if (isTableViewRoute) {
@@ -67,14 +77,15 @@ function PrivateLayout(): React.JSX.Element {
     '/settings',
     /^\/tables\/[^/]+\/field\/.+$/,
     /^\/tables\/[^/]+\/field\/create$/,
-    /^\/tables\/[^/]+\/row\/.+$/,
-    /^\/tables\/[^/]+\/row\/create$/,
+    /^\/tables\/[^/]+\/row.*$/,
     /^\/tables\/[^/]+\/detail$/,
     /^\/tables\/[^/]+\/methods$/,
     /^\/users\/.+$/,
     '/users/create',
     '/tables/new',
     '/tools',
+    /^\/tools\/.+\/.+$/,
+    '/extensions',
   ];
 
   if (!isAuthenticated) {

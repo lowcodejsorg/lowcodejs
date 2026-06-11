@@ -15,8 +15,10 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouterState } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import {
   KanbanAddListDialog,
@@ -44,7 +46,6 @@ import {
   parseOrderValue,
 } from '@/lib/kanban-helpers';
 import type { FieldMap } from '@/lib/kanban-types';
-import { toastError, toastSuccess } from '@/lib/toast';
 import {
   buildDefaultValues,
   buildPayload,
@@ -83,6 +84,9 @@ export function TableKanbanView({
   const [editingColumnLabel, setEditingColumnLabel] = React.useState('');
   const [editingColumnColor, setEditingColumnColor] = React.useState<
     string | null
+  >(null);
+  const [rowEditTarget, setRowEditTarget] = React.useState<
+    'members' | 'start' | 'due' | 'list' | null
   >(null);
   const startDateEnsureAttemptedRef = React.useRef(false);
 
@@ -220,11 +224,15 @@ export function TableKanbanView({
           };
         },
       );
-      toastSuccess('Lista adicionada', 'A nova coluna foi criada com sucesso');
+      toast.success('Lista adicionada', {
+        description: 'A nova coluna foi criada com sucesso',
+      });
       setIsAddListOpen(false);
     },
     onError() {
-      toastError('Erro ao adicionar lista', 'Nao foi possivel criar a coluna');
+      toast.error('Erro ao adicionar lista', {
+        description: 'Nao foi possivel criar a coluna',
+      });
     },
   });
 
@@ -290,13 +298,14 @@ export function TableKanbanView({
       setEditingColumnId(null);
       setEditingColumnLabel('');
       setEditingColumnColor(null);
-      toastSuccess('Lista atualizada', 'A lista foi atualizada');
+      toast.success('Lista atualizada', {
+        description: 'A lista foi atualizada',
+      });
     },
     onError() {
-      toastError(
-        'Erro ao atualizar lista',
-        'Nao foi possivel atualizar o nome',
-      );
+      toast.error('Erro ao atualizar lista', {
+        description: 'Nao foi possivel atualizar o nome',
+      });
     },
   });
 
@@ -351,15 +360,36 @@ export function TableKanbanView({
     if (updated) setActiveRow(updated);
   }, [rowsState, activeRowId]);
 
+  // Deep-link: ?rowId=... abre o card automaticamente.
+  // Usado pelas notificações de membro/menção/comentário.
+  const searchParams = useRouterState({ select: (s) => s.location.search });
+  const deepLinkRowIdRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    const rowIdParam =
+      typeof searchParams === 'object' && searchParams !== null
+        ? (searchParams as Record<string, unknown>).rowId
+        : undefined;
+    if (typeof rowIdParam !== 'string' || !rowIdParam) return;
+    if (deepLinkRowIdRef.current === rowIdParam) return;
+    const target = rowsState.find((row) => row._id === rowIdParam);
+    if (!target) return;
+    deepLinkRowIdRef.current = rowIdParam;
+    setActiveRow(target);
+  }, [searchParams, rowsState]);
+
   const createRow = useCreateTableRow({
     onSuccess(createdRow) {
       setRowsState((prev) => [...prev, createdRow]);
-      toastSuccess('Card criado', 'O card foi criado com sucesso');
+      toast.success('Card criado', {
+        description: 'O card foi criado com sucesso',
+      });
       setIsCreateCardOpen(false);
       setCreateColumnId(null);
     },
     onError() {
-      toastError('Erro ao criar card', 'Nao foi possivel criar o card');
+      toast.error('Erro ao criar card', {
+        description: 'Nao foi possivel criar o card',
+      });
     },
   });
 
@@ -398,16 +428,14 @@ export function TableKanbanView({
             };
           },
         );
-        toastSuccess(
-          'Campo Data de início criado',
-          'Kanban atualizado com o novo campo de início',
-        );
+        toast.success('Campo Data de início criado', {
+          description: 'Kanban atualizado com o novo campo de início',
+        });
       })
       .catch(() => {
-        toastError(
-          'Erro ao criar Data de início',
-          'Nao foi possivel adicionar o campo no Kanban',
-        );
+        toast.error('Erro ao criar Data de início', {
+          description: 'Nao foi possivel adicionar o campo no Kanban',
+        });
       });
   }, [fields.startDate, queryClient, tableSlug]);
 
@@ -511,10 +539,9 @@ export function TableKanbanView({
             },
           );
         } catch (error) {
-          toastError(
-            'Erro ao travar o campo de ordem',
-            'Nao foi possivel travar o campo de ordem',
-          );
+          toast.error('Erro ao travar o campo de ordem', {
+            description: 'Nao foi possivel travar o campo de ordem',
+          });
         }
       }
       return orderField.slug;
@@ -561,10 +588,9 @@ export function TableKanbanView({
 
       return createdField.slug;
     } catch (error) {
-      toastError(
-        'Erro ao preparar ordenação',
-        'Nao foi possivel criar o campo de ordem',
-      );
+      toast.error('Erro ao preparar ordenação', {
+        description: 'Nao foi possivel criar o campo de ordem',
+      });
       return null;
     }
   }, [orderField, orderFieldSlug, queryClient, tableSlug]);
@@ -601,10 +627,9 @@ export function TableKanbanView({
           },
         );
       } catch (error) {
-        toastError(
-          'Erro ao ordenar colunas',
-          'Nao foi possivel salvar a nova ordem',
-        );
+        toast.error('Erro ao ordenar colunas', {
+          description: 'Nao foi possivel salvar a nova ordem',
+        });
       }
     },
     [fields.list, queryClient, tableSlug],
@@ -612,28 +637,36 @@ export function TableKanbanView({
 
   const updateRowsOrder = React.useCallback(
     async (
-      updates: Array<{ rowId: string; data: Record<string, unknown> }>,
-    ) => {
+      updates: Array<{
+        rowId: string;
+        data: Record<string, unknown>;
+        skipLog?: boolean;
+      }>,
+    ): Promise<void> => {
       try {
         await Promise.all(
-          updates.map((update) =>
-            API.put(
+          updates.map((update) => {
+            let config: { headers: Record<string, string> } | undefined;
+            if (update.skipLog) {
+              config = { headers: { 'x-skip-log': 'true' } };
+            }
+            return API.put(
               '/tables/'
                 .concat(tableSlug)
                 .concat('/rows/')
                 .concat(update.rowId),
               update.data,
-            ),
-          ),
+              config,
+            );
+          }),
         );
         queryClient.invalidateQueries({
           queryKey: queryKeys.rows.lists(tableSlug),
         });
       } catch (error) {
-        toastError(
-          'Erro ao reordenar cards',
-          'Nao foi possivel salvar a nova ordem',
-        );
+        toast.error('Erro ao reordenar cards', {
+          description: 'Nao foi possivel salvar a nova ordem',
+        });
       }
     },
     [queryClient, tableSlug],
@@ -717,29 +750,38 @@ export function TableKanbanView({
 
       const rowById = new Map(rowsState.map((row) => [row._id, row] as const));
 
-      const updates: Array<{ rowId: string; data: Record<string, unknown> }> =
-        [];
+      const updates: Array<{
+        rowId: string;
+        data: Record<string, unknown>;
+        skipLog?: boolean;
+      }> = [];
 
       const applyOrder = (ids: Array<string>, columnId: string): void => {
         ids.forEach((id, index) => {
           const row = rowById.get(id);
           if (!row) return;
           const patchData: Record<string, unknown> = {};
-          if (sourceColumn !== targetColumn && id === activeId) {
+          // true somente para o card que efetivamente muda de coluna
+          const isColumnChange =
+            sourceColumn !== targetColumn && id === activeId;
+          if (isColumnChange) {
             patchData[fields.list!.slug] = [columnId];
           }
           if (orderSlug) {
             patchData[orderSlug] = String(index + 1);
           }
           if (Object.keys(patchData).length > 0) {
-            updates.push({ rowId: id, data: patchData });
+            // skipLog: true para updates de posição-apenas (sem mudança de coluna)
+            updates.push({
+              rowId: id,
+              data: patchData,
+              skipLog: !isColumnChange,
+            });
           }
           rowById.set(id, {
             ...row,
-            ...(sourceColumn !== targetColumn && id === activeId
-              ? { [fields.list!.slug]: [columnId] }
-              : {}),
-            ...(orderSlug ? { [orderSlug]: String(index + 1) } : {}),
+            ...(isColumnChange && { [fields.list!.slug]: [columnId] }),
+            ...(orderSlug && { [orderSlug]: String(index + 1) }),
           });
         });
       };
@@ -825,7 +867,14 @@ export function TableKanbanView({
                     row={row}
                     fields={fields}
                     columnId={option.id}
-                    onClick={() => setActiveRow(row)}
+                    onClick={() => {
+                      setActiveRow(row);
+                      setRowEditTarget(null);
+                    }}
+                    onFieldClick={(field) => {
+                      setActiveRow(row);
+                      setRowEditTarget(field);
+                    }}
                   />
                 ))}
               </SortableContext>
@@ -847,7 +896,14 @@ export function TableKanbanView({
           <KanbanUnassignedColumn
             rows={columns.unassigned}
             fields={fields}
-            onSelectRow={setActiveRow}
+            onSelectRow={(row) => {
+              setActiveRow(row);
+              setRowEditTarget(null);
+            }}
+            onFieldClick={(row, field) => {
+              setActiveRow(row);
+              setRowEditTarget(field);
+            }}
           />
 
           <section className="w-72 shrink-0 rounded-xl border border-dashed bg-muted/10 p-4 flex items-center justify-center">
@@ -865,13 +921,17 @@ export function TableKanbanView({
 
           <KanbanRowDialog
             row={activeRow}
-            onClose={() => setActiveRow(null)}
+            onClose={() => {
+              setActiveRow(null);
+              setRowEditTarget(null);
+            }}
             onRowUpdated={(row) => setActiveRow(row)}
             onRowDuplicated={handleRowDuplicated}
             onRowDeleted={handleRowDeleted}
             tableSlug={tableSlug}
             table={table}
             fields={fields}
+            initialEditTarget={rowEditTarget}
           />
 
           <KanbanAddListDialog

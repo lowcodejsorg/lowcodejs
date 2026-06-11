@@ -11,7 +11,7 @@ import {
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
-import { EmailContractService } from '@application/services/email/email-contract.service';
+import { EmailQueueContractService } from '@application/services/email-queue/email-queue-contract.service';
 import { PasswordContractService } from '@application/services/password/password-contract.service';
 
 import type { SignUpBodyValidator } from './sign-up.validator';
@@ -24,7 +24,7 @@ export default class SignUpUseCase {
   constructor(
     private readonly userRepository: UserContractRepository,
     private readonly userGroupRepository: UserGroupContractRepository,
-    private readonly emailService: EmailContractService,
+    private readonly emailQueue: EmailQueueContractService,
     private readonly passwordService: PasswordContractService,
   ) {}
 
@@ -59,19 +59,12 @@ export default class SignUpUseCase {
         status: E_USER_STATUS.ACTIVE,
       });
 
-      this.emailService
-        .buildTemplate({
-          template: 'sign-up',
-          data: { name: payload.name, email: payload.email },
-        })
-        .then((body) =>
-          this.emailService.sendEmail({
-            to: [payload.email],
-            subject: 'Bem-vindo ao LowCodeJS!',
-            body,
-          }),
-        )
-        .catch(() => {});
+      await this.emailQueue.enqueue({
+        template: 'sign-up',
+        data: { name: payload.name, email: payload.email },
+        to: [payload.email],
+        subject: 'Bem-vindo ao LowCodeJS!',
+      });
 
       return right(created);
     } catch (error) {

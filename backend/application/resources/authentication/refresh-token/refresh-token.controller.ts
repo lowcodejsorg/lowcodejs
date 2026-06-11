@@ -25,7 +25,7 @@ export default class {
     options: {
       onRequest: [
         AuthenticationMiddleware({
-          optional: false,
+          optional: true,
         }),
       ],
       schema: RefreshTokenSchema,

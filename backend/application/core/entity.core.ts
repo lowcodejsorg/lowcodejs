@@ -44,8 +44,13 @@ export const E_FIELD_TYPE = {
   CREATOR: 'CREATOR',
   IDENTIFIER: 'IDENTIFIER',
   CREATED_AT: 'CREATED_AT',
-  TRASHED: 'TRASHED',
   TRASHED_AT: 'TRASHED_AT',
+  STATUS: 'STATUS',
+} as const;
+
+export const E_ROW_STATUS = {
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
 } as const;
 
 export const E_FIELD_FORMAT = {
@@ -92,6 +97,7 @@ export const E_MENU_ITEM_TYPE = {
   FORM: 'FORM',
   EXTERNAL: 'EXTERNAL',
   SEPARATOR: 'SEPARATOR',
+  EXTENSION_MODULE: 'EXTENSION_MODULE',
 } as const;
 
 export const E_TABLE_TYPE = {
@@ -138,7 +144,44 @@ export const E_CHAT_EVENT = {
   TOOL_ERROR: 'tool_error',
   MESSAGE: 'message',
   ERROR: 'error',
+  HISTORY: 'history',
+  LLM_INFO: 'llm_info',
 } as const;
+
+/** Provedor de LLM do assistente IA (configurável em /settings). */
+export const E_AI_LLM_PROVIDER = {
+  OPENAI: 'openai',
+  GEMINI: 'gemini',
+  CLAUDE: 'claude',
+  OPENROUTER: 'openrouter',
+  OLLAMA: 'ollama',
+} as const;
+
+export const E_NOTIFICATION_TYPE = {
+  FORUM_MENTION: 'FORUM_MENTION',
+  KANBAN_COMMENT_MENTION: 'KANBAN_COMMENT_MENTION',
+  ROW_MEMBER_ASSIGNED: 'ROW_MEMBER_ASSIGNED',
+  GENERIC: 'GENERIC',
+} as const;
+
+export const E_NOTIFICATION_EVENT = {
+  CREATED: 'notification:created',
+  READ: 'notification:read',
+  READ_ALL: 'notification:read_all',
+} as const;
+
+export type INotificationAction = {
+  type: 'route' | 'url';
+  href: string;
+  label?: string | null;
+} | null;
+
+export type INotificationSource = {
+  pkg?: string | null;
+  tableSlug?: string | null;
+  rowId?: string | null;
+  anchorId?: string | null;
+} | null;
 
 export type IJWTPayload = {
   sub: string;
@@ -164,6 +207,23 @@ export type IValidationToken = Merge<
   }
 >;
 
+export const E_STORAGE_LOCATION = {
+  LOCAL: 'local',
+  S3: 's3',
+} as const;
+
+export const E_STORAGE_MIGRATION_STATUS = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  IN_PROGRESS: 'in_progress',
+  FAILED: 'failed',
+} as const;
+
+export type TStorageLocation = ValueOf<typeof E_STORAGE_LOCATION>;
+export type TStorageMigrationStatus = ValueOf<
+  typeof E_STORAGE_MIGRATION_STATUS
+>;
+
 export type IStorage = Merge<
   Base,
   {
@@ -172,6 +232,8 @@ export type IStorage = Merge<
     mimetype: string;
     originalName: string;
     size: number;
+    location: TStorageLocation;
+    migration_status: TStorageMigrationStatus;
   }
 >;
 
@@ -207,6 +269,22 @@ export type IUser = Merge<
     password: string;
     status: ValueOf<typeof E_USER_STATUS>;
     group: IGroup;
+    notificationsEnabled: boolean;
+  }
+>;
+
+export type INotification = Merge<
+  Base,
+  {
+    userId: string;
+    type: ValueOf<typeof E_NOTIFICATION_TYPE>;
+    title: string;
+    body: string | null;
+    action: INotificationAction;
+    source: INotificationSource;
+    actorUserId: string | null;
+    read: boolean;
+    readAt: Date | null;
   }
 >;
 
@@ -238,6 +316,7 @@ export type ITableSchema = Record<
 >;
 
 export type IGroupConfiguration = {
+  _id?: string;
   slug: string;
   name: string;
   fields: IField[];
@@ -285,6 +364,7 @@ export type ITable = Merge<
     groups: IGroupConfiguration[];
     order: { field: string; direction: 'asc' | 'desc' } | null;
     layoutFields: ILayoutFields;
+    rowSlugFieldId: string | null;
   }
 >;
 
@@ -300,10 +380,29 @@ export type IDropdown = {
   color?: string | null;
 };
 
+export type IRelationshipLabelPart = {
+  /**
+   * Caminho separado por pontos, relativo a tabela relacionada.
+   * Ex: "nome", "categoria.nome", "fornecedor.cidade.uf".
+   */
+  path: string;
+  /** Rotulo amigavel do caminho (para exibicao na UI de configuracao). */
+  label?: string;
+};
+
 export type IFieldConfigurationRelationship = {
   table: Pick<ITable, '_id' | 'slug'>;
   field: Pick<IField, '_id' | 'slug'>;
   order: 'asc' | 'desc';
+  /**
+   * Quando true, o label das opcoes e composto por `labelParts` + `labelSeparator`.
+   * Quando false/ausente, mantem o comportamento legado (label = `field.slug`).
+   */
+  customLabel?: boolean;
+  /** Lista ordenada de caminhos que compoem o label customizado. */
+  labelParts?: IRelationshipLabelPart[];
+  /** Separador usado entre os `labelParts`. Default: " - ". */
+  labelSeparator?: string;
 };
 
 export type IFieldConfigurationGroup = {
@@ -327,11 +426,14 @@ export type IField = Merge<
     widthInForm: number | null;
     widthInList: number | null;
     widthInDetail: number | null;
+    tip?: string | null;
     defaultValue: string | string[] | null;
     locked?: boolean;
     native?: boolean;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: IDropdown[];
+    allowCustomDropdownOptions?: boolean;
+    allowCreateRelationshipRecords?: boolean;
     category: ICategory[];
     group: IFieldConfigurationGroup | null;
   }
@@ -352,16 +454,26 @@ export type FieldCreatePayload = Pick<
   | 'widthInForm'
   | 'widthInList'
   | 'widthInDetail'
+  | 'tip'
   | 'locked'
   | 'native'
   | 'defaultValue'
   | 'relationship'
   | 'dropdown'
+  | 'allowCustomDropdownOptions'
+  | 'allowCreateRelationshipRecords'
   | 'category'
   | 'group'
 >;
 
-export type IRow = Merge<Base, Record<string, any>>;
+export type IRow = Merge<
+  Omit<Base, 'trashed'>,
+  Record<string, unknown> & {
+    status?: ValueOf<typeof E_ROW_STATUS>;
+    draftAt?: Date | null;
+    sharedRowSlug?: string | null;
+  }
+>;
 
 export type IAttachment = {
   filename: string;
@@ -431,6 +543,11 @@ export type IEvaluation = Merge<
   }
 >;
 
+export type IMenuExtensionRef = {
+  pkg: string;
+  extensionId: string;
+};
+
 export type IMenu = Merge<
   Base,
   {
@@ -441,13 +558,18 @@ export type IMenu = Merge<
     parent: string | null;
     url: string | null;
     html: string | null;
+    icon: string | null;
     owner: IUser | string | null;
     order: number;
+    isInitial: boolean;
+    /** Referência a uma extensão (apenas para type=EXTENSION_MODULE). */
+    extension: IMenuExtensionRef | null;
   }
 >;
 
 export type ISetting = {
   SYSTEM_NAME: string;
+  SYSTEM_DESCRIPTION: string;
   LOCALE: string;
   STORAGE_DRIVER: 'local' | 's3';
   STORAGE_ENDPOINT?: string;
@@ -462,6 +584,9 @@ export type ISetting = {
   MODEL_CLONE_TABLES: ITable[];
   LOGO_SMALL_URL?: string | null;
   LOGO_LARGE_URL?: string | null;
+  LOGO_SMALL_DARK_URL?: string | null;
+  LOGO_LARGE_DARK_URL?: string | null;
+  LOGIN_BACKGROUND_URL?: string | null;
   EMAIL_PROVIDER_HOST: string | null;
   EMAIL_PROVIDER_PORT: number | null;
   EMAIL_PROVIDER_USER: string | null;
@@ -469,7 +594,136 @@ export type ISetting = {
   EMAIL_PROVIDER_FROM: string | null;
   OPENAI_API_KEY: string | null;
   AI_ASSISTANT_ENABLED: boolean;
+  CHAT_HISTORY_ENABLED: boolean;
+  MCP_SERVER_URL: string | null;
+  MCP_SERVER_TOKEN: string | null;
+  /** URL da API LowCodeJS enviada ao MCP no header X-Lowcode-Api-Url. */
+  MCP_LOWCODE_API_URL: string | null;
+  OPENAI_MODEL: string;
+  /** Provedor ativo do assistente IA. */
+  AI_LLM_PROVIDER: ValueOf<typeof E_AI_LLM_PROVIDER>;
+  /** Chave de API do provedor (exceto Ollama). */
+  LLM_API_KEY: string | null;
+  /** ID do modelo no provedor selecionado. */
+  LLM_MODEL: string;
+  /** URL base para Ollama ou endpoint customizado. */
+  LLM_BASE_URL: string | null;
+  SETUP_COMPLETED: boolean;
+  SETUP_CURRENT_STEP:
+    | 'admin'
+    | 'name'
+    | 'storage'
+    | 'logos'
+    | 'upload'
+    | 'paging'
+    | 'email'
+    | null;
+  MIGRATION_DUAL_CONNECTION_AT: Date | null;
+  MIGRATION_DUAL_CONNECTION_DROPPED_AT: Date | null;
+  MIGRATION_STORAGE_LOCATION_AT: Date | null;
+  STORAGE_MIGRATION_LAST_RUN_AT: Date | null;
+  MIGRATION_ROW_STATUS_TRASHED_AT: Date | null;
 };
+
+export const E_LOGGER_ACTION_TYPE = {
+  VIEW: 'VIEW',
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
+  AI_CALL: 'AI_CALL',
+  AI_RESPONSE: 'AI_RESPONSE',
+} as const;
+
+export const E_LOGGER_OBJECT_TYPE = {
+  TABLE: 'TABLE',
+  FIELD: 'FIELD',
+  ROW: 'ROW',
+  MENU: 'MENU',
+  USER: 'USER',
+  EXTENSION: 'EXTENSION',
+  GROUP_FIELD: 'GROUP_FIELD',
+  GROUP_ROW: 'GROUP_ROW',
+  PAGE: 'PAGE',
+  PERMISSION: 'PERMISSION',
+  PROFILE: 'PROFILE',
+  SETTING: 'SETTING',
+  SETUP: 'SETUP',
+  STORAGE: 'STORAGE',
+  USER_GROUP: 'USER_GROUP',
+  AI_TOOL: 'AI_TOOL',
+} as const;
+
+export type ILogger = Merge<
+  Base,
+  {
+    url: string;
+    user: IUser | null;
+    action: (typeof E_LOGGER_ACTION_TYPE)[keyof typeof E_LOGGER_ACTION_TYPE];
+    object:
+      | (typeof E_LOGGER_OBJECT_TYPE)[keyof typeof E_LOGGER_OBJECT_TYPE]
+      | null;
+    object_id: string | null;
+    content: Record<string, unknown> | null;
+  }
+>;
+
+export const E_EXTENSION_TYPE = {
+  PLUGIN: 'PLUGIN',
+  MODULE: 'MODULE',
+  TOOL: 'TOOL',
+} as const;
+
+export type IExtensionTableScope = {
+  mode: 'all' | 'specific';
+  tableIds: string[];
+};
+
+export type IExtensionRequires = {
+  lowcodejs?: string;
+  extensions?: string[];
+};
+
+export type IExtensionPermissions = {
+  /**
+   * Roles permitidas a visualizar/usar a extensão. Vazio (`[]`) ou ausente
+   * = qualquer usuário autenticado pode ver.
+   */
+  view: string[];
+};
+
+export type IExtension = Merge<
+  Base,
+  {
+    /** Pacote ao qual a extensão pertence (ex: "core", "marcos-pdf-tools"). */
+    pkg: string;
+    type: ValueOf<typeof E_EXTENSION_TYPE>;
+    /** Identificador único dentro de (pkg, type). */
+    extensionId: string;
+    name: string;
+    description: string | null;
+    version: string;
+    author: string | null;
+    icon: string | null;
+    image: string | null;
+    /** Slots de placement. Apenas para PLUGIN. Plugins podem aparecer em múltiplos slots. */
+    slots: string[];
+    /** URL default do módulo. Apenas para MODULE. */
+    route: string | null;
+    /** URL da tela de configuração da extensão. Quando presente, exibe botão "Configurar" em /extensions. */
+    configRoute: string | null;
+    /** Sub-grupo no menu Ferramentas. Apenas para TOOL. */
+    submenu: string | null;
+    enabled: boolean;
+    /** False se o manifesto não existe mais no disco no boot atual. */
+    available: boolean;
+    /** Configuração de escopo por tabela (relevante para PLUGIN). */
+    tableScope: IExtensionTableScope;
+    /** Manifesto completo, para auditoria/diagnóstico. */
+    manifestSnapshot: Record<string, unknown>;
+    requires: IExtensionRequires;
+    permissions: IExtensionPermissions;
+  }
+>;
 
 export const E_TABLE_PERMISSION = {
   // TABLE
@@ -559,9 +813,9 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Lixeira',
-    slug: 'trashed',
-    type: E_FIELD_TYPE.TRASHED,
+    name: 'Status',
+    slug: 'status',
+    type: E_FIELD_TYPE.STATUS,
     native: true,
     locked: true,
     required: false,
@@ -672,9 +926,9 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Lixeira',
-    slug: 'trashed',
-    type: E_FIELD_TYPE.TRASHED,
+    name: 'Status',
+    slug: 'status',
+    type: E_FIELD_TYPE.STATUS,
     native: true,
     locked: true,
     required: false,

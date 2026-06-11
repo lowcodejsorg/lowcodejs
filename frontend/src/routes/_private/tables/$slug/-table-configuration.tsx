@@ -11,9 +11,14 @@ import {
   Settings2Icon,
 } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 import { ApiEndpointsModal } from './-api-endpoints-modal';
 
+import { TableFieldManagementSheet } from '@/components/common/dynamic-table/field-management/table-field-management-sheet';
+import { GroupFieldManagementSheet } from '@/components/common/dynamic-table/group-rows/group-field-management-sheet';
+import { ExtensionSlot } from '@/components/common/extension-slot/extension-slot';
+import { FieldTitle } from '@/components/common/field-title';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -31,24 +36,25 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE, E_TABLE_TYPE } from '@/lib/constant';
 import type { IField, ITable } from '@/lib/interfaces';
-import { toastInfo } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 interface FieldGroupSubMenuProps {
   field: IField;
   originSlug: string;
   parentTable: ITable;
+  onNavigate: () => void;
+  onManageGroup: (groupSlug: string) => void;
 }
 
 function FieldGroupSubMenu({
   field,
   originSlug,
   parentTable,
+  onNavigate,
+  onManageGroup,
 }: FieldGroupSubMenuProps): React.JSX.Element {
   const router = useRouter();
   const permission = useTablePermission(parentTable);
-
-  // Busca grupo em groups da tabela pai
 
   const group = (parentTable.groups ?? []).find(
     (g) => g.slug === field.group?.slug,
@@ -62,7 +68,10 @@ function FieldGroupSubMenu({
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
-        <span>Gerenciar {field.name}</span>
+        <span className="inline-flex min-w-0 gap-1">
+          <span>Gerenciar</span>
+          <FieldTitle value={field.name} />
+        </span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
@@ -70,6 +79,7 @@ function FieldGroupSubMenu({
             <DropdownMenuItem
               className="inline-flex space-x-1 w-full"
               onClick={() => {
+                onNavigate();
                 router.navigate({
                   to: '/tables/$slug/field/create',
                   params: { slug: originSlug },
@@ -82,24 +92,20 @@ function FieldGroupSubMenu({
             </DropdownMenuItem>
           )}
 
-          {permission.can('UPDATE_FIELD') && activeFields.length > 1 && (
+          {permission.can('UPDATE_FIELD') && (
             <DropdownMenuItem
               className="inline-flex space-x-1 w-full"
               onClick={() => {
-                router.navigate({
-                  to: '/tables/$slug/group/$groupSlug/field/management',
-                  params: { slug: originSlug, groupSlug },
-                });
+                onNavigate();
+                onManageGroup(groupSlug);
               }}
             >
               <ArrowUpDownIcon className="size-4" />
-              <span>Gerenciar </span>
+              <span>Gerenciar</span>
             </DropdownMenuItem>
           )}
 
-          {permission.can('UPDATE_FIELD') && activeFields.length > 0 && (
-            <DropdownMenuSeparator />
-          )}
+          {permission.can('UPDATE_FIELD') && <DropdownMenuSeparator />}
 
           {permission.can('UPDATE_FIELD') &&
             activeFields.map((groupField) => (
@@ -107,6 +113,7 @@ function FieldGroupSubMenu({
                 key={groupField._id}
                 className="inline-flex space-x-1 w-full"
                 onClick={() => {
+                  onNavigate();
                   router.navigate({
                     to: '/tables/$slug/field/$fieldId',
                     params: { slug: originSlug, fieldId: groupField._id },
@@ -115,7 +122,10 @@ function FieldGroupSubMenu({
                 }}
               >
                 <PencilIcon className="size-4" />
-                <span>Editar {groupField.name}</span>
+                <span className="inline-flex min-w-0 gap-1">
+                  <span>Editar</span>
+                  <FieldTitle value={groupField.name} />
+                </span>
               </DropdownMenuItem>
             ))}
         </DropdownMenuSubContent>
@@ -136,11 +146,17 @@ export function TableConfigurationDropdown({
   });
 
   const router = useRouter();
-
   const table = useReadTable({ slug: tableSlug });
   const permission = useTablePermission(table.data);
 
   const [apiModalOpen, setApiModalOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [fieldManagementOpen, setFieldManagementOpen] = useState(false);
+  const [groupManagementSlug, setGroupManagementSlug] = useState<string | null>(
+    null,
+  );
+
+  const closeMenu = (): void => setOpen(false);
 
   const activeFields =
     table.data?.fields.filter(
@@ -152,7 +168,6 @@ export function TableConfigurationDropdown({
       (f) => f.type === E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
     ) ?? [];
 
-  // Ocultar dropdown se não tiver permissão de gerenciar
   const canManage =
     permission.can('CREATE_FIELD') ||
     permission.can('UPDATE_FIELD') ||
@@ -163,208 +178,252 @@ export function TableConfigurationDropdown({
   }
 
   return (
-    <DropdownMenu
-      dir="ltr"
-      modal={false}
-    >
-      <DropdownMenuTrigger asChild>
-        <Button
-          disabled={table.status === 'pending'}
-          className={cn('shadow-none p-1 h-auto')}
-          variant="outline"
-          data-test-id="table-config-btn"
-        >
-          <Settings2Icon className="size-4" />
-          <span>Configuração</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="mr-12 max-w-xs w-full"
-        data-test-id="table-config-dropdown"
+    <>
+      <DropdownMenu
+        dir="ltr"
+        modal={false}
+        open={open}
+        onOpenChange={setOpen}
       >
-        {(permission.can('CREATE_FIELD') || permission.can('UPDATE_FIELD')) && (
-          <DropdownMenuLabel>Campos</DropdownMenuLabel>
-        )}
-
-        <DropdownMenuGroup>
-          {permission.can('CREATE_FIELD') && (
-            <DropdownMenuItem
-              className="inline-flex space-x-1 w-full"
-              onClick={() => {
-                router.navigate({
-                  to: '/tables/$slug/field/create',
-                  params: { slug },
-                });
-              }}
-            >
-              <PlusIcon className="size-4" />
-              <span>Novo campo</span>
-            </DropdownMenuItem>
+        <DropdownMenuTrigger asChild>
+          <Button
+            disabled={table.status === 'pending'}
+            className={cn('shadow-none p-1 h-auto')}
+            variant="outline"
+            data-test-id="table-config-btn"
+          >
+            <Settings2Icon className="size-4" />
+            <span>Configuração</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className="mr-12 max-w-xs w-full"
+          data-test-id="table-config-dropdown"
+        >
+          {(permission.can('CREATE_FIELD') ||
+            permission.can('UPDATE_FIELD')) && (
+            <DropdownMenuLabel>Campos</DropdownMenuLabel>
           )}
 
-          {permission.can('UPDATE_FIELD') && activeFields.length > 0 && (
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="inline-flex space-x-1 w-full">
-                <SendToBackIcon className="size-4" />
-                <span>Gerenciar campos</span>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                  {activeFields.length > 0 && (
-                    <>
+          <DropdownMenuGroup>
+            {permission.can('CREATE_FIELD') && (
+              <DropdownMenuItem
+                className="inline-flex space-x-1 w-full"
+                onClick={() => {
+                  closeMenu();
+                  router.navigate({
+                    to: '/tables/$slug/field/create',
+                    params: { slug },
+                  });
+                }}
+              >
+                <PlusIcon className="size-4" />
+                <span>Novo campo</span>
+              </DropdownMenuItem>
+            )}
+
+            {permission.can('UPDATE_FIELD') && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="inline-flex space-x-1 w-full">
+                  <SendToBackIcon className="size-4" />
+                  <span>Gerenciar campos</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      className="inline-flex space-x-1 w-full"
+                      onClick={() => {
+                        closeMenu();
+                        setFieldManagementOpen(true);
+                      }}
+                    >
+                      <Settings2Icon className="size-4" />
+                      <span>Gerenciar</span>
+                    </DropdownMenuItem>
+
+                    {activeFields.map((field) => (
                       <DropdownMenuItem
-                        className="inline-flex space-x-1 w-full"
+                        key={field._id}
                         onClick={() => {
+                          closeMenu();
                           router.navigate({
-                            to: '/tables/$slug/field/management',
-                            params: { slug },
+                            to: '/tables/$slug/field/$fieldId',
+                            params: { slug, fieldId: field._id },
                           });
                         }}
                       >
-                        <Settings2Icon className="size-4" />
-                        <span>Gerenciar </span>
+                        <PencilIcon className="size-4" />
+                        <span className="inline-flex min-w-0 gap-1">
+                          <span>Editar</span>
+                          <FieldTitle value={field.name} />
+                        </span>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+            )}
+          </DropdownMenuGroup>
 
-                  {activeFields.map((field) => (
+          {table.data?.type === E_TABLE_TYPE.TABLE &&
+            (permission.can('CREATE_FIELD') ||
+              permission.can('UPDATE_FIELD')) && (
+              <React.Fragment>
+                <DropdownMenuSeparator />
+
+                <DropdownMenuLabel>Grupo de campos</DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  {permission.can('CREATE_FIELD') && (
                     <DropdownMenuItem
-                      key={field._id}
+                      className="inline-flex space-x-1 w-full"
                       onClick={() => {
+                        closeMenu();
                         router.navigate({
-                          to: '/tables/$slug/field/$fieldId',
-                          params: { slug, fieldId: field._id },
+                          to: '/tables/$slug/field/create',
+                          params: { slug },
+                          search: { 'field-type': E_FIELD_TYPE.FIELD_GROUP },
                         });
                       }}
                     >
-                      <PencilIcon className="size-4" />
-                      <span>Editar {field.name}</span>
+                      <PlusIcon className="size-4" />
+                      <span>Novo grupo</span>
                     </DropdownMenuItem>
-                  ))}
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
-          )}
-        </DropdownMenuGroup>
+                  )}
 
-        {table.data?.type === E_TABLE_TYPE.TABLE &&
-          (permission.can('CREATE_FIELD') ||
-            permission.can('UPDATE_FIELD')) && (
+                  {permission.can('UPDATE_FIELD') &&
+                    table.status === 'success' &&
+                    fieldGroups.map((field) => (
+                      <FieldGroupSubMenu
+                        key={field._id}
+                        field={field}
+                        originSlug={slug}
+                        parentTable={table.data}
+                        onNavigate={closeMenu}
+                        onManageGroup={(gSlug) => {
+                          closeMenu();
+                          setGroupManagementSlug(gSlug);
+                        }}
+                      />
+                    ))}
+                </DropdownMenuGroup>
+              </React.Fragment>
+            )}
+
+          {permission.can('UPDATE_FIELD') && table.data && (
             <React.Fragment>
               <DropdownMenuSeparator />
 
-              <DropdownMenuLabel>Grupo de campos</DropdownMenuLabel>
               <DropdownMenuGroup>
-                {permission.can('CREATE_FIELD') && (
-                  <DropdownMenuItem
-                    className="inline-flex space-x-1 w-full"
-                    onClick={() => {
-                      router.navigate({
-                        to: '/tables/$slug/field/create',
-                        params: { slug },
-                        search: { 'field-type': E_FIELD_TYPE.FIELD_GROUP },
-                      });
-                    }}
-                  >
-                    <PlusIcon className="size-4" />
-                    <span>Novo grupo</span>
-                  </DropdownMenuItem>
-                )}
-
-                {permission.can('UPDATE_FIELD') &&
-                  table.status === 'success' &&
-                  fieldGroups.map((field) => (
-                    <FieldGroupSubMenu
-                      key={field._id}
-                      field={field}
-                      originSlug={slug}
-                      parentTable={table.data}
-                    />
-                  ))}
+                <ExtensionSlot
+                  id="table.fields.manage"
+                  context={{ table: table.data, slug }}
+                />
               </DropdownMenuGroup>
             </React.Fragment>
           )}
 
-        {permission.can('UPDATE_TABLE') && (
-          <React.Fragment>
-            <DropdownMenuSeparator />
+          {permission.can('UPDATE_TABLE') && (
+            <React.Fragment>
+              <DropdownMenuSeparator />
 
-            <DropdownMenuLabel>Geral</DropdownMenuLabel>
+              <DropdownMenuLabel>Geral</DropdownMenuLabel>
 
-            <DropdownMenuGroup>
-              <DropdownMenuItem
-                className="inline-flex space-x-1 w-full"
-                onClick={() => {
-                  router.navigate({
-                    to: '/tables/$slug/detail',
-                    params: { slug },
-                  });
-                }}
-              >
-                <PencilIcon className="size-4" />
-                {table.data?.type === E_TABLE_TYPE.TABLE && (
-                  <span>Editar tabela</span>
-                )}
-
-                {table.data?.type === E_TABLE_TYPE.FIELD_GROUP && (
-                  <span>Editar grupo</span>
-                )}
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                className="inline-flex space-x-1 w-full"
-                onClick={() => {
-                  router.navigate({
-                    to: '/tables/$slug/methods',
-                    params: { slug },
-                  });
-                }}
-              >
-                <CodepenIcon className="size-4" />
-                <span>Métodos</span>
-              </DropdownMenuItem>
-
-              {table.data?.type === E_TABLE_TYPE.TABLE && (
-                <DropdownMenuItem
-                  className="inline-flex space-x-1 w-full"
-                  data-test-id="api-endpoints-btn"
-                  onClick={() => setApiModalOpen(true)}
-                >
-                  <InfoIcon className="size-4" />
-                  <span>Informações da API</span>
-                </DropdownMenuItem>
-              )}
-
-              {table.data?.type === E_TABLE_TYPE.TABLE && (
+              <DropdownMenuGroup>
                 <DropdownMenuItem
                   className="inline-flex space-x-1 w-full"
                   onClick={() => {
-                    const embedUrl = window.location.href;
-                    const iframeCode = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0"></iframe>`;
-
-                    navigator.clipboard.writeText(iframeCode);
-
-                    toastInfo(
-                      'Código embed copiado',
-                      'O código iframe foi copiado para a área de transferência',
-                    );
+                    closeMenu();
+                    router.navigate({
+                      to: '/tables/$slug/detail',
+                      params: { slug },
+                    });
                   }}
                 >
-                  <CodeIcon className="size-4" />
-                  <span>Gerar código embed</span>
+                  <PencilIcon className="size-4" />
+                  {table.data?.type === E_TABLE_TYPE.TABLE && (
+                    <span>Editar tabela</span>
+                  )}
+                  {table.data?.type === E_TABLE_TYPE.FIELD_GROUP && (
+                    <span>Editar grupo</span>
+                  )}
                 </DropdownMenuItem>
-              )}
-            </DropdownMenuGroup>
-          </React.Fragment>
-        )}
-      </DropdownMenuContent>
 
-      <ApiEndpointsModal
-        tableSlug={tableSlug}
-        open={apiModalOpen}
-        onOpenChange={setApiModalOpen}
-      />
-    </DropdownMenu>
+                <DropdownMenuItem
+                  className="inline-flex space-x-1 w-full"
+                  onClick={() => {
+                    closeMenu();
+                    router.navigate({
+                      to: '/tables/$slug/methods',
+                      params: { slug },
+                    });
+                  }}
+                >
+                  <CodepenIcon className="size-4" />
+                  <span>Métodos</span>
+                </DropdownMenuItem>
+
+                {table.data?.type === E_TABLE_TYPE.TABLE && (
+                  <DropdownMenuItem
+                    className="inline-flex space-x-1 w-full"
+                    data-test-id="api-endpoints-btn"
+                    onClick={() => {
+                      closeMenu();
+                      setApiModalOpen(true);
+                    }}
+                  >
+                    <InfoIcon className="size-4" />
+                    <span>Informações da API</span>
+                  </DropdownMenuItem>
+                )}
+
+                {table.data?.type === E_TABLE_TYPE.TABLE && (
+                  <DropdownMenuItem
+                    className="inline-flex space-x-1 w-full"
+                    onClick={() => {
+                      closeMenu();
+                      const embedUrl = window.location.href;
+                      const iframeCode = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0"></iframe>`;
+                      navigator.clipboard.writeText(iframeCode);
+                      toast.info('Código embed copiado', {
+                        description:
+                          'O código iframe foi copiado para a área de transferência',
+                      });
+                    }}
+                  >
+                    <CodeIcon className="size-4" />
+                    <span>Gerar código embed</span>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuGroup>
+            </React.Fragment>
+          )}
+        </DropdownMenuContent>
+
+        <ApiEndpointsModal
+          tableSlug={tableSlug}
+          open={apiModalOpen}
+          onOpenChange={setApiModalOpen}
+        />
+      </DropdownMenu>
+
+      {table.data && (
+        <TableFieldManagementSheet
+          open={fieldManagementOpen}
+          onOpenChange={setFieldManagementOpen}
+          table={table.data}
+        />
+      )}
+
+      {table.data && groupManagementSlug && (
+        <GroupFieldManagementSheet
+          open={Boolean(groupManagementSlug)}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) setGroupManagementSlug(null);
+          }}
+          table={table.data}
+          groupSlug={groupManagementSlug}
+        />
+      )}
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
 import {
   Combobox,
   ComboboxContent,
@@ -10,7 +11,7 @@ import {
 } from '@/components/ui/combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
-import { useRelationshipRowsReadPaginated } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated';
+import { useRelationshipRowsReadPaginatedInfinite } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated-infinite';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { IRow } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
@@ -43,16 +44,18 @@ export function TableFieldRelationshipDefaultValue({
     return (): void => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data, isLoading } = useRelationshipRowsReadPaginated({
-    tableSlug,
-    fieldSlug,
-    search: debouncedQuery,
-    page: 1,
-    perPage: 50,
-    enabled: Boolean(tableSlug && fieldSlug),
-  });
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useRelationshipRowsReadPaginatedInfinite({
+      tableSlug,
+      fieldSlug,
+      search: debouncedQuery,
+      perPage: 10,
+    });
 
-  const allItems: Array<IRow> = data?.data ?? [];
+  const allItems: Array<IRow> = React.useMemo(
+    () => data?.pages.flatMap((page) => page.data) ?? [],
+    [data?.pages],
+  );
 
   const selectedItem = React.useMemo(() => {
     if (!value) return null;
@@ -116,16 +119,23 @@ export function TableFieldRelationshipDefaultValue({
               </div>
             )}
             {!isLoading && (
-              <ComboboxList>
-                {(row: IRow): React.ReactNode => (
-                  <ComboboxItem
-                    key={row._id}
-                    value={row}
-                  >
-                    {getRowLabel(row)}
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
+              <React.Fragment>
+                <ComboboxList>
+                  {(row: IRow): React.ReactNode => (
+                    <ComboboxItem
+                      key={row._id}
+                      value={row}
+                    >
+                      {getRowLabel(row)}
+                    </ComboboxItem>
+                  )}
+                </ComboboxList>
+                <ComboboxLoadMore
+                  hasNextPage={hasNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  onLoadMore={() => fetchNextPage()}
+                />
+              </React.Fragment>
             )}
           </ComboboxContent>
         </Combobox>

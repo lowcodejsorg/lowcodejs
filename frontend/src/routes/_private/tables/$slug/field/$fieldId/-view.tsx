@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
+import { getDropdownContrastStyle } from '@/components/common/dynamic-table/table-cells/utils';
 import { Badge } from '@/components/ui/badge';
 import {
   DATE_FORMAT_OPTIONS,
@@ -49,9 +50,27 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
     >
       {/* Nome */}
       <div className="space-y-1">
-        <p className="text-sm font-medium">Nome</p>
-        <p className="text-sm text-muted-foreground">{data.name || '-'}</p>
+        <p className="text-sm font-medium">Título exibido</p>
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+          {data.name || '-'}
+        </p>
       </div>
+
+      <div className="space-y-1">
+        <p className="text-sm font-medium">Slug</p>
+        <p className="text-sm text-muted-foreground break-all">
+          {data.slug || '-'}
+        </p>
+      </div>
+
+      {data.tip && (
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Dica do campo</p>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+            {data.tip}
+          </p>
+        </div>
+      )}
 
       {/* Tipo */}
       <div className="space-y-1">
@@ -103,22 +122,19 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
         <div className="space-y-1">
           <p className="text-sm font-medium">Opções do Dropdown</p>
           <div className="flex flex-wrap gap-1">
-            {data.dropdown.map((opt) => (
-              <Badge
-                key={opt.id}
-                variant="secondary"
-                style={
-                  opt.color
-                    ? {
-                        backgroundColor: opt.color,
-                        color: '#fff',
-                      }
-                    : undefined
-                }
-              >
-                {opt.label}
-              </Badge>
-            ))}
+            {data.dropdown.map((opt) => {
+              const colorStyle = getDropdownContrastStyle(opt.color);
+              return (
+                <Badge
+                  key={opt.id}
+                  variant="outline"
+                  className={colorStyle ? undefined : 'text-muted-foreground'}
+                  style={colorStyle}
+                >
+                  {opt.label}
+                </Badge>
+              );
+            })}
           </div>
         </div>
       )}
@@ -137,6 +153,15 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
             Ordem:{' '}
             {data.relationship.order === 'asc' ? 'Crescente' : 'Decrescente'}
           </p>
+          {data.relationship.customLabel &&
+            (data.relationship.labelParts?.length ?? 0) > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Label personalizado:{' '}
+                {data.relationship.labelParts
+                  ?.map((part) => part.label || part.path)
+                  .join(data.relationship.labelSeparator || ' - ')}
+              </p>
+            )}
         </div>
       )}
 

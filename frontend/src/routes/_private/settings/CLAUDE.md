@@ -17,7 +17,7 @@ usuarios com role MASTER.
 
 | Grupo              | Campos                                                                                                                |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| Sistema            | `SYSTEM_NAME`, `LOCALE`                                                                                               |
+| Sistema            | `SYSTEM_NAME`, `SYSTEM_DESCRIPTION`, `LOCALE`                                                                         |
 | Storage            | `STORAGE_DRIVER`                                                                                                      |
 | Logos              | `LOGO_SMALL_URL`, `LOGO_LARGE_URL` (com upload de arquivo)                                                            |
 | Upload de arquivos | `FILE_UPLOAD_MAX_SIZE`, `FILE_UPLOAD_MAX_FILES_PER_UPLOAD`, `FILE_UPLOAD_ACCEPTED`                                    |
@@ -27,8 +27,7 @@ usuarios com role MASTER.
 | IA                 | `OPENAI_API_KEY`, `AI_ASSISTANT_ENABLED`                                                                              |
 
 Todos os campos vivem no documento Setting do MongoDB. O backend aplica defaults
-no schema Mongoose — nenhum campo depende mais de variaveis de ambiente (apenas
-`STORAGE_DRIVER` e credenciais S3 permanecem no .env).
+no schema Mongoose — nenhum campo depende de variaveis de ambiente.
 
 ## Controle de Acesso
 

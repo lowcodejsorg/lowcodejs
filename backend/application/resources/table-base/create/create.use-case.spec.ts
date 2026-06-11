@@ -8,31 +8,32 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
-import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
+import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
 import TableCreateUseCase from './create.use-case';
 
 let fieldInMemoryRepository: FieldInMemoryRepository;
 let tableInMemoryRepository: TableInMemoryRepository;
-let tableSchemaService: TableSchemaInMemoryService;
+let schemaBuilder: InMemorySchemaBuilder;
 let sut: TableCreateUseCase;
 
 describe('Table Create Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
-    tableSchemaService = new TableSchemaInMemoryService();
+    schemaBuilder = new InMemorySchemaBuilder();
 
     sut = new TableCreateUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
-      tableSchemaService,
+      schemaBuilder,
     );
   });
 
   it('deve criar tabela com sucesso', async () => {
     const result = await sut.execute({
       name: 'Clientes',
+      slug: 'clientes',
       owner: 'owner-id',
     });
 
@@ -67,12 +68,12 @@ describe('Table Create Use Case', () => {
     expect(createdAtField.native).toBe(true);
     expect(createdAtField.locked).toBe(true);
 
-    const trashedField = fields.find((f) => f.slug === 'trashed');
-    expect(trashedField).toBeDefined();
-    if (!trashedField) throw new Error('Expected trashedField');
-    expect(trashedField.type).toBe(E_FIELD_TYPE.TRASHED);
-    expect(trashedField.native).toBe(true);
-    expect(trashedField.locked).toBe(true);
+    const statusField = fields.find((f) => f.slug === 'status');
+    expect(statusField).toBeDefined();
+    if (!statusField) throw new Error('Expected statusField');
+    expect(statusField.type).toBe(E_FIELD_TYPE.STATUS);
+    expect(statusField.native).toBe(true);
+    expect(statusField.locked).toBe(true);
 
     const trashedAtField = fields.find((f) => f.slug === 'trashedAt');
     expect(trashedAtField).toBeDefined();
@@ -93,6 +94,7 @@ describe('Table Create Use Case', () => {
   it('deve retornar erro OWNER_REQUIRED quando owner nao for informado', async () => {
     const result = await sut.execute({
       name: 'Clientes',
+      slug: 'clientes',
       owner: '',
     });
 
@@ -121,6 +123,7 @@ describe('Table Create Use Case', () => {
 
     const result = await sut.execute({
       name: 'Clientes',
+      slug: 'clientes',
       owner: 'owner-id',
     });
 
@@ -140,6 +143,7 @@ describe('Table Create Use Case', () => {
 
     const result = await sut.execute({
       name: 'Clientes',
+      slug: 'clientes',
       owner: 'owner-id',
     });
 

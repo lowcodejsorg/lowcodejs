@@ -9,6 +9,7 @@ import type {
   IUser,
   SearchableOption,
 } from './interfaces';
+import { resolveRelationshipLabel } from './relationship-label';
 
 export function getDropdownItem(
   items: Array<IDropdown>,
@@ -65,6 +66,7 @@ function toDefaultSearchableOptions(
 
 export function buildCreateRowDefaultValues(
   fields: Array<IField>,
+  overrides?: CreateRowDefaultValue,
 ): CreateRowDefaultValue {
   const defaults: Record<
     string,
@@ -116,6 +118,12 @@ export function buildCreateRowDefaultValues(
         break;
       default:
         defaults[field.slug] = '';
+    }
+  }
+
+  if (overrides) {
+    for (const [key, value] of Object.entries(overrides)) {
+      if (key in defaults) defaults[key] = value;
     }
   }
 
@@ -196,11 +204,10 @@ export function buildUpdateRowDefaultValues(
       case E_FIELD_TYPE.RELATIONSHIP: {
         const rows = toArray<IRow>(value);
         const relConfig = field.relationship;
-        const labelField = relConfig?.field?.slug ?? '_id';
 
         defaults[field.slug] = rows.map((row) => ({
           value: row._id,
-          label: String(row[labelField] ?? row._id),
+          label: resolveRelationshipLabel(row, relConfig),
         }));
         break;
       }

@@ -1,10 +1,13 @@
 {
+  "name": "lowcodejs",
+  "license": "MIT",
   "devDependencies": {
     "husky": "^9.1.7",
     "npm-run-all2": "^8.0.4"
   },
   "scripts": {
     "prepare": "husky",
+    "make:extension": "node scripts/make-extension.mjs",
     "lint:backend": "cd backend && npm run lint",
     "lint:frontend": "cd frontend && npm run lint",
     "test:unit:backend": "cd backend && npm run test:unit",

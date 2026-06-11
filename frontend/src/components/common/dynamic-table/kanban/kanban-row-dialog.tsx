@@ -1,5 +1,15 @@
-import { CopyIcon, DownloadIcon, FileTextIcon, TrashIcon } from 'lucide-react';
+import { useRouter } from '@tanstack/react-router';
+import type { Editor as TiptapEditor } from '@tiptap/core';
+import {
+  CopyIcon,
+  DownloadIcon,
+  EyeIcon,
+  FileTextIcon,
+  PencilIcon,
+  TrashIcon,
+} from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { KanbanFieldGroupEditor } from './kanban-field-group-editor';
 import { KanbanRowCommentsSection } from './kanban-row-comments';
@@ -8,6 +18,7 @@ import { KanbanRowExtraFieldsSection } from './kanban-row-extra-fields';
 import { KanbanRowQuickActions } from './kanban-row-quick-actions';
 import { KanbanRowTasksSection } from './kanban-row-tasks';
 
+import { GroupRowsDataTable } from '@/components/common/dynamic-table/group-rows';
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
@@ -19,7 +30,9 @@ import { TableRowRelationshipCell } from '@/components/common/dynamic-table/tabl
 import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { AttachmentContextMenu } from '@/components/common/file-upload/attachment-context-menu';
 import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
+import { extractMentionIds } from '@/components/common/rich-editor';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +47,7 @@ import { useRowUpdateTrash } from '@/hooks/tanstack-query/use-row-update-trash';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
+import { useUserMentionSearch } from '@/hooks/use-user-mention-search';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, IStorage, ITable } from '@/lib/interfaces';
@@ -52,7 +66,6 @@ import {
 import type { FieldMap } from '@/lib/kanban-types';
 import { getStorageDownloadUrl } from '@/lib/storage-url';
 import { buildRowPayload, buildUpdateRowDefaultValues } from '@/lib/table';
-import { toastError, toastSuccess, toastWarning } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 export function KanbanRowDialog({
@@ -64,6 +77,7 @@ export function KanbanRowDialog({
   tableSlug,
   table,
   fields,
+  initialEditTarget,
 }: {
   row: IRow | null;
   onClose: () => void;
@@ -73,20 +87,29 @@ export function KanbanRowDialog({
   tableSlug: string;
   table: ITable;
   fields: FieldMap;
+  initialEditTarget?: 'members' | 'start' | 'due' | 'list' | null;
 }): React.JSX.Element | null {
   const auth = useAuthStore((s) => s.user);
   const { data: profile } = useProfileRead();
   const permission = useTablePermission(table);
+  const router = useRouter();
   const currentUserId = auth?._id ?? '';
   const [editTarget, setEditTarget] = React.useState<
-    'members' | 'start' | 'due' | null
-  >(null);
+    'members' | 'start' | 'due' | 'list' | null
+  >(initialEditTarget ?? null);
   const [taskTitle, setTaskTitle] = React.useState('');
   const [editingTaskIndex, setEditingTaskIndex] = React.useState<number | null>(
     null,
   );
   const [editingTaskTitle, setEditingTaskTitle] = React.useState('');
   const [commentText, setCommentText] = React.useState('');
+  const commentEditorRef = React.useRef<TiptapEditor | null>(null);
+  const editCommentEditorRef = React.useRef<TiptapEditor | null>(null);
+  const mentionSearch = useUserMentionSearch();
+  const mentionsConfig = React.useMemo(
+    () => ({ enabled: true, resolvePage: mentionSearch.resolvePage }),
+    [mentionSearch.resolvePage],
+  );
   const [editingCommentIndex, setEditingCommentIndex] = React.useState<
     number | null
   >(null);
@@ -95,6 +118,10 @@ export function KanbanRowDialog({
     null,
   );
   const [isAddingAttachments, setIsAddingAttachments] = React.useState(false);
+
+  React.useEffect(() => {
+    setEditTarget(initialEditTarget ?? null);
+  }, [row?._id, initialEditTarget]);
   const [attachmentUploadFiles, setAttachmentUploadFiles] = React.useState<
     Array<File>
   >([]);
@@ -125,13 +152,18 @@ export function KanbanRowDialog({
     ...extraFields,
   ].filter(Boolean) as Array<IField>;
 
-  const quickFields = [fields.members, fields.startDate, fields.dueDate].filter(
-    Boolean,
-  ) as Array<IField>;
+  const quickFields = [
+    fields.members,
+    fields.startDate,
+    fields.dueDate,
+    fields.list,
+  ].filter(Boolean) as Array<IField>;
 
   const updateRow = useUpdateTableRow({
     onSuccess(data) {
-      toastSuccess('Registro atualizado', 'O card foi atualizado com sucesso');
+      toast.success('Registro atualizado', {
+        description: 'O card foi atualizado com sucesso',
+      });
       onRowUpdated?.(data);
       setTaskTitle('');
       setCommentText('');
@@ -139,33 +171,43 @@ export function KanbanRowDialog({
       setEditingTaskTitle('');
     },
     onError() {
-      toastError('Erro ao atualizar', 'Nao foi possivel atualizar o card');
+      toast.error('Erro ao atualizar', {
+        description: 'Nao foi possivel atualizar o card',
+      });
     },
   });
 
   const createRow = useCreateTableRow({
     onSuccess(data) {
-      toastSuccess('Card duplicado', 'O card foi duplicado com sucesso');
+      toast.success('Card duplicado', {
+        description: 'O card foi duplicado com sucesso',
+      });
       onRowDuplicated?.(data);
     },
     onError() {
-      toastError('Erro ao duplicar', 'Nao foi possivel duplicar o card');
+      toast.error('Erro ao duplicar', {
+        description: 'Nao foi possivel duplicar o card',
+      });
     },
   });
 
   const trashRow = useRowUpdateTrash({
     onSuccess() {
-      toastWarning('Card excluido', 'O card foi enviado para a lixeira');
+      toast.warning('Card excluido', {
+        description: 'O card foi enviado para a lixeira',
+      });
       if (row) onRowDeleted?.(row._id);
       onClose();
     },
     onError() {
-      toastError('Erro ao excluir', 'Nao foi possivel excluir o card');
+      toast.error('Erro ao excluir', {
+        description: 'Nao foi possivel excluir o card',
+      });
     },
   });
 
   const quickForm = useAppForm({
-    defaultValues: ((): Record<string, any> => {
+    defaultValues: ((): Record<string, unknown> => {
       if (row) {
         return buildDefaultValuesFromRow(row, quickFields);
       }
@@ -173,34 +215,48 @@ export function KanbanRowDialog({
     })(),
     onSubmit: async ({ value }) => {
       if (!row || updateRow.status === 'pending') return;
-      const payload: Record<string, any> = {};
+      const payload: Record<string, unknown> = {};
       for (const field of quickFields) {
         const v = value[field.slug];
         if (field.type === E_FIELD_TYPE.USER) {
-          let userValue: Array<any> = [];
+          let userValue: Array<string> = [];
           if (Array.isArray(v)) {
-            userValue = v.map((opt: any) => opt.value ?? opt._id ?? opt);
+            userValue = v
+              .map((opt: unknown) => {
+                if (typeof opt === 'string') return opt;
+                if (opt && typeof opt === 'object') {
+                  const candidate = opt as { value?: unknown; _id?: unknown };
+                  if (typeof candidate.value === 'string')
+                    return candidate.value;
+                  if (typeof candidate._id === 'string') return candidate._id;
+                }
+                return '';
+              })
+              .filter((id): id is string => id.length > 0);
           }
           payload[field.slug] = userValue;
           continue;
         }
 
         if (field.type === E_FIELD_TYPE.DROPDOWN) {
-          if (field.multiple) {
-            let dropdownValue: Array<any> = [];
-            if (Array.isArray(v)) {
-              dropdownValue = v;
-            } else if (v) {
-              dropdownValue = [v];
-            }
-            payload[field.slug] = dropdownValue;
-          } else {
-            let singleValue: any = v ?? null;
-            if (typeof v === 'string' && v) {
-              singleValue = v;
-            }
-            payload[field.slug] = singleValue;
+          let dropdownValue: Array<string> = [];
+          if (Array.isArray(v)) {
+            dropdownValue = v
+              .map((item: unknown) => {
+                if (typeof item === 'string') return item;
+                if (item && typeof item === 'object') {
+                  const candidate = item as { value?: unknown; id?: unknown };
+                  if (typeof candidate.value === 'string')
+                    return candidate.value;
+                  if (typeof candidate.id === 'string') return candidate.id;
+                }
+                return '';
+              })
+              .filter((id): id is string => id.length > 0);
+          } else if (typeof v === 'string' && v.length > 0) {
+            dropdownValue = [v];
           }
+          payload[field.slug] = dropdownValue;
           continue;
         }
 
@@ -268,6 +324,11 @@ export function KanbanRowDialog({
     (comment: Record<string, any>) => ({
       ...comment,
       autor: normalizeIdList(comment.autor),
+      mencoes: normalizeIdList(comment.mencoes),
+      'mencoes-notificadas':
+        typeof comment['mencoes-notificadas'] === 'string'
+          ? comment['mencoes-notificadas']
+          : '[]',
     }),
     [],
   );
@@ -354,6 +415,7 @@ export function KanbanRowDialog({
   });
 
   const canDelete = permission.can('REMOVE_ROW');
+  const canEdit = permission.can('UPDATE_ROW');
 
   const handleTaskToggle = async (index: number): Promise<void> => {
     if (!fields.tasks) return;
@@ -469,12 +531,15 @@ export function KanbanRowDialog({
   const handleCommentAdd = async (): Promise<void> => {
     if (!fields.comments || !commentText.trim()) return;
     const authorId = currentUserId || profile?._id || '';
+    const mentionIds = extractMentionIds(commentEditorRef.current);
     const updated = [
       ...comments.map(normalizeCommentPayload),
       {
         comentario: commentText.trim(),
         autor: normalizeIdList(authorId),
         data: new Date().toISOString(),
+        mencoes: mentionIds,
+        'mencoes-notificadas': '[]',
       },
     ];
     await updateRow.mutateAsync({
@@ -489,11 +554,13 @@ export function KanbanRowDialog({
 
   const handleCommentSave = async (): Promise<void> => {
     if (editingCommentIndex === null || !fields.comments) return;
+    const editMentionIds = extractMentionIds(editCommentEditorRef.current);
     const updated = comments.map((comment, index) =>
       index === editingCommentIndex
         ? {
             ...normalizeCommentPayload(comment),
             comentario: editingCommentText.trim(),
+            mencoes: editMentionIds,
           }
         : normalizeCommentPayload(comment),
     );
@@ -769,21 +836,32 @@ export function KanbanRowDialog({
               }
               return <formField.TableRowTextareaField field={field} />;
             case E_FIELD_TYPE.DROPDOWN:
-              return <formField.TableRowDropdownField field={field} />;
+              return (
+                <formField.TableRowDropdownField
+                  field={field}
+                  tableSlug={tableSlug}
+                />
+              );
             case E_FIELD_TYPE.DATE:
               return <formField.TableRowDateField field={field} />;
             case E_FIELD_TYPE.FILE:
               return <formField.TableRowFileField field={field} />;
             case E_FIELD_TYPE.RELATIONSHIP:
-              return <formField.TableRowRelationshipField field={field} />;
+              return (
+                <formField.TableRowRelationshipField
+                  field={field}
+                  tableSlug={tableSlug}
+                />
+              );
             case E_FIELD_TYPE.CATEGORY:
               return <formField.TableRowCategoryField field={field} />;
             case E_FIELD_TYPE.FIELD_GROUP:
               return (
-                <formField.TableRowFieldGroupField
-                  field={field}
+                <GroupRowsDataTable
                   tableSlug={tableSlug}
-                  form={extraForm}
+                  rowId={row._id}
+                  field={field}
+                  table={table}
                 />
               );
             case E_FIELD_TYPE.USER:
@@ -807,6 +885,24 @@ export function KanbanRowDialog({
         data-slot="kanban-row-dialog"
         data-test-id="kanban-row-dialog"
         className="w-[min(75vw,1000px)] max-w-[95vw] sm:max-w-[1200px] lg:max-w-[1400px] h-[85vh] overflow-hidden p-0"
+        onPointerDownOutside={(event): void => {
+          const target = event.target;
+          if (
+            target instanceof Element &&
+            target.closest('[data-slot="mention-popup-root"]')
+          ) {
+            event.preventDefault();
+          }
+        }}
+        onInteractOutside={(event): void => {
+          const target = event.target;
+          if (
+            target instanceof Element &&
+            target.closest('[data-slot="mention-popup-root"]')
+          ) {
+            event.preventDefault();
+          }
+        }}
       >
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] h-full min-h-0">
           <div className="overflow-y-auto p-6 h-full min-h-0">
@@ -869,10 +965,12 @@ export function KanbanRowDialog({
                 members: fields.members,
                 startDate: fields.startDate,
                 dueDate: fields.dueDate,
+                list: fields.list,
               }}
               editTarget={editTarget}
               setEditTarget={setEditTarget}
               quickForm={quickForm}
+              tableSlug={tableSlug}
             />
 
             {(fields.members || fields.startDate || fields.dueDate) && (
@@ -987,34 +1085,42 @@ export function KanbanRowDialog({
                                         attachment.mimetype?.includes('image')
                                       ) {
                                         attachmentThumbnail = (
-                                          <a
-                                            href={attachment.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="shrink-0"
+                                          <AttachmentContextMenu
+                                            storage={attachment}
                                           >
-                                            <img
-                                              src={attachment.url}
-                                              alt={attachment.originalName}
-                                              className="size-9 rounded object-cover border"
-                                            />
-                                          </a>
+                                            <a
+                                              href={attachment.url}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                              className="shrink-0"
+                                            >
+                                              <img
+                                                src={attachment.url}
+                                                alt={attachment.originalName}
+                                                className="size-9 rounded object-cover border"
+                                              />
+                                            </a>
+                                          </AttachmentContextMenu>
                                         );
                                       } else if (
                                         attachment.mimetype ===
                                         'application/pdf'
                                       ) {
                                         attachmentThumbnail = (
-                                          <a
-                                            href={attachment.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="shrink-0"
+                                          <AttachmentContextMenu
+                                            storage={attachment}
                                           >
-                                            <div className="size-9 rounded border bg-muted flex items-center justify-center">
-                                              <FileTextIcon className="size-4 text-muted-foreground" />
-                                            </div>
-                                          </a>
+                                            <a
+                                              href={attachment.url}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                              className="shrink-0"
+                                            >
+                                              <div className="size-9 rounded border bg-muted flex items-center justify-center">
+                                                <FileTextIcon className="size-4 text-muted-foreground" />
+                                              </div>
+                                            </a>
+                                          </AttachmentContextMenu>
                                         );
                                       }
                                       return (
@@ -1024,14 +1130,18 @@ export function KanbanRowDialog({
                                         >
                                           <div className="flex min-w-0 items-center gap-2">
                                             {attachmentThumbnail}
-                                            <a
-                                              href={attachment.url}
-                                              target="_blank"
-                                              rel="noreferrer"
-                                              className="text-sm text-primary underline underline-offset-2 truncate"
+                                            <AttachmentContextMenu
+                                              storage={attachment}
                                             >
-                                              {attachment.originalName}
-                                            </a>
+                                              <a
+                                                href={attachment.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-sm text-primary underline underline-offset-2 truncate"
+                                              >
+                                                {attachment.originalName}
+                                              </a>
+                                            </AttachmentContextMenu>
                                           </div>
                                           <div className="flex items-center gap-1">
                                             <a
@@ -1180,11 +1290,18 @@ export function KanbanRowDialog({
                 }}
                 onEditCancel={() => setEditingCommentIndex(null)}
                 onEditChange={setEditingCommentText}
+                onEditEditorReady={(editor) => {
+                  editCommentEditorRef.current = editor;
+                }}
                 onSave={handleCommentSave}
                 onDelete={handleCommentDelete}
                 commentText={commentText}
                 onCommentTextChange={setCommentText}
+                onCommentEditorReady={(editor) => {
+                  commentEditorRef.current = editor;
+                }}
                 onAddComment={handleCommentAdd}
+                mentions={mentionsConfig}
               />
             )}
 
@@ -1246,10 +1363,54 @@ export function KanbanRowDialog({
               >
                 Data do vencimento
               </Button>
+              {fields.list && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditTarget('list')}
+                  className="cursor-pointer"
+                >
+                  Lista
+                </Button>
+              )}
             </div>
 
             <div className="space-y-2 flex flex-col gap-1">
               <p className="text-xs uppercase text-muted-foreground">Ações</p>
+              <Button
+                type="button"
+                variant="outline"
+                data-test-id="kanban-view-btn"
+                onClick={(): void => {
+                  void router.navigate({
+                    to: '/tables/$slug/row/',
+                    params: { slug: tableSlug },
+                    search: { _id: row._id },
+                  });
+                }}
+                className="cursor-pointer"
+              >
+                <EyeIcon className="size-4" />
+                <span>Visualizar</span>
+              </Button>
+              {canEdit && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-test-id="kanban-edit-btn"
+                  onClick={(): void => {
+                    void router.navigate({
+                      to: '/tables/$slug/row/',
+                      params: { slug: tableSlug },
+                      search: { _id: row._id, mode: 'edit' as const },
+                    });
+                  }}
+                  className="cursor-pointer"
+                >
+                  <PencilIcon className="size-4" />
+                  <span>Editar</span>
+                </Button>
+              )}
               {isMember && (
                 <Button
                   type="button"
@@ -1286,7 +1447,7 @@ export function KanbanRowDialog({
               )}
             </div>
 
-            {fields.list && (
+            {fields.list && editTarget !== 'list' && (
               <div className="space-y-2">
                 <p className="text-xs uppercase text-muted-foreground">Lista</p>
                 <TableRowDropdownCell

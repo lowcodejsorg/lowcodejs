@@ -4,6 +4,7 @@ export interface MenuRouteBaseItem {
   title: string;
   badge?: string;
   icon?: React.ElementType;
+  iconUrl?: string | null;
   type?: string;
 }
 

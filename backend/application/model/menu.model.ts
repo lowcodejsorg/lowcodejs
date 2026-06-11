@@ -47,6 +47,22 @@ export const Schema = new mongoose.Schema(
       default: null,
     },
 
+    /** URL da imagem usada como ícone (opcional). Quando ausente, o frontend
+     *  cai para o ícone padrão por tipo de menu. */
+    icon: {
+      type: String,
+      default: null,
+    },
+
+    /** Referência a extensão (apenas para tipo EXTENSION_MODULE) */
+    extension: {
+      type: {
+        pkg: { type: String, required: true },
+        extensionId: { type: String, required: true },
+      },
+      default: null,
+    },
+
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -54,6 +70,7 @@ export const Schema = new mongoose.Schema(
     },
 
     order: { type: Number, default: 0 },
+    isInitial: { type: Boolean, default: false },
 
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
@@ -66,6 +83,7 @@ export const Schema = new mongoose.Schema(
 
 // Índices para otimização de consultas
 Schema.index({ parent: 1, order: 1 });
+Schema.index({ isInitial: 1 });
 // Schema.index({ slug: 1 }, { unique: true });
 // Schema.index({ trashed: 1 });
 

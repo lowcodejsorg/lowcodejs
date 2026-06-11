@@ -2,24 +2,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import ValidationTokenInMemoryRepository from '@application/repositories/validation-token/validation-token-in-memory.repository';
-import InMemoryEmailService from '@application/services/email/in-memory-email.service';
+import InMemoryEmailQueueService from '@application/services/email-queue/in-memory-email-queue.service';
 
 import RequestCodeUseCase from './request-code.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
 let validationTokenInMemoryRepository: ValidationTokenInMemoryRepository;
-let emailInMemoryService: InMemoryEmailService;
+let emailQueue: InMemoryEmailQueueService;
 let sut: RequestCodeUseCase;
 
 describe('Request Code Use Case', () => {
   beforeEach(() => {
     userInMemoryRepository = new UserInMemoryRepository();
     validationTokenInMemoryRepository = new ValidationTokenInMemoryRepository();
-    emailInMemoryService = new InMemoryEmailService();
+    emailQueue = new InMemoryEmailQueueService();
     sut = new RequestCodeUseCase(
       userInMemoryRepository,
       validationTokenInMemoryRepository,
-      emailInMemoryService,
+      emailQueue,
     );
   });
 
@@ -41,9 +41,10 @@ describe('Request Code Use Case', () => {
       (t) => t.user._id === user._id,
     );
     expect(tokens).toHaveLength(1);
-    const emails = emailInMemoryService.getEmails();
-    expect(emails).toHaveLength(1);
-    expect(emails[0].to).toContain('john@example.com');
+    const jobs = emailQueue.getJobs();
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0].template).toBe('recovery-code');
+    expect(jobs[0].to).toContain('john@example.com');
   });
 
   it('deve gerar codigo numerico de 6 digitos', async () => {

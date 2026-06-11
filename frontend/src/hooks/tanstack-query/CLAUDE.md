@@ -152,6 +152,6 @@ em loaders de rota do TanStack Router. Cada option define `queryKey`, `queryFn`,
   `_query-options.ts`)
 - **Tipos**: payloads em `@/lib/payloads`, interfaces em `@/lib/interfaces`
 - **API client**: todas as chamadas via `API` (axios instance) de `@/lib/api`
-- **Toast**: feedback via `toastSuccess`/`toastError` de `@/lib/toast`
+- **Toast**: feedback via `toast.success`/`toast.error` de `sonner`
 - **Cache**: mutations atualizam cache manualmente com `setQueryData` antes de
   invalidar listas

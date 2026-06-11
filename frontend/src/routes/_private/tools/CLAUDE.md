@@ -1,31 +1,39 @@
-# Ferramentas do Sistema
+# Ferramentas
 
-Pagina com ferramentas administrativas para manipulacao de tabelas. Restrita a
-usuarios com role MASTER (verificado via `usePermission`).
+Página listagem das ferramentas (extensões `type=TOOL`) ativadas. Cada tool é
+uma extensão acessível em `/tools/$package/$id` — a entry React vive em
+`frontend/extensions/<pkg>/tools/<id>/index.tsx`.
 
-## Arquivos
+## Estrutura
 
-| Arquivo          | Tipo         | Descricao                                              |
-| ---------------- | ------------ | ------------------------------------------------------ |
-| `index.tsx`      | Route config | Definicao de rota basica (sem loader)                  |
-| `index.lazy.tsx` | Componente   | Interface das ferramentas com verificacao de permissao |
+```
+tools/
+├── index.tsx                 # loader (prefetch active extensions list)
+├── index.lazy.tsx            # listagem com cards das tools ativas
+└── $package/
+    └── $id/
+        ├── index.tsx         # loader (prefetch active list)
+        └── index.lazy.tsx    # resolve a extensão e lazy-importa o entry
+```
 
-## Ferramentas Disponiveis
+## Fluxo
 
-| Ferramenta              | Descricao                                     | Hook            |
-| ----------------------- | --------------------------------------------- | --------------- |
-| Clonar Modelo de Tabela | Cria nova tabela com base em tabela existente | `useCloneTable` |
+1. Usuário acessa `/tools` → vê os cards das tools ativadas (e empty state se
+   não há nenhuma — direciona para `/extensions`)
+2. Clica em um card → navega para `/tools/<pkg>/<id>`
+3. A rota dinâmica usa `loadExtensionEntry(pkg, 'tools', id)` (de
+   `@/lib/extensions-registry`) para lazy-importar o componente da extensão
+4. Se a extensão não está ativa ou não existe entry no bundle: `RouteNotFound`
 
-## Fluxo de Clonagem
+## Permissões
 
-1. Usuario seleciona tabela modelo via `TableComboboxPaginated` (combobox
-   paginado)
-2. Informa nome da nova tabela
-3. Clica em "Clonar Modelo"
-4. Apos sucesso, redireciona para a nova tabela (`/tables/:slug`)
+- Disponível para MASTER e ADMINISTRATOR. `useExtensionsActiveList` carrega só
+  as ativas
+- Cada tool pode aplicar suas próprias verificações internas (ex:
+  `usePermission().can('CREATE_TABLE')`)
 
-## Controle de Acesso
+## Sidebar collapsível
 
-- Usa `usePermission().can('CREATE_TABLE')` para verificar permissao
-- Se sem permissao, exibe componente `AccessDenied`
-- Role: MASTER
+Quando há tools ativas, o item "Ferramentas" da sidebar vira collapsible com
+elas como filhos (lógica em `useMenuDynamic`). Sem tools, segue como link para
+esta listagem.

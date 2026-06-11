@@ -11,3 +11,8 @@ count.txt
 .output
 .vinxi
 todos.json
+
+!src/routes/_private/logs
+!src/routes/_private/logs/**
+# Auto-gerado pelo TanStack Router (regenerado no dev/build) - nao versionar
+src/routeTree.gen.ts

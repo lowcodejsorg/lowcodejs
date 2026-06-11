@@ -48,6 +48,15 @@ export const Route = createFileRoute('/_private/groups/')({
     search: z.string().optional(),
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),
+    trashed: z
+      .preprocess(
+        (v) => {
+          if (typeof v === 'boolean') return String(v);
+          return v;
+        },
+        z.enum(['true', 'false']).transform((v) => v === 'true'),
+      )
+      .optional(),
     'order-name': z.enum(['asc', 'desc']).optional(),
     'order-description': z.enum(['asc', 'desc']).optional(),
     'order-created-at': z.enum(['asc', 'desc']).optional(),
@@ -59,6 +68,7 @@ export const Route = createFileRoute('/_private/groups/')({
     page: search.page,
     perPage: search.perPage,
     search: search.search,
+    trashed: search.trashed,
     'order-name': search['order-name'],
     'order-description': search['order-description'],
     'order-created-at': search['order-created-at'],

@@ -6,7 +6,8 @@ config({ path: envFile });
 
 const EnvSchema = z.object({
   DATABASE_URL: z.string().trim(),
-  DB_NAME: z.string().trim().default('lowcodejs'),
+  DB_DATABASE: z.string().trim().default('lowcodejs'),
+  DB_DATA_DATABASE: z.string().trim().default('lowcodejs_data'),
 
   JWT_PUBLIC_KEY: z.string().trim(),
   JWT_PRIVATE_KEY: z.string().trim(),
@@ -17,6 +18,11 @@ const EnvSchema = z.object({
     .enum(['development', 'test', 'production'])
     .default('development'),
   PORT: z.coerce.number().default(3000),
+
+  DEMO_MODE: z
+    .union([z.literal('true'), z.literal('false')])
+    .default('false')
+    .transform((v): boolean => v === 'true'),
 
   APP_SERVER_URL: z.string().trim(),
   APP_CLIENT_URL: z.string().trim(),
@@ -31,16 +37,18 @@ const EnvSchema = z.object({
         .filter(Boolean),
     ),
 
-  STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
-  STORAGE_ENDPOINT: z.string().trim().optional(),
-  STORAGE_REGION: z.string().trim().default('us-east-1'),
-  STORAGE_BUCKET: z.string().trim().optional(),
-  STORAGE_ACCESS_KEY: z.string().trim().optional(),
-  STORAGE_SECRET_KEY: z.string().trim().optional(),
-
   REDIS_URL: z.string().trim().default('redis://localhost:6379'),
 
   MCP_SERVER_URL: z.string().trim().optional(),
+
+  STORAGE_MIGRATION_CONCURRENCY: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(20)
+    .default(5),
+
+  EMAIL_WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(50).default(5),
 });
 
 const validation = EnvSchema.safeParse(process.env);

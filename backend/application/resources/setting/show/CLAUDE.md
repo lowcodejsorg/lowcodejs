@@ -1,12 +1,16 @@
 # Show Setting
 
-Retorna as configuracoes globais da plataforma.
+Retorna as configuracoes globais completas da plataforma (incluindo credenciais
+de SMTP, S3 e OpenAI). Por isso requer autenticacao.
+
+> Para o subconjunto seguro consumido pelo SSR do frontend (visitantes nao
+> autenticados), use `GET /setting/public` (ver `../public/CLAUDE.md`).
 
 ## Endpoint
-`GET /setting` | Auth: Opcional | Permission: nenhuma
+`GET /setting` | Auth: Obrigatorio | Permission: nenhuma
 
 ## Fluxo
-1. Middleware: AuthenticationMiddleware (opcional)
+1. Middleware: AuthenticationMiddleware (obrigatorio)
 2. Validator: nenhum
 3. UseCase:
    - Busca settings via settingRepository.get()
@@ -15,7 +19,7 @@ Retorna as configuracoes globais da plataforma.
 4. Repository: SettingContractRepository (get)
 
 ## Regras de Negocio
-- Auth e opcional (visitantes podem ver configuracoes)
+- Auth obrigatoria (payload contem credenciais sensiveis: STORAGE_SECRET_KEY, EMAIL_PROVIDER_PASSWORD, OPENAI_API_KEY)
 - Fallback sem banco usa defaults proprios (SYSTEM_NAME='LowCodeJs', LOCALE='pt-br', etc.) — nao depende de env
 - FILE_UPLOAD_ACCEPTED sempre retornado como array (split por ";")
 - MODEL_CLONE_TABLES sempre inclui 6 templates built-in: Kanban, Cards, Mosaico, Documento, Forum, Calendario

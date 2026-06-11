@@ -126,31 +126,137 @@ const MenuTypeEnum = z.enum([
   E_MENU_ITEM_TYPE.FORM,
   E_MENU_ITEM_TYPE.EXTERNAL,
   E_MENU_ITEM_TYPE.SEPARATOR,
+  E_MENU_ITEM_TYPE.EXTENSION_MODULE,
 ]);
 
-export const MenuCreateBodySchema = z.object({
-  name: z.string().trim().min(1, 'Nome é obrigatório'),
-  type: MenuTypeEnum,
-  table: z.string().default(''),
-  parent: z.string().default(''),
-  html: z.string().default(''),
-  url: z.string().default(''),
-  order: z.number().default(0),
+const MenuExtensionRefSchema = z.object({
+  pkg: z.string(),
+  extensionId: z.string(),
 });
+
+export const MenuCreateBodySchema = z
+  .object({
+    name: z.string().trim().min(1, 'Nome é obrigatório'),
+    type: MenuTypeEnum,
+    table: z.string().default(''),
+    parent: z.string().default(''),
+    html: z.string().default(''),
+    url: z.string().default(''),
+    icon: z.string().nullable().default(null),
+    order: z.number().default(0),
+    isInitial: z.boolean().default(false),
+    extension: MenuExtensionRefSchema.nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      (data.type === E_MENU_ITEM_TYPE.TABLE ||
+        data.type === E_MENU_ITEM_TYPE.FORM) &&
+      (!data.table || data.table.trim() === '')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['table'],
+        message: 'Tabela é obrigatória',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.PAGE &&
+      (!data.html || data.html.trim() === '' || data.html === '<p></p>')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['html'],
+        message: 'Conteúdo HTML é obrigatório',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.EXTERNAL &&
+      (!data.url || data.url.trim() === '')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['url'],
+        message: 'URL é obrigatória',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.EXTENSION_MODULE &&
+      (!data.extension?.pkg || !data.extension?.extensionId)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['extension'],
+        message: 'Selecione um módulo de extensão',
+      });
+    }
+  });
 
 export const MenuUpdateParamsSchema = z.object({
   _id: z.string().min(1, 'ID é obrigatório'),
 });
 
-export const MenuUpdateBodySchema = z.object({
-  name: z.string().trim().min(1, 'Nome é obrigatório'),
-  type: MenuTypeEnum,
-  table: z.string().default(''),
-  parent: z.string().default(''),
-  html: z.string().default(''),
-  url: z.string().default(''),
-  order: z.number().default(0),
-});
+export const MenuUpdateBodySchema = z
+  .object({
+    name: z.string().trim().min(1, 'Nome é obrigatório'),
+    type: MenuTypeEnum,
+    table: z.string().default(''),
+    parent: z.string().default(''),
+    html: z.string().default(''),
+    url: z.string().default(''),
+    icon: z.string().nullable().default(null),
+    order: z.number().default(0),
+    isInitial: z.boolean().default(false),
+    extension: MenuExtensionRefSchema.nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      (data.type === E_MENU_ITEM_TYPE.TABLE ||
+        data.type === E_MENU_ITEM_TYPE.FORM) &&
+      (!data.table || data.table.trim() === '')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['table'],
+        message: 'Tabela é obrigatória',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.PAGE &&
+      (!data.html || data.html.trim() === '' || data.html === '<p></p>')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['html'],
+        message: 'Conteúdo HTML é obrigatório',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.EXTERNAL &&
+      (!data.url || data.url.trim() === '')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['url'],
+        message: 'URL é obrigatória',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.EXTENSION_MODULE &&
+      (!data.extension?.pkg || !data.extension?.extensionId)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['extension'],
+        message: 'Selecione um módulo de extensão',
+      });
+    }
+  });
 
 // ============== TABLE ==============
 export const TableStyleSchema = z
@@ -262,6 +368,11 @@ const CategorySchema = z.object({
   children: z.array(z.unknown()).default([]),
 });
 
+const RelationshipLabelPartSchema = z.object({
+  path: z.string().trim().min(1),
+  label: z.string().trim().optional(),
+});
+
 const RelationshipSchema = z.object({
   table: z.object({
     _id: z.string().trim(),
@@ -272,6 +383,9 @@ const RelationshipSchema = z.object({
     slug: z.string().trim(),
   }),
   order: z.enum(['asc', 'desc']).default('asc'),
+  customLabel: z.boolean().default(false),
+  labelParts: z.array(RelationshipLabelPartSchema).default([]),
+  labelSeparator: z.string().default(' - '),
 });
 
 const DropdownSchema = z.object({
@@ -314,10 +428,13 @@ export const FieldBaseSchema = z.object({
   showInList: z.boolean().default(false),
   widthInForm: z.number().nullable().default(50),
   widthInList: z.number().nullable().default(10),
+  tip: z.string().nullable().default(null),
   locked: z.boolean().default(false),
   defaultValue: z.string().nullable().default(null),
   relationship: RelationshipSchema.nullable().default(null),
   dropdown: z.array(DropdownSchema).default([]),
+  allowCustomDropdownOptions: z.boolean().default(false),
+  allowCreateRelationshipRecords: z.boolean().default(false),
   category: z.array(CategorySchema).default([]),
   group: z
     .object({
@@ -430,6 +547,8 @@ export const SettingUpdateBodySchema = z.object({
   PAGINATION_PER_PAGE: z.number().optional(),
   LOGO_SMALL_URL: z.string().optional(),
   LOGO_LARGE_URL: z.string().optional(),
+  LOGO_SMALL_DARK_URL: z.string().optional(),
+  LOGO_LARGE_DARK_URL: z.string().optional(),
   MODEL_CLONE_TABLES: z.string().optional(),
   EMAIL_PROVIDER_HOST: z.string().optional(),
   EMAIL_PROVIDER_PORT: z.number().optional(),

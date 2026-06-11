@@ -31,6 +31,7 @@ export const TableUpdateSchema = z.object({
     .string()
     .min(1, 'Nome é obrigatório')
     .max(40, 'Nome deve ter no máximo 40 caracteres'),
+  slug: z.string().trim().default(''),
   description: z.string().default(''),
   style: z.enum([
     E_TABLE_STYLE.LIST,
@@ -58,6 +59,7 @@ export const TableUpdateSchema = z.object({
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
   order: z.string().default('none'),
+  rowSlugFieldId: z.string().nullable().default(null),
   layoutFields: LayoutFieldsSchema.default({
     title: '',
     description: '',
@@ -75,6 +77,7 @@ export type TableUpdateFormValues = z.infer<typeof TableUpdateSchema>;
 
 export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   name: '',
+  slug: '',
   description: '',
   style: E_TABLE_STYLE.LIST,
   visibility: E_TABLE_VISIBILITY.RESTRICTED,
@@ -83,6 +86,7 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   logoFile: [],
   administrators: [],
   order: 'none',
+  rowSlugFieldId: null,
   layoutFields: {
     title: '',
     description: '',
@@ -276,6 +280,18 @@ export const UpdateTableFormFields = withForm({
           )}
         </form.AppField>
 
+        {/* Campo URL */}
+        <form.AppField name="slug">
+          {(field) => (
+            <field.FieldText
+              label="URL"
+              placeholder="ex: minha-tabela"
+              description="Use letras minúsculas e hífens. Ex: minha-tabela"
+              disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
+
         {/* Campo Descrição */}
         <form.AppField name="description">
           {(field) => (
@@ -407,6 +423,27 @@ export const UpdateTableFormFields = withForm({
               options={orderOptions}
             />
           )}
+        </form.AppField>
+
+        {/* Campo para gerar slug da URL de registro */}
+        <form.AppField name="rowSlugFieldId">
+          {(field) => {
+            const textShortFields = activeFields.filter(
+              (f: IField) => f.type === E_FIELD_TYPE.TEXT_SHORT,
+            );
+            return (
+              <field.TableLayoutFieldSelect
+                label="Campo para slug da URL de registro"
+                placeholder="Nenhum"
+                emptyLabel="Nenhum"
+                disabled={isDisabled || textShortFields.length === 0}
+                options={textShortFields.map((f: IField) => ({
+                  label: f.name,
+                  value: f._id,
+                }))}
+              />
+            );
+          }}
         </form.AppField>
       </section>
     );

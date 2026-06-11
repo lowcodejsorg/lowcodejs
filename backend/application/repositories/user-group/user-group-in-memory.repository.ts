@@ -9,6 +9,7 @@ import type {
   UserGroupContractRepository,
   UserGroupCreatePayload,
   UserGroupQueryPayload,
+  UserGroupUpdateManyPayload,
   UserGroupUpdatePayload,
 } from './user-group-contract.repository';
 
@@ -70,6 +71,12 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
     this._checkError('findMany');
     let filtered = this.items;
 
+    if (payload?.trashed !== undefined) {
+      filtered = filtered.filter((g) => g.trashed === payload.trashed);
+    } else {
+      filtered = filtered.filter((g) => !g.trashed);
+    }
+
     if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
       filtered = filtered.filter((g) => g.slug !== E_ROLE.MASTER);
     }
@@ -102,11 +109,44 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
     return group;
   }
 
+  async updateMany({
+    _ids,
+    filterTrashed,
+    data,
+  }: UserGroupUpdateManyPayload): Promise<number> {
+    this._checkError('updateMany');
+    let filtered = this.items.filter((g) => _ids.includes(g._id));
+
+    if (filterTrashed !== undefined) {
+      filtered = filtered.filter((g) => g.trashed === filterTrashed);
+    }
+
+    for (const group of filtered) {
+      if (data.trashed !== undefined) group.trashed = data.trashed;
+      if (data.trashedAt !== undefined) group.trashedAt = data.trashedAt;
+      group.updatedAt = new Date();
+    }
+
+    return filtered.length;
+  }
+
+  async findManyTrashed(): Promise<IGroup[]> {
+    this._checkError('findManyTrashed');
+    return this.items.filter((g) => g.trashed);
+  }
+
   async delete(_id: string): Promise<void> {
     this._checkError('delete');
     const index = this.items.findIndex((g) => g._id === _id);
     if (index === -1) throw new Error('UserGroup not found');
     this.items.splice(index, 1);
+  }
+
+  async deleteMany(_ids: string[]): Promise<number> {
+    this._checkError('deleteMany');
+    const before = this.items.length;
+    this.items = this.items.filter((g) => !_ids.includes(g._id));
+    return before - this.items.length;
   }
 
   async count(payload?: UserGroupQueryPayload): Promise<number> {

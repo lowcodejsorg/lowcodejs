@@ -2,7 +2,9 @@ import { useLocation } from '@tanstack/react-router';
 import React from 'react';
 
 import { LoginButton } from './login-button';
+import { NotificationBell } from './notification-bell';
 import { Profile } from './profile';
+import { ThemeToggle } from './theme-toggle';
 
 import { InputSearch } from '@/components/common/input-search';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -52,7 +54,11 @@ export function Header({
         <div className="inline-flex gap-2 w-full items-center">
           {showSearchInput && <InputSearch />}
         </div>
-        <div className="inline-flex gap-2">{authContent}</div>
+        <div className="inline-flex gap-2 items-center">
+          <ThemeToggle />
+          {isAuthenticated && <NotificationBell />}
+          {authContent}
+        </div>
       </nav>
     </header>
   );

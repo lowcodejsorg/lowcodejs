@@ -15,6 +15,11 @@ export const SettingShowSchema: FastifySchema = {
           description: 'Nome do sistema exibido no título da plataforma',
           examples: ['LowCodeJs'],
         },
+        SYSTEM_DESCRIPTION: {
+          type: 'string',
+          description: 'Descrição curta do sistema usada em SEO/og:description',
+          examples: ['Plataforma Oficial'],
+        },
         LOCALE: {
           type: 'string',
           enum: ['pt-br', 'en-us'],
@@ -95,6 +100,24 @@ export const SettingShowSchema: FastifySchema = {
           description: 'URL do logo grande',
           examples: ['/assets/logo-large.webp'],
         },
+        LOGO_SMALL_DARK_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL do logo pequeno para o modo escuro',
+          examples: ['/assets/logo-small-dark.webp'],
+        },
+        LOGO_LARGE_DARK_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL do logo grande para o modo escuro',
+          examples: ['/assets/logo-large-dark.webp'],
+        },
+        LOGIN_BACKGROUND_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL da imagem de fundo da tela de login',
+          examples: ['/assets/login-background.webp'],
+        },
         OPENAI_API_KEY: {
           type: 'string',
           nullable: true,
@@ -104,13 +127,69 @@ export const SettingShowSchema: FastifySchema = {
           type: 'boolean',
           description: 'Habilitar ou desabilitar o assistente IA',
         },
+        CHAT_HISTORY_ENABLED: {
+          type: 'boolean',
+          description: 'Salvar histórico do chat entre atualizações de página',
+        },
+        MCP_SERVER_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL do servidor MCP para o assistente IA',
+        },
+        MCP_SERVER_TOKEN: {
+          type: 'string',
+          nullable: true,
+          description: 'Token de autenticação do servidor MCP (Bearer)',
+        },
+        MCP_LOWCODE_API_URL: {
+          type: 'string',
+          nullable: true,
+          description:
+            'URL da API LowCodeJS enviada ao MCP no header X-Lowcode-Api-Url',
+        },
+        OPENAI_MODEL: {
+          type: 'string',
+          nullable: true,
+          description: 'Modelo OpenAI usado pelo assistente IA (legado)',
+        },
+        AI_LLM_PROVIDER: {
+          type: 'string',
+          enum: ['openai', 'gemini', 'claude', 'openrouter', 'ollama'],
+          nullable: true,
+          description: 'Provedor LLM do assistente IA',
+        },
+        LLM_API_KEY: {
+          type: 'string',
+          nullable: true,
+          description: 'Chave da API do provedor LLM',
+        },
+        LLM_MODEL: {
+          type: 'string',
+          nullable: true,
+          description: 'Modelo LLM do provedor selecionado',
+        },
+        LLM_BASE_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL base do LLM (ex.: Ollama local)',
+        },
+        SETUP_COMPLETED: {
+          type: 'boolean',
+          description: 'Indica se o setup inicial foi concluído',
+        },
+        SETUP_CURRENT_STEP: {
+          type: 'string',
+          nullable: true,
+          enum: ['admin', 'name', 'logos', 'upload', 'paging', 'email'],
+          description: 'Etapa atual do setup wizard (null se concluído)',
+        },
         STORAGE_DRIVER: {
           type: 'string',
-          description: 'Driver de armazenamento (local ou S3/MinIO)',
+          description: 'Driver de armazenamento (local ou S3)',
         },
         STORAGE_ENDPOINT: {
           type: 'string',
-          description: 'Endpoint do servidor S3/MinIO',
+          description: 'Endpoint do servidor S3',
         },
         STORAGE_REGION: {
           type: 'string',

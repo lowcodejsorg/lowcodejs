@@ -1,6 +1,8 @@
 import { TableRowBadgeList } from './table-row-badge-list';
 
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import type { IField, IRow } from '@/lib/interfaces';
+import { resolveRelationshipLabel } from '@/lib/relationship-label';
 
 interface RelationshipItem {
   _id: string;
@@ -18,6 +20,10 @@ export function TableRowRelationshipCell({
   row,
 }: TableRowRelationshipCellProps): React.JSX.Element {
   const relConfig = field.relationship;
+  // Carrega a tabela relacionada para resolver labels de DROPDOWN (id → label)
+  // e títulos compostos. Cacheado por slug, sem custo por linha.
+  const relatedTable = useReadTable({ slug: relConfig?.table?.slug ?? '' });
+
   if (!relConfig?.field?.slug) {
     return (
       <TableRowBadgeList
@@ -26,17 +32,17 @@ export function TableRowRelationshipCell({
       />
     );
   }
-  const relationshipFieldSlug = relConfig.field.slug;
   const tableSlug = relConfig.table?.slug ?? null;
+  const relatedFields = relatedTable.data?.fields;
 
   const rawValues = Array.from(row[field.slug] ?? []);
 
   const values = rawValues.map<RelationshipItem>((item) => {
     if (typeof item === 'object' && item !== null) {
-      const obj = item as Record<string, string>;
+      const obj = item as IRow;
       return {
-        _id: obj._id ?? '',
-        label: obj[relationshipFieldSlug] ?? String(obj._id ?? ''),
+        _id: String(obj._id ?? ''),
+        label: resolveRelationshipLabel(obj, relConfig, relatedFields),
         tableSlug,
       };
     }
@@ -53,7 +59,7 @@ export function TableRowRelationshipCell({
         if (item.tableSlug && item._id) {
           return (
             <a
-              href={`/tables/${item.tableSlug}/row/${item._id}`}
+              href={`/tables/${item.tableSlug}/row?_id=${item._id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:underline"

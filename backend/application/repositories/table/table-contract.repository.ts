@@ -35,6 +35,7 @@ export type TableCreatePayload = Merge<
     groups?: IGroupConfiguration[];
     order?: { field: string; direction: 'asc' | 'desc' } | null;
     layoutFields?: ILayoutFields;
+    rowSlugFieldId?: string | null;
   }
 >;
 
@@ -53,10 +54,10 @@ export type TableQueryPayload = {
   perPage?: number;
   search?: string;
   type?: ValueOf<typeof E_TABLE_TYPE>;
-  owner?: string;
+  owner?: string[];
   trashed?: boolean;
   _ids?: string[];
-  visibility?: string;
+  visibility?: Array<ValueOf<typeof E_TABLE_VISIBILITY>>;
   sort?: Record<string, 'asc' | 'desc'>;
 };
 

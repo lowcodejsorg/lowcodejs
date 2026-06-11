@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { Inject, Service } from 'fastify-decorators';
+import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -9,7 +9,12 @@ import {
   SettingContractRepository,
   SettingUpdatePayload,
 } from '@application/repositories/setting/setting-contract.repository';
+import {
+  prepareAiSettingsForSave,
+  projectAiSettingsFields,
+} from '@application/services/llm/ai-setting-fields';
 import { StorageContractService } from '@application/services/storage/storage-contract.service';
+import { syncStorageEnv } from '@config/setting-env-sync';
 
 const BUILTIN_TEMPLATE_IDS = new Set([
   'KANBAN_TEMPLATE',
@@ -22,10 +27,10 @@ type Response = Either<HTTPException, Record<string, unknown>>;
 
 @Service()
 export default class SettingUpdateUseCase {
-  @Inject(StorageContractService)
-  private readonly storageService!: StorageContractService;
-
-  constructor(private readonly settingRepository: SettingContractRepository) {}
+  constructor(
+    private readonly settingRepository: SettingContractRepository,
+    private readonly storageService: StorageContractService,
+  ) {}
 
   async execute(payload: SettingUpdatePayload): Promise<Response> {
     try {
@@ -35,7 +40,10 @@ export default class SettingUpdateUseCase {
         );
       }
 
-      const updated = await this.settingRepository.update(payload);
+      const normalized = prepareAiSettingsForSave({ ...payload });
+      const updated = await this.settingRepository.update(normalized);
+
+      syncStorageEnv(updated);
 
       if (payload.STORAGE_DRIVER === 's3') {
         await this.storageService.ensureBucket();
@@ -43,6 +51,7 @@ export default class SettingUpdateUseCase {
 
       return right({
         ...updated,
+        ...projectAiSettingsFields(updated),
         FILE_UPLOAD_ACCEPTED: updated.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
         // MODEL_CLONE_TABLES já vem populado do repository
       });

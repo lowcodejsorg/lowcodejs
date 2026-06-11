@@ -1,4 +1,5 @@
 import { CopyIcon, InfoIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { toastInfo } from '@/lib/toast';
 
 interface ApiEndpoint {
   method: string;
@@ -96,10 +96,9 @@ export function ApiEndpointsModal({
     const fullUrl = `${baseUrl}${endpoint.path}${endpoint.params || ''}`;
     navigator.clipboard.writeText(fullUrl);
 
-    toastInfo(
-      'Endpoint copiado',
-      'URL do endpoint foi copiada para a área de transferência',
-    );
+    toast.info('Endpoint copiado', {
+      description: 'URL do endpoint foi copiada para a área de transferência',
+    });
   };
 
   return (

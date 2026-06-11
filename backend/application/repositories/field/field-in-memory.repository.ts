@@ -26,6 +26,8 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
   async create(payload: FieldCreatePayload): Promise<IField> {
     const field: IField = {
       ...payload,
+      allowCustomDropdownOptions: payload.allowCustomDropdownOptions ?? false,
+      tip: payload.tip ?? null,
       _id: crypto.randomUUID(),
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -39,6 +41,8 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
   async createMany(payloads: FieldCreatePayload[]): Promise<IField[]> {
     const fields = payloads.map((payload) => ({
       ...payload,
+      allowCustomDropdownOptions: payload.allowCustomDropdownOptions ?? false,
+      tip: payload.tip ?? null,
       _id: crypto.randomUUID(),
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -124,11 +128,11 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
   }
 
   async updateRelationshipTableSlug(
-    oldSlug: string,
+    tableId: string,
     newSlug: string,
   ): Promise<void> {
     for (const field of this.items) {
-      if (field.relationship?.table?.slug === oldSlug) {
+      if (field.relationship?.table?._id === tableId) {
         field.relationship.table.slug = newSlug;
       }
     }

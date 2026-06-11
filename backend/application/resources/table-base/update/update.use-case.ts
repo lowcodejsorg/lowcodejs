@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import slugify from 'slugify';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -14,7 +13,7 @@ import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
 
 import type { TableUpdatePayload } from './update.validator';
 
@@ -27,12 +26,12 @@ export default class TableUpdateUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly userRepository: UserContractRepository,
     private readonly fieldRepository: FieldContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly modelBuilder: ModelBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBySlug(payload.slug);
+      const table = await this.tableRepository.findBySlug(payload.routeSlug);
 
       if (!table)
         return left(
@@ -62,13 +61,8 @@ export default class TableUpdateUseCase {
         }
       }
 
-      // Gerar novo slug a partir do nome
       const oldSlug = table.slug;
-      const newSlug = slugify(payload.name, {
-        lower: true,
-        strict: true,
-        trim: true,
-      });
+      const newSlug = payload.slug;
       const slugChanged = newSlug !== oldSlug;
 
       // Verificar unicidade do novo slug
@@ -88,9 +82,14 @@ export default class TableUpdateUseCase {
       if (slugChanged) {
         await this.tableRepository.renameSlug(oldSlug, newSlug);
         await this.fieldRepository.updateRelationshipTableSlug(
-          oldSlug,
+          table._id,
           newSlug,
         );
+      }
+
+      let rowSlugFieldId = table.rowSlugFieldId;
+      if (payload.rowSlugFieldId !== undefined) {
+        rowSlugFieldId = payload.rowSlugFieldId;
       }
 
       // Mapear propriedades populadas para strings (IDs)
@@ -99,6 +98,7 @@ export default class TableUpdateUseCase {
         ...payload,
         slug: newSlug,
         owner: table.owner._id,
+        rowSlugFieldId,
         style: payload.style ?? table.style,
         visibility: payload.visibility ?? table.visibility,
         collaboration: payload.collaboration ?? table.collaboration,
@@ -134,7 +134,7 @@ export default class TableUpdateUseCase {
         }
       }
 
-      await this.tableSchemaService.syncModel(updated);
+      await this.modelBuilder.build(updated);
 
       // Reconstruir tabelas que têm RELATIONSHIP apontando para esta
       if (slugChanged) {
@@ -147,7 +147,7 @@ export default class TableUpdateUseCase {
             await this.tableRepository.findByFieldIds(pointingFieldIds);
 
           for (const relatedTable of relatedTables) {
-            await this.tableSchemaService.syncModel(relatedTable);
+            await this.modelBuilder.build(relatedTable);
           }
         }
       }

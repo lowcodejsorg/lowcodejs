@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -10,7 +9,6 @@ import {
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
-import { buildSchema } from '@application/core/util.core';
 import { Field } from '@application/model/field.model';
 import { Reaction } from '@application/model/reaction.model';
 import { Table } from '@application/model/table.model';
@@ -18,8 +16,12 @@ import { UserGroup } from '@application/model/user-group.model';
 import { User } from '@application/model/user.model';
 import { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 import { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
+import MongooseSchemaBuilder from '@application/services/table/schema-builder.service';
 import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
+import { cleanDynamicCollections } from '@test/helpers/database.helper';
+
+const schemaBuilder = new MongooseSchemaBuilder();
 
 describe('E2E Table Row Reaction Controller', () => {
   beforeEach(async () => {
@@ -30,15 +32,7 @@ describe('E2E Table Row Reaction Controller', () => {
     await Field.deleteMany({});
     await Reaction.deleteMany({});
 
-    // Cleanup dynamic collections
-    const collections = await mongoose.connection.db
-      ?.listCollections()
-      .toArray();
-    for (const collection of collections || []) {
-      if (collection.name.startsWith('table_')) {
-        await mongoose.connection.db?.dropCollection(collection.name);
-      }
-    }
+    await cleanDynamicCollections();
   });
 
   afterAll(async () => {
@@ -83,7 +77,7 @@ describe('E2E Table Row Reaction Controller', () => {
         name: 'Posts',
         slug: 'posts',
         fields: [reactionField._id.toString()],
-        _schema: buildSchema([
+        _schema: schemaBuilder.build([
           {
             ...reactionField.toJSON(),
             _id: reactionField._id.toString(),

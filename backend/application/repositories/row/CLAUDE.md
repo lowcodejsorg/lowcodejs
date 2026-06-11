@@ -9,7 +9,7 @@ Mongoose são gerados em runtime com base nos campos configurados na tabela.
 | ---------------------------- | ----------------------------------------------------------------------- |
 | `row-contract.repository.ts` | Interface abstrata com todos os métodos de acesso a rows               |
 | `row-in-memory.repository.ts`| Implementação in-memory para testes unitários                          |
-| `row-mongoose.repository.ts` | Implementação Mongoose para produção (schema dinâmico por tabela)      |
+| `row.repository.ts` | Implementação Mongoose para produção (schema dinâmico por tabela)      |
 
 ## Responsabilidades
 

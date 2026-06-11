@@ -30,7 +30,7 @@ export const UpdateUserFormFields = withForm({
     isPending: false,
     mode: 'show' as 'show' | 'edit',
     allowPasswordChange: false,
-    onAllowPasswordChangeChange: (() => {}) as (value: boolean) => void,
+    onAllowPasswordChangeChange: () => {},
   },
   render: function Render({
     form,

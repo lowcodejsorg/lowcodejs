@@ -112,8 +112,9 @@ export default class HTTPException extends Error {
   static PreconditionFailed(
     message = 'Precondition Failed',
     cause = 'PRECONDITION_NOT_MET',
+    errors?: Record<string, string>,
   ): HTTPException {
-    return new HTTPException({ message, code: 412, cause });
+    return new HTTPException({ message, code: 412, cause, errors });
   }
 
   static PayloadTooLarge(

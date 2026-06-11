@@ -2,19 +2,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { E_USER_STATUS } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryEmailQueueService from '@application/services/email-queue/in-memory-email-queue.service';
 import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
 
 import UserCreateUseCase from './create.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
 let passwordService: InMemoryPasswordService;
+let emailQueue: InMemoryEmailQueueService;
 let sut: UserCreateUseCase;
 
 describe('User Create Use Case', () => {
   beforeEach(() => {
     userInMemoryRepository = new UserInMemoryRepository();
     passwordService = new InMemoryPasswordService();
-    sut = new UserCreateUseCase(userInMemoryRepository, passwordService);
+    emailQueue = new InMemoryEmailQueueService();
+    sut = new UserCreateUseCase(
+      userInMemoryRepository,
+      passwordService,
+      emailQueue,
+    );
   });
 
   it('deve criar um usuario com sucesso', async () => {
@@ -75,6 +82,21 @@ describe('User Create Use Case', () => {
     );
     expect(found?._id).toBe(existing._id);
     expect(found?.name).toBe('Existing User');
+  });
+
+  it('deve enfileirar email de boas-vindas apos criar usuario', async () => {
+    await sut.execute({
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'password123',
+      group: 'group-id',
+    });
+
+    const jobs = emailQueue.getJobs();
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0].template).toBe('user-created');
+    expect(jobs[0].to).toContain('john@example.com');
+    expect(jobs[0].subject).toBe('Sua conta no LowCodeJS foi criada');
   });
 
   it('deve retornar erro CREATE_USER_ERROR quando houver falha', async () => {

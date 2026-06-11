@@ -1,5 +1,7 @@
+import { TableRowFieldLabel } from './table-row-field-label';
+
 import { SingleDatepicker } from '@/components/common/datepicker';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Field, FieldError } from '@/components/ui/field';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { E_FIELD_FORMAT } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
@@ -18,7 +20,6 @@ export function TableRowDateField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const isRequired = field.required;
 
   const formatString = field.format ?? E_FIELD_FORMAT.DD_MM_YYYY;
   let dateValue = null;
@@ -35,10 +36,10 @@ export function TableRowDateField({
       data-test-id="table-row-date-input"
       data-invalid={isInvalid}
     >
-      <FieldLabel htmlFor={formField.name}>
-        {field.name}
-        {isRequired && <span className="text-destructive"> *</span>}
-      </FieldLabel>
+      <TableRowFieldLabel
+        field={field}
+        htmlFor={formField.name}
+      />
       <SingleDatepicker
         data-test-id="table-row-date-input"
         value={dateValue}

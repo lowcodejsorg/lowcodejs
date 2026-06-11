@@ -23,7 +23,19 @@ export const MenuCreateBodyValidator = z
       .nullable()
       .optional(),
     url: z.string({ message: 'A URL deve ser um texto' }).nullable().optional(),
+    icon: z
+      .string({ message: 'O ícone deve ser um texto' })
+      .nullable()
+      .optional(),
     order: z.number().int().min(0).optional(),
+    isInitial: z.boolean({ message: 'Página inicial inválida' }).optional(),
+    extension: z
+      .object({
+        pkg: z.string().min(1),
+        extensionId: z.string().min(1),
+      })
+      .nullable()
+      .optional(),
   })
   .transform((payload) => {
     return {
@@ -54,6 +66,18 @@ export const MenuCreateBodyValidator = z
     {
       message: 'Conteúdo HTML é obrigatório para páginas',
       path: ['html'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.type === E_MENU_ITEM_TYPE.EXTENSION_MODULE) {
+        return !!data.extension?.pkg && !!data.extension?.extensionId;
+      }
+      return true;
+    },
+    {
+      message: 'Selecione um módulo de extensão',
+      path: ['extension'],
     },
   );
 

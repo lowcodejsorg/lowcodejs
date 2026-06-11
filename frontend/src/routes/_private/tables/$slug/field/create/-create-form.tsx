@@ -1,24 +1,57 @@
 import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import z from 'zod';
 
+import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
-import type { IDropdown } from '@/lib/interfaces';
+import {
+  FIELD_NAME_MAX_LENGTH,
+  FIELD_SLUG_MAX_LENGTH,
+  getFieldSlugError,
+  normalizeFieldSlug,
+} from '@/lib/field-slug';
+import type { IDropdown, IRelationshipLabelPart } from '@/lib/interfaces';
 
 export const FieldCreateSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório').max(40),
+  name: z
+    .string()
+    .min(1, 'Título exibido é obrigatório')
+    .max(
+      FIELD_NAME_MAX_LENGTH,
+      `O título exibido deve ter no máximo ${FIELD_NAME_MAX_LENGTH} caracteres`,
+    ),
+  slug: z
+    .string()
+    .min(1, 'Slug é obrigatório')
+    .max(
+      FIELD_SLUG_MAX_LENGTH,
+      `O slug deve ter no máximo ${FIELD_SLUG_MAX_LENGTH} caracteres`,
+    )
+    .refine((value) => !getFieldSlugError(value), {
+      message: 'Use apenas letras minúsculas, números e hífens',
+    }),
+  tip: z
+    .string()
+    .max(500, 'A dica deve ter no máximo 500 caracteres')
+    .default(''),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
   defaultValue: z.string().default(''),
   dropdown: z.array(z.custom<IDropdown>()).default([]),
+  allowCustomDropdownOptions: z.boolean().default(false),
+  allowCreateRelationshipRecords: z.boolean().default(false),
   relationship: z.object({
     tableId: z.string().default(''),
     tableSlug: z.string().default(''),
     fieldId: z.string().default(''),
     fieldSlug: z.string().default(''),
     order: z.string().default(''),
+    customLabel: z.boolean().default(false),
+    labelParts: z.array(z.custom<IRelationshipLabelPart>()).default([]),
+    labelSeparator: z.string().default(' - '),
   }),
   category: z.array(z.custom<TreeNode>()).default([]),
   multiple: z.boolean().default(false),
@@ -35,16 +68,23 @@ export type FieldCreateFormValues = z.infer<typeof FieldCreateSchema>;
 
 export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   name: '',
+  slug: '',
+  tip: '',
   type: '',
   format: '',
   defaultValue: '',
   dropdown: [],
+  allowCustomDropdownOptions: false,
+  allowCreateRelationshipRecords: false,
   relationship: {
     tableId: '',
     tableSlug: '',
     fieldId: '',
     fieldSlug: '',
     order: '',
+    customLabel: false,
+    labelParts: [],
+    labelSeparator: ' - ',
   },
   category: [],
   multiple: false,
@@ -57,11 +97,45 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   widthInList: 10,
 };
 
+// Toggles de exibição do grupo (formulário/detalhes) isolados em um componente
+// próprio para reduzir a profundidade de inferência de tipos no form principal.
+const FieldGroupDisplayToggles = withForm({
+  defaultValues: fieldCreateFormDefaultValues,
+  props: {
+    isPending: false,
+  },
+  render: function Render({ form, isPending }) {
+    return (
+      <>
+        {/* @ts-expect-error TanStack Form type depth issue with nested configuration */}
+        <form.AppField name="showInForm">
+          {(field) => (
+            <field.FieldBooleanSwitch
+              label="Exibir no formulário"
+              description="Exibir este grupo no formulário de adicionar/editar registro?"
+              disabled={isPending}
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="showInDetail">
+          {(field) => (
+            <field.FieldBooleanSwitch
+              label="Exibir nos detalhes"
+              description="Exibir este grupo na página de detalhes do registro?"
+              disabled={isPending}
+            />
+          )}
+        </form.AppField>
+      </>
+    );
+  },
+});
+
 export const CreateFieldFormFields = withForm({
   defaultValues: fieldCreateFormDefaultValues,
   props: {
     isPending: false,
-    tableSlug: '' as string,
+    tableSlug: '',
     blockedTypes: [] as Array<string>,
     defaultFieldType: undefined as string | undefined,
   },
@@ -74,6 +148,8 @@ export const CreateFieldFormFields = withForm({
   }) {
     // useStore para valores reativos do form
     const fieldType = useStore(form.store, (state) => state.values.type);
+    const fieldName = useStore(form.store, (state) => state.values.name);
+    const slugManuallyEdited = useRef(false);
     const relationshipTableSlug = useStore(
       form.store,
       (state) => state.values.relationship.tableSlug,
@@ -91,6 +167,18 @@ export const CreateFieldFormFields = withForm({
       form.store,
       (state) => state.values.relationship.fieldSlug,
     );
+    const relationshipCustomLabel = useStore(
+      form.store,
+      (state) => state.values.relationship.customLabel,
+    );
+    const relationshipLabelParts = useStore(
+      form.store,
+      (state) => state.values.relationship.labelParts,
+    );
+    const relationshipLabelSeparator = useStore(
+      form.store,
+      (state) => state.values.relationship.labelSeparator,
+    );
 
     const isTextShort = fieldType === E_FIELD_TYPE.TEXT_SHORT;
     const isTextLong = fieldType === E_FIELD_TYPE.TEXT_LONG;
@@ -103,6 +191,11 @@ export const CreateFieldFormFields = withForm({
     const isReaction = fieldType === E_FIELD_TYPE.REACTION;
     const isEvaluation = fieldType === E_FIELD_TYPE.EVALUATION;
     const isUser = fieldType === E_FIELD_TYPE.USER;
+
+    useEffect(() => {
+      if (slugManuallyEdited.current) return;
+      form.setFieldValue('slug', normalizeFieldSlug(fieldName));
+    }, [fieldName, form]);
 
     const showMultiple =
       isDropdown ||
@@ -118,28 +211,60 @@ export const CreateFieldFormFields = withForm({
         data-test-id="field-create-form-fields"
         className="space-y-4 p-2"
       >
-        {/* @ts-expect-error TanStack Form type depth issue with nested configuration */}
         <form.AppField
           name="name"
           validators={{
             onChange: ({ value }) => {
               if (!value || value.trim() === '') {
-                return 'Nome é obrigatório';
+                return 'Título exibido é obrigatório';
               }
-              if (value.length > 40) {
-                return 'O nome deve ter no máximo 40 caracteres';
+              if (value.length > FIELD_NAME_MAX_LENGTH) {
+                return `O título exibido deve ter no máximo ${FIELD_NAME_MAX_LENGTH} caracteres`;
               }
               return undefined;
             },
           }}
         >
           {(field) => (
+            <field.FieldTextarea
+              label="Título exibido"
+              placeholder="Título exibido para o usuário final"
+              disabled={isPending}
+              rows={3}
+              required
+            />
+          )}
+        </form.AppField>
+
+        <form.AppField
+          name="slug"
+          validators={{
+            onChange: ({ value }) => getFieldSlugError(value),
+          }}
+        >
+          {(field) => (
             <field.FieldText
-              label="Nome"
-              placeholder="Nome do campo"
+              label="Slug"
+              placeholder="nome-slug-campo"
               disabled={isPending}
               icon={<FileTextIcon />}
+              description="Identificador técnico usado em consultas e integrações"
+              onChangeTransform={(value) => {
+                slugManuallyEdited.current = true;
+                return normalizeFieldSlug(value);
+              }}
               required
+            />
+          )}
+        </form.AppField>
+
+        <form.AppField name="tip">
+          {(field) => (
+            <field.FieldTextarea
+              label="Dica do campo"
+              placeholder="Texto de ajuda exibido no formulário"
+              disabled={isPending}
+              rows={2}
             />
           )}
         </form.AppField>
@@ -177,10 +302,12 @@ export const CreateFieldFormFields = withForm({
                     'relationship.fieldId',
                     'relationship.fieldSlug',
                     'relationship.order',
+                    'allowCustomDropdownOptions',
+                    'allowCreateRelationshipRecords',
                   ];
-                  for (const fieldName of conditionalFields) {
-                    if (form.getFieldMeta(fieldName)) {
-                      form.deleteField(fieldName);
+                  for (const conditionalField of conditionalFields) {
+                    if (form.getFieldMeta(conditionalField)) {
+                      form.deleteField(conditionalField);
                     }
                   }
 
@@ -192,6 +319,8 @@ export const CreateFieldFormFields = withForm({
                   }
                   form.setFieldValue('defaultValue', '');
                   form.setFieldValue('dropdown', []);
+                  form.setFieldValue('allowCustomDropdownOptions', false);
+                  form.setFieldValue('allowCreateRelationshipRecords', false);
                   form.setFieldValue('category', []);
                   form.setFieldValue(
                     'relationship',
@@ -333,6 +462,30 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
+        {isDropdown && (
+          <form.AppField name="allowCustomDropdownOptions">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Permitir usuário inserir novas tags"
+                description="Permite salvar uma nova opção quando o usuário digitar um valor que ainda não existe."
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {isRelationship && (
+          <form.AppField name="allowCreateRelationshipRecords">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Permitir adicionar novos registros"
+                description="Exibe a opção Novo para criar um registro na tabela relacionada durante o preenchimento."
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+        )}
+
         {/* Campo Formato Data */}
         {isDate && (
           <form.AppField
@@ -452,6 +605,33 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
+        {/* Personalização do label (relacionamento) */}
+        {isRelationship && relationshipTableSlug && (
+          <form.AppField name="relationship.customLabel">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Personalizar exibição das opções"
+                description="Por padrão a opção exibe apenas o campo principal. Ative para compor o label com um ou mais campos (inclusive de tabelas relacionadas) e escolher o separador."
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Compositor de label (relacionamento) */}
+        {isRelationship && relationshipTableSlug && relationshipCustomLabel && (
+          <TableFieldRelationshipLabelComposer
+            rootTableSlug={relationshipTableSlug}
+            parts={relationshipLabelParts}
+            separator={relationshipLabelSeparator}
+            disabled={isPending}
+            onChange={(parts, separator) => {
+              form.setFieldValue('relationship.labelParts', parts);
+              form.setFieldValue('relationship.labelSeparator', separator);
+            }}
+          />
+        )}
+
         {/* Campo Valor Padrão (RELATIONSHIP) */}
         {isRelationship && relationshipTableSlug && relationshipFieldSlug && (
           <form.AppField name="defaultValue">
@@ -524,6 +704,16 @@ export const CreateFieldFormFields = withForm({
               />
             )}
           </form.AppField>
+        )}
+
+        {/* Exibição do grupo de campos: formulário e/ou detalhes.
+            Extraído em componente próprio para não estourar a profundidade
+            de tipos do TanStack Form neste render. */}
+        {isFieldGroup && (
+          <FieldGroupDisplayToggles
+            form={form}
+            isPending={isPending}
+          />
         )}
 
         {/* Campo Obrigatoriedade */}

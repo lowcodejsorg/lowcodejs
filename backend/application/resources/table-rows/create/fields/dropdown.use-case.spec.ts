@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryRowMemberNotificationService from '@application/services/row-member-notification/in-memory-row-member-notification.service';
 import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 import { makeDropdownField } from '@test/helpers/field-factory.helper';
@@ -38,22 +39,23 @@ describe('Table Row Create - DROPDOWN', () => {
       userRepository,
       rowPasswordService,
       scriptExecutionService,
+      new InMemoryRowMemberNotificationService(),
     );
   });
 
   it('deve criar row com array de strings valido', async () => {
-    const field = makeDropdownField(DROPDOWN_OPTIONS, { slug: 'status' });
+    const field = makeDropdownField(DROPDOWN_OPTIONS, { slug: 'situacao' });
     await makeTable(tableRepository, [field], { slug: 'tarefas' });
 
     const result = await sut.execute({
       slug: 'tarefas',
-      status: ['Ativo'],
+      situacao: ['Ativo'],
       creator: 'user-id',
     });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.status).toEqual(['Ativo']);
+    expect(result.value.situacao).toEqual(['Ativo']);
   });
 
   it('deve criar row com multiplas opcoes selecionadas', async () => {
@@ -75,12 +77,12 @@ describe('Table Row Create - DROPDOWN', () => {
   });
 
   it('deve rejeitar quando valor nao e array', async () => {
-    const field = makeDropdownField(DROPDOWN_OPTIONS, { slug: 'status' });
+    const field = makeDropdownField(DROPDOWN_OPTIONS, { slug: 'situacao' });
     await makeTable(tableRepository, [field], { slug: 'tarefas' });
 
     const result = await sut.execute({
       slug: 'tarefas',
-      status: 'Ativo',
+      situacao: 'Ativo',
       creator: 'user-id',
     });
 
@@ -90,12 +92,12 @@ describe('Table Row Create - DROPDOWN', () => {
   });
 
   it('deve rejeitar quando itens nao sao strings', async () => {
-    const field = makeDropdownField(DROPDOWN_OPTIONS, { slug: 'status' });
+    const field = makeDropdownField(DROPDOWN_OPTIONS, { slug: 'situacao' });
     await makeTable(tableRepository, [field], { slug: 'tarefas' });
 
     const result = await sut.execute({
       slug: 'tarefas',
-      status: [123, 456],
+      situacao: [123, 456],
       creator: 'user-id',
     });
 
@@ -106,7 +108,7 @@ describe('Table Row Create - DROPDOWN', () => {
 
   it('deve rejeitar quando required e valor ausente', async () => {
     const field = makeDropdownField(DROPDOWN_OPTIONS, {
-      slug: 'status',
+      slug: 'situacao',
       required: true,
     });
     await makeTable(tableRepository, [field], { slug: 'tarefas' });
@@ -119,19 +121,19 @@ describe('Table Row Create - DROPDOWN', () => {
     expect(result.isLeft()).toBe(true);
     if (!result.isLeft()) throw new Error('Expected left');
     expect(result.value.cause).toBe('INVALID_PAYLOAD_FORMAT');
-    expect(result.value.errors).toHaveProperty('status');
+    expect(result.value.errors).toHaveProperty('situacao');
   });
 
   it('deve aceitar array vazio quando nao required', async () => {
     const field = makeDropdownField(DROPDOWN_OPTIONS, {
-      slug: 'status',
+      slug: 'situacao',
       required: false,
     });
     await makeTable(tableRepository, [field], { slug: 'tarefas' });
 
     const result = await sut.execute({
       slug: 'tarefas',
-      status: [],
+      situacao: [],
       creator: 'user-id',
     });
 

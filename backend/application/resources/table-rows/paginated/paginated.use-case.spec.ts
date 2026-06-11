@@ -7,15 +7,15 @@ import {
 } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
-import InMemoryRowContextService from '@application/services/row-context/in-memory-row-context.service';
 import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
+import InMemoryRowContextBuilder from '@application/services/table/in-memory-row-context-builder.service';
 
 import TableRowPaginatedUseCase from './paginated.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
 let rowPasswordService: InMemoryRowPasswordService;
-let rowContextService: InMemoryRowContextService;
+let rowContextBuilder: InMemoryRowContextBuilder;
 let sut: TableRowPaginatedUseCase;
 
 describe('Table Row Paginated Use Case', () => {
@@ -24,13 +24,13 @@ describe('Table Row Paginated Use Case', () => {
     rowRepository = new RowInMemoryRepository();
     rowPasswordService = new InMemoryRowPasswordService();
 
-    rowContextService = new InMemoryRowContextService();
+    rowContextBuilder = new InMemoryRowContextBuilder();
 
     sut = new TableRowPaginatedUseCase(
       tableInMemoryRepository,
       rowRepository,
       rowPasswordService,
-      rowContextService,
+      rowContextBuilder,
     );
   });
 
@@ -62,6 +62,42 @@ describe('Table Row Paginated Use Case', () => {
     if (result.isRight()) {
       expect(result.value.data).toHaveLength(2);
       expect(result.value.meta.total).toBe(2);
+    }
+  });
+
+  it('deve retornar TODOS os registros quando perPage = -1 (sem paginação)', async () => {
+    const table = await tableInMemoryRepository.create({
+      name: 'Cards',
+      slug: 'cards',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.KANBAN,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+
+    // Cria mais registros do que o teto antigo (100) para garantir que
+    // nenhuma coluna do kanban seja truncada.
+    for (let i = 0; i < 130; i++) {
+      await rowRepository.create({ table, data: { nome: `Card ${i}` } });
+    }
+
+    const result = await sut.execute({
+      slug: 'cards',
+      page: 1,
+      perPage: -1,
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect(result.value.data).toHaveLength(130);
+      expect(result.value.meta.total).toBe(130);
+      expect(result.value.meta.lastPage).toBe(1);
+      expect(result.value.meta.perPage).toBe(130);
     }
   });
 

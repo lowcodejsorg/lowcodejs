@@ -1,26 +1,37 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { queryOptions } from '@tanstack/react-query';
+import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 
 import { queryKeys } from './_query-keys';
 
 import { API } from '@/lib/api';
 import type {
+  IExtension,
   IField,
   IGroup,
+  ILogger,
   IMenu,
   IPermission,
   IRow,
   ISetting,
+  ISetupStatus,
   ITable,
   IUser,
   Paginated,
 } from '@/lib/interfaces';
 import type {
+  LoggerQueryPayload,
   MenuQueryPayload,
   TableQueryPayload,
   UserGroupQueryPayload,
   UserQueryPayload,
 } from '@/lib/payloads';
+
+function nextPageOrUndefined(lastPage: Paginated<unknown>): number | undefined {
+  if (lastPage.meta.page < lastPage.meta.lastPage) {
+    return lastPage.meta.page + 1;
+  }
+  return undefined;
+}
 
 // ============== USERS ==============
 
@@ -44,6 +55,20 @@ export const userDetailOptions = (userId: string) =>
       return response.data;
     },
     enabled: Boolean(userId),
+    staleTime: 2 * 60 * 1000,
+  });
+
+export const userListInfiniteOptions = (params: UserQueryPayload = {}) =>
+  infiniteQueryOptions({
+    queryKey: queryKeys.users.infinite(params),
+    queryFn: async ({ pageParam }) => {
+      const response = await API.get<Paginated<IUser>>('/users/paginated', {
+        params: { ...params, page: pageParam },
+      });
+      return response.data;
+    },
+    initialPageParam: params.page ?? 1,
+    getNextPageParam: nextPageOrUndefined,
     staleTime: 2 * 60 * 1000,
   });
 
@@ -143,15 +168,37 @@ export const tableDetailOptions = (slug: string) =>
     staleTime: 60 * 1000,
   });
 
+export const tableListInfiniteOptions = (params: TableQueryPayload = {}) =>
+  infiniteQueryOptions({
+    queryKey: queryKeys.tables.infinite(params),
+    queryFn: async ({ pageParam }) => {
+      const response = await API.get<Paginated<ITable>>('/tables/paginated', {
+        params: { ...params, page: pageParam },
+      });
+      return response.data;
+    },
+    initialPageParam: params.page ?? 1,
+    getNextPageParam: nextPageOrUndefined,
+    staleTime: 60 * 1000,
+  });
+
 // ============== ROWS ==============
 
-export const rowListOptions = (slug: string, params: Record<string, unknown>) =>
+export const rowListOptions = (
+  slug: string,
+  params: Record<string, unknown>,
+  fallbackPerPage?: number,
+) =>
   queryOptions({
     queryKey: queryKeys.rows.list(slug, params),
     queryFn: async () => {
+      const finalParams = {
+        ...params,
+        perPage: params.perPage || fallbackPerPage || 20,
+      };
       const response = await API.get<Paginated<IRow>>(
         `/tables/${slug}/rows/paginated`,
-        { params },
+        { params: finalParams },
       );
       return response.data;
     },
@@ -167,6 +214,19 @@ export const rowDetailOptions = (slug: string, rowId: string) =>
       return response.data;
     },
     enabled: Boolean(slug) && Boolean(rowId),
+    staleTime: 30 * 1000,
+  });
+
+export const rowBySlugOptions = (slug: string, rowSlug: string) =>
+  queryOptions({
+    queryKey: queryKeys.rows.bySlug(slug, rowSlug),
+    queryFn: async () => {
+      const response = await API.get<IRow>(
+        `/tables/${slug}/rows/by-slug/${rowSlug}`,
+      );
+      return response.data;
+    },
+    enabled: Boolean(slug) && Boolean(rowSlug),
     staleTime: 30 * 1000,
   });
 
@@ -222,7 +282,7 @@ export const settingOptions = () =>
       const response = await API.get<ISetting>('/setting');
       return response.data;
     },
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000,
   });
 
 // ============== PERMISSIONS ==============
@@ -234,7 +294,7 @@ export const permissionOptions = () =>
       const response = await API.get<Array<IPermission>>('/permissions');
       return response.data;
     },
-    staleTime: Infinity,
+    staleTime: 0,
   });
 
 // ============== PAGES ==============
@@ -262,6 +322,25 @@ export const groupRowListOptions = (
     queryFn: async () => {
       const response = await API.get<Array<IRow>>(
         `/tables/${slug}/rows/${rowId}/groups/${groupSlug}`,
+      );
+      return response.data;
+    },
+    enabled: Boolean(slug) && Boolean(rowId) && Boolean(groupSlug),
+    staleTime: 30 * 1000,
+  });
+
+export const groupRowListPaginatedOptions = (
+  slug: string,
+  rowId: string,
+  groupSlug: string,
+  params: { page?: number; perPage?: number; search?: string },
+) =>
+  queryOptions({
+    queryKey: queryKeys.groupRows.paginated(slug, rowId, groupSlug, params),
+    queryFn: async () => {
+      const response = await API.get<Paginated<IRow>>(
+        `/tables/${slug}/rows/${rowId}/groups/${groupSlug}/paginated`,
+        { params },
       );
       return response.data;
     },
@@ -298,5 +377,75 @@ export const relationshipRowsOptions = (params: {
       return response.data;
     },
     enabled: Boolean(params.tableSlug),
+    staleTime: 30 * 1000,
+  });
+
+export const relationshipRowsInfiniteOptions = (params: {
+  tableSlug: string;
+  fieldSlug: string;
+  search?: string;
+  perPage?: number;
+}) =>
+  infiniteQueryOptions({
+    queryKey: queryKeys.relationships.infinite(
+      params.fieldSlug,
+      params.tableSlug,
+      params.search,
+    ),
+    queryFn: async ({ pageParam }) => {
+      const response = await API.get<Paginated<IRow>>(
+        `/tables/${params.tableSlug}/rows/paginated`,
+        {
+          params: {
+            page: pageParam,
+            perPage: params.perPage ?? 10,
+            ...(params.search && { search: params.search }),
+          },
+        },
+      );
+      return response.data;
+    },
+    enabled: Boolean(params.tableSlug),
+    initialPageParam: 1,
+    getNextPageParam: nextPageOrUndefined,
+    staleTime: 30 * 1000,
+  });
+
+// ============== SETUP ==============
+
+export const setupStatusOptions = () =>
+  queryOptions({
+    queryKey: queryKeys.setup.status(),
+    queryFn: async () => {
+      const { data } = await API.get<ISetupStatus>('/setup/status');
+      return data;
+    },
+    staleTime: 0,
+  });
+
+// ============== LOGS ==============
+
+export const loggerListOptions = (params: LoggerQueryPayload) =>
+  queryOptions({
+    queryKey: queryKeys.loggers.list(params),
+    queryFn: async () => {
+      const response = await API.get<Paginated<ILogger>>('/logs/paginated', {
+        params,
+      });
+      return response.data;
+    },
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+
+// ============== EXTENSIONS ==============
+
+export const extensionListOptions = () =>
+  queryOptions({
+    queryKey: queryKeys.extensions.list(),
+    queryFn: async () => {
+      const response = await API.get<Array<IExtension>>('/extensions');
+      return response.data;
+    },
     staleTime: 30 * 1000,
   });

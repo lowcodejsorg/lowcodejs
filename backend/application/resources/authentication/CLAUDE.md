@@ -19,7 +19,7 @@ Recurso de autenticacao do sistema. Gerencia login, registro, logout, magic link
 
 ## Servicos
 
-- `EmailContractService` - envio de e-mail de boas-vindas (sign-up)
+- `EmailQueueContractService` - enfileira email para sign-up (welcome), request-code (codigo recuperacao), reset-password (confirmacao). Worker BullMQ processa async com retry
 
 ## Endpoints
 

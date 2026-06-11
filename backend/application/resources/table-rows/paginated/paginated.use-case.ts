@@ -7,8 +7,8 @@ import type { IMeta, IRow, Paginated } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { RowContextContractService } from '@application/services/row-context/row-context-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
+import { RowContextBuilderContractService } from '@application/services/table/row-context-builder-contract.service';
 
 import type { TableRowPaginatedPayload } from './paginated.validator';
 
@@ -22,12 +22,19 @@ export default class TableRowPaginatedUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
     private readonly rowPasswordService: RowPasswordContractService,
-    private readonly rowContextService: RowContextContractService,
+    private readonly rowContextBuilder: RowContextBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const skip = (payload.page - 1) * payload.perPage;
+      // perPage <= 0 (ex.: -1) significa "buscar TODOS os registros" (sem
+      // paginação). Usado pelas visualizações Kanban/Document/Forum/Calendar/
+      // Gantt, que precisam de todos os registros para agrupar corretamente —
+      // um limite fixo truncava as colunas quando a tabela tinha muitos rows.
+      const fetchAll = payload.perPage <= 0;
+      const skip = fetchAll ? 0 : (payload.page - 1) * payload.perPage;
+      // No Mongoose, limit(0) equivale a "sem limite" (retorna tudo).
+      const limit = fetchAll ? 0 : payload.perPage;
 
       const table = await this.tableRepository.findBySlug(payload.slug);
 
@@ -41,25 +48,26 @@ export default class TableRowPaginatedUseCase {
         table,
         rawFilters: payload,
         skip,
-        limit: payload.perPage,
-        includeReverseRelationships: true,
+        limit,
       });
 
       const total = await this.rowRepository.count(table, payload);
 
-      const lastPage = Math.ceil(total / payload.perPage);
+      const perPage = fetchAll ? total : payload.perPage;
+      const page = fetchAll ? 1 : payload.page;
+      const lastPage = fetchAll ? 1 : Math.ceil(total / payload.perPage);
 
       const meta: IMeta = {
         total,
-        perPage: payload.perPage,
-        page: payload.page,
+        perPage,
+        page,
         lastPage,
         firstPage: total > 0 ? 1 : 0,
       };
 
       const data = rows.map((row) => {
         this.rowPasswordService.mask(row, table.fields);
-        return this.rowContextService.transform(
+        return this.rowContextBuilder.transform(
           row,
           table.fields,
           payload.user,

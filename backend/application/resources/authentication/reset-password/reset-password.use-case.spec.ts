@@ -1,21 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryEmailQueueService from '@application/services/email-queue/in-memory-email-queue.service';
 import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
 
 import UpdatePasswordRecoveryUseCase from './reset-password.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
 let passwordService: InMemoryPasswordService;
+let emailQueue: InMemoryEmailQueueService;
 let sut: UpdatePasswordRecoveryUseCase;
 
 describe('Reset Password Use Case', () => {
   beforeEach(() => {
     userInMemoryRepository = new UserInMemoryRepository();
     passwordService = new InMemoryPasswordService();
+    emailQueue = new InMemoryEmailQueueService();
     sut = new UpdatePasswordRecoveryUseCase(
       userInMemoryRepository,
       passwordService,
+      emailQueue,
     );
   });
 
@@ -60,7 +64,27 @@ describe('Reset Password Use Case', () => {
     expect(updatedUser.password).not.toBe('new_password');
   });
 
-  it('deve retornar erro USER_NOT_FOUND quando usuario nao existir', async () => {
+  it('deve enfileirar email de confirmação apos redefinir senha', async () => {
+    const user = await userInMemoryRepository.create({
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'old_password',
+      group: 'group-id',
+    });
+
+    await sut.execute({
+      _id: user._id,
+      password: 'new_password',
+    });
+
+    const job = emailQueue.getLastJob();
+    expect(job).toBeDefined();
+    expect(job?.template).toBe('reset-password-confirmation');
+    expect(job?.to).toContain(user.email);
+    expect(job?.subject).toBe('Senha redefinida com sucesso');
+  });
+
+  it('deve retornar erro USER_NOT_FOUND quando usuário nao existir', async () => {
     const result = await sut.execute({
       _id: 'non-existent-id',
       password: 'new_password',

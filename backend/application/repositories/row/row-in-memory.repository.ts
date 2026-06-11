@@ -15,7 +15,7 @@ import type {
 } from './row-contract.repository';
 import { RowContractRepository } from './row-contract.repository';
 
-export default class RowInMemoryRepository extends RowContractRepository {
+export default class RowInMemoryRepository implements RowContractRepository {
   private collections = new Map<string, IRow[]>();
   private _forcedErrors = new Map<string, Error>();
 
@@ -49,9 +49,10 @@ export default class RowInMemoryRepository extends RowContractRepository {
 
     const row: IRow = {
       _id: randomUUID(),
-      ...payload.data,
-      trashed: false,
+      status: 'published',
+      draftAt: null,
       trashedAt: null,
+      ...payload.data,
       createdAt: new Date(),
       updatedAt: new Date(),
     } as IRow;
@@ -80,7 +81,7 @@ export default class RowInMemoryRepository extends RowContractRepository {
     const rawFilters = payload.rawFilters ?? {};
     const result = collection.filter((item) => {
       const row = item as Record<string, unknown>;
-      if (row['trashed'] === true) return false;
+      if (row['trashedAt'] != null) return false;
       for (const [key, value] of Object.entries(rawFilters)) {
         if (
           key === 'page' ||
@@ -98,9 +99,14 @@ export default class RowInMemoryRepository extends RowContractRepository {
       return true;
     });
 
-    return result
-      .slice(payload.skip, payload.skip + payload.limit)
-      .map((r) => ({ ...r }));
+    // limit <= 0 significa "sem limite" (busca todos), espelhando o
+    // comportamento do Mongoose .limit(0).
+    const sliced =
+      payload.limit <= 0
+        ? result.slice(payload.skip)
+        : result.slice(payload.skip, payload.skip + payload.limit);
+
+    return sliced.map((r) => ({ ...r }));
   }
 
   async count(
@@ -112,7 +118,7 @@ export default class RowInMemoryRepository extends RowContractRepository {
 
     return collection.filter((item) => {
       const row = item as Record<string, unknown>;
-      if (row['trashed'] === true) return false;
+      if (row['trashedAt'] != null) return false;
       for (const [key, value] of Object.entries(filters)) {
         if (
           key === 'page' ||
@@ -156,6 +162,22 @@ export default class RowInMemoryRepository extends RowContractRepository {
     return true;
   }
 
+  async listSlugs(
+    table: RowTableContext,
+    excludeId?: string,
+  ): Promise<string[]> {
+    const collection = this.getCollection(table.slug);
+
+    const slugs: string[] = [];
+    for (const item of collection) {
+      if (excludeId && item._id === excludeId) continue;
+      const value = item.sharedRowSlug;
+      if (typeof value === 'string' && value.length > 0) slugs.push(value);
+    }
+
+    return slugs;
+  }
+
   // ── Trash (bulk) ──────────────────────────────────────────
 
   async bulkTrash(payload: RowBulkUpdatePayload): Promise<number> {
@@ -163,8 +185,7 @@ export default class RowInMemoryRepository extends RowContractRepository {
     let count = 0;
 
     for (const row of collection) {
-      if (payload.ids.includes(row._id) && !row.trashed) {
-        row.trashed = true;
+      if (payload.ids.includes(row._id) && row.trashedAt == null) {
         row.trashedAt = new Date();
         count++;
       }
@@ -178,8 +199,7 @@ export default class RowInMemoryRepository extends RowContractRepository {
     let count = 0;
 
     for (const row of collection) {
-      if (payload.ids.includes(row._id) && row.trashed) {
-        row.trashed = false;
+      if (payload.ids.includes(row._id) && row.trashedAt != null) {
         row.trashedAt = null;
         count++;
       }
@@ -194,7 +214,7 @@ export default class RowInMemoryRepository extends RowContractRepository {
     const remaining: IRow[] = [];
 
     for (const row of collection) {
-      if (payload.ids.includes(row._id) && row.trashed) {
+      if (payload.ids.includes(row._id) && row.trashedAt != null) {
         count++;
       } else {
         remaining.push(row);
@@ -207,7 +227,7 @@ export default class RowInMemoryRepository extends RowContractRepository {
 
   async emptyTrash(table: RowTableContext): Promise<number> {
     const collection = this.getCollection(table.slug);
-    const remaining = collection.filter((item) => !item.trashed);
+    const remaining = collection.filter((item) => item.trashedAt == null);
     const count = collection.length - remaining.length;
 
     this.collections.set(table.slug, remaining);
@@ -348,25 +368,87 @@ export default class RowInMemoryRepository extends RowContractRepository {
   async findAllRaw(table: RowTableContext): Promise<Record<string, unknown>[]> {
     const collection = this.getCollection(table.slug);
     return collection
-      .filter((row) => !row.trashed)
+      .filter((row) => row.trashedAt == null)
       .map((row) => ({ ...row })) as Record<string, unknown>[];
+  }
+
+  // ── Resolver helpers (csv-import) ─────────────────────────
+
+  async findManyByFieldValues(
+    table: RowTableContext,
+    fieldSlugs: string[],
+    values: string[],
+  ): Promise<IRow[]> {
+    if (fieldSlugs.length === 0 || values.length === 0) return [];
+
+    const collection = this.getCollection(table.slug);
+    const valueSet = new Set(values);
+
+    return collection
+      .filter((row) => {
+        if (row.trashedAt != null) return false;
+        for (const slug of fieldSlugs) {
+          const fieldValue = row[slug];
+          if (typeof fieldValue === 'string' && valueSet.has(fieldValue)) {
+            return true;
+          }
+        }
+        return false;
+      })
+      .map((row) => ({ ...row }));
+  }
+
+  // ── Category cleanup (delete-category) ────────────────────
+
+  async pullCategoryValues(
+    table: RowTableContext,
+    fieldSlug: string,
+    ids: string[],
+  ): Promise<number> {
+    if (ids.length === 0) return 0;
+
+    const collection = this.getCollection(table.slug);
+    const idSet = new Set(ids);
+    let count = 0;
+
+    for (const row of collection) {
+      const record = row as Record<string, unknown>;
+      const value = record[fieldSlug];
+      if (!Array.isArray(value)) continue;
+
+      const filtered = value.filter((item) => !idSet.has(String(item)));
+      if (filtered.length !== value.length) {
+        record[fieldSlug] = filtered;
+        row.updatedAt = new Date();
+        count++;
+      }
+    }
+
+    return count;
   }
 
   async insertRaw(
     table: RowTableContext,
     row: Record<string, unknown>,
     creator?: string,
-  ): Promise<void> {
+  ): Promise<IRow> {
     const collection = this.getCollection(table.slug);
+    const data: Record<string, unknown> = { ...row };
+    delete data._id;
+    delete data.id;
+    delete data.createdAt;
+    delete data.updatedAt;
     const newRow: IRow = {
       _id: randomUUID(),
-      ...row,
+      ...data,
       creator: creator ?? null,
-      trashed: false,
+      status: 'published',
+      draftAt: null,
       trashedAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     } as IRow;
     collection.push(newRow);
+    return { ...newRow };
   }
 }

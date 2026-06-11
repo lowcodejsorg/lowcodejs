@@ -35,12 +35,14 @@ export default class UserGroupPaginatedUseCase {
         page: payload.page,
         perPage: payload.perPage,
         search: payload.search,
+        trashed: payload.trashed,
         user: payload.user,
         sort,
       });
 
       const total = await this.userGroupRepository.count({
         search: payload.search,
+        trashed: payload.trashed,
         user: payload.user,
       });
 

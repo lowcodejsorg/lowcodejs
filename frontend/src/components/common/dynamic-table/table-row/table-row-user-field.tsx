@@ -1,5 +1,8 @@
 import * as React from 'react';
 
+import { TableRowFieldLabel } from './table-row-field-label';
+
+import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
 import {
   Combobox,
   ComboboxChip,
@@ -13,9 +16,9 @@ import {
   ComboboxValue,
   useComboboxAnchor,
 } from '@/components/ui/combobox';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Field, FieldError } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
-import { useUserReadPaginated } from '@/hooks/tanstack-query/use-user-read-paginated';
+import { useUserReadPaginatedInfinite } from '@/hooks/tanstack-query/use-user-read-paginated-infinite';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { E_USER_STATUS } from '@/lib/constant';
 import type { IField, IUser } from '@/lib/interfaces';
@@ -42,7 +45,6 @@ export function TableRowUserField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const isRequired = field.required;
   const isMultiple = field.multiple;
   const anchorRef = useComboboxAnchor();
 
@@ -60,16 +62,17 @@ export function TableRowUserField({
     return (): void => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data, isLoading } = useUserReadPaginated({
-    page: 1,
-    perPage: 50,
-    search: debouncedQuery || undefined,
-  });
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useUserReadPaginatedInfinite({
+      perPage: 10,
+      search: debouncedQuery || undefined,
+      status: E_USER_STATUS.ACTIVE,
+    });
 
-  const users = React.useMemo(() => {
-    if (!data?.data) return [];
-    return data.data.filter((user) => user.status === E_USER_STATUS.ACTIVE);
-  }, [data?.data]);
+  const users = React.useMemo(
+    () => data?.pages.flatMap((page) => page.data) ?? [],
+    [data?.pages],
+  );
 
   React.useEffect(() => {
     if (!users.length) return;
@@ -160,60 +163,59 @@ export function TableRowUserField({
 
   const handleValueChange = (newValue: IUser | Array<IUser> | null): void => {
     if (isMultiple) {
-      // Multi-select selection is handled manually via item click to avoid
-      // combobox internal state dropping previous selections during search.
+      let userList: Array<IUser> = [];
+      if (Array.isArray(newValue)) {
+        userList = newValue;
+      }
+
+      if (userList.length > 0) {
+        setSelectedCache((prev) => {
+          const next = new Map(prev);
+          for (const user of userList) {
+            next.set(user._id, user);
+          }
+          return next;
+        });
+      }
+
+      const newValues: Array<UserOption> = userList.map((user) => ({
+        value: user._id,
+        label: user.name,
+      }));
+      formField.handleChange(newValues);
+
+      if (
+        userList.length > fieldValue.length &&
+        searchQuery.trim().length > 0
+      ) {
+        setSearchQuery('');
+        setDebouncedQuery('');
+      }
       return;
     }
 
-    if (!isMultiple) {
-      const user = newValue as IUser | null;
-      if (user) {
-        setSelectedCache((prev) => {
-          const next = new Map(prev);
-          next.set(user._id, user);
-          return next;
-        });
-        formField.handleChange([
-          {
-            value: user._id,
-            label: user.name,
-          },
-        ]);
-      } else {
-        formField.handleChange([]);
-      }
-    }
-  };
-
-  const handleToggleUser = (user: IUser): void => {
-    const prevIds = fieldValue.map((opt) => opt.value);
-    let nextIds: Array<string>;
-    if (prevIds.includes(user._id)) {
-      nextIds = prevIds.filter((id) => id !== user._id);
-    } else {
-      nextIds = [...prevIds, user._id];
+    let single: IUser | null = null;
+    if (newValue !== null && !Array.isArray(newValue)) {
+      single = newValue;
     }
 
+    if (single === null) {
+      formField.handleChange([]);
+      return;
+    }
+
+    const picked = single;
     setSelectedCache((prev) => {
       const next = new Map(prev);
-      next.set(user._id, user);
+      next.set(picked._id, picked);
       return next;
     });
-
-    const newValues = nextIds.map((id) => {
-      const cached = selectedCache.get(id);
-      const fallback = fieldValue.find((opt) => opt.value === id);
-      return {
-        value: id,
-        label: cached?.name ?? fallback?.label ?? id,
-      };
-    });
-    formField.handleChange(newValues);
-
-    if (searchQuery.trim().length > 0) {
-      setSearchQuery('');
-      setDebouncedQuery('');
-    }
+    formField.handleChange([
+      {
+        value: picked._id,
+        label: picked.name,
+      },
+    ]);
   };
 
   if (isMultiple) {
@@ -223,10 +225,10 @@ export function TableRowUserField({
         data-test-id="table-row-user-select"
         data-invalid={isInvalid}
       >
-        <FieldLabel htmlFor={formField.name}>
-          {field.name}
-          {isRequired && <span className="text-destructive"> *</span>}
-        </FieldLabel>
+        <TableRowFieldLabel
+          field={field}
+          htmlFor={formField.name}
+        />
         <div className="relative">
           <Combobox
             data-test-id="table-row-user-select"
@@ -278,22 +280,28 @@ export function TableRowUserField({
                 </div>
               )}
               {!isLoading && (
-                <ComboboxList>
-                  {(user: IUser): React.ReactNode => (
-                    <ComboboxItem
-                      key={user._id}
-                      value={user}
-                      onClick={() => handleToggleUser(user)}
-                    >
-                      <div className="flex flex-1 flex-col">
-                        <span className="font-medium">{user.name}</span>
-                        <span className="text-muted-foreground text-sm">
-                          {user.email}
-                        </span>
-                      </div>
-                    </ComboboxItem>
-                  )}
-                </ComboboxList>
+                <React.Fragment>
+                  <ComboboxList>
+                    {(user: IUser): React.ReactNode => (
+                      <ComboboxItem
+                        key={user._id}
+                        value={user}
+                      >
+                        <div className="flex flex-1 flex-col">
+                          <span className="font-medium">{user.name}</span>
+                          <span className="text-muted-foreground text-sm">
+                            {user.email}
+                          </span>
+                        </div>
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                  <ComboboxLoadMore
+                    hasNextPage={hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                    onLoadMore={() => fetchNextPage()}
+                  />
+                </React.Fragment>
               )}
             </ComboboxContent>
           </Combobox>
@@ -319,10 +327,10 @@ export function TableRowUserField({
       data-test-id="table-row-user-select"
       data-invalid={isInvalid}
     >
-      <FieldLabel htmlFor={formField.name}>
-        {field.name}
-        {isRequired && <span className="text-destructive"> *</span>}
-      </FieldLabel>
+      <TableRowFieldLabel
+        field={field}
+        htmlFor={formField.name}
+      />
       <div className="relative">
         <Combobox
           data-test-id="table-row-user-select"
@@ -349,21 +357,28 @@ export function TableRowUserField({
               </div>
             )}
             {!isLoading && (
-              <ComboboxList>
-                {(user: IUser): React.ReactNode => (
-                  <ComboboxItem
-                    key={user._id}
-                    value={user}
-                  >
-                    <div className="flex flex-1 flex-col">
-                      <span className="font-medium">{user.name}</span>
-                      <span className="text-muted-foreground text-sm">
-                        {user.email}
-                      </span>
-                    </div>
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
+              <React.Fragment>
+                <ComboboxList>
+                  {(user: IUser): React.ReactNode => (
+                    <ComboboxItem
+                      key={user._id}
+                      value={user}
+                    >
+                      <div className="flex flex-1 flex-col">
+                        <span className="font-medium">{user.name}</span>
+                        <span className="text-muted-foreground text-sm">
+                          {user.email}
+                        </span>
+                      </div>
+                    </ComboboxItem>
+                  )}
+                </ComboboxList>
+                <ComboboxLoadMore
+                  hasNextPage={hasNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  onLoadMore={() => fetchNextPage()}
+                />
+              </React.Fragment>
             )}
           </ComboboxContent>
         </Combobox>

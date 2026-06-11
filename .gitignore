@@ -23,3 +23,16 @@ backend/_storage/*
 
 _docs/nextjs/
 frontend-next
+
+# Local docker overrides
+docker-compose.override.yml
+
+# Claude Code local settings (machine-specific permissions)
+.claude/settings.json
+.claude/settings.local.json
+
+!backend/application/resources/logs/
+!backend/application/resources/logs/**
+
+!frontend/src/routes/_private/logs
+!frontend/src/routes/_private/logs/**

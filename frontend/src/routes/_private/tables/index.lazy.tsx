@@ -6,15 +6,14 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
-import { UploadIcon } from 'lucide-react';
 import React from 'react';
 
 import { TableEmptyTrashDialog } from './-empty-trash-dialog';
-import { TableImportDialog } from './-import-dialog';
 import { TableTables } from './-table-tables';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
+import { CsvDropdown } from '@/components/common/csv-dropdown';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
@@ -24,12 +23,15 @@ import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
+import { useTablesExportCsv } from '@/hooks/tanstack-query/use-tables-export-csv';
 import { useChatSidebar } from '@/hooks/use-chat-sidebar';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useToolbarPortal } from '@/hooks/use-toolbar-portal';
-import { E_FIELD_TYPE, TABLE_VISIBILITY_OPTIONS } from '@/lib/constant';
+import { E_FIELD_TYPE, E_ROLE, TABLE_VISIBILITY_OPTIONS } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
+import { useAuthStore } from '@/stores/authentication';
 
 const rootApi = getRouteApi('__root__');
 
@@ -46,10 +48,20 @@ function RouteComponent(): React.JSX.Element {
 
   const sidebar = useSidebar();
   const router = useRouter();
-  const navigate = useNavigate({ from: '/tables' });
+  const navigate = useNavigate({ from: '/tables/' });
 
   const { data } = useSuspenseQuery(tableListOptions(search));
   const permission = usePermission();
+  const auth = useAuthStore();
+  const canExportCsv =
+    auth.user?.group?.slug === E_ROLE.MASTER ||
+    auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+
+  const exportCsv = useTablesExportCsv({
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao exportar CSV' });
+    },
+  });
 
   const { open: filterOpen, onOpenChange: handleFilterOpenChange } =
     useFilterSidebar();
@@ -75,8 +87,8 @@ function RouteComponent(): React.JSX.Element {
     {
       slug: 'owner',
       name: 'Criado por',
-      type: E_FIELD_TYPE.TEXT_SHORT,
-      multiple: false,
+      type: E_FIELD_TYPE.USER,
+      multiple: true,
     },
   ];
 
@@ -106,18 +118,13 @@ function RouteComponent(): React.JSX.Element {
             onClick={() => handleFilterOpenChange(!filterOpen)}
             isOpen={filterOpen}
           />
-          {permission.can('CREATE_TABLE') && (
-            <TableImportDialog>
-              <Button
-                variant="outline"
-                size={'sm'}
-              >
-                <UploadIcon className="size-4" />
-                <span>Importar</span>
-              </Button>
-            </TableImportDialog>
+          {canExportCsv && (
+            <CsvDropdown
+              testId="tables-csv"
+              exportPending={exportCsv.isPending}
+              onExport={() => exportCsv.mutate(search)}
+            />
           )}
-
           {aiAssistantEnabled && (
             <ChatTrigger
               onClick={() => handleChatOpenChange(!chatOpen)}

@@ -148,6 +148,11 @@ export const TableCreateSchema: FastifySchema = {
                 nullable: true,
                 description: 'Field width in detail views, integer 0-100 (%)',
               },
+              tip: {
+                type: 'string',
+                nullable: true,
+                description: 'Optional help text shown in row forms',
+              },
               locked: {
                 type: 'boolean',
                 description: 'Field is locked and cannot be modified',
@@ -173,6 +178,16 @@ export const TableCreateSchema: FastifySchema = {
                 type: 'array',
                 nullable: true,
                 description: 'Dropdown options',
+              },
+              allowCustomDropdownOptions: {
+                type: 'boolean',
+                description:
+                  'Allow users to create new dropdown options from row input',
+              },
+              allowCreateRelationshipRecords: {
+                type: 'boolean',
+                description:
+                  'Allow users to create records in the related table from row input',
               },
               category: {
                 type: 'array',
@@ -312,6 +327,7 @@ export const TableCreateSchema: FastifySchema = {
                     widthInForm: { type: 'number', nullable: true },
                     widthInList: { type: 'number', nullable: true },
                     widthInDetail: { type: 'number', nullable: true },
+                    tip: { type: 'string', nullable: true },
                     locked: { type: 'boolean' },
                     native: { type: 'boolean' },
                     defaultValue: {
@@ -321,10 +337,28 @@ export const TableCreateSchema: FastifySchema = {
                         { type: 'null' },
                       ],
                     },
-                    relationship: { type: 'object', nullable: true },
-                    dropdown: { type: 'array', nullable: true },
-                    category: { type: 'array', nullable: true },
-                    group: { type: 'object', nullable: true },
+                    relationship: {
+                      type: 'object',
+                      nullable: true,
+                      additionalProperties: true,
+                    },
+                    dropdown: {
+                      type: 'array',
+                      nullable: true,
+                      items: { type: 'object', additionalProperties: true },
+                    },
+                    allowCustomDropdownOptions: { type: 'boolean' },
+                    allowCreateRelationshipRecords: { type: 'boolean' },
+                    category: {
+                      type: 'array',
+                      nullable: true,
+                      items: { type: 'object', additionalProperties: true },
+                    },
+                    group: {
+                      type: 'object',
+                      nullable: true,
+                      additionalProperties: true,
+                    },
                     trashed: { type: 'boolean' },
                     trashedAt: {
                       type: 'string',

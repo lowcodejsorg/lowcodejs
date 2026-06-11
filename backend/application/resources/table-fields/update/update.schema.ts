@@ -4,7 +4,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
   tags: ['Fields'],
   summary: 'Update field',
   description:
-    'Updates an existing field in a table. Regenerates slug if name changed and rebuilds table schema. Updates field references if slug changes.',
+    'Updates an existing field in a table. Changing name only changes the display title. Slug is the safe technical key and only changes when explicitly sent.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -29,8 +29,22 @@ export const TableFieldUpdateSchema: FastifySchema = {
     properties: {
       name: {
         type: 'string',
-        description: 'Field name (will be re-slugified if changed)',
-        examples: ['Full Name Updated', 'Product Price', 'Published Date'],
+        minLength: 1,
+        maxLength: 500,
+        description: 'Field display title shown to end users',
+        examples: [
+          'Full Name Updated',
+          'Pesquise na base do USPTO e digite os resultados encontrados na busca de anterioridade (padrão). Você tem condições?',
+        ],
+      },
+      slug: {
+        type: 'string',
+        minLength: 2,
+        maxLength: 80,
+        pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
+        description:
+          'Safe technical field key. Changing it renames the stored field data.',
+        examples: ['full-name', 'nome-slug-campo'],
       },
       type: {
         type: 'string',
@@ -49,7 +63,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
           'CREATOR',
           'IDENTIFIER',
           'CREATED_AT',
-          'TRASHED',
+          'STATUS',
           'TRASHED_AT',
         ],
         description: 'Field type from FIELD_TYPE enum',
@@ -102,6 +116,12 @@ export const TableFieldUpdateSchema: FastifySchema = {
         default: 50,
         description: 'Field width in detail views, integer 0-100 (%)',
       },
+      tip: {
+        type: 'string',
+        nullable: true,
+        default: null,
+        description: 'Optional help text shown in row forms',
+      },
       locked: {
         type: 'boolean',
         default: false,
@@ -136,6 +156,18 @@ export const TableFieldUpdateSchema: FastifySchema = {
           },
         },
       },
+      allowCustomDropdownOptions: {
+        type: 'boolean',
+        default: false,
+        description:
+          'Allow users to create new dropdown options from row input',
+      },
+      allowCreateRelationshipRecords: {
+        type: 'boolean',
+        default: false,
+        description:
+          'Allow users to create records in the related table from row input',
+      },
       relationship: {
         type: 'object',
         nullable: true,
@@ -157,6 +189,28 @@ export const TableFieldUpdateSchema: FastifySchema = {
             },
           },
           order: { type: 'string', enum: ['asc', 'desc'] },
+          customLabel: {
+            type: 'boolean',
+            default: false,
+            description: 'Enable composite/custom label for select options',
+          },
+          labelParts: {
+            type: 'array',
+            description: 'Ordered dot-paths composing the custom label',
+            items: {
+              type: 'object',
+              required: ['path'],
+              properties: {
+                path: { type: 'string' },
+                label: { type: 'string' },
+              },
+            },
+          },
+          labelSeparator: {
+            type: 'string',
+            default: ' - ',
+            description: 'Separator between label parts',
+          },
         },
       },
       group: {
@@ -227,7 +281,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
             'CREATOR',
             'IDENTIFIER',
             'CREATED_AT',
-            'TRASHED',
+            'STATUS',
             'TRASHED_AT',
           ],
           description: 'Field type',
@@ -268,6 +322,11 @@ export const TableFieldUpdateSchema: FastifySchema = {
           nullable: true,
           description: 'Field width in detail views, integer 0-100 (%)',
         },
+        tip: {
+          type: 'string',
+          nullable: true,
+          description: 'Optional help text shown in row forms',
+        },
         locked: { type: 'boolean', description: 'Field is locked' },
         native: { type: 'boolean', description: 'Field is native' },
         format: {
@@ -296,6 +355,16 @@ export const TableFieldUpdateSchema: FastifySchema = {
             },
           },
         },
+        allowCustomDropdownOptions: {
+          type: 'boolean',
+          description:
+            'Allow users to create new dropdown options from row input',
+        },
+        allowCreateRelationshipRecords: {
+          type: 'boolean',
+          description:
+            'Allow users to create records in the related table from row input',
+        },
         relationship: {
           type: 'object',
           nullable: true,
@@ -316,6 +385,18 @@ export const TableFieldUpdateSchema: FastifySchema = {
               },
             },
             order: { type: 'string', enum: ['asc', 'desc'] },
+            customLabel: { type: 'boolean' },
+            labelParts: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  path: { type: 'string' },
+                  label: { type: 'string' },
+                },
+              },
+            },
+            labelSeparator: { type: 'string' },
           },
         },
         category: {

@@ -8,13 +8,15 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
-import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
+import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
+import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
 import TableFieldCreateUseCase from '../create.use-case';
 
 let tableRepository: TableInMemoryRepository;
 let fieldRepository: FieldInMemoryRepository;
-let tableSchemaService: TableSchemaInMemoryService;
+let schemaBuilder: InMemorySchemaBuilder;
+let modelBuilder: InMemoryModelBuilder;
 let sut: TableFieldCreateUseCase;
 
 const BASE_PAYLOAD = {
@@ -23,6 +25,7 @@ const BASE_PAYLOAD = {
   showInDetail: true,
   showInFilter: false,
   locked: false,
+  allowCreateRelationshipRecords: false,
   required: false,
   category: [],
   defaultValue: null,
@@ -39,12 +42,14 @@ describe('Table Field Create - DROPDOWN', () => {
   beforeEach(async () => {
     tableRepository = new TableInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
-    tableSchemaService = new TableSchemaInMemoryService();
+    schemaBuilder = new InMemorySchemaBuilder();
+    modelBuilder = new InMemoryModelBuilder();
 
     sut = new TableFieldCreateUseCase(
       tableRepository,
       fieldRepository,
-      tableSchemaService,
+      schemaBuilder,
+      modelBuilder,
     );
 
     await tableRepository.create({
@@ -113,5 +118,37 @@ describe('Table Field Create - DROPDOWN', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value.required).toBe(true);
+  });
+
+  it('deve criar campo DROPDOWN permitindo novas tags', async () => {
+    const result = await sut.execute({
+      ...BASE_PAYLOAD,
+      slug: 'tarefas',
+      name: 'Marcadores',
+      type: E_FIELD_TYPE.DROPDOWN,
+      dropdown: [{ id: '1', label: 'Cliente' }],
+      allowCustomDropdownOptions: true,
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.allowCustomDropdownOptions).toBe(true);
+  });
+
+  it('deve rejeitar campo DROPDOWN com opcoes duplicadas por nome', async () => {
+    const result = await sut.execute({
+      ...BASE_PAYLOAD,
+      slug: 'tarefas',
+      name: 'Status duplicado',
+      type: E_FIELD_TYPE.DROPDOWN,
+      dropdown: [
+        { id: '1', label: 'Ativo' },
+        { id: '2', label: ' ativo ' },
+      ],
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('DROPDOWN_OPTION_ALREADY_EXISTS');
   });
 });

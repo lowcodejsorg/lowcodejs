@@ -3,10 +3,14 @@ import {
   createLazyFileRoute,
   useParams,
   useRouter,
+  useSearch,
 } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
 import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
+
+import { parseMenuPosition } from '../-position';
 
 import type { MenuUpdateFormValues } from './-update-form';
 import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
@@ -21,12 +25,12 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { menuDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { API } from '@/lib/api';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IMenu, ValueOf } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/menus/$menuId/')({
   component: RouteComponent,
@@ -42,7 +46,10 @@ function RouteComponent(): React.JSX.Element {
 
   const { data } = useSuspenseQuery(menuDetailOptions(menuId));
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+  const search = useSearch({ from: '/_private/menus/$menuId/' });
+  const [mode, setMode] = React.useState<'show' | 'edit'>(
+    search.mode === 'edit' ? 'edit' : 'show',
+  );
 
   const goBack = (): void => {
     sidebar.setOpen(true);
@@ -96,10 +103,9 @@ function MenuUpdateContent({
 
   const _update = useUpdateMenu({
     onSuccess() {
-      toastSuccess(
-        'Menu atualizado',
-        'Os dados do menu foram atualizados com sucesso',
-      );
+      toast.success('Menu atualizado', {
+        description: 'Os dados do menu foram atualizados com sucesso',
+      });
 
       form.reset();
       setMode('show');
@@ -108,12 +114,7 @@ function MenuUpdateContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao atualizar o menu',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -125,12 +126,22 @@ function MenuUpdateContent({
       table: data.table?._id ?? '',
       html: data.html ?? '',
       url: data.url ?? '',
+      icon: data.icon ?? null,
       parent: data.parent?._id ?? '',
+      position: data.parent
+        ? String((data.order ?? 0) + 1)
+        : String(data.order ?? 0),
+      isInitial: data.isInitial ?? false,
+      extension: data.extension ?? null,
+      iconFile: [] as Array<File>,
     } satisfies MenuUpdateFormValues,
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: MenuUpdateSchema, onSubmit: MenuUpdateSchema },
     onSubmit: async ({ value }) => {
       if (_update.status === 'pending') return;
+
+      const order = parseMenuPosition(value.position, value.parent);
+      if (order === null) return;
 
       await _update.mutateAsync({
         _id: data._id,
@@ -140,9 +151,15 @@ function MenuUpdateContent({
         table: value.table || null,
         html: value.html || null,
         url: value.url || null,
+        icon: value.icon || null,
+        order,
+        isInitial: value.type === 'SEPARATOR' ? false : value.isInitial,
+        extension: value.extension ?? null,
       });
     },
   });
+
+  useApiErrorAutoClear(form);
 
   const isPending = _update.status === 'pending';
   const menuType = useStore(form.store, (state) => state.values.type) as
@@ -306,6 +323,9 @@ function MenuUpdateContent({
               isPending={isPending}
               mode={mode}
               menuType={menuType}
+              originalType={data.type}
+              hasChildren={(data.children?.length ?? 0) > 0}
+              menuId={data._id}
             />
           </form>
         </PageShell.Content>

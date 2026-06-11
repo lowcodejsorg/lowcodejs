@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import type {
   FieldManagementActions,
@@ -12,11 +13,11 @@ import { useGroupFieldUpdate } from '@/hooks/tanstack-query/use-group-field-upda
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 function buildGroupFieldPayload(
   field: IField,
   groupSlug: string,
+  groupId: string | undefined,
   overrides: Partial<IField>,
 ): Partial<IField> {
   const dropdown = field.dropdown ?? [];
@@ -37,6 +38,11 @@ function buildGroupFieldPayload(
     };
   }
 
+  const groupEntry: { slug: string; _id?: string } = { slug: groupSlug };
+  if (groupId) {
+    groupEntry._id = groupId;
+  }
+
   return {
     name: field.name,
     type: field.type,
@@ -53,7 +59,7 @@ function buildGroupFieldPayload(
     defaultValue: field.defaultValue ?? null,
     dropdown,
     relationship,
-    group: { slug: groupSlug },
+    group: groupEntry,
     category,
     trashed: field.trashed,
     trashedAt: field.trashedAt ?? null,
@@ -82,10 +88,10 @@ export function useGroupFieldManagement(
 
   const updateTable = useUpdateTable({
     onSuccess: () => {
-      toastSuccess('Ordem atualizada com sucesso');
+      toast.success('Ordem atualizada com sucesso');
     },
     onError: () => {
-      toastError('Erro ao atualizar ordem dos campos');
+      toast.error('Erro ao atualizar ordem dos campos');
     },
   });
 
@@ -97,18 +103,18 @@ export function useGroupFieldManagement(
         if (pendingWidthKey === 'widthInList') {
           unit = 'px';
         }
-        toastSuccess(`Largura atualizada para ${widthValue}${unit}`);
+        toast.success(`Largura atualizada para ${widthValue}${unit}`);
       } else if (togglingFieldId) {
         // Determine which visibility key was toggled by checking context
         // The toast is generic here since we don't track the key in this callback
-        toastSuccess('Campo atualizado com sucesso');
+        toast.success('Campo atualizado com sucesso');
       }
       setTogglingFieldId(null);
       setChangingWidthFieldId(null);
       setPendingWidthKey(null);
     },
     onError: () => {
-      toastError('Erro ao atualizar campo do grupo');
+      toast.error('Erro ao atualizar campo do grupo');
       setTogglingFieldId(null);
       setChangingWidthFieldId(null);
       setPendingWidthKey(null);
@@ -167,14 +173,14 @@ export function useGroupFieldManagement(
         },
       );
 
-      toastSuccess(`Campo "${field.name}" excluído permanentemente`);
+      toast.success(`Campo "${field.name}" excluído permanentemente`);
     },
     onError: (error) => {
       console.error(error);
-      toastError(
-        'Erro ao excluir campo',
-        'Não foi possível excluir o campo permanentemente. Tente novamente.',
-      );
+      toast.error('Erro ao excluir campo', {
+        description:
+          'Não foi possível excluir o campo permanentemente. Tente novamente.',
+      });
     },
     onSettled: () => {
       setDeletingFieldId(null);
@@ -192,7 +198,7 @@ export function useGroupFieldManagement(
       tableSlug,
       groupSlug,
       fieldId: field._id,
-      data: buildGroupFieldPayload(field, groupSlug, {
+      data: buildGroupFieldPayload(field, groupSlug, targetGroup?._id, {
         [visibilityKey]: newValue,
       }),
     });
@@ -209,7 +215,9 @@ export function useGroupFieldManagement(
       tableSlug,
       groupSlug,
       fieldId: field._id,
-      data: buildGroupFieldPayload(field, groupSlug, { [widthKey]: newWidth }),
+      data: buildGroupFieldPayload(field, groupSlug, targetGroup?._id, {
+        [widthKey]: newWidth,
+      }),
     });
   }
 
@@ -233,7 +241,7 @@ export function useGroupFieldManagement(
     });
 
     updateTable.mutate({
-      slug: table.slug,
+      routeSlug: table.slug,
       name: table.name,
       description: table.description,
       logo: table.logo?._id ?? null,
@@ -312,16 +320,15 @@ export function useGroupFieldManagement(
         },
       );
 
-      toastSuccess(
-        'Campo restaurado',
-        'O campo foi restaurado da lixeira com sucesso.',
-      );
+      toast.success('Campo restaurado', {
+        description: 'O campo foi restaurado da lixeira com sucesso.',
+      });
     },
     onError: () => {
-      toastError(
-        'Erro ao restaurar campo',
-        'Não foi possível restaurar o campo da lixeira. Tente novamente.',
-      );
+      toast.error('Erro ao restaurar campo', {
+        description:
+          'Não foi possível restaurar o campo da lixeira. Tente novamente.',
+      });
     },
     onSettled: () => {
       setRestoringFieldId(null);

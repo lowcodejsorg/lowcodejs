@@ -225,7 +225,7 @@ export function RowFormFields({
   form,
   fields,
   disabled,
-  tableSlug: _tableSlug,
+  tableSlug,
 }: RowFormFieldsProps): React.JSX.Element {
   return (
     <section
@@ -255,6 +255,9 @@ export function RowFormFields({
               name={field.slug}
               validators={{
                 onChange: ({ value }: { value: any }) => {
+                  return buildFieldValidator(field, value);
+                },
+                onBlur: ({ value }: { value: any }) => {
                   return buildFieldValidator(field, value);
                 },
               }}
@@ -288,6 +291,7 @@ export function RowFormFields({
                       <formField.TableRowDropdownField
                         field={field}
                         disabled={disabled}
+                        tableSlug={tableSlug}
                       />
                     );
                   case E_FIELD_TYPE.DATE:
@@ -309,6 +313,7 @@ export function RowFormFields({
                       <formField.TableRowRelationshipField
                         field={field}
                         disabled={disabled}
+                        tableSlug={tableSlug}
                       />
                     );
                   case E_FIELD_TYPE.CATEGORY:

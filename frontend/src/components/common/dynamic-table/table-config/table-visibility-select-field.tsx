@@ -40,9 +40,7 @@ export function TableVisibilitySelectField({
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {
-          field.handleChange(
-            value as 'public' | 'restricted' | 'open' | 'form' | 'private',
-          );
+          field.handleChange(value);
         }}
       >
         <SelectTrigger className={cn(isInvalid && 'border-destructive')}>

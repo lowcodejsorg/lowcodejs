@@ -1,7 +1,6 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
 import * as React from 'react';
 
-import { Button } from '@/components/ui/button';
+import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
 import {
   Combobox,
   ComboboxContent,
@@ -11,10 +10,9 @@ import {
   ComboboxList,
 } from '@/components/ui/combobox';
 import { Spinner } from '@/components/ui/spinner';
-import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
+import { useTablesReadPaginatedInfinite } from '@/hooks/tanstack-query/use-tables-read-paginated-infinite';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import { API } from '@/lib/api';
-import type { ITable, Paginated } from '@/lib/interfaces';
+import type { ITable } from '@/lib/interfaces';
 
 interface TableComboboxPaginatedProps {
   value?: string;
@@ -35,23 +33,9 @@ export function TableComboboxPaginated({
   const debouncedSearch = useDebouncedValue(search, 300);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useInfiniteQuery({
-      queryKey: queryKeys.tables.list({ search: debouncedSearch }),
-      queryFn: async ({ pageParam }) => {
-        const response = await API.get<Paginated<ITable>>('/tables/paginated', {
-          params: {
-            page: pageParam,
-            perPage: 10,
-            search: debouncedSearch || undefined,
-          },
-        });
-        return response.data;
-      },
-      initialPageParam: 1,
-      getNextPageParam: (lastPage) =>
-        lastPage.meta.page < lastPage.meta.lastPage
-          ? lastPage.meta.page + 1
-          : undefined,
+    useTablesReadPaginatedInfinite({
+      perPage: 10,
+      search: debouncedSearch || undefined,
     });
 
   const tables = React.useMemo(
@@ -110,25 +94,11 @@ export function TableComboboxPaginated({
               )}
             </ComboboxList>
 
-            {hasNextPage && (
-              <div className="border-t p-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => fetchNextPage()}
-                  disabled={isFetchingNextPage}
-                >
-                  {isFetchingNextPage && (
-                    <>
-                      <Spinner className="size-4" />
-                      Carregando...
-                    </>
-                  )}
-                  {!isFetchingNextPage && 'Carregar mais'}
-                </Button>
-              </div>
-            )}
+            <ComboboxLoadMore
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              onLoadMore={() => fetchNextPage()}
+            />
           </>
         )}
       </ComboboxContent>

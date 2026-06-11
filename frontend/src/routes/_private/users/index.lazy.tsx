@@ -5,19 +5,27 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
+import { Trash2Icon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { TableUsers } from './-table-users';
 
+import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
 import { PageShell } from '@/components/common/page-shell';
 import { Pagination } from '@/components/common/pagination';
+import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
+import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { userListOptions } from '@/hooks/tanstack-query/_query-options';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { useUserEmptyTrash } from '@/hooks/tanstack-query/use-user-empty-trash';
+import { useUsersExportCsv } from '@/hooks/tanstack-query/use-users-export-csv';
+import { E_FIELD_TYPE, E_ROLE } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -44,8 +52,42 @@ function RouteComponent(): React.JSX.Element {
     userListOptions({
       ...search,
       authenticated: auth.user?._id,
+      role: E_ROLE.ADMINISTRATOR,
     }),
   );
+
+  const isMaster = auth.user?.group?.slug === E_ROLE.MASTER;
+  const isAdmin = auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+  const canExportCsv = isMaster || isAdmin;
+  const isTrashView = search.trashed === true;
+
+  const [emptyTrashOpen, setEmptyTrashOpen] = React.useState(false);
+
+  const exportCsv = useUsersExportCsv({
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao exportar CSV' });
+    },
+  });
+
+  const emptyTrash = useUserEmptyTrash({
+    onSuccess(result) {
+      setEmptyTrashOpen(false);
+      const message =
+        result.deleted === 1
+          ? '1 usuário excluído permanentemente!'
+          : result.deleted
+              .toString()
+              .concat(' usuários excluídos permanentemente!');
+      toast.success(message, {
+        description: 'A lixeira de usuários foi esvaziada',
+      });
+    },
+    onError(error) {
+      handleApiError(error, {
+        context: 'Erro ao esvaziar lixeira de usuários',
+      });
+    },
+  });
 
   const [filterOpen, setFilterOpen] = React.useState(() => {
     try {
@@ -84,24 +126,44 @@ function RouteComponent(): React.JSX.Element {
         </div>
         <div className="inline-flex items-center gap-2">
           <div ref={setToolbarNode} />
+          <TrashButton />
           <FilterTrigger
             activeFiltersCount={activeFiltersCount}
             onClick={() => handleFilterOpenChange(!filterOpen)}
             isOpen={filterOpen}
           />
-          <Button
-            data-test-id="create-user-btn"
-            onClick={() => {
-              sidebar.setOpen(false);
-              router.navigate({
-                to: '/users/create',
-                replace: true,
-              });
-            }}
-            className="disabled:cursor-not-allowed"
-          >
-            <span>Novo Usuário</span>
-          </Button>
+          {canExportCsv && (
+            <ExportCsvButton
+              testId="export-users-csv-btn"
+              isPending={exportCsv.isPending}
+              onClick={() => exportCsv.mutate(search)}
+            />
+          )}
+          {isTrashView && isMaster && (
+            <Button
+              data-test-id="empty-trash-users-btn"
+              variant="destructive"
+              onClick={() => setEmptyTrashOpen(true)}
+            >
+              <Trash2Icon className="size-4" />
+              <span>Esvaziar lixeira</span>
+            </Button>
+          )}
+          {!isTrashView && (
+            <Button
+              data-test-id="create-user-btn"
+              onClick={() => {
+                sidebar.setOpen(false);
+                router.navigate({
+                  to: '/users/create',
+                  replace: true,
+                });
+              }}
+              className="disabled:cursor-not-allowed"
+            >
+              <span>Novo Usuário</span>
+            </Button>
+          )}
         </div>
       </PageShell.Header>
 
@@ -132,6 +194,17 @@ function RouteComponent(): React.JSX.Element {
           }
         />
       </PageShell.Footer>
+
+      <PermanentDeleteConfirmDialog
+        open={emptyTrashOpen}
+        onOpenChange={setEmptyTrashOpen}
+        title="Esvaziar lixeira de usuários"
+        description="Essa ação é irreversível. Todos os usuários na lixeira serão excluídos permanentemente."
+        itemsCount={data.meta.total}
+        isPending={emptyTrash.isPending}
+        onConfirm={() => emptyTrash.mutate()}
+        testId="empty-trash-users-dialog"
+      />
     </PageShell>
   );
 }

@@ -1,32 +1,161 @@
-import type { Server as HttpServer } from 'node:http';
+/* eslint-disable import/order */
+import 'reflect-metadata';
+
+import { getInstanceByToken } from 'fastify-decorators';
 
 import type { IJWTPayload } from '@application/core/entity.core';
+import { Setting } from '@application/model/setting.model';
+import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
+import StorageMongooseRepository from '@application/repositories/storage/storage.repository';
 import { initChatSocket } from '@application/resources/chat/chat.socket';
+import { initNotificationsSocket } from '@application/resources/notifications/notifications.socket';
+import { initStorageMigrationSocket } from '@application/resources/storage-migration/storage-migration.socket';
+import { startEmailWorker } from '@application/services/email-queue/worker';
+import { EmailContractService } from '@application/services/email/email-contract.service';
+import NodemailerEmailService from '@application/services/email/email.service';
+import { startStorageMigrationWorker } from '@application/services/storage-migration/worker';
+import { initCsvImportSocket } from '@application/resources/table-rows/import-csv/import-csv.socket';
+import { initTableImportSocket } from '@extensions/core/tools/tables-import-export/import-table.socket';
+import { startCsvImportWorker } from '@application/services/csv-import/worker';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
+import RowMongooseRepository from '@application/repositories/row/row.repository';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import TableMongooseRepository from '@application/repositories/table/table.repository';
+import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
+import BcryptRowPasswordService from '@application/services/row-password/row-password.service';
+import StorageService from '@application/services/storage/storage.service';
 import { MongooseConnect } from '@config/database.config';
+import { syncStorageEnv } from '@config/setting-env-sync';
 import { Env } from '@start/env';
 import { kernel } from '@start/kernel';
 
+const SETTING_SYNC_KEYS = [
+  'SYSTEM_NAME',
+  'LOCALE',
+  'FILE_UPLOAD_MAX_SIZE',
+  'FILE_UPLOAD_ACCEPTED',
+  'FILE_UPLOAD_MAX_FILES_PER_UPLOAD',
+  'PAGINATION_PER_PAGE',
+  'EMAIL_PROVIDER_HOST',
+  'EMAIL_PROVIDER_PORT',
+  'EMAIL_PROVIDER_USER',
+  'EMAIL_PROVIDER_PASSWORD',
+  'LOGO_SMALL_URL',
+  'LOGO_LARGE_URL',
+  'OPENAI_API_KEY',
+  'AI_ASSISTANT_ENABLED',
+];
+
+async function loadStorageConfig(): Promise<void> {
+  const setting = await Setting.findOne().lean();
+
+  if (setting) {
+    syncStorageEnv(setting as never);
+    console.info(`[Storage] Driver: ${setting.STORAGE_DRIVER ?? 'local'}`);
+  } else {
+    console.info('[Storage] Nenhum Setting encontrado, usando driver local');
+  }
+}
+
+async function syncSettingsFromDatabase(): Promise<void> {
+  const settings = await Setting.findOne().lean();
+  if (!settings) return;
+
+  for (const key of SETTING_SYNC_KEYS) {
+    const value = (settings as Record<string, unknown>)[key];
+    if (value !== undefined && value !== null) {
+      process.env[key] = String(value);
+    }
+  }
+  console.info('Settings synced from database');
+}
+
+async function sweepStaleMigrations(): Promise<void> {
+  const repo = getInstanceByToken<StorageContractRepository>(
+    StorageMongooseRepository,
+  );
+  const swept = await repo.markInProgressAsFailed();
+  if (swept > 0) {
+    console.info(
+      `[StorageMigration] Sweep boot: ${swept} arquivo(s) órfão(s) em 'in_progress' marcados como 'failed'.`,
+    );
+  }
+}
+
 async function start(): Promise<void> {
   try {
+    await loadStorageConfig();
     await kernel.ready();
 
     await kernel.listen({ port: Env.PORT, host: '0.0.0.0' });
     console.info(`HTTP Server running on http://localhost:${Env.PORT}`);
 
-    // Inicializar Socket.IO usando o HTTP server nativo do Fastify
-    const httpServer = kernel.server as HttpServer;
-    initChatSocket(httpServer, (token: string) => {
-      return kernel.jwt.decode<IJWTPayload>(token);
-    });
+    const httpServer = kernel.server;
+    const jwtDecode = (token: string): IJWTPayload | null =>
+      kernel.jwt.decode<IJWTPayload>(token);
+
+    const io = initChatSocket(httpServer, jwtDecode);
     console.info('Socket.IO chat initialized');
+
+    const migrationNamespace = initStorageMigrationSocket(io, jwtDecode);
+    console.info('Socket.IO storage-migration namespace initialized');
+
+    initNotificationsSocket(io, jwtDecode);
+    console.info('Socket.IO notifications namespace initialized');
+
+    initTableImportSocket(io, jwtDecode);
+    console.info('Socket.IO table-import namespace initialized');
+
+    await sweepStaleMigrations();
+
+    const storageRepository = getInstanceByToken<StorageContractRepository>(
+      StorageMongooseRepository,
+    );
+    const storageService = getInstanceByToken<StorageService>(StorageService);
+
+    startStorageMigrationWorker({
+      namespace: migrationNamespace,
+      storageRepository,
+      storageService,
+    });
+    console.info('Storage migration worker started');
+
+    const emailService = getInstanceByToken<EmailContractService>(
+      NodemailerEmailService,
+    );
+    startEmailWorker({ emailService });
+    console.info('Email worker started');
+
+    const { namespace: csvImportNamespace, storeResult: csvImportStoreResult } =
+      initCsvImportSocket(io, jwtDecode);
+    console.info('Socket.IO csv-import namespace initialized');
+
+    const csvTableRepository = getInstanceByToken<TableContractRepository>(
+      TableMongooseRepository,
+    );
+    const csvRowRepository = getInstanceByToken<RowContractRepository>(
+      RowMongooseRepository,
+    );
+    const csvRowPasswordService =
+      getInstanceByToken<RowPasswordContractService>(BcryptRowPasswordService);
+
+    startCsvImportWorker({
+      namespace: csvImportNamespace,
+      storeResult: csvImportStoreResult,
+      tableRepository: csvTableRepository,
+      rowRepository: csvRowRepository,
+      rowPasswordService: csvRowPasswordService,
+    });
+    console.info('CSV import worker started');
   } catch (err) {
     console.error('Error starting server:', err);
     process.exit(1);
   }
 }
 
-MongooseConnect().then(() => {
-  console.info('Mongoose connected');
-  console.info('url: ', Env.DATABASE_URL);
+MongooseConnect().then(async () => {
+  console.info('Mongoose system connected:', Env.DB_DATABASE);
+  console.info('Mongoose data connected:', Env.DB_DATA_DATABASE);
+  await syncSettingsFromDatabase();
   start();
 });

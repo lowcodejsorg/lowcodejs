@@ -1,7 +1,7 @@
 import { PlusIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
-import { badgeStyleFromColor } from '@/components/common/dynamic-table/table-cells/table-row-badge-list';
+import { badgeStyleFromColor } from '@/components/common/dynamic-table/table-cells/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,6 +16,19 @@ import { Input } from '@/components/ui/input';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 import type { FieldMap } from '@/lib/kanban-types';
+
+// Grupo de campos é salvo via endpoints group-rows, que exigem o rowId.
+// No card novo (ainda sem rowId) só exibimos o aviso para salvar primeiro.
+function GroupFieldCreateHint({ name }: { name: string }): React.JSX.Element {
+  return (
+    <div className="space-y-1">
+      <span className="text-sm font-medium ml-2">{name}</span>
+      <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+        Salve o card para adicionar itens a este grupo.
+      </p>
+    </div>
+  );
+}
 
 export function KanbanCreateCardDialog({
   open,
@@ -260,11 +273,7 @@ export function KanbanCreateCardDialog({
                   };
                   if (fields.attachments?.type === E_FIELD_TYPE.FIELD_GROUP) {
                     return (
-                      <formField.TableRowFieldGroupField
-                        field={attachmentsField}
-                        tableSlug={tableSlug}
-                        form={createForm}
-                      />
+                      <GroupFieldCreateHint name={attachmentsField.name} />
                     );
                   }
                   return (
@@ -297,7 +306,10 @@ export function KanbanCreateCardDialog({
                           );
                         case E_FIELD_TYPE.DROPDOWN:
                           return (
-                            <formField.TableRowDropdownField field={field} />
+                            <formField.TableRowDropdownField
+                              field={field}
+                              tableSlug={tableSlug}
+                            />
                           );
                         case E_FIELD_TYPE.DATE:
                           return <formField.TableRowDateField field={field} />;
@@ -307,6 +319,7 @@ export function KanbanCreateCardDialog({
                           return (
                             <formField.TableRowRelationshipField
                               field={field}
+                              tableSlug={tableSlug}
                             />
                           );
                         case E_FIELD_TYPE.CATEGORY:
@@ -314,13 +327,7 @@ export function KanbanCreateCardDialog({
                             <formField.TableRowCategoryField field={field} />
                           );
                         case E_FIELD_TYPE.FIELD_GROUP:
-                          return (
-                            <formField.TableRowFieldGroupField
-                              field={field}
-                              tableSlug={tableSlug}
-                              form={createForm}
-                            />
-                          );
+                          return <GroupFieldCreateHint name={field.name} />;
                         case E_FIELD_TYPE.USER:
                           return <formField.TableRowUserField field={field} />;
                         default:

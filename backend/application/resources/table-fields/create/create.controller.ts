@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
@@ -16,7 +17,6 @@ import {
 })
 export default class {
   constructor(
-    // eslint-disable-next-line no-unused-vars
     private readonly useCase: TableFieldCreateUseCase = getInstanceByToken(
       TableFieldCreateUseCase,
     ),
@@ -39,7 +39,10 @@ export default class {
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const payload = TableFieldCreateBodyValidator.parse(request.body);
     const params = TableFieldCreateParamsValidator.parse(request.params);
-    const result = await this.useCase.execute({ ...payload, ...params });
+    const result = await this.useCase.execute({
+      ...payload,
+      tableSlug: params.slug,
+    });
 
     if (result.isLeft()) {
       const error = result.value;
@@ -51,8 +54,6 @@ export default class {
         ...(error.errors && { errors: error.errors }),
       });
     }
-
-    console.error(JSON.stringify(result.value, null, 2));
 
     return response.status(201).send(result.value);
   }

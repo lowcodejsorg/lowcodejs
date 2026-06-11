@@ -1,8 +1,16 @@
-import type { FindOptions, IStorage } from '@application/core/entity.core';
+import {
+  E_STORAGE_LOCATION,
+  E_STORAGE_MIGRATION_STATUS,
+  type FindOptions,
+  type IStorage,
+  type TStorageLocation,
+  type TStorageMigrationStatus,
+} from '@application/core/entity.core';
 
 import type {
   StorageContractRepository,
   StorageCreatePayload,
+  StorageLocationFindOptions,
   StorageQueryPayload,
   StorageUpdatePayload,
 } from './storage-contract.repository';
@@ -23,9 +31,15 @@ export default class StorageInMemoryRepository implements StorageContractReposit
     }
   }
 
-  async create(payload: StorageCreatePayload): Promise<IStorage> {
-    const storage: IStorage = {
-      ...payload,
+  private buildBase(payload: StorageCreatePayload): IStorage {
+    return {
+      filename: payload.filename,
+      mimetype: payload.mimetype,
+      originalName: payload.originalName,
+      size: payload.size,
+      location: payload.location ?? E_STORAGE_LOCATION.LOCAL,
+      migration_status:
+        payload.migration_status ?? E_STORAGE_MIGRATION_STATUS.IDLE,
       _id: crypto.randomUUID(),
       url: `/storage/${payload.filename}`,
       createdAt: new Date(),
@@ -33,20 +47,16 @@ export default class StorageInMemoryRepository implements StorageContractReposit
       trashedAt: null,
       trashed: false,
     };
+  }
+
+  async create(payload: StorageCreatePayload): Promise<IStorage> {
+    const storage = this.buildBase(payload);
     this.items.push(storage);
     return storage;
   }
 
   async createMany(payload: StorageCreatePayload[]): Promise<IStorage[]> {
-    const storages: IStorage[] = payload.map((p) => ({
-      ...p,
-      _id: crypto.randomUUID(),
-      url: `/storage/${p.filename}`,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      trashedAt: null,
-      trashed: false,
-    }));
+    const storages = payload.map((p) => this.buildBase(p));
     this.items.push(...storages);
     return storages;
   }
@@ -120,5 +130,65 @@ export default class StorageInMemoryRepository implements StorageContractReposit
       perPage: undefined,
     });
     return filtered.length;
+  }
+
+  async findByLocation(
+    location: TStorageLocation,
+    options?: StorageLocationFindOptions,
+  ): Promise<IStorage[]> {
+    let filtered = this.items.filter((s) => s.location === location);
+    if (options?.page && options?.perPage) {
+      const start = (options.page - 1) * options.perPage;
+      const end = start + options.perPage;
+      filtered = filtered.slice(start, end);
+    }
+    return filtered;
+  }
+
+  async countByLocation(location: TStorageLocation): Promise<number> {
+    return this.items.filter((s) => s.location === location).length;
+  }
+
+  async countByMigrationStatus(
+    status: TStorageMigrationStatus,
+  ): Promise<number> {
+    return this.items.filter((s) => s.migration_status === status).length;
+  }
+
+  async findByMigrationStatus(
+    status: TStorageMigrationStatus,
+    options?: StorageLocationFindOptions,
+  ): Promise<IStorage[]> {
+    let filtered = this.items.filter((s) => s.migration_status === status);
+    if (options?.page && options?.perPage) {
+      const start = (options.page - 1) * options.perPage;
+      const end = start + options.perPage;
+      filtered = filtered.slice(start, end);
+    }
+    return filtered;
+  }
+
+  async updateLocation(
+    _id: string,
+    location: TStorageLocation,
+    migration_status: TStorageMigrationStatus,
+  ): Promise<IStorage | null> {
+    const storage = this.items.find((s) => s._id === _id);
+    if (!storage) return null;
+    storage.location = location;
+    storage.migration_status = migration_status;
+    storage.updatedAt = new Date();
+    return storage;
+  }
+
+  async markInProgressAsFailed(): Promise<number> {
+    let count = 0;
+    for (const item of this.items) {
+      if (item.migration_status === E_STORAGE_MIGRATION_STATUS.IN_PROGRESS) {
+        item.migration_status = E_STORAGE_MIGRATION_STATUS.FAILED;
+        count++;
+      }
+    }
+    return count;
   }
 }

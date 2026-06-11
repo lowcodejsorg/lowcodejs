@@ -18,7 +18,10 @@ export type UserGroupCreatePayload = Merge<
 
 export type UserGroupUpdatePayload = Merge<
   Pick<IGroup, '_id'>,
-  Partial<UserGroupCreatePayload>
+  Partial<UserGroupCreatePayload> & {
+    trashed?: boolean;
+    trashedAt?: Date | null;
+  }
 >;
 
 export type UserGroupQueryPayload = {
@@ -26,7 +29,17 @@ export type UserGroupQueryPayload = {
   perPage?: number;
   search?: string;
   user?: Merge<Pick<IUser, '_id'>, { role: ValueOf<typeof E_ROLE> }>;
+  trashed?: boolean;
   sort?: Record<string, 'asc' | 'desc'>;
+};
+
+export type UserGroupUpdateManyPayload = {
+  _ids: string[];
+  filterTrashed?: boolean;
+  data: {
+    trashed?: boolean;
+    trashedAt?: Date | null;
+  };
 };
 
 export abstract class UserGroupContractRepository {
@@ -37,7 +50,10 @@ export abstract class UserGroupContractRepository {
     options?: FindOptions,
   ): Promise<IGroup | null>;
   abstract findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]>;
+  abstract findManyTrashed(): Promise<IGroup[]>;
   abstract update(payload: UserGroupUpdatePayload): Promise<IGroup>;
+  abstract updateMany(payload: UserGroupUpdateManyPayload): Promise<number>;
   abstract delete(_id: string): Promise<void>;
+  abstract deleteMany(_ids: string[]): Promise<number>;
   abstract count(payload?: UserGroupQueryPayload): Promise<number>;
 }

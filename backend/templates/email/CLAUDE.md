@@ -5,11 +5,13 @@ Nodemailer.
 
 ## Arquivos
 
-| Arquivo             | Variáveis EJS             | Uso                                              |
-| ------------------- | ------------------------- | ------------------------------------------------ |
-| `notification.ejs`  | `subject`, `message`      | Notificações genéricas do sistema               |
-| `recovery-code.ejs` | `code`, `expiresIn`       | Código de recuperação de senha / 2FA             |
-| `sign-up.ejs`       | `name`, `subject`         | Confirmação de cadastro para novos usuários      |
+| Arquivo                     | Variáveis EJS                          | Uso                                                                     |
+| --------------------------- | -------------------------------------- | ----------------------------------------------------------------------- |
+| `notification.ejs`          | `subject`, `message`                   | Notificações genéricas do sistema                                      |
+| `recovery-code.ejs`         | `code`, `expiresIn`                    | Código de recuperação de senha / 2FA                                    |
+| `sign-up.ejs`               | `name`, `subject`                      | Confirmação de cadastro para novos usuários (self sign-up)              |
+| `user-created.ejs`          | `name`, `email`, `loginUrl`            | Boas-vindas ao usuário criado por admin via `POST /users`               |
+| `user-account-changed.ejs`  | `name`, `changes[]`, `recipientType`   | Notificação de alteração em campos sensíveis (password/email/status)   |
 
 ## Padrões
 

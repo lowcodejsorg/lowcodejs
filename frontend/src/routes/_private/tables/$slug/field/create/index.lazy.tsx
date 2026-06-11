@@ -4,6 +4,7 @@ import {
   useParams,
   useSearch,
 } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
 import { CreateFieldSkeleton } from './-create-field-skeleton';
 import {
@@ -22,12 +23,12 @@ import { useGroupFieldCreate } from '@/hooks/tanstack-query/use-group-field-crea
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
 import { E_FIELD_TYPE, E_TABLE_TYPE } from '@/lib/constant';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ICategory, IField, ValueOf } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute(
   '/_private/tables/$slug/field/create/',
@@ -61,6 +62,11 @@ function normalizeDefaultValue(
   return defaultValue || null;
 }
 
+function normalizeTip(tip: string): string | null {
+  const normalized = tip.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
 function convertTreeNodeToCategory(nodes: Array<TreeNode>): Array<ICategory> {
   return nodes.map((node) => ({
     id: node.id,
@@ -85,7 +91,9 @@ function RouteComponent(): React.JSX.Element {
   const permission = useTablePermission(table.data);
 
   const onCreateSuccess = (): void => {
-    toastSuccess('Campo criado', 'O campo foi criado com sucesso');
+    toast.success('Campo criado', {
+      description: 'O campo foi criado com sucesso',
+    });
     form.reset();
     sidebar.setOpen(false);
     navigate({
@@ -98,12 +106,7 @@ function RouteComponent(): React.JSX.Element {
   const onCreateError = (error: Error): void => {
     handleApiError(error, {
       context: 'Erro ao criar o campo',
-      onFieldErrors: (errors) => {
-        const setFieldError = createFieldErrorSetter(form);
-        for (const [field, msg] of Object.entries(errors)) {
-          setFieldError(field, msg);
-        }
-      },
+      onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
     });
   };
 
@@ -139,6 +142,8 @@ function RouteComponent(): React.JSX.Element {
 
       const payload: Partial<IField> = {
         name: value.name,
+        slug: value.slug,
+        tip: normalizeTip(value.tip),
         type: value.type as keyof typeof E_FIELD_TYPE,
         required: value.required,
         multiple: value.multiple,
@@ -153,6 +158,14 @@ function RouteComponent(): React.JSX.Element {
           : null,
         defaultValue: normalizeDefaultValue(value.type, value.defaultValue),
         dropdown: hasDropdown ? value.dropdown.map((item) => item) : [],
+        allowCustomDropdownOptions:
+          value.type === E_FIELD_TYPE.DROPDOWN
+            ? value.allowCustomDropdownOptions
+            : false,
+        allowCreateRelationshipRecords:
+          value.type === E_FIELD_TYPE.RELATIONSHIP
+            ? value.allowCreateRelationshipRecords
+            : false,
         relationship: hasRelationship
           ? {
               table: {
@@ -164,6 +177,11 @@ function RouteComponent(): React.JSX.Element {
                 slug: value.relationship.fieldSlug,
               },
               order: (value.relationship.order || 'asc') as 'asc' | 'desc',
+              customLabel: value.relationship.customLabel,
+              labelParts: value.relationship.customLabel
+                ? value.relationship.labelParts
+                : [],
+              labelSeparator: value.relationship.labelSeparator || ' - ',
             }
           : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],
@@ -183,6 +201,8 @@ function RouteComponent(): React.JSX.Element {
       }
     },
   });
+
+  useApiErrorAutoClear(form);
 
   // Loading enquanto verifica permissão
   if (table.status === 'pending' || permission.isLoading) {

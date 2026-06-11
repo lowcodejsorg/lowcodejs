@@ -44,6 +44,9 @@ export function useUpdateSetting(
     },
     onSuccess(data, variables) {
       queryClient.invalidateQueries({ queryKey: queryKeys.settings.all });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.storageMigration.all,
+      });
       props.onSuccess?.(data, variables);
     },
     onError: props.onError,

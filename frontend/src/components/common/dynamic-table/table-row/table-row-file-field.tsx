@@ -1,7 +1,9 @@
 import * as React from 'react';
 
+import { TableRowFieldLabel } from './table-row-field-label';
+
 import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Field, FieldError } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
@@ -38,8 +40,6 @@ export function TableRowFileField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const isRequired = field.required;
-
   const rawValue = formField.state.value;
   const value: FileValue =
     rawValue &&
@@ -90,10 +90,10 @@ export function TableRowFileField({
   if (isLoadingFiles) {
     return (
       <Field data-slot="table-row-file-field">
-        <FieldLabel htmlFor={formField.name}>
-          {field.name}
-          {isRequired && <span className="text-destructive"> *</span>}
-        </FieldLabel>
+        <TableRowFieldLabel
+          field={field}
+          htmlFor={formField.name}
+        />
         <div className="flex items-center gap-2 p-4 border rounded-md">
           <Spinner />
           <span className="text-sm text-muted-foreground">
@@ -115,10 +115,10 @@ export function TableRowFileField({
       data-test-id="table-row-file-upload"
       data-invalid={isInvalid}
     >
-      <FieldLabel htmlFor={formField.name}>
-        {field.name}
-        {isRequired && <span className="text-destructive"> *</span>}
-      </FieldLabel>
+      <TableRowFieldLabel
+        field={field}
+        htmlFor={formField.name}
+      />
       <FileUploadWithStorage
         data-test-id="table-row-file-upload"
         value={value.files}

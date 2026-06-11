@@ -3,7 +3,7 @@ import { AlertCircle } from 'lucide-react';
 import { TableCombobox } from '@/components/common/dynamic-table/table-selectors/table-combobox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
+import { useTablesReadPaginatedInfinite } from '@/hooks/tanstack-query/use-tables-read-paginated-infinite';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
 
@@ -23,11 +23,11 @@ export function TableComboboxField({
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
-  const { data, status } = useTablesReadPaginated();
-  const tables = data?.data;
+  const { data, status } = useTablesReadPaginatedInfinite({ perPage: 1 });
+  const firstPage = data?.pages?.[0];
 
   // Se não houver tabelas, mostrar mensagem
-  if (status === 'success' && tables?.length === 0) {
+  if (status === 'success' && firstPage?.meta.total === 0) {
     return (
       <Field
         data-slot="table-combobox-field"

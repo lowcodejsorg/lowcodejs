@@ -13,6 +13,7 @@ export const TableCreateSchema = z.object({
     .string()
     .min(1, 'Nome é obrigatório')
     .max(40, 'Nome deve ter no máximo 40 caracteres'),
+  slug: z.string().trim().default(''),
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
   style: z.enum([
@@ -33,6 +34,7 @@ export type TableCreateFormValues = z.infer<typeof TableCreateSchema>;
 
 export const tableCreateFormDefaultValues: TableCreateFormValues = {
   name: '',
+  slug: '',
   logo: null,
   logoFile: [],
   style: E_TABLE_STYLE.LIST,
@@ -110,6 +112,18 @@ export const CreateTableFormFields = withForm({
               disabled={isPending}
               icon={<FileTextIcon />}
               required
+            />
+          )}
+        </form.AppField>
+
+        {/* Campo URL */}
+        <form.AppField name="slug">
+          {(field) => (
+            <field.FieldText
+              label="URL"
+              placeholder="ex: minha-tabela"
+              description="Use letras minúsculas e hífens. Ex: minha-tabela"
+              disabled={isPending}
             />
           )}
         </form.AppField>

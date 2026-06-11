@@ -2,6 +2,7 @@ import { useStore } from '@tanstack/react-store';
 import { BellIcon, PlusIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
+import { GroupRowsDataTable } from '@/components/common/dynamic-table/group-rows';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -548,7 +549,10 @@ export function CalendarEventDialog({
                           );
                         case E_FIELD_TYPE.DROPDOWN:
                           return (
-                            <formField.TableRowDropdownField field={field} />
+                            <formField.TableRowDropdownField
+                              field={field}
+                              tableSlug={tableSlug}
+                            />
                           );
                         case E_FIELD_TYPE.DATE:
                           return <formField.TableRowDateField field={field} />;
@@ -558,20 +562,39 @@ export function CalendarEventDialog({
                           return (
                             <formField.TableRowRelationshipField
                               field={field}
+                              tableSlug={tableSlug}
                             />
                           );
                         case E_FIELD_TYPE.CATEGORY:
                           return (
                             <formField.TableRowCategoryField field={field} />
                           );
-                        case E_FIELD_TYPE.FIELD_GROUP:
+                        case E_FIELD_TYPE.FIELD_GROUP: {
+                          // Itens de grupo são salvos via endpoints group-rows
+                          // (exigem rowId). Em edição usamos a tabela de itens;
+                          // ao criar, pedimos para salvar o agendamento antes.
+                          if (event && table) {
+                            return (
+                              <GroupRowsDataTable
+                                tableSlug={tableSlug}
+                                rowId={event.rowId}
+                                field={field}
+                                table={table}
+                              />
+                            );
+                          }
                           return (
-                            <formField.TableRowFieldGroupField
-                              field={field}
-                              tableSlug={tableSlug}
-                              form={form}
-                            />
+                            <div className="space-y-1">
+                              <span className="text-sm font-medium ml-2">
+                                {field.name}
+                              </span>
+                              <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+                                Salve o agendamento para adicionar itens a este
+                                grupo.
+                              </p>
+                            </div>
                           );
+                        }
                         case E_FIELD_TYPE.USER:
                           return <formField.TableRowUserField field={field} />;
                         default:

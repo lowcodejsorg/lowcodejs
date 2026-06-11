@@ -2,22 +2,61 @@ import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
+import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
+import { ExtensionSlot } from '@/components/common/extension-slot';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
-import type { ICategory, IDropdown } from '@/lib/interfaces';
+import {
+  FIELD_NAME_MAX_LENGTH,
+  FIELD_SLUG_MAX_LENGTH,
+  getFieldSlugError,
+  normalizeFieldSlug,
+} from '@/lib/field-slug';
+import type {
+  ICategory,
+  IDropdown,
+  IField,
+  IRelationshipLabelPart,
+  ITable,
+} from '@/lib/interfaces';
 
 export const FieldUpdateSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório').max(40),
+  name: z
+    .string()
+    .min(1, 'Título exibido é obrigatório')
+    .max(
+      FIELD_NAME_MAX_LENGTH,
+      `O título exibido deve ter no máximo ${FIELD_NAME_MAX_LENGTH} caracteres`,
+    ),
+  slug: z
+    .string()
+    .min(1, 'Slug é obrigatório')
+    .max(
+      FIELD_SLUG_MAX_LENGTH,
+      `O slug deve ter no máximo ${FIELD_SLUG_MAX_LENGTH} caracteres`,
+    )
+    .refine((value) => !getFieldSlugError(value), {
+      message: 'Use apenas letras minúsculas, números e hífens',
+    }),
+  tip: z
+    .string()
+    .max(500, 'A dica deve ter no máximo 500 caracteres')
+    .default(''),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
   defaultValue: z.string().default(''),
   dropdown: z.array(z.custom<IDropdown>()).default([]),
+  allowCustomDropdownOptions: z.boolean().default(false),
+  allowCreateRelationshipRecords: z.boolean().default(false),
   relationship: z.object({
     tableId: z.string().default(''),
     tableSlug: z.string().default(''),
     fieldId: z.string().default(''),
     fieldSlug: z.string().default(''),
     order: z.string().default(''),
+    customLabel: z.boolean().default(false),
+    labelParts: z.array(z.custom<IRelationshipLabelPart>()).default([]),
+    labelSeparator: z.string().default(' - '),
   }),
   category: z.array(z.custom<ICategory>()).default([]),
   multiple: z.boolean().default(false),
@@ -35,16 +74,23 @@ export type FieldUpdateFormValues = z.infer<typeof FieldUpdateSchema>;
 
 export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   name: '',
+  slug: '',
+  tip: '',
   type: '',
   format: '',
   defaultValue: '',
   dropdown: [],
+  allowCustomDropdownOptions: false,
+  allowCreateRelationshipRecords: false,
   relationship: {
     tableId: '',
     tableSlug: '',
     fieldId: '',
     fieldSlug: '',
     order: '',
+    customLabel: false,
+    labelParts: [],
+    labelSeparator: ' - ',
   },
   category: [],
   multiple: false,
@@ -63,10 +109,22 @@ export const UpdateFieldFormFields = withForm({
   props: {
     isPending: false,
     mode: 'show' as 'show' | 'edit',
-    tableSlug: '' as string,
+    tableSlug: '',
+    table: undefined as ITable | undefined,
+    targetField: undefined as IField | undefined,
     isLocked: false,
+    isGroupField: false,
   },
-  render: function Render({ form, isPending, mode, tableSlug, isLocked }) {
+  render: function Render({
+    form,
+    isPending,
+    mode,
+    tableSlug,
+    table,
+    targetField,
+    isLocked,
+    isGroupField,
+  }) {
     // useStore para valores reativos do form
     const fieldType = useStore(form.store, (state) => state.values.type);
     const isTextShort = fieldType === E_FIELD_TYPE.TEXT_SHORT;
@@ -99,6 +157,18 @@ export const UpdateFieldFormFields = withForm({
       form.store,
       (state) => state.values.relationship.fieldSlug,
     );
+    const relationshipCustomLabel = useStore(
+      form.store,
+      (state) => state.values.relationship.customLabel,
+    );
+    const relationshipLabelParts = useStore(
+      form.store,
+      (state) => state.values.relationship.labelParts,
+    );
+    const relationshipLabelSeparator = useStore(
+      form.store,
+      (state) => state.values.relationship.labelSeparator,
+    );
     const isTrashed = useStore(form.store, (state) => state.values.trashed);
 
     const showMultiple =
@@ -125,22 +195,56 @@ export const UpdateFieldFormFields = withForm({
           validators={{
             onChange: ({ value }) => {
               if (!value || value.trim() === '') {
-                return 'Nome é obrigatório';
+                return 'Título exibido é obrigatório';
               }
-              if (value.length > 40) {
-                return 'O nome deve ter no máximo 40 caracteres';
+              if (value.length > FIELD_NAME_MAX_LENGTH) {
+                return `O título exibido deve ter no máximo ${FIELD_NAME_MAX_LENGTH} caracteres`;
               }
               return undefined;
             },
           }}
         >
           {(field) => (
-            <field.FieldText
-              label="Nome"
-              placeholder="Nome do campo"
+            <field.FieldTextarea
+              label="Título exibido"
+              placeholder="Título exibido para o usuário final"
               disabled={isDisabled || isLocked}
-              icon={<FileTextIcon />}
+              rows={3}
               required
+            />
+          )}
+        </form.AppField>
+
+        <form.AppField
+          name="slug"
+          validators={{
+            onChange: ({ value }) => getFieldSlugError(value),
+          }}
+        >
+          {(field) => (
+            <field.FieldText
+              label="Slug"
+              placeholder="nome-slug-campo"
+              disabled={isDisabled || isLocked || isGroupField}
+              icon={<FileTextIcon />}
+              description={
+                isGroupField
+                  ? 'Slug técnico do campo de grupo. Alteração bloqueada para proteger dados existentes.'
+                  : 'Identificador técnico usado em consultas e integrações'
+              }
+              onChangeTransform={normalizeFieldSlug}
+              required
+            />
+          )}
+        </form.AppField>
+
+        <form.AppField name="tip">
+          {(field) => (
+            <field.FieldTextarea
+              label="Dica do campo"
+              placeholder="Texto de ajuda exibido no formulário"
+              disabled={isDisabled || isLocked}
+              rows={2}
             />
           )}
         </form.AppField>
@@ -280,6 +384,30 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
+        {isDropdown && (
+          <form.AppField name="allowCustomDropdownOptions">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Permitir usuário inserir novas tags"
+                description="Permite salvar uma nova opção quando o usuário digitar um valor que ainda não existe."
+                disabled={isDisabled || lockNonOptions}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {isRelationship && (
+          <form.AppField name="allowCreateRelationshipRecords">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Permitir adicionar novos registros"
+                description="Exibe a opção Novo para criar um registro na tabela relacionada durante o preenchimento."
+                disabled={isDisabled || lockNonOptions}
+              />
+            )}
+          </form.AppField>
+        )}
+
         {/* Campo Formato Data */}
         {isDate && (
           <form.AppField
@@ -399,6 +527,33 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
+        {/* Personalização do label (relacionamento) */}
+        {isRelationship && relationshipTableSlug && (
+          <form.AppField name="relationship.customLabel">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Personalizar exibição das opções"
+                description="Por padrão a opção exibe apenas o campo principal. Ative para compor o label com um ou mais campos (inclusive de tabelas relacionadas) e escolher o separador."
+                disabled={isDisabled || lockAllControls}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Compositor de label (relacionamento) */}
+        {isRelationship && relationshipTableSlug && relationshipCustomLabel && (
+          <TableFieldRelationshipLabelComposer
+            rootTableSlug={relationshipTableSlug}
+            parts={relationshipLabelParts}
+            separator={relationshipLabelSeparator}
+            disabled={isDisabled || lockAllControls}
+            onChange={(parts, separator) => {
+              form.setFieldValue('relationship.labelParts', parts);
+              form.setFieldValue('relationship.labelSeparator', separator);
+            }}
+          />
+        )}
+
         {/* Campo Valor Padrão (RELATIONSHIP) */}
         {isRelationship && relationshipTableSlug && relationshipFieldSlug && (
           <form.AppField name="defaultValue">
@@ -412,6 +567,28 @@ export const UpdateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {isRelationship &&
+          table &&
+          targetField &&
+          relationshipTableSlug &&
+          relationshipFieldSlug &&
+          !isGroupField && (
+            <ExtensionSlot
+              id="table.field.relationship.config"
+              context={{
+                table,
+                tableSlug,
+                targetField,
+                targetFieldId: targetField._id,
+                targetFieldSlug: targetField.slug,
+                sourceTableSlug: relationshipTableSlug,
+                relationshipFieldSlug,
+                disabled: isPending || lockAllControls,
+                mode,
+              }}
+            />
+          )}
 
         {/* Campo Categoria (Tree) */}
         {isCategory && (
@@ -471,6 +648,30 @@ export const UpdateFieldFormFields = withForm({
               />
             )}
           </form.AppField>
+        )}
+
+        {/* Exibição do grupo de campos: formulário e/ou detalhes */}
+        {isFieldGroup && (
+          <>
+            <form.AppField name="showInForm">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label="Exibir no formulário"
+                  description="Exibir este grupo no formulário de adicionar/editar registro?"
+                  disabled={isDisabled}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="showInDetail">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label="Exibir nos detalhes"
+                  description="Exibir este grupo na página de detalhes do registro?"
+                  disabled={isDisabled}
+                />
+              )}
+            </form.AppField>
+          </>
         )}
 
         {/* Campo Obrigatoriedade */}

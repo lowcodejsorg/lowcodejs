@@ -76,15 +76,21 @@ export const TableRowCreateSchema: FastifySchema = {
       type: 'object',
       properties: {
         _id: { type: 'string', description: 'Row ID' },
-        trashed: {
-          type: 'boolean',
-          enum: [false],
-          description: 'Row is not trashed',
+        status: {
+          type: 'string',
+          enum: ['draft', 'published'],
+          description: 'Draft state (published after a successful save)',
+        },
+        draftAt: {
+          type: 'string',
+          nullable: true,
+          description:
+            'When row was last auto-saved as draft (null when published)',
         },
         trashedAt: {
           type: 'string',
           nullable: true,
-          description: 'When row was trashed (null for new rows)',
+          description: 'When row was sent to trash (null for active rows)',
         },
         createdAt: {
           type: 'string',

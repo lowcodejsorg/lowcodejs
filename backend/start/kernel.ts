@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 
-import { GetObjectCommand } from '@aws-sdk/client-s3';
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
@@ -9,31 +8,17 @@ import swagger from '@fastify/swagger';
 import websocket from '@fastify/websocket';
 import scalar from '@scalar/fastify-api-reference';
 import ajv from 'ajv-errors';
-import fastify, { type FastifyReply } from 'fastify';
-import { bootstrap, getInstanceByToken } from 'fastify-decorators';
-import { createReadStream, existsSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import fastify from 'fastify';
+import { bootstrap } from 'fastify-decorators';
+import type { Server } from 'node:http';
 import z, { ZodError } from 'zod';
 
 import { loadControllers } from '@application/core/controllers';
 import { registerDependencies } from '@application/core/di-registry';
 import HTTPException from '@application/core/exception.core';
-import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
-import StorageMongooseRepository from '@application/repositories/storage/storage-mongoose.repository';
-import {
-  buildContentDisposition,
-  type DispositionMode,
-} from '@application/services/storage/content-disposition';
-import {
-  getCachedStorageMeta,
-  setCachedStorageMeta,
-  type StorageMeta,
-} from '@application/services/storage/storage-meta-cache';
-import {
-  getLocalStoragePath,
-  getS3Client,
-  getStorageDriver,
-} from '@config/storage.config';
+import { StorageContentDispositionHook } from '@hooks/content-disposition.hook';
+import { LoadExtensionHook } from '@hooks/load-extensions.hook';
+import { LoggerUserActionHook } from '@hooks/logger.hook';
 import { Env } from '@start/env';
 
 function matchOrigin(origin: string, pattern: string): boolean {
@@ -72,13 +57,19 @@ interface ValidationError {
   message: string;
 }
 
-const kernel = fastify({
+function registerAjvErrors(
+  instance: Parameters<typeof ajv>[0],
+): ReturnType<typeof ajv> {
+  return ajv(instance);
+}
+
+const kernel = fastify<Server>({
   logger: false,
   ajv: {
     customOptions: {
       allErrors: true, // Retorna todos os erros, não só o primeiro
     },
-    plugins: [ajv],
+    plugins: [registerAjvErrors],
   },
 });
 
@@ -115,6 +106,7 @@ kernel.register(cors, {
     'Access-Control-Request-Method',
     'Access-Control-Request-Headers',
     'X-Timezone',
+    'X-Skip-Log',
   ],
   exposedHeaders: ['Set-Cookie'],
   optionsSuccessStatus: 200,
@@ -147,119 +139,10 @@ kernel.register(multipart, {
   },
 });
 
-const DISPOSITION_MAP: Record<string, DispositionMode> = {
-  '1': 'attachment',
-  true: 'attachment',
-  attachment: 'attachment',
-};
-
-function resolveDisposition(download: string | null): DispositionMode {
-  if (download === null) return 'inline';
-  return DISPOSITION_MAP[download] ?? 'inline';
-}
-
-async function resolveStorageMeta(
-  filename: string,
-): Promise<StorageMeta | null> {
-  const cached = getCachedStorageMeta(filename);
-  if (cached !== undefined) return cached;
-
-  try {
-    const repo = getInstanceByToken<StorageContractRepository>(
-      StorageMongooseRepository,
-    );
-    const doc = await repo.findByFilename(filename);
-    const meta: StorageMeta | null =
-      doc === null
-        ? null
-        : { originalName: doc.originalName, mimetype: doc.mimetype };
-    setCachedStorageMeta(filename, meta);
-    return meta;
-  } catch (error) {
-    console.error('[Storage] Falha ao buscar metadata:', error);
-    return null;
-  }
-}
-
-async function serveFromLocal(
-  filename: string,
-  reply: FastifyReply,
-): Promise<void> {
-  const fullPath = join(getLocalStoragePath(), filename);
-  if (!existsSync(fullPath)) {
-    reply.status(404).send({ message: 'Arquivo não encontrado' });
-    return;
-  }
-  const stats = statSync(fullPath);
-  reply.header('content-length', stats.size);
-  reply.header('cache-control', 'public, max-age=31536000');
-  reply.send(createReadStream(fullPath));
-}
-
-async function serveFromS3(
-  filename: string,
-  reply: FastifyReply,
-): Promise<void> {
-  const bucket = process.env.STORAGE_BUCKET!;
-  try {
-    const response = await getS3Client().send(
-      new GetObjectCommand({ Bucket: bucket, Key: filename }),
-    );
-
-    reply.header(
-      'content-type',
-      response.ContentType || 'application/octet-stream',
-    );
-    reply.header('cache-control', 'public, max-age=31536000');
-    if (response.ContentLength) {
-      reply.header('content-length', response.ContentLength);
-    }
-
-    reply.send(response.Body);
-  } catch {
-    console.info(
-      `[Storage S3] ${filename} não encontrado no S3, tentando local...`,
-    );
-    await serveFromLocal(filename, reply);
-  }
-}
-
-const DRIVER_HANDLERS = {
-  local: serveFromLocal,
-  s3: serveFromS3,
-} as const;
-
-kernel.addHook('onRequest', async (request, reply) => {
-  if (!request.url.startsWith('/storage/')) return;
-  if (request.method !== 'GET' && request.method !== 'HEAD') return;
-
-  const [rawPath, rawQuery] = request.url.split('?');
-  const filename = decodeURIComponent(rawPath.replace('/storage/', ''));
-  if (!filename || filename.includes('..') || filename.includes('/')) {
-    reply.status(400).send({ message: 'Nome de arquivo inválido' });
-    return reply;
-  }
-
-  const query = new URLSearchParams(rawQuery ?? '');
-  const mode = resolveDisposition(query.get('download'));
-
-  const meta = await resolveStorageMeta(filename);
-  if (meta !== null) {
-    reply.header(
-      'content-disposition',
-      buildContentDisposition(mode, meta.originalName),
-    );
-  }
-
-  const handler = DRIVER_HANDLERS[getStorageDriver()];
-  await handler(filename, reply);
-  return reply;
-});
+kernel.addHook('onResponse', LoggerUserActionHook);
+kernel.addHook('onRequest', StorageContentDispositionHook);
 
 kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
-  console.error(JSON.stringify(error, null, 2));
-  console.error(error);
-
   if (error instanceof HTTPException) {
     return response.status(error.code).send({
       message: error.message,
@@ -316,6 +199,8 @@ kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
     });
   }
 
+  console.error(error);
+
   return response.status(500).send({
     message: 'Erro interno do servidor',
     cause: 'SERVER_ERROR',
@@ -358,11 +243,16 @@ kernel.register(scalar, {
 
 kernel.register(websocket);
 
-registerDependencies();
+await registerDependencies();
 
 kernel.register(bootstrap, {
   controllers: [...(await loadControllers())],
 });
+
+// Carrega o registry de extensões assim que o kernel está pronto. Roda tanto
+// no boot do servidor (bin/server.ts) quanto nos testes E2E (que dão
+// kernel.ready() na suíte). Falha de scan é não-fatal — apenas loga.
+kernel.addHook('onReady', LoadExtensionHook);
 
 kernel.get('/openapi.json', async function () {
   return kernel.swagger();

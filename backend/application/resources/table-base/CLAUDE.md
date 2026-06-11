@@ -11,7 +11,9 @@ CRUD e gerenciamento de tabelas dinamicas da plataforma low-code.
 | Operacao | Metodo | Rota | Auth | Permissao |
 |----------|--------|------|------|-----------|
 | create | POST | `/tables` | Sim | CREATE_TABLE |
+| schema-import | POST | `/tables/schema-import` | Sim | CREATE_TABLE |
 | paginated | GET | `/tables/paginated` | Sim | - |
+| export-csv | GET | `/tables/exports/csv` | Sim | MASTER/ADMINISTRATOR (cap 500.000 linhas) |
 | show | GET | `/tables/:slug` | Opcional | VIEW_TABLE |
 | update | PUT | `/tables/:slug` | Sim | UPDATE_TABLE |
 | delete | DELETE | `/tables/:slug` | Sim | REMOVE_TABLE |

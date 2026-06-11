@@ -86,6 +86,11 @@ export const TableFieldShowSchema: FastifySchema = {
           nullable: true,
           description: 'Field width in detail views, integer 0-100 (%)',
         },
+        tip: {
+          type: 'string',
+          nullable: true,
+          description: 'Optional help text shown in row forms',
+        },
         locked: {
           type: 'boolean',
           description: 'Field is locked and cannot be modified',
@@ -117,6 +122,16 @@ export const TableFieldShowSchema: FastifySchema = {
             },
           },
         },
+        allowCustomDropdownOptions: {
+          type: 'boolean',
+          description:
+            'Allow users to create new dropdown options from row input',
+        },
+        allowCreateRelationshipRecords: {
+          type: 'boolean',
+          description:
+            'Allow users to create records in the related table from row input',
+        },
         relationship: {
           type: 'object',
           nullable: true,
@@ -137,6 +152,18 @@ export const TableFieldShowSchema: FastifySchema = {
               },
             },
             order: { type: 'string', enum: ['asc', 'desc'] },
+            customLabel: { type: 'boolean' },
+            labelParts: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  path: { type: 'string' },
+                  label: { type: 'string' },
+                },
+              },
+            },
+            labelSeparator: { type: 'string' },
           },
         },
         group: {

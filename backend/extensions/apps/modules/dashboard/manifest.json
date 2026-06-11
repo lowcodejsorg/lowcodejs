@@ -1,0 +1,16 @@
+{
+  "id": "dashboard",
+  "type": "MODULE",
+  "name": "Dashboard",
+  "description": "Painel administrativo com estatísticas reais do sistema (tabelas, usuários, registros, gráficos e atividades recentes).",
+  "version": "1.0.0",
+  "author": "LowcodeJS",
+  "icon": "LayoutDashboardIcon",
+  "route": "/e/apps/dashboard",
+  "permissions": {
+    "view": ["MASTER", "ADMINISTRATOR"]
+  },
+  "requires": {
+    "lowcodejs": ">=1.0.0"
+  }
+}

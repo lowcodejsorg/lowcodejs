@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import ExtensionInMemoryRepository from '@application/repositories/extension/extension-in-memory.repository';
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
@@ -7,15 +8,18 @@ import MenuUpdateUseCase from './update.use-case';
 
 let menuInMemoryRepository: MenuInMemoryRepository;
 let tableInMemoryRepository: TableInMemoryRepository;
+let extensionInMemoryRepository: ExtensionInMemoryRepository;
 let sut: MenuUpdateUseCase;
 
 describe('Menu Update Use Case', () => {
   beforeEach(() => {
     menuInMemoryRepository = new MenuInMemoryRepository();
     tableInMemoryRepository = new TableInMemoryRepository();
+    extensionInMemoryRepository = new ExtensionInMemoryRepository();
     sut = new MenuUpdateUseCase(
       menuInMemoryRepository,
       tableInMemoryRepository,
+      extensionInMemoryRepository,
     );
   });
 
@@ -54,6 +58,54 @@ describe('Menu Update Use Case', () => {
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
       expect(result.value.slug).toBe('new-dashboard');
+    }
+  });
+
+  it('deve manter apenas um menu inicial ao atualizar', async () => {
+    const previousInitial = await menuInMemoryRepository.create({
+      name: 'Anterior',
+      slug: 'anterior',
+      type: 'PAGE',
+      isInitial: true,
+    });
+    const created = await menuInMemoryRepository.create({
+      name: 'Novo Inicial',
+      slug: 'novo-inicial',
+      type: 'PAGE',
+    });
+
+    const result = await sut.execute({
+      _id: created._id,
+      isInitial: true,
+      parent: null,
+    });
+
+    expect(result.isRight()).toBe(true);
+    const previous = await menuInMemoryRepository.findById(previousInitial._id);
+
+    if (result.isRight()) {
+      expect(result.value.isInitial).toBe(true);
+    }
+    expect(previous?.isInitial).toBe(false);
+  });
+
+  it('deve impedir separador como menu inicial', async () => {
+    const created = await menuInMemoryRepository.create({
+      name: 'Separador',
+      slug: 'separador',
+      type: 'SEPARATOR',
+    });
+
+    const result = await sut.execute({
+      _id: created._id,
+      isInitial: true,
+      parent: null,
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (result.isLeft()) {
+      expect(result.value.code).toBe(400);
+      expect(result.value.cause).toBe('INVALID_PARAMETERS');
     }
   });
 

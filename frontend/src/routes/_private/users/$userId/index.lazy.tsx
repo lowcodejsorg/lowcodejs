@@ -3,9 +3,11 @@ import {
   createLazyFileRoute,
   useParams,
   useRouter,
+  useSearch,
 } from '@tanstack/react-router';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import type { UserUpdateFormValues } from './-update-form';
 import { UpdateUserFormFields, UserUpdateSchema } from './-update-form';
@@ -18,10 +20,10 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { userDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateUser } from '@/hooks/tanstack-query/use-user-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/users/$userId/')({
   component: RouteComponent,
@@ -37,7 +39,10 @@ function RouteComponent(): React.JSX.Element {
 
   const { data } = useSuspenseQuery(userDetailOptions(userId));
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+  const search = useSearch({ from: '/_private/users/$userId/' });
+  const [mode, setMode] = React.useState<'show' | 'edit'>(
+    search.mode === 'edit' ? 'edit' : 'show',
+  );
 
   const goBack = (): void => {
     sidebar.setOpen(true);
@@ -128,14 +133,13 @@ function UserUpdateContent({
     },
   });
 
-  const setFieldError = createFieldErrorSetter(form);
+  useApiErrorAutoClear(form);
 
   const _update = useUpdateUser({
     onSuccess() {
-      toastSuccess(
-        'Usuário atualizado',
-        'Os dados do usuário foram atualizados com sucesso',
-      );
+      toast.success('Usuário atualizado', {
+        description: 'Os dados do usuário foram atualizados com sucesso',
+      });
 
       form.reset();
       setMode('show');
@@ -145,11 +149,7 @@ function UserUpdateContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao atualizar o usuário',
-        onFieldErrors: (errors) => {
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });

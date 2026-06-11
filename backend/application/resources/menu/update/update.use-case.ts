@@ -5,10 +5,12 @@ import slugify from 'slugify';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
+  E_EXTENSION_TYPE,
   E_MENU_ITEM_TYPE,
   type IMenu as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
 import {
   MenuContractRepository,
   type MenuUpdatePayload as RepositoryMenuUpdatePayload,
@@ -20,11 +22,16 @@ import type { MenuUpdatePayload } from './update.validator';
 type Response = Either<HTTPException, Entity>;
 type Payload = MenuUpdatePayload;
 
+function getMenuId(value: Entity['parent'] | undefined): string | null {
+  return value ?? null;
+}
+
 @Service()
 export default class MenuUpdateUseCase {
   constructor(
     private readonly menuRepository: MenuContractRepository,
     private readonly tableRepository: TableContractRepository,
+    private readonly extensionRepository: ExtensionContractRepository,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -37,6 +44,43 @@ export default class MenuUpdateUseCase {
         return left(
           HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'),
         );
+
+      if (
+        existingMenu.type === E_MENU_ITEM_TYPE.SEPARATOR &&
+        payload.type &&
+        payload.type !== E_MENU_ITEM_TYPE.SEPARATOR
+      ) {
+        const childrenCount = await this.menuRepository.count({
+          parent: existingMenu._id,
+          trashed: false,
+        });
+
+        if (childrenCount > 0) {
+          return left(
+            HTTPException.Conflict(
+              'Separador com submenus ativos não pode mudar de tipo',
+              'SEPARATOR_HAS_CHILDREN',
+              {
+                type: 'Separador com submenus ativos não pode mudar de tipo',
+              },
+            ),
+          );
+        }
+      }
+
+      const finalType = payload.type ?? existingMenu.type;
+
+      if (finalType === E_MENU_ITEM_TYPE.SEPARATOR && payload.isInitial) {
+        return left(
+          HTTPException.BadRequest(
+            'Separador não pode ser página inicial',
+            'INVALID_PARAMETERS',
+            {
+              isInitial: 'Separador não pode ser página inicial',
+            },
+          ),
+        );
+      }
 
       let finalSlug = payload.slug || existingMenu.slug;
       let parent = null;
@@ -155,26 +199,126 @@ export default class MenuUpdateUseCase {
         payload.url = '/pages/'.concat(finalSlug);
       }
 
+      if (payload.type && payload.type === E_MENU_ITEM_TYPE.EXTENSION_MODULE) {
+        const ref = payload.extension;
+        if (!ref?.pkg || !ref?.extensionId) {
+          return left(
+            HTTPException.BadRequest(
+              'Selecione um módulo de extensão',
+              'INVALID_PARAMETERS',
+              { extension: 'Selecione um módulo de extensão' },
+            ),
+          );
+        }
+
+        const extension = await this.extensionRepository.findByKey(
+          ref.pkg,
+          E_EXTENSION_TYPE.MODULE,
+          ref.extensionId,
+        );
+
+        if (!extension) {
+          return left(
+            HTTPException.NotFound(
+              'Módulo de extensão não encontrado',
+              'EXTENSION_NOT_FOUND',
+              { extension: 'Módulo de extensão não encontrado' },
+            ),
+          );
+        }
+
+        if (!extension.enabled || !extension.available) {
+          return left(
+            HTTPException.BadRequest(
+              'Módulo de extensão não está ativo',
+              'EXTENSION_NOT_ACTIVE',
+              { extension: 'Módulo de extensão não está ativo' },
+            ),
+          );
+        }
+
+        payload.url = '/e/'.concat(ref.pkg).concat('/').concat(ref.extensionId);
+      }
+
       // If parent changed, recalculate order
       const updatePayload: Record<string, unknown> = {
         ...payload,
         slug: finalSlug,
       };
 
+      if (finalType === E_MENU_ITEM_TYPE.SEPARATOR) {
+        updatePayload.isInitial = false;
+      }
+
+      const currentParentId = getMenuId(existingMenu.parent);
+      const nextParentId =
+        payload.parent !== undefined ? payload.parent : currentParentId;
       const parentChanged =
-        payload.parent !== undefined && payload.parent !== existingMenu.parent;
+        payload.parent !== undefined && payload.parent !== currentParentId;
 
       if (parentChanged && payload.order === undefined) {
         const siblingCount = await this.menuRepository.count({
-          parent: payload.parent ?? undefined,
+          parent: nextParentId,
           trashed: false,
         });
         updatePayload.order = siblingCount;
       }
 
+      const shouldReorderSiblings =
+        parentChanged || payload.order !== undefined;
+
+      if (shouldReorderSiblings) {
+        const siblings = await this.menuRepository.findMany({
+          parent: nextParentId,
+          trashed: false,
+          sort: { order: 'asc', name: 'asc' },
+        });
+        const siblingsWithoutCurrent = siblings.filter(
+          (menu) => menu._id !== payload._id,
+        );
+        const requestedOrder =
+          typeof updatePayload.order === 'number'
+            ? updatePayload.order
+            : siblingsWithoutCurrent.length;
+        const nextOrder = Math.min(
+          Math.max(requestedOrder, 0),
+          siblingsWithoutCurrent.length,
+        );
+        const reorderedIds = [
+          ...siblingsWithoutCurrent.slice(0, nextOrder).map((menu) => menu._id),
+          payload._id,
+          ...siblingsWithoutCurrent.slice(nextOrder).map((menu) => menu._id),
+        ];
+
+        updatePayload.order = nextOrder;
+
+        const updated = await this.menuRepository.update(
+          updatePayload as RepositoryMenuUpdatePayload,
+        );
+
+        for (let index = 0; index < reorderedIds.length; index += 1) {
+          const menuId = reorderedIds[index];
+          if (menuId === payload._id) continue;
+          await this.menuRepository.update({
+            _id: menuId,
+            order: index,
+          });
+        }
+
+        if (payload.isInitial) {
+          await this.menuRepository.setOnlyInitial(updated._id);
+        }
+
+        return right(updated);
+      }
+
       const updated = await this.menuRepository.update(
         updatePayload as RepositoryMenuUpdatePayload,
       );
+
+      if (payload.isInitial) {
+        await this.menuRepository.setOnlyInitial(updated._id);
+      }
 
       return right(updated);
     } catch (error) {

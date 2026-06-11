@@ -3,9 +3,11 @@ import {
   createLazyFileRoute,
   useParams,
   useRouter,
+  useSearch,
 } from '@tanstack/react-router';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import type { GroupUpdateFormValues } from './-update-form';
 import { GroupUpdateSchema, UpdateGroupFormFields } from './-update-form';
@@ -18,10 +20,10 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { groupDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateGroup } from '@/hooks/tanstack-query/use-group-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IGroup } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/groups/$groupId/')({
   component: RouteComponent,
@@ -37,7 +39,10 @@ function RouteComponent(): React.JSX.Element {
 
   const { data } = useSuspenseQuery(groupDetailOptions(groupId));
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+  const search = useSearch({ from: '/_private/groups/$groupId/' });
+  const [mode, setMode] = React.useState<'show' | 'edit'>(
+    search.mode === 'edit' ? 'edit' : 'show',
+  );
 
   const goBack = (): void => {
     sidebar.setOpen(true);
@@ -104,10 +109,9 @@ function GroupUpdateContent({
 
   const _update = useUpdateGroup({
     onSuccess() {
-      toastSuccess(
-        'Grupo atualizado',
-        'Os dados do grupo foram atualizados com sucesso',
-      );
+      toast.success('Grupo atualizado', {
+        description: 'Os dados do grupo foram atualizados com sucesso',
+      });
 
       form.reset();
       setMode('show');
@@ -116,12 +120,7 @@ function GroupUpdateContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao atualizar o grupo',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -144,6 +143,8 @@ function GroupUpdateContent({
       });
     },
   });
+
+  useApiErrorAutoClear(form);
 
   const isPending = _update.status === 'pending';
 

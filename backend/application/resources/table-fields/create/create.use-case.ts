@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import slugify from 'slugify';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -11,11 +10,16 @@ import {
   type IGroupConfiguration,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
-import { normalizeDefaultValue } from '../table-field-base.schema';
+import {
+  hasDuplicateDropdownLabels,
+  normalizeDefaultValue,
+} from '../table-field-base.schema';
 
 import type { TableFieldCreatePayload } from './create.validator';
 
@@ -27,30 +31,61 @@ export default class TableFieldCreateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly schemaBuilder: SchemaBuilderContractService,
+    private readonly modelBuilder: ModelBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBySlug(payload.slug);
+      const tableSlug = payload.tableSlug ?? payload.slug;
+      if (!tableSlug) {
+        return left(
+          HTTPException.BadRequest('Tabela inválida', 'INVALID_TABLE_SLUG'),
+        );
+      }
+
+      const table = await this.tableRepository.findBySlug(tableSlug);
 
       if (!table)
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
-      const slug = slugify(payload.name, { lower: true, trim: true });
+      const resolvedSlug = FieldSlug.resolve({
+        name: payload.name,
+        slug: payload.tableSlug ? payload.slug : undefined,
+      });
+
+      if (resolvedSlug.error) {
+        return left(
+          HTTPException.BadRequest('Slug inválido', 'INVALID_FIELD_SLUG', {
+            slug: resolvedSlug.error,
+          }),
+        );
+      }
+
+      const slug = resolvedSlug.slug;
 
       const existFieldOnTable = table?.fields?.some(
-        (field) => field.slug === slug,
+        (field) => field.slug === slug && !field.trashed,
       );
 
       if (existFieldOnTable)
         return left(
           HTTPException.Conflict('Campo já existe', 'FIELD_ALREADY_EXIST', {
-            name: 'Campo já existe',
+            slug: 'Campo já existe',
           }),
         );
+
+      if (hasDuplicateDropdownLabels(payload.dropdown)) {
+        return left(
+          HTTPException.Conflict(
+            'Opções do dropdown não podem ter nomes duplicados',
+            'DROPDOWN_OPTION_ALREADY_EXISTS',
+            { dropdown: 'Opção já existe no dropdown' },
+          ),
+        );
+      }
 
       let field = await this.fieldRepository.create({
         ...payload,
@@ -67,8 +102,7 @@ export default class TableFieldCreateUseCase {
           FIELD_GROUP_NATIVE_LIST,
         );
 
-        const groupSchema =
-          this.tableSchemaService.computeSchema(nativeGroupFields);
+        const groupSchema = this.schemaBuilder.build(nativeGroupFields);
 
         // Adiciona grupo em groups da tabela pai
         const newGroup: IGroupConfiguration = {
@@ -88,7 +122,7 @@ export default class TableFieldCreateUseCase {
 
       const fields = [...(table.fields ?? []), field];
 
-      const _schema = this.tableSchemaService.computeSchema(fields, groups);
+      const _schema = this.schemaBuilder.build(fields, groups);
 
       await this.tableRepository.update({
         _id: table._id,
@@ -106,7 +140,7 @@ export default class TableFieldCreateUseCase {
         fieldOrderDetail: [...(table.fieldOrderDetail ?? []), field._id],
       });
 
-      await this.tableSchemaService.syncModel({
+      await this.modelBuilder.build({
         ...table,
         _id: table._id,
         _schema: {

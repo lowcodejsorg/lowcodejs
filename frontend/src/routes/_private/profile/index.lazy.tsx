@@ -2,6 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import type { ProfileUpdateFormValues } from './-update-form';
 import { ProfileUpdateSchema, UpdateProfileFormFields } from './-update-form';
@@ -13,10 +14,10 @@ import { Button } from '@/components/ui/button';
 import { profileDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateProfile } from '@/hooks/tanstack-query/use-profile-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/profile/')({
   component: RouteComponent,
@@ -83,10 +84,9 @@ function ProfileUpdateContent({
 
   const _update = useUpdateProfile({
     onSuccess() {
-      toastSuccess(
-        'Perfil atualizado',
-        'Os dados do perfil foram atualizados com sucesso',
-      );
+      toast.success('Perfil atualizado', {
+        description: 'Os dados do perfil foram atualizados com sucesso',
+      });
 
       form.reset();
       setMode('show');
@@ -96,12 +96,7 @@ function ProfileUpdateContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao atualizar o perfil',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -113,6 +108,7 @@ function ProfileUpdateContent({
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
+      notificationsEnabled: data.notificationsEnabled ?? true,
     } satisfies ProfileUpdateFormValues,
     validators: {
       onChange: ProfileUpdateSchema,
@@ -122,10 +118,9 @@ function ProfileUpdateContent({
       if (_update.status === 'pending') return;
 
       if (allowPasswordChange && value.newPassword !== value.confirmPassword) {
-        toastError(
-          'As senhas não coincidem',
-          'A nova senha e a confirmação devem ser iguais',
-        );
+        toast.error('As senhas não coincidem', {
+          description: 'A nova senha e a confirmação devem ser iguais',
+        });
         return;
       }
 
@@ -135,10 +130,12 @@ function ProfileUpdateContent({
         allowPasswordChange: boolean;
         currentPassword?: string;
         newPassword?: string;
+        notificationsEnabled?: boolean;
       } = {
         name: value.name.trim(),
         email: value.email.trim(),
         allowPasswordChange,
+        notificationsEnabled: value.notificationsEnabled,
       };
 
       if (allowPasswordChange) {
@@ -149,6 +146,8 @@ function ProfileUpdateContent({
       await _update.mutateAsync(payload);
     },
   });
+
+  useApiErrorAutoClear(form);
 
   const isPending = _update.status === 'pending';
 

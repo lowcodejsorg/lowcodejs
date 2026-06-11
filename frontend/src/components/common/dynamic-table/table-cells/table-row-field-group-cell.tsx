@@ -1,7 +1,10 @@
+import React from 'react';
+
 import { GroupRowsDataTable } from '../group-rows/group-rows-data-table';
 
 import { Badge } from '@/components/ui/badge';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 
 interface TableRowFieldGroupCellProps {
@@ -19,12 +22,13 @@ export function TableRowFieldGroupCell({
   table: tableProp,
   variant = 'cell',
 }: TableRowFieldGroupCellProps): React.JSX.Element {
-  if (!field) return <span className="text-muted-foreground text-sm">-</span>;
-
-  const groupSlug = field.group?.slug;
-
+  const groupSlug = field?.group?.slug;
   const tableQuery = useReadTable({ slug: tableSlug });
   const table = tableProp ?? tableQuery.data;
+  const permission = useTablePermission(table);
+  const canManage = permission.can('UPDATE_FIELD');
+
+  if (!field) return <span className="text-muted-foreground text-sm">-</span>;
 
   if (!groupSlug || !table) {
     return <span className="text-muted-foreground text-sm">-</span>;
@@ -37,11 +41,11 @@ export function TableRowFieldGroupCell({
         rowId={row._id}
         field={field}
         table={table}
+        canManage={canManage}
       />
     );
   }
 
-  // Cell variant: badge with count
   const groupData = row?.[field.slug] ?? [];
   let total = 0;
   if (Array.isArray(groupData)) {
@@ -49,17 +53,36 @@ export function TableRowFieldGroupCell({
   }
 
   if (total === 0) {
-    return <span className="text-muted-foreground text-sm">-</span>;
+    if (!canManage) {
+      return <span className="text-muted-foreground text-sm">-</span>;
+    }
+  }
+
+  if (!canManage) {
+    return (
+      <Badge
+        data-slot="table-row-field-group-cell"
+        data-test-id="field-group-cell"
+        variant="secondary"
+      >
+        {total} {total === 1 && 'item'}
+        {total !== 1 && 'itens'}
+      </Badge>
+    );
   }
 
   return (
-    <Badge
-      data-slot="table-row-field-group-cell"
-      data-test-id="field-group-cell"
-      variant="secondary"
-    >
-      {total} {total === 1 && 'item'}
-      {total !== 1 && 'itens'}
-    </Badge>
+    <>
+      <div className="inline-flex items-center gap-1">
+        <Badge
+          data-slot="table-row-field-group-cell"
+          data-test-id="field-group-cell"
+          variant="secondary"
+        >
+          {total} {total === 1 && 'item'}
+          {total !== 1 && 'itens'}
+        </Badge>
+      </div>
+    </>
   );
 }

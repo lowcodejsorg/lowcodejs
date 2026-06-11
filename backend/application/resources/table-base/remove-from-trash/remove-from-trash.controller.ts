@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, PATCH } from 'fastify-decorators';
 
@@ -13,7 +14,6 @@ import { TableRemoveFromTrashParamsValidator } from './remove-from-trash.validat
 })
 export default class {
   constructor(
-    // eslint-disable-next-line no-unused-vars
     private readonly useCase: TableRemoveFromTrashUseCase = getInstanceByToken(
       TableRemoveFromTrashUseCase,
     ),

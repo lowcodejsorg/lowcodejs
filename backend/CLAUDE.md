@@ -30,10 +30,16 @@ graph TD
     Controller --> UseCase[Use Case]
     UseCase --> Repository[Repository Contract]
     Repository --> Mongoose[Mongoose Implementation]
-    Mongoose --> MongoDB[(MongoDB)]
+    Mongoose --> SystemDB[(MongoDB - DB_DATABASE<br/>users, tables, fields, settings...)]
+    Mongoose --> DataDB[(MongoDB - DB_DATA_DATABASE<br/>collections dinâmicas via getDataConnection)]
     UseCase --> Service[Service Contract]
     Service --> EmailImpl[Nodemailer / Storage / etc]
 ```
+
+A aplicação usa **2 conexões MongoDB**: uma para os models de sistema (default
+via `mongoose.connect()`) e outra isolada (`mongoose.createConnection()`,
+exposta por `getDataConnection()`) para as collections dinâmicas das tabelas
+low-code. Ver seção "Banco de Dados" e `config/database.config.ts`.
 
 ## Estrutura de Diretorios
 
@@ -44,19 +50,23 @@ backend/
 │   ├── kernel.ts                  # Fastify kernel - plugins, CORS, JWT, Swagger, error handler
 │   └── env.ts                     # Validacao de env vars com Zod
 ├── config/
-│   ├── database.config.ts         # Conexao MongoDB
+│   ├── database.config.ts         # 2 conexoes Mongoose (system + data via getDataConnection)
 │   ├── storage.config.ts          # Flydrive (local/S3)
 │   ├── redis.config.ts            # ioredis
 │   └── email.config.ts            # Nodemailer transporter
 ├── application/
 │   ├── core/                      # Logica central (entity types, Either, exception, builders, sandbox)
 │   ├── middlewares/               # Auth JWT + Table access/permissions
-│   ├── model/                     # Mongoose schemas (11 models)
+│   ├── model/                     # Mongoose schemas (11 models, todos no DB system)
 │   ├── repositories/              # Contract + Mongoose + InMemory (11 entidades)
 │   ├── services/                  # Email (contract + nodemailer + in-memory), Storage (flydrive)
 │   ├── utils/                     # JWT tokens, cookies
 │   └── resources/                 # 16 recursos REST (cada um com operacoes isoladas)
-├── database/seeders/              # Permissions, user groups, users
+├── database/
+│   ├── seeders/                   # Permissions, user groups, settings (idempotente)
+│   └── migrations/                # Migracoes one-time (dual-connection)
+├── docker-entrypoint.sh           # Roda migrations + seeders antes do server
+├── extensions/                    # Pacotes de extensões (plugins/modules/tools) — ver extensions/CLAUDE.md
 ├── templates/email/               # EJS templates (notification, sign-up)
 └── test/                          # Setup, helpers (auth)
 ```
@@ -78,13 +88,15 @@ backend/
 ### Use Case (`*.use-case.ts`)
 - Logica de negocio pura
 - Retorna `Either<HTTPException, T>` (Left = erro, Right = sucesso)
-- Recebe repositorios via constructor injection (`@Inject`)
+- Recebe repositorios/services via **constructor injection** (`@Service` resolve
+  pelos tipos dos parametros). NAO usar `@Inject`. Importar os contratos pelo
+  caminho direto do modulo, nunca por barrel `index.ts`
 - NAO conhece HTTP (request/response)
 - Trata excecoes internas e retorna Left com codigo/causa
 
-### Repository (`*-contract.repository.ts` + `*-mongoose.repository.ts`)
-- Contract: classe abstrata definindo interface
-- Mongoose: implementacao concreta
+### Repository (`*-contract.repository.ts` + `*.repository.ts`)
+- Contract: classe abstrata definindo interface (export nomeado)
+- Mongoose: implementacao concreta (`export default` em `<entidade>.repository.ts`)
 - InMemory: para testes unitarios
 - Metodos padrao: `create`, `findById`, `findByX`, `findMany`, `update`, `delete`, `count`
 - Payloads tipados (CreatePayload, UpdatePayload, QueryPayload, FindOptions)
@@ -177,10 +189,10 @@ Visibilidade de tabela (para nao-owners):
 | Unit Test | `{operacao}.use-case.spec.ts` | `create.use-case.spec.ts` |
 | E2E Test | `{operacao}.controller.spec.ts` | `create.controller.spec.ts` |
 | Repository Contract | `{entidade}-contract.repository.ts` | `user-contract.repository.ts` |
-| Repository Impl | `{entidade}-mongoose.repository.ts` | `user-mongoose.repository.ts` |
+| Repository Impl | `{entidade}.repository.ts` (`export default`) | `user.repository.ts` |
 | Repository Test | `{entidade}-in-memory.repository.ts` | `user-in-memory.repository.ts` |
 | Service Contract | `{nome}-contract.service.ts` | `email-contract.service.ts` |
-| Service Impl | `{tech}-{nome}.service.ts` | `nodemailer-email.service.ts` |
+| Service Impl | `{nome}.service.ts` (`export default`) | `email.service.ts` |
 | Model | `{entidade}.model.ts` | `user.model.ts` |
 | Validator Base | `{entidade}-base.validator.ts` | `user-base.validator.ts` |
 
@@ -212,24 +224,54 @@ npm start            # Producao (build/bin/server.js)
 
 ## Dependencia Injection (DI)
 
-Registrado em `application/core/di-registry.ts` usando `fastify-decorators`:
-- 11 repositorios: User, UserGroup, Permission, Table, Field, Storage, ValidationToken, Menu, Reaction, Evaluation, Setting
-- 1 servico: Email (contract -> nodemailer)
+`application/core/di-registry.ts` registra os bindings **dinamicamente** (igual
+`controllers.ts`): varre o filesystem e pareia cada `<base>-contract.<kind>.ts`
+com `<base>.<kind>.ts` por convencao — **nao ha mais lista manual**. Roots
+varridos: `application/repositories` (repository), `application/services`
+(service) e `extensions/` (ambos). `injectablesHolder.injectService(Contract,
+Impl)` e chamado para cada par encontrado.
 
-Para adicionar nova dependencia:
-1. Crie o contract (abstract class)
-2. Crie a implementacao
-3. Registre em `di-registry.ts` com `injectablesHolder.injectService(Contract, Implementation)`
+- Repositorios: User, UserGroup, Permission, Table, Field, Storage,
+  ValidationToken, Menu, Reaction, Evaluation, Setting, Logger, Notification,
+  Extension
+- Servicos: Email, EmailQueue (use-cases injetam este, nao Email diretamente),
+  CsvImportQueue, StorageMigrationQueue, Password, Permission, RowPassword,
+  ScriptExecution, Notification, KanbanCommentMention, RowMemberNotification,
+  Storage
+- Builders de tabela dinamica (`services/table/`): SchemaBuilder, ModelBuilder,
+  QueryBuilder, PopulateBuilder, RowContextBuilder
+
+Convencao (regra unica): contract = export nomeado `<X>Contract(Repository|
+Service)`; impl = `export default` do arquivo irmao `<base>.<kind>.ts`. Arquivos
+`in-memory-*`, `*.worker`, drivers (`local-*`/`s3-*`) sao ignorados (o impl e
+derivado do base do contract, nao adivinhado).
+
+Para adicionar nova dependencia (zero edicao no di-registry):
+1. Crie `<base>-contract.<kind>.ts` com a abstract class `<X>Contract<Kind>`
+   (export nomeado)
+2. Crie `<base>.<kind>.ts` com `@Service() export default class` da impl
+3. Consuma via **constructor injection** (`@Service` + parametro tipado com o
+   Contract). Importe o Contract pelo **caminho direto** do modulo, nunca por
+   barrel `index.ts` — o SWC elide o tipo do parametro em re-export barrel e a
+   injecao vira `undefined` silenciosamente. Nunca use `@Inject`.
+
+Para trocar a implementacao (ex.: trocar de ORM), troque o conteudo do arquivo
+`<base>.<kind>.ts` — o scanner continua registrando o mesmo contract.
 
 ## Fluxo de Inicializacao do Servidor
 
 ```
 bin/server.ts:
-1. MongooseConnect() - conecta ao MongoDB
+1. MongooseConnect() - abre as 2 conexoes (system via mongoose.connect, data via createConnection)
 2. kernel.ready() - inicializa Fastify com todos os plugins
 3. kernel.listen({ port: Env.PORT, host: '0.0.0.0' })
 4. initChatSocket(httpServer, jwtDecode) - Socket.IO para chat
 ```
+
+Em container Docker, o `docker-entrypoint.sh` roda ANTES do servidor:
+1. `npm run migrate:dual-connection` (idempotente — no-op se ja migrado)
+2. `npm run seed` (idempotente — upsert)
+3. Inicia o servidor
 
 kernel.ts registra 9 plugins em ordem:
 
@@ -249,28 +291,55 @@ Endpoint: /openapi.json
 
 ## Variaveis de Ambiente
 
-Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test` em test.
+Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test`
+em test.
 
-O `.env` agora cobre apenas infraestrutura (DB, JWT, cookies, CORS, storage
-driver, Redis, MCP). Configurações de domínio (branding, locale, upload,
-paginação, logos, IA, SMTP) vivem no documento Setting do MongoDB e são
-editadas via UI `/settings` pelo usuário MASTER.
+O `.env` cobre apenas **infraestrutura** (DB, JWT, cookies, CORS, Redis,
+MCP, workers). **Configuracoes de dominio** (branding, locale, upload,
+paginacao, logos, IA, SMTP, storage driver/S3) vivem no documento Setting
+do MongoDB e sao editadas via UI `/settings` pelo usuario MASTER.
+
+### Hosts: dev nativo vs Docker Compose
+
+Os defaults em `.env.example` apontam `127.0.0.1`/`localhost` (cenario
+dev nativo: backend rodando na maquina, somente mongo+redis em Docker).
+Quando o stack inteiro sobe via `docker compose up -d`, o proprio compose
+**sobrescreve** `DATABASE_URL`, `REDIS_URL` e `MCP_SERVER_URL` com hosts
+internos da rede Docker (`mongo`, `redis`, `mcp`). Veja o bloco
+`environment:` do service `api` em `docker-compose.yml`. O dev nao precisa
+editar `.env` ao alternar entre os modos.
+
+Testes e2e rodam **sempre no host** (nunca em container) — `.env.test`
+sempre usa `127.0.0.1`.
 
 ### Banco de Dados
+
+A aplicacao usa **duas conexoes MongoDB** apontando para databases distintos no
+mesmo servidor (configuravel para servidores separados via `DATABASE_URL`):
+
+- **System** (`DB_DATABASE`): collections nativas (User, UserGroup, Permission,
+  Table, Field, Storage, ValidationToken, Menu, Reaction, Evaluation, Setting).
+  Conexao default via `mongoose.connect()`.
+- **Data** (`DB_DATA_DATABASE`): collections dinamicas criadas pelo usuario
+  no low-code. Cada `table.slug` vira uma collection. Conexao isolada via
+  `mongoose.createConnection()`, exposta por `getDataConnection()`.
 
 | Variavel | Default | Descricao |
 |----------|---------|-----------|
 | DATABASE_URL | obrigatorio | MongoDB connection string |
-| DB_NAME | lowcodejs | Nome do banco |
+| DB_DATABASE | lowcodejs | Nome do database **system** |
+| DB_DATA_DATABASE | lowcodejs_data | Nome do database **data** (collections dinamicas) |
 
 ### Email (SMTP)
 
-Configurado pela UI `/settings` (usuario MASTER) e persistido no documento
-Setting do MongoDB. Campos: `EMAIL_PROVIDER_HOST`, `EMAIL_PROVIDER_PORT`,
-`EMAIL_PROVIDER_USER`, `EMAIL_PROVIDER_PASSWORD`, `EMAIL_PROVIDER_FROM`
-(todos nullable). Se qualquer credencial essencial estiver ausente, o
-`NodemailerEmailService` retorna `{ success: false, message: 'SMTP nao
-configurado' }` sem lancar erro.
+**Nao e env var.** Sao **campos do documento Setting** no MongoDB,
+editados pela UI `/settings` (usuario MASTER):
+`EMAIL_PROVIDER_HOST`, `EMAIL_PROVIDER_PORT`, `EMAIL_PROVIDER_USER`,
+`EMAIL_PROVIDER_PASSWORD`, `EMAIL_PROVIDER_FROM` (todos nullable).
+
+`NodemailerEmailService` le do Setting em cada envio (sem cache). Se
+qualquer credencial essencial estiver ausente, retorna `{ success: false,
+message: 'SMTP nao configurado' }` sem lancar erro.
 
 ### JWT & Cookies
 
@@ -289,6 +358,7 @@ configurado' }` sem lancar erro.
 | PORT | 3000 | Porta HTTP |
 | APP_SERVER_URL | obrigatorio | URL publica do backend |
 | APP_CLIENT_URL | obrigatorio | URL publica do frontend |
+| DEMO_MODE | false | Quando "true", `1778025600-demo-users.seed.ts` cria/atualiza usuarios publicos da instancia demo. Aceita literalmente "true" ou "false" |
 
 ### CORS
 
@@ -298,14 +368,53 @@ configurado' }` sem lancar erro.
 
 ### Storage
 
+Configurado via Setup Wizard ou Settings na UI (MASTER). Vive no documento
+Setting do MongoDB. Campos: `STORAGE_DRIVER` ('local'|'s3'),
+`STORAGE_ENDPOINT`, `STORAGE_REGION`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY`,
+`STORAGE_SECRET_KEY`. No boot, `bin/server.ts` carrega do DB e sincroniza para
+`process.env` via `syncStorageEnv()`.
+
+#### Migração de arquivos entre drivers
+
+Quando o MASTER troca `STORAGE_DRIVER` (local↔s3) na UI, os arquivos
+existentes ficam órfãos no driver antigo. O recurso `storage-migration`
+copia esses arquivos para o driver atual em background, mantendo zero downtime.
+
+| Endpoint | Método | Descrição |
+|----------|--------|-----------|
+| `/storage/migration/status` | GET | Contagens por driver/status, job ativo, can_cleanup |
+| `/storage/migration/start` | POST | Enfileira job de migração (body: `{concurrency?, retry_failed_only?}`) |
+| `/storage/migration/cleanup` | POST | Apaga arquivos do driver antigo (body: `{confirm: true}`) |
+
+Todos restritos ao role MASTER via `RoleMiddleware`. Progresso em tempo real
+via WebSocket no namespace `/storage-migration` (mesmo Socket.IO server do
+chat). Eventos: `progress`, `file_migrated`, `file_failed`, `completed`,
+`error`.
+
+**Arquitetura:** BullMQ (Redis) para a fila + worker in-process iniciado em
+`bin/server.ts`. Storage docs ganham campos `location` e `migration_status`
+(`storage.model.ts`). Kernel hook (`start/kernel.ts`) faz dual-read fallback:
+serve do driver indicado em `doc.location`, com cross-driver fallback caso o
+arquivo não esteja onde o cache acha que está.
+
+**Resiliência:**
+- BullMQ persiste jobs no Redis — restart do worker retoma de onde parou.
+- Worker pula docs já com `location === target_driver` (idempotente).
+- Sweeper de boot marca docs órfãos `in_progress` como `failed` quando não há
+  job ativo (recovery após crash).
+- Cada arquivo tem 3 tentativas com backoff linear; falhas vão para
+  `migration_status='failed'` e podem ser retentadas via
+  `retry_failed_only: true`.
+
+**Backfill:** `database/migrations/migrate-backfill-storage-location.ts` popula
+o campo `location` em docs Storage existentes (idempotente via marker
+`MIGRATION_STORAGE_LOCATION_AT` no Setting). Roda automaticamente no
+`docker-entrypoint.sh`.
+
 | Variavel | Default | Descricao |
 |----------|---------|-----------|
-| STORAGE_DRIVER | local | local ou s3 |
-| STORAGE_ENDPOINT | opcional | Endpoint S3 customizado |
-| STORAGE_REGION | us-east-1 | Regiao AWS |
-| STORAGE_BUCKET | opcional | Nome do bucket S3 |
-| STORAGE_ACCESS_KEY | opcional | AWS access key |
-| STORAGE_SECRET_KEY | opcional | AWS secret key |
+| STORAGE_MIGRATION_CONCURRENCY | 5 | Arquivos copiados em paralelo (1-20) |
+| EMAIL_WORKER_CONCURRENCY | 5 | Jobs de email processados em paralelo pelo BullMQ worker (1-50) |
 
 ### Redis
 
@@ -358,8 +467,8 @@ Helpers (`test/helpers/auth.helper.ts`):
 - **Build**: `tsc -b && tsup` -> /build (ESM, ES2024, sem bundle de node_modules)
 - **Dev**: @swc-node/register para transpilacao rapida
 - 3 Dockerfiles:
-  - `Dockerfile-local`: node:22-alpine, npm run dev
-  - `Dockerfile-production`: node:22-alpine, copia /build, usuario non-root (1001), porta 3000
+  - `Dockerfile-local`: node:24-alpine, npm run dev
+  - `Dockerfile-production`: node:24-alpine, copia /build, usuario non-root (1001), porta 3000
   - `Dockerfile-coolify`: multi-stage otimizado
 
 ## Socket.IO / Chat
@@ -382,9 +491,11 @@ Helpers (`test/helpers/auth.helper.ts`):
 
 | API | Metodos | Descricao |
 |-----|---------|-----------|
-| field | get(slug), set(slug, value), getAll() | Leitura/escrita de campos do registro |
-| context | action, moment, userId, isNew, table | Contexto de execucao (read-only, frozen) |
+| field | get(slug), set(slug, value), getAll(), getLabel(slug, value?) | Leitura/escrita de campos do registro |
+| context | action, moment, userId, isNew, appUrl, table, reentrant, previous | Contexto de execucao (read-only, frozen) |
 | email | send(to[], subject, body), sendTemplate(to[], subject, message, data?) | Envio de email |
+| users | resolve(ids), emails(ids) | Resolve ids de campos USER/CREATOR em { _id, name, email } |
+| notify | send({ userIds, title, body?, action?, source? }) | Cria notificacoes in-app + socket |
 | utils | today(), now(), formatDate(date, format?), sha256(text), uuid() | Utilitarios |
 | console | log(), warn(), error() | Logs capturados e retornados |
 
@@ -420,12 +531,48 @@ Tipos de erro: syntax, runtime, timeout, unknown
 
 ## Seeders
 
-Execucao: `database/seeders/main.ts` encontra `*.seed.ts`, ordena por nome (timestamp), executa sequencialmente.
+Execucao: `database/seeders/main.ts` encontra `*.seed.(ts|js)`, valida padrao de filename, ordena por nome (timestamp) e executa sequencialmente. Em falha: log do arquivo que falhou, `process.exit(1)`, `mongoose.disconnect()`.
 
 Comando: `npm run seed`
 
 | Seeder | Dados |
 |--------|-------|
-| 1720448435-permissions.seed.ts | 12 permissoes (CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW) |
-| 1720448445-user-group.seed.ts | 4 grupos (MASTER, ADMINISTRATOR, MANAGER, REGISTERED) com permissoes |
-| 1720465892-users.seed.ts | 5 usuarios de teste (admin, master, administrator, manager, registered) |
+| 1720448435-permissions.seed.ts | 12 permissoes (CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW). Upsert por `slug` com `$set` |
+| 1720448445-user-group.seed.ts | 4 grupos (MASTER, ADMINISTRATOR, MANAGER, REGISTERED). Metadados via `$set`; `permissions` via `$setOnInsert` (preserva customizacoes manuais) |
+| 1720465893-settings.seed.ts | Setting singleton. Marca SETUP_COMPLETED=true se ja existe MASTER; caso contrario, `$setOnInsert: {}` |
+| 1778025600-demo-users.seed.ts | Gated por `DEMO_MODE=true`. Cria/atualiza `admin@admin.com` (ADMINISTRATOR) e `registered@registered.com` (REGISTERED). `$set` em todos os campos, password re-hashado a cada `npm run seed`. No-op silencioso fora de demo |
+
+Usuario MASTER **nao** tem seed — e criado via Setup Wizard na UI na primeira execucao.
+
+## Extensões (Plugins / Módulos / Ferramentas)
+
+Mecanismo build-time + ativação runtime para estender a plataforma sem mexer
+no core. Documentação canônica em `backend/extensions/CLAUDE.md`.
+
+- **Diretório**: `backend/extensions/<pkg>/{plugins,modules,tools}/<id>/manifest.json`
+- **Loader**: `application/core/extensions/loader.ts` varre o FS no boot,
+  valida manifests via Zod e faz upsert na collection `extensions`
+- **Model + Repo**: `Extension` (system DB), com chave única `(pkg, type,
+  extensionId)` e flags `enabled` / `available`
+- **REST**: `/extensions` (list, toggle, configure-table-scope) — MASTER only
+- **Guarda runtime**: `ExtensionActiveMiddleware({ pkg, type, extensionId })`
+  retorna 404 quando a extensão está desativada/indisponível
+- **Sem sandbox**: extensões rodam com privilégios totais — desenvolvedores
+  internos assumem o risco
+
+## Migrations
+
+Execucao: `database/migrations/migrate-dual-connection.ts`. Migracao one-time
+(idempotente via marcadores no Setting singleton) que copia as collections
+dinamicas do DB system para o DB data. Roda automaticamente no
+`docker-entrypoint.sh`; no segundo boot em diante e no-op com 1 query.
+
+Comandos:
+- `npm run migrate:dual-connection` — copia (skip se `MIGRATION_DUAL_CONNECTION_AT` ja setado)
+- `npm run migrate:dual-connection -- --force` — re-executa ignorando marcador
+- `npm run migrate:dual-connection -- --drop-source` — apaga collections do DB
+  system apos copia (manual, executar apenas apos validar em producao + backup)
+
+Marcadores persistidos no Setting:
+- `MIGRATION_DUAL_CONNECTION_AT` — timestamp da copia bem-sucedida
+- `MIGRATION_DUAL_CONNECTION_DROPPED_AT` — timestamp do drop bem-sucedido

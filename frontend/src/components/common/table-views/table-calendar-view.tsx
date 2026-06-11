@@ -1,8 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
-import { useRouter } from '@tanstack/react-router';
+import { useRouter, useRouterState } from '@tanstack/react-router';
 import { addMonths, addWeeks, subMonths, subWeeks } from 'date-fns';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import {
   CalendarAgendaView,
@@ -30,7 +31,6 @@ import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { mountRowValue } from '@/lib/table';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 interface Props {
   data: Array<IRow>;
@@ -58,6 +58,22 @@ export function TableCalendarView({
   React.useEffect(() => {
     setRowsState(data);
   }, [data]);
+
+  // Deep-link: ?rowId=... abre o evento automaticamente.
+  const searchParams = useRouterState({ select: (s) => s.location.search });
+  const deepLinkRowIdRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    const rowIdParam =
+      typeof searchParams === 'object' && searchParams !== null
+        ? (searchParams as Record<string, unknown>).rowId
+        : undefined;
+    if (typeof rowIdParam !== 'string' || !rowIdParam) return;
+    if (deepLinkRowIdRef.current === rowIdParam) return;
+    const exists = rowsState.some((row) => row._id === rowIdParam);
+    if (!exists) return;
+    deepLinkRowIdRef.current = rowIdParam;
+    setEditingRowId(rowIdParam);
+  }, [searchParams, rowsState]);
 
   const resolvedFields = React.useMemo(
     () => resolveCalendarFields(headers, table.layoutFields),
@@ -105,10 +121,10 @@ export function TableCalendarView({
         ...prev.filter((r) => r._id !== createdRow._id),
       ]);
       setIsCreateOpen(false);
-      toastSuccess('Agendamento criado com sucesso');
+      toast.success('Agendamento criado com sucesso');
     },
     onError() {
-      toastError('Erro ao criar agendamento');
+      toast.error('Erro ao criar agendamento');
     },
   });
 
@@ -118,10 +134,10 @@ export function TableCalendarView({
         prev.map((row) => (row._id === updatedRow._id ? updatedRow : row)),
       );
       setEditingRowId(null);
-      toastSuccess('Agendamento atualizado com sucesso');
+      toast.success('Agendamento atualizado com sucesso');
     },
     onError() {
-      toastError('Erro ao atualizar agendamento');
+      toast.error('Erro ao atualizar agendamento');
     },
   });
 
@@ -140,10 +156,10 @@ export function TableCalendarView({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(tableSlug),
       });
-      toastSuccess('Agendamento excluído com sucesso');
+      toast.success('Agendamento excluído com sucesso');
     },
     onError() {
-      toastError('Erro ao excluir agendamento');
+      toast.error('Erro ao excluir agendamento');
     },
   });
 
@@ -333,8 +349,9 @@ export function TableCalendarView({
           onDeleteClick={() => setIsDeleteOpen(true)}
           onOpenRecord={(row) => {
             router.navigate({
-              to: '/tables/$slug/row/$rowId',
-              params: { slug: tableSlug, rowId: row._id },
+              to: '/tables/$slug/row/',
+              params: { slug: tableSlug },
+              search: { _id: row._id },
             });
           }}
         />

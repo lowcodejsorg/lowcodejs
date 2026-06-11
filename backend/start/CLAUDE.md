@@ -34,11 +34,22 @@ O error handler global captura e normaliza:
 
 Validadas com Zod. Principais grupos:
 
-| Grupo      | Variáveis                                           |
-| ---------- | --------------------------------------------------- |
-| App        | `PORT`, `NODE_ENV`, `ALLOWED_ORIGINS`               |
-| Database   | `MONGO_URI`                                         |
-| Auth       | `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`, `COOKIE_SECRET`|
-| Storage    | `STORAGE_DRIVER`, `S3_*`, `LOCAL_STORAGE_PATH`      |
-| Email      | `SMTP_*`, `MAIL_FROM`                               |
-| Redis      | `REDIS_URI`                                         |
+| Grupo      | Variáveis                                                                |
+| ---------- | ------------------------------------------------------------------------ |
+| App        | `NODE_ENV`, `PORT`, `DEMO_MODE`                                          |
+| URLs       | `APP_SERVER_URL`, `APP_CLIENT_URL`                                       |
+| Database   | `DATABASE_URL`, `DB_DATABASE`, `DB_DATA_DATABASE`                        |
+| Auth       | `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`, `COOKIE_SECRET`, `COOKIE_DOMAIN`    |
+| CORS       | `ALLOWED_ORIGINS`                                                        |
+| Redis      | `REDIS_URL`                                                              |
+| Workers    | `STORAGE_MIGRATION_CONCURRENCY`, `EMAIL_WORKER_CONCURRENCY`              |
+| AI / Chat  | `MCP_SERVER_URL` (opcional)                                              |
+
+### Configurações que **NÃO** ficam mais em env
+
+Branding, locale, logos, upload, paginação, storage (driver/S3), SMTP e IA
+(`OPENAI_API_KEY`, `AI_ASSISTANT_ENABLED`) vivem no documento Setting do
+MongoDB. Editadas via UI `/settings` (usuário MASTER) ou pelo Setup Wizard.
+
+`STORAGE_*` é sincronizado de Setting → `process.env` no boot via
+`syncStorageEnv()` (`config/setting-env-sync.ts`); não precisa estar no `.env`.

@@ -1,5 +1,7 @@
 import z from 'zod';
 
+import { E_TABLE_VISIBILITY } from '@application/core/entity.core';
+
 export const TablePaginatedQueryValidator = z.object({
   page: z.coerce.number().default(1),
   perPage: z.coerce.number().default(50),
@@ -7,8 +9,34 @@ export const TablePaginatedQueryValidator = z.object({
   //
   name: z.string().trim().optional(),
   trashed: z.string().trim().optional(),
-  visibility: z.string().trim().optional(),
-  owner: z.string().trim().optional(),
+  visibility: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => {
+      if (!value) return undefined;
+      const tokens = value
+        .split(',')
+        .map((token) => token.trim())
+        .filter(Boolean);
+      if (tokens.length === 0) return undefined;
+      return tokens;
+    })
+    .pipe(z.array(z.enum(E_TABLE_VISIBILITY)).optional()),
+  owner: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => {
+      if (!value) return undefined;
+      const tokens = value
+        .split(',')
+        .map((token) => token.trim())
+        .filter(Boolean);
+      if (tokens.length === 0) return undefined;
+      return tokens;
+    })
+    .pipe(z.array(z.string()).optional()),
 
   'order-name': z.enum(['asc', 'desc']).optional(),
   'order-link': z.enum(['asc', 'desc']).optional(),

@@ -70,7 +70,7 @@ export const TableSendToTrashSchema: FastifySchema = {
                   'CREATOR',
                   'IDENTIFIER',
                   'CREATED_AT',
-                  'TRASHED',
+                  'STATUS',
                   'TRASHED_AT',
                 ],
                 description: 'Field type from FIELD_TYPE enum',
@@ -105,6 +105,11 @@ export const TableSendToTrashSchema: FastifySchema = {
                 type: 'boolean',
                 description: 'Allow filtering',
               },
+              tip: {
+                type: 'string',
+                nullable: true,
+                description: 'Optional help text shown in row forms',
+              },
               locked: {
                 type: 'boolean',
                 description: 'Field is locked and cannot be modified',
@@ -138,6 +143,18 @@ export const TableSendToTrashSchema: FastifySchema = {
                     },
                   },
                   order: { type: 'string', enum: ['asc', 'desc'] },
+                  customLabel: { type: 'boolean' },
+                  labelParts: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        path: { type: 'string' },
+                        label: { type: 'string' },
+                      },
+                    },
+                  },
+                  labelSeparator: { type: 'string' },
                 },
               },
               dropdown: {
@@ -150,6 +167,16 @@ export const TableSendToTrashSchema: FastifySchema = {
                     label: { type: 'string' },
                   },
                 },
+              },
+              allowCustomDropdownOptions: {
+                type: 'boolean',
+                description:
+                  'Allow users to create new dropdown options from row input',
+              },
+              allowCreateRelationshipRecords: {
+                type: 'boolean',
+                description:
+                  'Allow users to create records in the related table from row input',
               },
               category: {
                 type: 'array',

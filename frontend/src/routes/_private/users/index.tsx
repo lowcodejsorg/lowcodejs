@@ -4,6 +4,7 @@ import z from 'zod';
 import { DataTableSkeleton } from '@/components/common/data-table';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { userListOptions } from '@/hooks/tanstack-query/_query-options';
+import { E_ROLE } from '@/lib/constant';
 import type { ISetting } from '@/lib/interfaces';
 import { createRouteHead } from '@/lib/seo';
 import { useAuthStore } from '@/stores/authentication';
@@ -38,7 +39,9 @@ export const Route = createFileRoute('/_private/users/')({
   },
   head: createRouteHead({ title: 'Usuários' }),
   pendingComponent: () => (
-    <DataTableSkeleton headers={['Nome', 'E-mail', 'Papel', 'Status']}>
+    <DataTableSkeleton
+      headers={['Nome', 'E-mail', 'Papel', 'Status', 'Criado em']}
+    >
       <DataTableSkeleton.Cell width="w-45" />
       <DataTableSkeleton.Cell width="w-50" />
       <DataTableSkeleton.Cell width="w-25" />
@@ -47,6 +50,7 @@ export const Route = createFileRoute('/_private/users/')({
         height="h-6"
         rounded="rounded-full"
       />
+      <DataTableSkeleton.Cell width="w-40" />
       <DataTableSkeleton.ActionCell />
     </DataTableSkeleton>
   ),
@@ -54,6 +58,15 @@ export const Route = createFileRoute('/_private/users/')({
     search: z.string().optional(),
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),
+    trashed: z
+      .preprocess(
+        (v) => {
+          if (typeof v === 'boolean') return String(v);
+          return v;
+        },
+        z.enum(['true', 'false']).transform((v) => v === 'true'),
+      )
+      .optional(),
     'order-name': z.enum(['asc', 'desc']).optional(),
     'order-email': z.enum(['asc', 'desc']).optional(),
     'order-group': z.enum(['asc', 'desc']).optional(),
@@ -67,6 +80,7 @@ export const Route = createFileRoute('/_private/users/')({
     page: search.page,
     perPage: search.perPage,
     search: search.search,
+    trashed: search.trashed,
     'order-name': search['order-name'],
     'order-email': search['order-email'],
     'order-group': search['order-group'],
@@ -76,7 +90,11 @@ export const Route = createFileRoute('/_private/users/')({
   loader: ({ context, deps }) => {
     const authenticated = useAuthStore.getState().user?._id;
     context.queryClient.prefetchQuery(
-      userListOptions({ ...deps, authenticated }),
+      userListOptions({
+        ...deps,
+        authenticated,
+        role: E_ROLE.ADMINISTRATOR,
+      }),
     );
   },
 });

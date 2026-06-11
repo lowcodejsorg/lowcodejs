@@ -1,16 +1,16 @@
 /* eslint-disable no-unused-vars */
 /**
  * Socket.IO handler para o chat com IA.
- * Segue estritamente a mesma lógica do agent/web_app.py:
  * - Uma sessão MCP persistente por conexão
- * - Descoberta dinâmica de tools via MCP
- * - OpenAI API direta (chat.completions.create)
+ * - Provedor LLM configurável (OpenAI, Gemini, Claude, OpenRouter, Ollama)
  * - Protocolo de eventos: status, ready, thinking, tool_call, tool_result, tool_error, message, error
  */
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
+import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
+import * as http from 'node:http';
 import type { Server as HttpServer } from 'node:http';
-import OpenAI from 'openai';
+import * as https from 'node:https';
 import { Server as SocketIOServer } from 'socket.io';
 
 import {
@@ -19,6 +19,10 @@ import {
   type IJWTPayload,
 } from '@application/core/entity.core';
 import { Setting } from '@application/model/setting.model';
+import { resolveLlmConfig } from '@application/services/llm/ai-setting-fields';
+import type { LlmChatMessage } from '@application/services/llm/llm-chat.types';
+import { getLlmProviderLabel } from '@application/services/llm/llm-defaults';
+import { runChatCompletion } from '@application/services/llm/run-chat-completion';
 import { Env } from '@start/env';
 
 import { getChatSystemPrompt } from './system-prompt';
@@ -52,6 +56,190 @@ function extractCookieValue(
   return lastValue;
 }
 
+function getErrorMessage(err: unknown): string {
+  if (!(err instanceof Error)) return String(err);
+  const cause = (err as Error & { cause?: unknown }).cause;
+  const causeMsg = cause instanceof Error ? ` — causa: ${cause.message}` : '';
+  return err.message + causeMsg;
+}
+
+function formatChatUserError(err: unknown): string {
+  const raw = getErrorMessage(err).toLowerCase();
+
+  if (
+    raw.includes('429') ||
+    raw.includes('quota') ||
+    raw.includes('rate limit')
+  ) {
+    return 'Cota ou limite de requisições da API do provedor LLM esgotado. Aguarde alguns minutos, verifique o billing do provedor ou troque o provedor/modelo em Configurações → Assistente IA.';
+  }
+
+  if (
+    raw.includes('401') ||
+    raw.includes('403') ||
+    raw.includes('invalid api key') ||
+    raw.includes('incorrect api key') ||
+    raw.includes('authentication')
+  ) {
+    return 'Chave da API inválida ou sem permissão. Verifique a chave em Configurações → Assistente IA.';
+  }
+
+  if (
+    raw.includes('timeout') ||
+    raw.includes('econnrefused') ||
+    raw.includes('fetch failed')
+  ) {
+    return 'Não foi possível conectar ao provedor LLM. Verifique URL, rede e se o serviço (ex.: Ollama) está rodando.';
+  }
+
+  const full = getErrorMessage(err);
+  return full.length > 400 ? `${full.slice(0, 400)}…` : full;
+}
+
+class NodeHttpTransport implements Transport {
+  onclose?: () => void;
+  onerror?: (error: Error) => void;
+  onmessage?: (message: JSONRPCMessage) => void;
+
+  private readonly url: URL;
+  private readonly headers: Record<string, string>;
+
+  constructor(url: URL, headers: Record<string, string> = {}) {
+    this.url = url;
+    this.headers = headers;
+  }
+
+  async start(): Promise<void> {}
+
+  async send(message: JSONRPCMessage): Promise<void> {
+    const isNotification = !('id' in message);
+    if (isNotification) {
+      this.post(message).catch((err: unknown) =>
+        this.onerror?.(err instanceof Error ? err : new Error(String(err))),
+      );
+      return;
+    }
+    const response = await this.post(message);
+    if (response !== null && this.onmessage) {
+      this.onmessage(response as JSONRPCMessage);
+    }
+  }
+
+  async close(): Promise<void> {
+    this.onclose?.();
+  }
+
+  private post(
+    body: object,
+    timeoutMs = 15000,
+  ): Promise<JSONRPCMessage | null> {
+    return new Promise((resolve, reject) => {
+      const mod = this.url.protocol === 'https:' ? https : http;
+      const data = JSON.stringify(body);
+      const port =
+        this.url.port || (this.url.protocol === 'https:' ? '443' : '80');
+
+      const req = mod.request(
+        {
+          hostname: this.url.hostname,
+          port,
+          path: this.url.pathname + this.url.search,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(data),
+            Accept: 'application/json, text/event-stream',
+            ...this.headers,
+          },
+        },
+        (res) => {
+          const ct = res.headers['content-type'] ?? '';
+
+          if (ct.includes('text/event-stream')) {
+            let buf = '';
+            res.setEncoding('utf8');
+            res.on('data', (chunk: string) => {
+              buf += chunk;
+              const lines = buf.split('\n');
+              buf = lines.pop() ?? '';
+              let eventData = '';
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  eventData += line.slice(6);
+                } else if (line.trim() === '' && eventData) {
+                  try {
+                    const msg = JSON.parse(eventData) as JSONRPCMessage;
+                    this.onmessage?.(msg);
+                  } catch {
+                    /* ignore */
+                  }
+                  eventData = '';
+                }
+              }
+            });
+            res.on('end', () => resolve(null));
+            return;
+          }
+
+          let chunks = '';
+          res.setEncoding('utf8');
+          res.on('data', (chunk: string) => {
+            chunks += chunk;
+          });
+          res.on('end', () => {
+            if (!chunks) {
+              resolve(null);
+              return;
+            }
+            try {
+              resolve(JSON.parse(chunks) as JSONRPCMessage);
+            } catch {
+              reject(
+                new Error(`Resposta inválida do MCP: ${chunks.slice(0, 200)}`),
+              );
+            }
+          });
+        },
+      );
+
+      req.setTimeout(timeoutMs, () => {
+        req.destroy(new Error(`MCP request timeout (${timeoutMs}ms)`));
+      });
+      req.on('error', reject);
+      req.write(data);
+      req.end();
+    });
+  }
+}
+
+async function connectMcpClient(
+  mcpUrl: string,
+  mcpAuthToken: string | null,
+  mcpLowcodeApiUrl: string | null,
+  accessToken: string,
+): Promise<{
+  client: Client;
+  tools: Awaited<ReturnType<Client['listTools']>>['tools'];
+}> {
+  const headers: Record<string, string> = {
+    'X-Access-Token': accessToken,
+  };
+  if (mcpAuthToken) {
+    headers['Authorization'] = `Bearer ${mcpAuthToken}`;
+  }
+
+  const lowcodeApiUrl =
+    mcpLowcodeApiUrl?.trim().replace(/\/$/, '') ||
+    Env.APP_SERVER_URL.replace(/\/$/, '');
+  headers['X-Lowcode-Api-Url'] = lowcodeApiUrl;
+
+  const transport = new NodeHttpTransport(new URL(mcpUrl), headers);
+  const client = new Client({ name: 'lowcodejs-chat', version: '1.0.0' });
+  await client.connect(transport);
+  const { tools } = await client.listTools();
+  return { client, tools };
+}
+
 export function initChatSocket(
   httpServer: HttpServer,
   jwtDecode: (value: string) => IJWTPayload | null,
@@ -65,7 +253,6 @@ export function initChatSocket(
   });
 
   io.on('connection', async (socket) => {
-    // --- Autenticação via cookie (igual AuthenticationMiddleware) ---
     const cookieHeader = socket.handshake.headers.cookie;
     const accessToken = extractCookieValue(cookieHeader, 'accessToken');
 
@@ -86,13 +273,14 @@ export function initChatSocket(
 
     const user = decoded;
 
-    // --- Validar configuração (lendo do Setting singleton) ---
     const setting = await Setting.findOne().lean();
     const aiEnabled = Boolean(setting?.AI_ASSISTANT_ENABLED);
-    const openaiKey = setting?.OPENAI_API_KEY ?? null;
-    const mcpUrl = Env.MCP_SERVER_URL;
+    const mcpUrl = setting?.MCP_SERVER_URL ?? null;
+    const mcpAuthToken = setting?.MCP_SERVER_TOKEN ?? null;
+    const mcpLowcodeApiUrl = setting?.MCP_LOWCODE_API_URL ?? null;
+    let llmConfig = resolveLlmConfig(setting);
 
-    if (!aiEnabled || !openaiKey || !mcpUrl) {
+    if (!aiEnabled || !mcpUrl || !llmConfig.isConfigured) {
       socket.emit(E_CHAT_EVENT.ERROR, {
         message: 'Assistente IA não está habilitado ou não está configurado.',
       });
@@ -100,238 +288,132 @@ export function initChatSocket(
       return;
     }
 
-    const openaiClient = new OpenAI({ apiKey: openaiKey });
-
     let mcpClient: Client | null = null;
 
     try {
-      // --- Conectar ao MCP (igual agent L150-153) ---
       socket.emit(E_CHAT_EVENT.STATUS, {
         message: 'Conectando ao servidor MCP...',
       });
 
-      const transport = new StreamableHTTPClientTransport(new URL(mcpUrl), {
-        requestInit: {
-          headers: {
-            'X-Access-Token': accessToken,
-          },
-        },
-      });
+      const { client, tools: mcpTools } = await connectMcpClient(
+        mcpUrl,
+        mcpAuthToken,
+        mcpLowcodeApiUrl,
+        accessToken,
+      );
+      mcpClient = client;
 
-      mcpClient = new Client({
-        name: 'lowcodejs-chat',
-        version: '1.0.0',
-      });
-
-      await mcpClient.connect(transport);
-
-      // --- Descoberta dinâmica de tools (igual agent L156-169) ---
-      const toolsResult = await mcpClient.listTools();
-      const mcpTools = toolsResult.tools;
-
-      let openaiTools: OpenAI.ChatCompletionTool[] | undefined;
-      if (mcpTools.length > 0) {
-        openaiTools = mcpTools.map((tool) => ({
-          type: 'function' as const,
-          function: {
-            name: tool.name,
-            description: tool.description || '',
-            parameters: (tool.inputSchema as Record<string, unknown>) || {},
-          },
-        }));
-      }
-
-      // --- Histórico de mensagens in-memory (igual agent L171-173) ---
-      const messages: OpenAI.ChatCompletionMessageParam[] = [
+      const messages: Array<LlmChatMessage> = [
         {
           role: 'system',
-          content: getChatSystemPrompt(user.email.split('@')[0], user.email),
+          content: getChatSystemPrompt(
+            user.email.split('@')[0],
+            user.email,
+            llmConfig.provider,
+            llmConfig.model,
+          ),
         },
       ];
 
-      // --- Agente pronto (igual agent L175-179) ---
+      socket.on(
+        E_CHAT_EVENT.HISTORY,
+        (data: {
+          messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+        }) => {
+          if (!Array.isArray(data?.messages)) return;
+          for (const msg of data.messages) {
+            if (
+              (msg.role === 'user' || msg.role === 'assistant') &&
+              typeof msg.content === 'string'
+            ) {
+              messages.push({ role: msg.role, content: msg.content });
+            }
+          }
+        },
+      );
+
       socket.emit(E_CHAT_EVENT.READY, {
         message: 'Agente pronto! Você pode enviar mensagens.',
         tools_count: mcpTools.length,
+        llm_provider: llmConfig.provider,
+        llm_provider_label: getLlmProviderLabel(llmConfig.provider),
+        llm_model: llmConfig.model,
       });
 
-      // --- Loop de mensagens (igual agent L181-293) ---
       socket.on(E_CHAT_EVENT.MESSAGE, async (data: ClientMessage) => {
         try {
-          const userInput = (data.message || '').trim();
+          const latestSetting = await Setting.findOne().lean();
+          llmConfig = resolveLlmConfig(latestSetting);
 
-          if (!userInput && !data.file) return;
-
-          // Construir conteúdo da mensagem (multimodal se houver arquivo)
-          // Igual agent L196-225
-          const fileData = data.file;
-          if (fileData) {
-            const filename = fileData.filename || 'arquivo';
-
-            if (fileData.type === 'image') {
-              // GPT-4o Vision: enviar imagem como content multimodal (igual agent L202-213)
-              const contentParts: OpenAI.ChatCompletionContentPart[] = [];
-              if (userInput) {
-                contentParts.push({ type: 'text', text: userInput });
-              } else {
-                contentParts.push({
-                  type: 'text',
-                  text: `Transcreva e descreva detalhadamente o conteúdo desta imagem (${filename}):`,
-                });
-              }
-              contentParts.push({
-                type: 'image_url',
-                image_url: { url: fileData.data_uri! },
-              });
-              messages.push({ role: 'user', content: contentParts });
-            } else if (fileData.type === 'pdf') {
-              // PDF: incluir texto extraído na mensagem (igual agent L215-221)
-              const extracted = fileData.extracted_text || '';
-              const pageCount = fileData.page_count || 0;
-              const prompt =
-                userInput || 'Transcreva e analise o conteúdo deste PDF:';
-              const fullContent = `${prompt}\n\nPDF: ${filename} (${pageCount} página(s))\n\n${extracted}`;
-              messages.push({ role: 'user', content: fullContent });
-            } else {
-              messages.push({ role: 'user', content: userInput });
-            }
-          } else {
-            messages.push({ role: 'user', content: userInput });
+          const systemPrompt = getChatSystemPrompt(
+            user.email.split('@')[0],
+            user.email,
+            llmConfig.provider,
+            llmConfig.model,
+          );
+          if (messages[0]?.role === 'system') {
+            messages[0] = { role: 'system', content: systemPrompt };
           }
 
-          // Loop de processamento (igual agent L228-293)
-          while (true) {
-            socket.emit(E_CHAT_EVENT.THINKING);
+          socket.emit(E_CHAT_EVENT.LLM_INFO, {
+            llm_provider: llmConfig.provider,
+            llm_provider_label: getLlmProviderLabel(llmConfig.provider),
+            llm_model: llmConfig.model,
+          });
 
-            const response = await openaiClient.chat.completions.create({
-              model: 'gpt-5-mini',
-              messages,
-              tools: openaiTools,
-            });
+          const { reply } = await runChatCompletion({
+            llmConfig,
+            messages,
+            mcpClient: mcpClient!,
+            mcpTools,
+            socket,
+            userId: user.sub,
+            userInput: (data.message || '').trim(),
+            file: data.file,
+          });
 
-            const msg = response.choices[0].message;
-            messages.push(msg);
-
-            if (msg.tool_calls && msg.tool_calls.length > 0) {
-              for (const toolCall of msg.tool_calls) {
-                if (toolCall.type !== 'function') continue;
-                const toolName = toolCall.function.name;
-                let toolArgs: Record<string, unknown> = {};
-                try {
-                  toolArgs = JSON.parse(toolCall.function.arguments || '{}');
-                } catch {
-                  toolArgs = {};
-                }
-                const toolCallId = toolCall.id;
-
-                socket.emit(E_CHAT_EVENT.TOOL_CALL, {
-                  name: toolName,
-                  args: toolArgs,
-                });
-
-                try {
-                  const result = await mcpClient!.callTool({
-                    name: toolName,
-                    arguments: toolArgs,
-                  });
-
-                  // Extrair content_str (igual agent L255-261)
-                  let contentStr = '';
-                  if (result.content && Array.isArray(result.content)) {
-                    for (const content of result.content as Array<{
-                      type: string;
-                      text?: string;
-                    }>) {
-                      if (content.type === 'text') {
-                        contentStr += content.text || '';
-                      } else {
-                        contentStr += `[${content.type}]`;
-                      }
-                    }
-                  } else {
-                    contentStr = String(result);
-                  }
-
-                  messages.push({
-                    role: 'tool',
-                    tool_call_id: toolCallId,
-                    content: contentStr,
-                  });
-
-                  socket.emit(E_CHAT_EVENT.TOOL_RESULT, {
-                    name: toolName,
-                    preview:
-                      contentStr.length > 150
-                        ? contentStr.slice(0, 150) + '...'
-                        : contentStr,
-                  });
-                } catch (err) {
-                  const errorMsg =
-                    err instanceof Error ? err.message : String(err);
-
-                  messages.push({
-                    role: 'tool',
-                    tool_call_id: toolCallId,
-                    content: errorMsg,
-                  });
-
-                  socket.emit(E_CHAT_EVENT.TOOL_ERROR, {
-                    name: toolName,
-                    message: errorMsg,
-                  });
-                }
-              }
-              // Continua o loop para enviar resultados de volta ao modelo (igual agent L287)
-              continue;
-            } else {
-              // Resposta final (igual agent L288-293)
-              socket.emit(E_CHAT_EVENT.MESSAGE, {
-                content: msg.content || '',
-              });
-              break;
-            }
+          if (reply) {
+            socket.emit(E_CHAT_EVENT.MESSAGE, { content: reply });
           }
         } catch (err) {
-          // Error handling (igual agent L297-308)
           console.error('Erro no processamento:', err);
-          const errorMsg = err instanceof Error ? err.message : String(err);
+          const errorMsg = formatChatUserError(err);
           try {
-            socket.emit(E_CHAT_EVENT.ERROR, {
-              message: `Erro no servidor: ${errorMsg}`,
+            socket.emit(E_CHAT_EVENT.MESSAGE, {
+              content: `Não foi possível concluir a resposta: ${errorMsg}`,
+              variant: 'system-warning',
             });
           } catch {
-            // ignore emit errors
+            /* ignore */
           }
         }
       });
 
-      // --- Cleanup na desconexão (igual agent L309-313) ---
       socket.on('disconnect', async () => {
         try {
           if (mcpClient) {
             await mcpClient.close();
           }
         } catch {
-          // ignore close errors
+          /* ignore */
         }
       });
     } catch (err) {
-      // Erro na inicialização (igual agent L297-308)
       console.error('Erro ao inicializar chat socket:', err);
-      const errorMsg = err instanceof Error ? err.message : String(err);
+      const errorMsg = getErrorMessage(err);
       try {
         socket.emit(E_CHAT_EVENT.ERROR, {
           message: `Erro no servidor: ${errorMsg}`,
         });
       } catch {
-        // ignore emit errors
+        /* ignore */
       }
       try {
         if (mcpClient) {
           await mcpClient.close();
         }
       } catch {
-        // ignore close errors
+        /* ignore */
       }
       socket.disconnect();
     }

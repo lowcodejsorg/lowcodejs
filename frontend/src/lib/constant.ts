@@ -17,6 +17,7 @@ export const E_MENU_ITEM_TYPE = {
   FORM: 'FORM',
   EXTERNAL: 'EXTERNAL',
   SEPARATOR: 'SEPARATOR',
+  EXTENSION_MODULE: 'EXTENSION_MODULE',
 } as const;
 
 export const E_FIELD_TYPE = {
@@ -36,8 +37,13 @@ export const E_FIELD_TYPE = {
   CREATOR: 'CREATOR',
   IDENTIFIER: 'IDENTIFIER',
   CREATED_AT: 'CREATED_AT',
-  TRASHED: 'TRASHED',
   TRASHED_AT: 'TRASHED_AT',
+  STATUS: 'STATUS',
+} as const;
+
+export const E_ROW_STATUS = {
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
 } as const;
 
 export const E_ROLE = {
@@ -105,6 +111,21 @@ export const E_TABLE_COLLABORATION = {
   OPEN: 'OPEN',
   RESTRICTED: 'RESTRICTED',
 } as const;
+
+export const E_EXTENSION_TYPE = {
+  PLUGIN: 'PLUGIN',
+  MODULE: 'MODULE',
+  TOOL: 'TOOL',
+} as const;
+
+export const EXTENSION_TYPE_LABEL: Record<
+  (typeof E_EXTENSION_TYPE)[keyof typeof E_EXTENSION_TYPE],
+  string
+> = {
+  PLUGIN: 'Plugin',
+  MODULE: 'Módulo',
+  TOOL: 'Ferramenta',
+};
 
 export const E_TOKEN_STATUS = {
   REQUESTED: 'REQUESTED',
@@ -233,6 +254,7 @@ export const MENU_ITEM_TYPE_OPTIONS = [
   { label: 'Formulário', value: E_MENU_ITEM_TYPE.FORM },
   { label: 'Link Externo', value: E_MENU_ITEM_TYPE.EXTERNAL },
   { label: 'Separador', value: E_MENU_ITEM_TYPE.SEPARATOR },
+  { label: 'Módulo de Extensão', value: E_MENU_ITEM_TYPE.EXTENSION_MODULE },
 ] as const;
 
 export const TABLE_COLLABORATION_OPTIONS = [
@@ -286,7 +308,31 @@ export const E_CHAT_EVENT = {
   TOOL_ERROR: 'tool_error',
   MESSAGE: 'message',
   ERROR: 'error',
-  // Client -> Server (same as server message event)
+  LLM_INFO: 'llm_info',
+  // Client -> Server
+  HISTORY: 'history',
+} as const;
+
+export const E_AI_LLM_PROVIDER = {
+  OPENAI: 'openai',
+  GEMINI: 'gemini',
+  CLAUDE: 'claude',
+  OPENROUTER: 'openrouter',
+  OLLAMA: 'ollama',
+} as const;
+
+// Socket.IO Notification Events
+export const E_NOTIFICATION_EVENT = {
+  CREATED: 'notification:created',
+  READ: 'notification:read',
+  READ_ALL: 'notification:read_all',
+} as const;
+
+export const E_NOTIFICATION_TYPE = {
+  FORUM_MENTION: 'FORUM_MENTION',
+  KANBAN_COMMENT_MENTION: 'KANBAN_COMMENT_MENTION',
+  ROW_MEMBER_ASSIGNED: 'ROW_MEMBER_ASSIGNED',
+  GENERIC: 'GENERIC',
 } as const;
 
 // Tool name prefixes for query invalidation mapping
@@ -296,4 +342,92 @@ export const E_CHAT_TOOL_PREFIX = {
   ROWS: 'rows_',
   FILES: 'files_',
   PROFILE: 'profile_',
+} as const;
+
+// ============== LOGS / HISTORICO ==============
+export const E_LOGGER_ACTION_TYPE = {
+  VIEW: 'VIEW',
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
+} as const;
+
+export const E_LOGGER_OBJECT_TYPE = {
+  TABLE: 'TABLE',
+  FIELD: 'FIELD',
+  ROW: 'ROW',
+  MENU: 'MENU',
+  USER: 'USER',
+  EXTENSION: 'EXTENSION',
+  GROUP_FIELD: 'GROUP_FIELD',
+  GROUP_ROW: 'GROUP_ROW',
+  PAGE: 'PAGE',
+  PERMISSION: 'PERMISSION',
+  PROFILE: 'PROFILE',
+  SETTING: 'SETTING',
+  SETUP: 'SETUP',
+  STORAGE: 'STORAGE',
+  USER_GROUP: 'USER_GROUP',
+} as const;
+
+export const LOGGER_ACTION_LABEL: Record<
+  (typeof E_LOGGER_ACTION_TYPE)[keyof typeof E_LOGGER_ACTION_TYPE],
+  string
+> = {
+  VIEW: 'Visualização',
+  CREATE: 'Criação',
+  UPDATE: 'Edição',
+  DELETE: 'Exclusão',
+};
+
+export const LOGGER_OBJECT_LABEL: Record<
+  (typeof E_LOGGER_OBJECT_TYPE)[keyof typeof E_LOGGER_OBJECT_TYPE],
+  string
+> = {
+  TABLE: 'Tabela',
+  FIELD: 'Campo',
+  ROW: 'Registro',
+  MENU: 'Menu',
+  USER: 'Usuário',
+  EXTENSION: 'Extensão',
+  GROUP_FIELD: 'Grupo de campos',
+  GROUP_ROW: 'Grupo de registros',
+  PAGE: 'Página',
+  PERMISSION: 'Permissão',
+  PROFILE: 'Perfil',
+  SETTING: 'Configuração',
+  SETUP: 'Setup',
+  STORAGE: 'Arquivo',
+  USER_GROUP: 'Grupo de usuário',
+};
+
+// ============== SETUP WIZARD ==============
+export const SETUP_STEPS = [
+  'admin',
+  'name',
+  'storage',
+  'logos',
+  'upload',
+  'paging',
+  'email',
+] as const;
+
+export const SETUP_STEP_LABELS = {
+  admin: 'Administrador',
+  name: 'Identidade',
+  storage: 'Armazenamento',
+  logos: 'Logos',
+  upload: 'Uploads',
+  paging: 'Paginação',
+  email: 'Email',
+} as const;
+
+export const SETUP_NEXT_STEP = {
+  admin: 'name',
+  name: 'storage',
+  storage: 'logos',
+  logos: 'upload',
+  upload: 'paging',
+  paging: 'email',
+  email: null,
 } as const;

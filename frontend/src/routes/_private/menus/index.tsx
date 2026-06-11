@@ -39,8 +39,9 @@ export const Route = createFileRoute('/_private/menus/')({
   head: createRouteHead({ title: 'Menus' }),
   pendingComponent: () => (
     <DataTableSkeleton
-      headers={['Nome', 'Slug', 'Tipo', 'Criado por', 'Criado em']}
+      headers={['Posição', 'Nome', 'Slug', 'Tipo', 'Criado por', 'Criado em']}
     >
+      <DataTableSkeleton.Cell width="w-16" />
       <DataTableSkeleton.Cell width="w-40" />
       <DataTableSkeleton.Cell width="w-35" />
       <DataTableSkeleton.Cell
@@ -67,6 +68,7 @@ export const Route = createFileRoute('/_private/menus/')({
       )
       .optional(),
     'order-name': z.enum(['asc', 'desc']).optional(),
+    'order-position': z.enum(['asc', 'desc']).optional(),
     'order-slug': z.enum(['asc', 'desc']).optional(),
     'order-type': z.enum(['asc', 'desc']).optional(),
     'order-created-at': z.enum(['asc', 'desc']).optional(),
@@ -81,6 +83,7 @@ export const Route = createFileRoute('/_private/menus/')({
     search: search.search,
     trashed: search.trashed,
     'order-name': search['order-name'],
+    'order-position': search['order-position'],
     'order-slug': search['order-slug'],
     'order-type': search['order-type'],
     'order-created-at': search['order-created-at'],

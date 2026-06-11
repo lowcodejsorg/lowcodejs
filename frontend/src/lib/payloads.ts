@@ -1,6 +1,8 @@
 import type {
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
+  E_LOGGER_ACTION_TYPE,
+  E_LOGGER_OBJECT_TYPE,
   E_MENU_ITEM_TYPE,
   E_REACTION_TYPE,
   E_ROLE,
@@ -68,6 +70,11 @@ export type UserGroupUpdatePayload = {
 };
 
 // ============== MENU ==============
+export type MenuExtensionRefPayload = {
+  pkg: string;
+  extensionId: string;
+};
+
 export type MenuCreatePayload = {
   name: string;
   type: ValueOf<typeof E_MENU_ITEM_TYPE>;
@@ -75,7 +82,10 @@ export type MenuCreatePayload = {
   parent?: string | null;
   html?: string | null;
   url?: string | null;
+  icon?: string | null;
   order?: number;
+  isInitial?: boolean;
+  extension?: MenuExtensionRefPayload | null;
 };
 
 export type MenuUpdatePayload = {
@@ -86,12 +96,24 @@ export type MenuUpdatePayload = {
   parent?: string | null;
   html?: string | null;
   url?: string | null;
+  icon?: string | null;
   order?: number;
+  isInitial?: boolean;
+  extension?: MenuExtensionRefPayload | null;
+};
+
+export type MenuReorderPayload = {
+  items: Array<{
+    _id: string;
+    parent: string | null;
+    order: number;
+  }>;
 };
 
 // ============== TABLE ==============
 export type TableCreatePayload = {
   name: string;
+  slug?: string;
   owner?: string;
   logo?: string | null;
   style?: ValueOf<typeof E_TABLE_STYLE>;
@@ -105,7 +127,8 @@ export type TableMethodPayload = {
 };
 
 export type TableUpdatePayload = {
-  slug: string;
+  routeSlug: string;
+  slug?: string;
   name?: string;
   description?: string | null;
   logo?: string | null;
@@ -137,6 +160,7 @@ export type TableUpdatePayload = {
     participants: string | null;
     reminder: string | null;
   };
+  rowSlugFieldId?: string | null;
 };
 
 // ============== FIELD ==============
@@ -150,13 +174,19 @@ export type FieldConfigurationPayload = {
   showInList?: boolean;
   widthInForm?: number | null;
   widthInList?: number | null;
+  tip?: string | null;
   defaultValue?: string | Array<string> | null;
   relationship?: {
     table: { _id: string; slug: string };
     field: { _id: string; slug: string };
     order: 'asc' | 'desc';
+    customLabel?: boolean;
+    labelParts?: Array<{ path: string; label?: string }>;
+    labelSeparator?: string;
   } | null;
   dropdown?: Array<string>;
+  allowCustomDropdownOptions?: boolean;
+  allowCreateRelationshipRecords?: boolean;
   category?: Array<{ id: string; label: string; children: Array<unknown> }>;
   group?: { _id: string; slug: string } | null;
 };
@@ -174,13 +204,19 @@ export type FieldCreatePayload = {
   showInList?: boolean;
   widthInForm?: number | null;
   widthInList?: number | null;
+  tip?: string | null;
   defaultValue?: string | Array<string> | null;
   relationship?: {
     table: { _id: string; slug: string };
     field: { _id: string; slug: string };
     order: 'asc' | 'desc';
+    customLabel?: boolean;
+    labelParts?: Array<{ path: string; label?: string }>;
+    labelSeparator?: string;
   } | null;
   dropdown?: Array<string>;
+  allowCustomDropdownOptions?: boolean;
+  allowCreateRelationshipRecords?: boolean;
   category?: Array<{ id: string; label: string; children: Array<unknown> }>;
   group?: { _id: string; slug: string } | null;
 };
@@ -199,13 +235,19 @@ export type FieldUpdatePayload = {
   showInList?: boolean;
   widthInForm?: number | null;
   widthInList?: number | null;
+  tip?: string | null;
   defaultValue?: string | Array<string> | null;
   relationship?: {
     table: { _id: string; slug: string };
     field: { _id: string; slug: string };
     order: 'asc' | 'desc';
+    customLabel?: boolean;
+    labelParts?: Array<{ path: string; label?: string }>;
+    labelSeparator?: string;
   } | null;
   dropdown?: Array<string>;
+  allowCustomDropdownOptions?: boolean;
+  allowCreateRelationshipRecords?: boolean;
   category?: Array<{ id: string; label: string; children: Array<unknown> }>;
   group?: { _id: string; slug: string } | null;
   trashed?: boolean;
@@ -224,6 +266,18 @@ export type RowUpdatePayload = {
   data: Record<string, unknown>;
 };
 
+export type RowAutoSavePayload = {
+  slug: string;
+  rowId?: string;
+  data: Record<string, unknown>;
+};
+
+export type RowBulkUpdatePayload = {
+  slug: string;
+  ids: Array<string>;
+  data: Record<string, unknown>;
+};
+
 // ============== PROFILE ==============
 export type ProfileUpdatePayload = {
   name: string;
@@ -236,6 +290,7 @@ export type ProfileUpdatePayload = {
 // ============== SETTING ==============
 export type SettingUpdatePayload = Partial<{
   SYSTEM_NAME: string;
+  SYSTEM_DESCRIPTION: string;
   LOCALE: string;
   STORAGE_DRIVER: 'local' | 's3';
   STORAGE_ENDPOINT: string;
@@ -249,6 +304,9 @@ export type SettingUpdatePayload = Partial<{
   PAGINATION_PER_PAGE: number;
   LOGO_SMALL_URL: string;
   LOGO_LARGE_URL: string;
+  LOGO_SMALL_DARK_URL: string;
+  LOGO_LARGE_DARK_URL: string;
+  LOGIN_BACKGROUND_URL: string;
   MODEL_CLONE_TABLES: Array<string>;
   EMAIL_PROVIDER_HOST: string | null;
   EMAIL_PROVIDER_PORT: number | null;
@@ -257,12 +315,69 @@ export type SettingUpdatePayload = Partial<{
   EMAIL_PROVIDER_FROM: string | null;
   OPENAI_API_KEY: string;
   AI_ASSISTANT_ENABLED: boolean;
+  CHAT_HISTORY_ENABLED: boolean;
+  MCP_SERVER_URL: string | null;
+  MCP_SERVER_TOKEN: string | null;
+  MCP_LOWCODE_API_URL: string | null;
+  OPENAI_MODEL: string;
+  AI_LLM_PROVIDER: string;
+  LLM_API_KEY: string | null;
+  LLM_MODEL: string;
+  LLM_BASE_URL: string | null;
 }>;
+
+// ============== SETUP WIZARD ==============
+export type SetupAdminPayload = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+
+export type SetupNamePayload = {
+  SYSTEM_NAME: string;
+  LOCALE: string;
+};
+
+export type SetupStoragePayload = {
+  STORAGE_DRIVER: 'local' | 's3';
+  STORAGE_ENDPOINT?: string;
+  STORAGE_REGION?: string;
+  STORAGE_BUCKET?: string;
+  STORAGE_ACCESS_KEY?: string;
+  STORAGE_SECRET_KEY?: string;
+};
+
+export type SetupLogosPayload = {
+  LOGO_SMALL_URL: string | null;
+  LOGO_LARGE_URL: string | null;
+};
+
+export type SetupUploadPayload = {
+  FILE_UPLOAD_MAX_SIZE: number;
+  FILE_UPLOAD_ACCEPTED: string;
+  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
+};
+
+export type SetupPagingPayload = {
+  PAGINATION_PER_PAGE: number;
+  MODEL_CLONE_TABLES?: Array<string>;
+};
+
+export type SetupEmailPayload = {
+  EMAIL_PROVIDER_HOST?: string | null;
+  EMAIL_PROVIDER_PORT?: number | null;
+  EMAIL_PROVIDER_USER?: string | null;
+  EMAIL_PROVIDER_PASSWORD?: string | null;
+  EMAIL_PROVIDER_FROM?: string | null;
+};
 
 // ============== CLONE TABLE ==============
 export type CloneTablePayload = {
-  baseTableId: string;
-  name: string;
+  baseTableId?: string;
+  baseTableIds?: Array<string>;
+  copyDataTableIds?: Array<string>;
+  name?: string;
 };
 
 // ============== REACTION ==============
@@ -289,6 +404,9 @@ export type UserQueryPayload = Merge<
     user?: { _id: string; role: ValueOf<typeof E_ROLE> };
     _ids?: Array<string>;
     status?: ValueOf<typeof E_USER_STATUS>;
+    // Contexto da consulta; passar `E_ROLE.ADMINISTRATOR` pede ao backend
+    // aplicar as regras de escopo do admin (esconder MASTER).
+    role?: ValueOf<typeof E_ROLE>;
     trashed?: boolean;
     'order-name'?: 'asc' | 'desc';
     'order-email'?: 'asc' | 'desc';
@@ -313,6 +431,7 @@ export type MenuQueryPayload = Merge<
     trashed?: boolean;
     parent?: string | null;
     'order-name'?: 'asc' | 'desc';
+    'order-position'?: 'asc' | 'desc';
     'order-slug'?: 'asc' | 'desc';
     'order-type'?: 'asc' | 'desc';
     'order-created-at'?: 'asc' | 'desc';
@@ -343,6 +462,28 @@ export type StorageQueryPayload = Merge<
   BaseQueryPayload,
   {
     type?: string;
+  }
+>;
+
+export type LoggerQueryPayload = Merge<
+  BaseQueryPayload,
+  {
+    actions?:
+      | ValueOf<typeof E_LOGGER_ACTION_TYPE>
+      | Array<ValueOf<typeof E_LOGGER_ACTION_TYPE>>
+      | string;
+    objects?:
+      | ValueOf<typeof E_LOGGER_OBJECT_TYPE>
+      | Array<ValueOf<typeof E_LOGGER_OBJECT_TYPE>>
+      | string;
+    'date-from'?: string;
+    'date-to'?: string;
+    'order-created-at'?: 'asc' | 'desc';
+    'order-user'?: 'asc' | 'desc';
+    'order-action'?: 'asc' | 'desc';
+    'order-object'?: 'asc' | 'desc';
+    'order-object-id'?: 'asc' | 'desc';
+    'order-url'?: 'asc' | 'desc';
   }
 >;
 
@@ -399,3 +540,15 @@ export type RowEvaluationPayload = Merge<
     value: number;
   }
 >;
+
+// ============== EXTENSIONS ==============
+export type ExtensionTogglePayload = {
+  _id: string;
+  enabled: boolean;
+};
+
+export type ExtensionConfigureTableScopePayload = {
+  _id: string;
+  mode: 'all' | 'specific';
+  tableIds: Array<string>;
+};

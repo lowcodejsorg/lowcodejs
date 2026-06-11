@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import slugify from 'slugify';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -11,12 +10,18 @@ import {
   type IGroupConfiguration,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
+import { deleteCascadeDropdownConfigsForField } from '@extensions/forms/plugins/cascade-dropdown/cascade-dropdown-config.model';
 
-import { normalizeDefaultValue } from '../table-field-base.schema';
+import {
+  hasDuplicateDropdownLabels,
+  normalizeDefaultValue,
+} from '../table-field-base.schema';
 
 import type { TableFieldUpdatePayload } from './update.validator';
 
@@ -44,12 +49,20 @@ export default class TableFieldUpdateUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
     private readonly rowRepository: RowContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly schemaBuilder: SchemaBuilderContractService,
+    private readonly modelBuilder: ModelBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBySlug(payload.slug);
+      const tableSlug = payload.tableSlug ?? payload.slug;
+      if (!tableSlug) {
+        return left(
+          HTTPException.BadRequest('Tabela inválida', 'INVALID_TABLE_SLUG'),
+        );
+      }
+
+      const table = await this.tableRepository.findBySlug(tableSlug);
 
       if (!table)
         return left(
@@ -72,24 +85,42 @@ export default class TableFieldUpdateUseCase {
         );
       }
 
-      if (
-        field.locked &&
-        !field.native &&
-        !this.canUpdateLockedField(payload, field)
-      ) {
+      if (field.native) {
+        const updatedField = await this.fieldRepository.update({
+          _id: field._id,
+          showInFilter: payload.showInFilter,
+          showInForm: payload.showInForm,
+          showInDetail: payload.showInDetail,
+          showInList: payload.showInList,
+          widthInForm: payload.widthInForm,
+          widthInList: payload.widthInList,
+          widthInDetail: payload.widthInDetail,
+          tip: payload.tip,
+        });
+
+        const fields = table.fields.map((f) =>
+          f._id === field._id ? updatedField : f,
+        );
+        const groups = table.groups || [];
+        const _schema = this.schemaBuilder.build(fields, groups);
+
+        await this.tableRepository.update({
+          _id: table._id,
+          _schema,
+          fields: fields.flatMap((f) => f._id),
+          groups,
+          owner: table.owner._id,
+          administrators: table.administrators.flatMap((a) => a._id),
+        });
+
+        return right(updatedField);
+      }
+
+      if (field.locked && !this.canUpdateLockedField(payload, field)) {
         return left(
           HTTPException.Forbidden(
             'Campo está bloqueado e não pode ser atualizado',
             'FIELD_LOCKED',
-          ),
-        );
-      }
-
-      if (field.native && !this.canUpdateNativeField(payload, field)) {
-        return left(
-          HTTPException.Forbidden(
-            'Campos nativos só podem ter visibilidade e largura atualizados',
-            'NATIVE_FIELD_RESTRICTED',
           ),
         );
       }
@@ -107,15 +138,56 @@ export default class TableFieldUpdateUseCase {
       }
 
       const oldSlug = field.slug;
-      const slug = field.native
-        ? field.slug
-        : slugify(payload.name, { lower: true, trim: true });
+      const nameChanged = payload.name !== field.name;
+      let resolvedSlug: { slug: string; error: string | null } = {
+        slug: oldSlug,
+        error: null,
+      };
+      if (nameChanged) {
+        resolvedSlug = FieldSlug.resolve({ name: payload.name });
+      }
 
-      // Normalize group: if it's a string, convert to object format
-      const normalizedGroup =
-        typeof payload.group === 'string'
-          ? { slug: payload.group }
-          : payload.group;
+      if (resolvedSlug.error) {
+        return left(
+          HTTPException.BadRequest('Slug inválido', 'INVALID_FIELD_SLUG', {
+            slug: resolvedSlug.error,
+          }),
+        );
+      }
+
+      const slug = resolvedSlug.slug;
+
+      const existFieldOnTable = table.fields?.some(
+        (item) => item._id !== field._id && item.slug === slug && !item.trashed,
+      );
+
+      if (existFieldOnTable) {
+        return left(
+          HTTPException.Conflict('Campo já existe', 'FIELD_ALREADY_EXIST', {
+            slug: 'Campo já existe',
+          }),
+        );
+      }
+
+      if (hasDuplicateDropdownLabels(payload.dropdown)) {
+        return left(
+          HTTPException.Conflict(
+            'Opções do dropdown não podem ter nomes duplicados',
+            'DROPDOWN_OPTION_ALREADY_EXISTS',
+            { dropdown: 'Opção já existe no dropdown' },
+          ),
+        );
+      }
+
+      let normalizedGroup: { slug: string; _id?: string } | null = null;
+      if (typeof payload.group === 'string') {
+        normalizedGroup = { slug: payload.group };
+      } else if (payload.group) {
+        normalizedGroup = { slug: payload.group.slug };
+        if (payload.group._id) {
+          normalizedGroup._id = payload.group._id;
+        }
+      }
 
       let updatedField = await this.fieldRepository.update({
         ...payload,
@@ -137,31 +209,30 @@ export default class TableFieldUpdateUseCase {
       let groups = table.groups || [];
 
       if (updatedField.type === E_FIELD_TYPE.FIELD_GROUP) {
-        // Verifica se já existe um grupo para este campo
         const existingGroup = groups.find((g) => g.slug === field.group?.slug);
+        const groupId = updatedField._id;
 
         if (!existingGroup) {
-          // Cria novo grupo em groups
           const newGroup: IGroupConfiguration = {
+            _id: groupId,
             slug,
             name: updatedField.name,
             fields: [],
             _schema: {},
           };
-
           groups = [...groups, newGroup];
-        } else if (oldSlug !== slug) {
-          // Atualiza o slug do grupo existente
-          groups = groups.map((g) =>
-            g.slug === existingGroup.slug
-              ? { ...g, slug, name: updatedField.name }
-              : g,
-          );
+        } else {
+          groups = groups.map((g) => {
+            if (g.slug === existingGroup.slug) {
+              return { ...g, _id: groupId, slug, name: updatedField.name };
+            }
+            return g;
+          });
         }
 
         updatedField = await this.fieldRepository.update({
           _id: updatedField._id,
-          group: { slug },
+          group: { slug, _id: groupId },
         });
       }
 
@@ -169,7 +240,7 @@ export default class TableFieldUpdateUseCase {
         f._id === field._id ? updatedField : f,
       );
 
-      const _schema = this.tableSchemaService.computeSchema(fields, groups);
+      const _schema = this.schemaBuilder.build(fields, groups);
 
       await this.tableRepository.update({
         _id: table._id,
@@ -181,13 +252,21 @@ export default class TableFieldUpdateUseCase {
       });
 
       if (oldSlug !== slug) {
-        await this.tableSchemaService.syncModel({
+        await this.modelBuilder.build({
           ...table,
           _id: table._id,
           _schema,
           groups,
         });
         await this.rowRepository.renameField(table, oldSlug, slug);
+      }
+
+      if (payload.trashed) {
+        await deleteCascadeDropdownConfigsForField({
+          tableSlug,
+          fieldId: field._id,
+          fieldSlug: field.slug,
+        });
       }
 
       return right(updatedField);
@@ -200,47 +279,6 @@ export default class TableFieldUpdateUseCase {
         ),
       );
     }
-  }
-
-  private canUpdateNativeField(payload: Payload, field: IField): boolean {
-    // Native fields only allow visibility and width changes
-    if (payload.name !== field.name) return false;
-    if (payload.type !== field.type) return false;
-    if (payload.trashed || payload.trashedAt) return false;
-    if (payload.required !== field.required) return false;
-    if (payload.multiple !== field.multiple) return false;
-    if (payload.format !== field.format) return false;
-    if (!isDefaultValueEqual(payload.defaultValue, field.defaultValue))
-      return false;
-
-    // relationship: comparar por _id
-    const payloadRelId = payload.relationship?.table?._id ?? null;
-    const fieldRelId = field.relationship?.table?._id ?? null;
-    if (payloadRelId !== fieldRelId) return false;
-
-    // group: comparar por slug
-    const payloadGroupSlug =
-      typeof payload.group === 'string'
-        ? payload.group
-        : (payload.group?.slug ?? null);
-    const fieldGroupSlug = field.group?.slug ?? null;
-    if (payloadGroupSlug !== fieldGroupSlug) return false;
-
-    // dropdown: comparar por ids
-    const payloadDropdownIds = (payload.dropdown ?? [])
-      .map((d) => d.id)
-      .join(',');
-    const fieldDropdownIds = (field.dropdown ?? []).map((d) => d.id).join(',');
-    if (payloadDropdownIds !== fieldDropdownIds) return false;
-
-    // category: comparar por ids
-    const payloadCategoryIds = (payload.category ?? [])
-      .map((c) => c.id)
-      .join(',');
-    const fieldCategoryIds = (field.category ?? []).map((c) => c.id).join(',');
-    if (payloadCategoryIds !== fieldCategoryIds) return false;
-
-    return true;
   }
 
   private canUpdateLockedField(payload: Payload, field: IField): boolean {

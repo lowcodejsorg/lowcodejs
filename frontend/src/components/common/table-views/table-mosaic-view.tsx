@@ -1,6 +1,9 @@
 import { useParams, useRouter } from '@tanstack/react-router';
 import React from 'react';
 
+import { TableRowActionsMenu } from './table-row-actions-menu';
+import { RowSelectCheckbox } from './use-row-selection';
+
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
@@ -12,6 +15,10 @@ import { TableRowRelationshipCell } from '@/components/common/dynamic-table/tabl
 import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { FieldTitle } from '@/components/common/field-title';
+import { Badge } from '@/components/ui/badge';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
 import { resolveLayoutField } from '@/lib/layout-field-resolver';
@@ -39,7 +46,7 @@ function RenderMosaicCell({
     return (
       <div className="flex flex-col gap-0.5">
         <span className="text-xs font-medium text-muted-foreground">
-          {field.name}
+          <FieldTitle value={field.name} />
         </span>
         <span className="text-muted-foreground text-sm">-</span>
       </div>
@@ -151,7 +158,7 @@ function RenderMosaicCell({
             row={row}
           />
         );
-      case E_FIELD_TYPE.TRASHED:
+      case E_FIELD_TYPE.STATUS:
         return (
           <TableRowTextShortCell
             field={field}
@@ -174,6 +181,9 @@ export function TableMosaicView({
 }: Props): React.JSX.Element {
   const router = useRouter();
   const { slug } = useParams({ from: '/_private/tables/$slug/' });
+  const table = useReadTable({ slug });
+  const permission = useTablePermission(table.data);
+  const canSelect = permission.can('UPDATE_ROW');
 
   const visibleHeaders = headers.filter(HeaderFilter).sort(HeaderSorter(order));
 
@@ -207,8 +217,9 @@ export function TableMosaicView({
           className="mb-4 break-inside-avoid rounded-2xl border border-border/60 bg-background shadow-sm overflow-hidden cursor-pointer hover:bg-muted/20"
           onClick={() => {
             router.navigate({
-              to: '/tables/$slug/row/$rowId',
-              params: { slug, rowId: row._id },
+              to: '/tables/$slug/row/',
+              params: { slug },
+              search: { _id: row._id },
             });
           }}
         >
@@ -227,16 +238,43 @@ export function TableMosaicView({
           </div>
 
           <div className="p-3">
-            <div className="font-semibold leading-tight line-clamp-2">
-              {titleField ? (
-                <RenderMosaicCell
-                  field={titleField}
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1 space-y-1">
+                {row.status === 'draft' && (
+                  <Badge
+                    variant="outline"
+                    className="text-amber-600 border-amber-400"
+                  >
+                    Rascunho
+                  </Badge>
+                )}
+                <div className="font-semibold leading-tight line-clamp-2">
+                  {titleField ? (
+                    <RenderMosaicCell
+                      field={titleField}
+                      row={row}
+                      tableSlug={slug}
+                    />
+                  ) : (
+                    <span className="text-muted-foreground">Sem título</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                {canSelect && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center"
+                  >
+                    <RowSelectCheckbox id={row._id} />
+                  </div>
+                )}
+                <TableRowActionsMenu
+                  slug={slug}
                   row={row}
-                  tableSlug={slug}
+                  table={table.data}
                 />
-              ) : (
-                <span className="text-muted-foreground">Sem título</span>
-              )}
+              </div>
             </div>
 
             {descField ? (

@@ -7,7 +7,7 @@ Repositorio da entidade Table (tabelas dinamicas do low-code).
 | Arquivo | Descricao |
 |---------|-----------|
 | `table-contract.repository.ts` | Classe abstrata com interface e payload types |
-| `table-mongoose.repository.ts` | Implementacao com Mongoose |
+| `table.repository.ts` | Implementacao com Mongoose |
 | `table-in-memory.repository.ts` | Implementacao em memoria para testes |
 
 ## Metodos

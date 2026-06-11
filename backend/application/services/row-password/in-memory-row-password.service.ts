@@ -3,7 +3,7 @@ import type { IField } from '@application/core/entity.core';
 
 import { RowPasswordContractService } from './row-password-contract.service';
 
-export default class InMemoryRowPasswordService extends RowPasswordContractService {
+export default class InMemoryRowPasswordService implements RowPasswordContractService {
   private _forcedErrors = new Map<string, Error>();
 
   simulateError(method: string, error: Error): void {

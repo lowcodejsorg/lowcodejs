@@ -11,14 +11,16 @@ import {
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
-import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
+import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
+import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
 import TableFieldUpdateUseCase from '../update.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
 let rowInMemoryRepository: RowInMemoryRepository;
-let tableSchemaService: TableSchemaInMemoryService;
+let schemaBuilder: InMemorySchemaBuilder;
+let modelBuilder: InMemoryModelBuilder;
 let sut: TableFieldUpdateUseCase;
 
 const FIELD_DEFAULTS = {
@@ -29,6 +31,7 @@ const FIELD_DEFAULTS = {
   showInDetail: true,
   showInFilter: true,
   locked: false,
+  allowCreateRelationshipRecords: false,
   native: false,
   required: false,
   category: [],
@@ -95,6 +98,7 @@ function buildUpdatePayload(
     trashed: false,
     trashedAt: null,
     locked: false,
+    allowCreateRelationshipRecords: false,
     showInList: field.showInList,
     showInForm: field.showInForm,
     showInDetail: field.showInDetail,
@@ -112,13 +116,15 @@ describe('Table Field Update - TEXT_SHORT', () => {
     fieldInMemoryRepository = new FieldInMemoryRepository();
     rowInMemoryRepository = new RowInMemoryRepository();
 
-    tableSchemaService = new TableSchemaInMemoryService();
+    schemaBuilder = new InMemorySchemaBuilder();
+    modelBuilder = new InMemoryModelBuilder();
 
     sut = new TableFieldUpdateUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
       rowInMemoryRepository,
-      tableSchemaService,
+      schemaBuilder,
+      modelBuilder,
     );
   });
 
@@ -397,6 +403,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: false,
+      allowCreateRelationshipRecords: false,
       showInList: false,
       showInForm: true,
       showInDetail: true,
@@ -412,7 +419,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
     expect(result.value.widthInList).toBe(30);
   });
 
-  it('campo NATIVE deve rejeitar mudar name com NATIVE_FIELD_RESTRICTED', async () => {
+  it('campo NATIVE deve ignorar mudanca de name e preservar o nome original', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
@@ -435,6 +442,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: false,
+      allowCreateRelationshipRecords: false,
       showInList: field.showInList,
       showInForm: field.showInForm,
       showInDetail: field.showInDetail,
@@ -444,13 +452,12 @@ describe('Table Field Update - TEXT_SHORT', () => {
       widthInDetail: field.widthInDetail,
     });
 
-    expect(result.isLeft()).toBe(true);
-    if (!result.isLeft()) throw new Error('Expected left');
-    expect(result.value.code).toBe(403);
-    expect(result.value.cause).toBe('NATIVE_FIELD_RESTRICTED');
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.name).toBe(field.name);
   });
 
-  it('campo NATIVE deve rejeitar mudar format com NATIVE_FIELD_RESTRICTED', async () => {
+  it('campo NATIVE deve ignorar mudanca de format e preservar o formato original', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
@@ -473,6 +480,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: false,
+      allowCreateRelationshipRecords: false,
       showInList: field.showInList,
       showInForm: field.showInForm,
       showInDetail: field.showInDetail,
@@ -482,10 +490,9 @@ describe('Table Field Update - TEXT_SHORT', () => {
       widthInDetail: field.widthInDetail,
     });
 
-    expect(result.isLeft()).toBe(true);
-    if (!result.isLeft()) throw new Error('Expected left');
-    expect(result.value.code).toBe(403);
-    expect(result.value.cause).toBe('NATIVE_FIELD_RESTRICTED');
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.format).toBe(field.format);
   });
 
   it('campo NATIVE deve rejeitar trashed=true com NATIVE_FIELD_CANNOT_BE_TRASHED', async () => {
@@ -511,6 +518,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: true,
       trashedAt: null,
       locked: false,
+      allowCreateRelationshipRecords: false,
       showInList: field.showInList,
       showInForm: field.showInForm,
       showInDetail: field.showInDetail,
@@ -551,6 +559,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: true,
+      allowCreateRelationshipRecords: false,
       showInList: false,
       showInForm: field.showInForm,
       showInDetail: field.showInDetail,
@@ -588,6 +597,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: true,
+      allowCreateRelationshipRecords: false,
       showInList: field.showInList,
       showInForm: field.showInForm,
       showInDetail: field.showInDetail,
@@ -626,6 +636,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: true,
+      allowCreateRelationshipRecords: false,
       showInList: field.showInList,
       showInForm: field.showInForm,
       showInDetail: field.showInDetail,

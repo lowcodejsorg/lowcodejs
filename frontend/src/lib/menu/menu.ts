@@ -1,6 +1,8 @@
 import {
   GroupIcon,
+  HistoryIcon,
   MenuIcon,
+  PuzzleIcon,
   SettingsIcon,
   TableIcon,
   UserIcon,
@@ -33,6 +35,16 @@ export const getStaticMenusByRole = (
               { title: 'Grupos', url: '/groups', icon: GroupIcon },
               { title: 'Usuários', url: '/users', icon: UsersIcon },
               { title: 'Ferramentas', url: '/tools', icon: WrenchIcon },
+              {
+                title: 'Extensões',
+                url: '/extensions',
+                icon: PuzzleIcon,
+              },
+              {
+                title: 'Histórico de ações',
+                url: '/logs',
+                icon: HistoryIcon,
+              },
             ],
           },
           {
@@ -52,6 +64,17 @@ export const getStaticMenusByRole = (
               { title: 'Tabelas', url: '/tables', icon: TableIcon },
               { title: 'Menus', url: '/menus', icon: MenuIcon },
               { title: 'Usuários', url: '/users', icon: UsersIcon },
+              { title: 'Ferramentas', url: '/tools', icon: WrenchIcon },
+              {
+                title: 'Extensões',
+                url: '/extensions',
+                icon: PuzzleIcon,
+              },
+              {
+                title: 'Histórico de ações',
+                url: '/logs',
+                icon: HistoryIcon,
+              },
             ],
           },
           {
@@ -67,7 +90,14 @@ export const getStaticMenusByRole = (
         after: [
           {
             title: 'Sistema',
-            items: [{ title: 'Tabelas', url: '/tables', icon: TableIcon }],
+            items: [
+              { title: 'Tabelas', url: '/tables', icon: TableIcon },
+              {
+                title: 'Histórico de ações',
+                url: '/logs',
+                icon: HistoryIcon,
+              },
+            ],
           },
           {
             title: 'Conta',
@@ -82,7 +112,14 @@ export const getStaticMenusByRole = (
         after: [
           {
             title: 'Sistema',
-            items: [{ title: 'Tabelas', url: '/tables', icon: TableIcon }],
+            items: [
+              { title: 'Tabelas', url: '/tables', icon: TableIcon },
+              {
+                title: 'Histórico de ações',
+                url: '/logs',
+                icon: HistoryIcon,
+              },
+            ],
           },
           {
             title: 'Conta',

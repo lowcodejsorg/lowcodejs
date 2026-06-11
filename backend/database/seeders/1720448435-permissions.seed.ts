@@ -12,8 +12,6 @@ export type PayloadPermissionSeeder = Merge<
 >;
 
 export default async function Seed(): Promise<void> {
-  await Permission.deleteMany({});
-
   const PAYLOAD_PERMISSION_SEEDER: PayloadPermissionSeeder[] = [
     {
       name: 'Criar tabela',
@@ -78,6 +76,14 @@ export default async function Seed(): Promise<void> {
     },
   ];
 
-  await Permission.insertMany(PAYLOAD_PERMISSION_SEEDER);
+  await Permission.bulkWrite(
+    PAYLOAD_PERMISSION_SEEDER.map(({ slug, ...rest }) => ({
+      updateOne: {
+        filter: { slug },
+        update: { $set: { slug, ...rest } },
+        upsert: true,
+      },
+    })),
+  );
   console.info('🌱 \x1b[32m permissions \x1b[0m');
 }

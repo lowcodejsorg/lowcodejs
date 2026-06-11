@@ -22,7 +22,6 @@ export type RowFindOnePayload = {
   table: RowTableContext;
   query: Record<string, unknown>;
   populate?: boolean;
-  includeReverseRelationships?: boolean;
 };
 
 export type RowFindManyPayload = {
@@ -32,7 +31,6 @@ export type RowFindManyPayload = {
   limit: number;
   sortField?: string;
   sortDirection?: 'asc' | 'desc';
-  includeReverseRelationships?: boolean;
 };
 
 export type RowUpdatePayload = {
@@ -83,6 +81,12 @@ export abstract class RowContractRepository {
   abstract update(payload: RowUpdatePayload): Promise<IRow | null>;
 
   abstract deleteOne(table: RowTableContext, _id: string): Promise<boolean>;
+
+  /** Lista os `sharedRowSlug` ja usados na tabela (para garantir unicidade). */
+  abstract listSlugs(
+    table: RowTableContext,
+    excludeId?: string,
+  ): Promise<string[]>;
 
   // ── Trash (bulk) ──────────────────────────────────────────
 
@@ -139,5 +143,33 @@ export abstract class RowContractRepository {
     table: RowTableContext,
     row: Record<string, unknown>,
     creator?: string,
-  ): Promise<void>;
+  ): Promise<IRow>;
+
+  // ── Resolver helpers (csv-import) ─────────────────────────
+
+  /**
+   * Busca rows onde qualquer um dos `fieldSlugs` contenha algum dos `values`
+   * (case-insensitive). Ignora rows com `trashed: true`.
+   * Usada pelo worker de importação CSV para resolver display values de campos
+   * RELATIONSHIP de volta para ObjectIds.
+   */
+  abstract findManyByFieldValues(
+    table: RowTableContext,
+    fieldSlugs: string[],
+    values: string[],
+  ): Promise<IRow[]>;
+
+  // ── Category cleanup (delete-category) ────────────────────
+
+  /**
+   * Remove os `ids` (categorias) do array `fieldSlug` de todas as rows que os
+   * contenham. Usada ao excluir uma seção (categoria) para desvincular os
+   * registros (artigos) sem apagá-los.
+   * Retorna a quantidade de rows modificadas.
+   */
+  abstract pullCategoryValues(
+    table: RowTableContext,
+    fieldSlug: string,
+    ids: string[],
+  ): Promise<number>;
 }

@@ -3,6 +3,7 @@ import {
   useNavigate,
   useRouter,
 } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
 import {
   CreateTableFormFields,
@@ -22,9 +23,9 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { useCreateTable } from '@/hooks/tanstack-query/use-table-create';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/tables/create/')({
   component: RouteComponent,
@@ -47,7 +48,9 @@ function RouteComponentContent(): React.JSX.Element {
 
   const _create = useCreateTable({
     onSuccess(response) {
-      toastSuccess('Tabela criada', 'A tabela foi criada com sucesso');
+      toast.success('Tabela criada', {
+        description: 'A tabela foi criada com sucesso',
+      });
 
       form.reset();
       navigate({
@@ -59,12 +62,7 @@ function RouteComponentContent(): React.JSX.Element {
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao criar a tabela',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -82,12 +80,15 @@ function RouteComponentContent(): React.JSX.Element {
 
       await _create.mutateAsync({
         name: value.name.trim(),
+        slug: value.slug.trim() || undefined,
         logo: value.logo,
         style: value.style,
         visibility: value.visibility,
       });
     },
   });
+
+  useApiErrorAutoClear(form);
 
   const isPending = _create.status === 'pending';
 

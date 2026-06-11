@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { badgeStyleFromColor } from './utils';
+
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -8,32 +10,6 @@ interface TableRowBadgeListProps<T> {
   renderLabel: (value: T, index: number) => React.ReactNode;
   getKey?: (value: T, index: number) => string | number;
   getColor?: (value: T, index: number) => string | null | undefined;
-}
-
-export function hexToRgb(
-  hex: string,
-): { r: number; g: number; b: number } | null {
-  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex.trim());
-  if (!m) return null;
-  return {
-    r: parseInt(m[1], 16),
-    g: parseInt(m[2], 16),
-    b: parseInt(m[3], 16),
-  };
-}
-
-export function badgeStyleFromColor(
-  color?: string | null,
-): React.CSSProperties | undefined {
-  if (!color) return undefined;
-  const rgb = hexToRgb(color);
-  if (!rgb) return undefined;
-
-  return {
-    color,
-    backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`,
-    borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0)`,
-  };
 }
 
 export function TableRowBadgeList<T>({

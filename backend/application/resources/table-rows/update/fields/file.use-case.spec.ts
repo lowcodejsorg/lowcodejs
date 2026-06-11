@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryKanbanCommentMentionService from '@application/services/kanban-comment-mention/in-memory-kanban-comment-mention.service';
+import InMemoryRowMemberNotificationService from '@application/services/row-member-notification/in-memory-row-member-notification.service';
 import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 import { makeFileField } from '@test/helpers/field-factory.helper';
@@ -29,8 +32,11 @@ describe('Table Row Update - FILE', () => {
     sut = new TableRowUpdateUseCase(
       tableRepository,
       rowRepository,
+      new UserInMemoryRepository(),
       rowPasswordService,
       scriptExecutionService,
+      new InMemoryKanbanCommentMentionService(),
+      new InMemoryRowMemberNotificationService(),
     );
   });
 

@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { FieldDetailSkeleton } from './-field-detail-skeleton';
 import { FieldUpdateSchema, UpdateFieldFormFields } from './-update-form';
@@ -24,14 +25,14 @@ import { useGroupFieldUpdate } from '@/hooks/tanstack-query/use-group-field-upda
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
 import { QueryClient as queryClient } from '@/lib/query-client';
-import { toastSuccess, toastWarning } from '@/lib/toast';
 
 function normalizeDefaultValue(
   type: string,
@@ -57,6 +58,11 @@ function normalizeDefaultValue(
     return defaultValue.length > 0 ? defaultValue[0] : null;
   }
   return defaultValue || null;
+}
+
+function normalizeTip(tip: string): string | null {
+  const normalized = tip.trim();
+  return normalized.length > 0 ? normalized : null;
 }
 
 export const Route = createLazyFileRoute(
@@ -167,6 +173,7 @@ function RouteComponent(): React.JSX.Element {
         {_read.status === 'success' && (
           <FieldUpdateContent
             data={_read.data}
+            table={table.data}
             slug={slug}
             mode={mode}
             setMode={setMode}
@@ -180,6 +187,7 @@ function RouteComponent(): React.JSX.Element {
 
 interface FieldUpdateContentProps {
   data: IField;
+  table?: ITable;
   slug: string;
   mode: 'show' | 'edit';
   setMode: React.Dispatch<React.SetStateAction<'show' | 'edit'>>;
@@ -189,6 +197,7 @@ interface FieldUpdateContentProps {
 
 function FieldUpdateContent({
   data,
+  table,
   slug,
   mode,
   setMode,
@@ -213,20 +222,19 @@ function FieldUpdateContent({
     const isTrashed = Boolean(response.trashed);
 
     if (!wasTrashed && isTrashed) {
-      toastWarning(
-        'Campo enviado para lixeira',
-        'O campo foi enviado para a lixeira. Para restaurá-lo, acesse o gerenciamento de campos.',
-      );
+      toast.warning('Campo enviado para lixeira', {
+        description:
+          'O campo foi enviado para a lixeira. Para restaurá-lo, acesse o gerenciamento de campos.',
+      });
     } else if (wasTrashed && !isTrashed) {
-      toastSuccess(
-        'Campo restaurado',
-        'O campo foi restaurado. Para enviá-lo à lixeira, acesse o gerenciamento de campos.',
-      );
+      toast.success('Campo restaurado', {
+        description:
+          'O campo foi restaurado. Para enviá-lo à lixeira, acesse o gerenciamento de campos.',
+      });
     } else {
-      toastSuccess(
-        'Campo atualizado',
-        'Os dados do campo foram atualizados com sucesso',
-      );
+      toast.success('Campo atualizado', {
+        description: 'Os dados do campo foram atualizados com sucesso',
+      });
     }
 
     form.reset();
@@ -236,12 +244,7 @@ function FieldUpdateContent({
   const handleUpdateError = (error: Error): void => {
     handleApiError(error, {
       context: 'Erro ao atualizar o campo',
-      onFieldErrors: (errors) => {
-        const setFieldError = createFieldErrorSetter(form);
-        for (const [field, msg] of Object.entries(errors)) {
-          setFieldError(field, msg);
-        }
-      },
+      onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
     });
   };
 
@@ -313,7 +316,9 @@ function FieldUpdateContent({
   const form = useAppForm({
     defaultValues: {
       name: data.name,
-      type: data.type as string,
+      slug: data.slug,
+      tip: data.tip ?? '',
+      type: data.type,
       format: data.format ?? '',
       defaultValue: Array.isArray(data.defaultValue)
         ? (data.defaultValue[0] ?? '')
@@ -323,12 +328,18 @@ function FieldUpdateContent({
         label: d.label,
         color: d.color,
       })),
+      allowCustomDropdownOptions: data.allowCustomDropdownOptions ?? false,
+      allowCreateRelationshipRecords:
+        data.allowCreateRelationshipRecords ?? false,
       relationship: {
         tableId: data.relationship?.table?._id ?? '',
         tableSlug: data.relationship?.table?.slug ?? '',
         fieldId: data.relationship?.field?._id ?? '',
         fieldSlug: data.relationship?.field?.slug ?? '',
         order: data.relationship?.order ?? '',
+        customLabel: data.relationship?.customLabel ?? false,
+        labelParts: data.relationship?.labelParts ?? [],
+        labelSeparator: data.relationship?.labelSeparator ?? ' - ',
       },
       category: data.category ?? [],
       multiple: data.multiple,
@@ -355,7 +366,9 @@ function FieldUpdateContent({
         trashedAt?: string | null;
       } = {
         name: value.name,
-        type: value.type as keyof typeof E_FIELD_TYPE,
+        slug: value.slug,
+        tip: normalizeTip(value.tip),
+        type: value.type,
         required: value.trashed ? false : value.required,
         multiple: value.multiple,
         showInFilter: value.showInFilter,
@@ -369,6 +382,14 @@ function FieldUpdateContent({
           : null,
         defaultValue: normalizeDefaultValue(value.type, value.defaultValue),
         dropdown: hasDropdown ? value.dropdown.map((item) => item) : [],
+        allowCustomDropdownOptions:
+          value.type === E_FIELD_TYPE.DROPDOWN
+            ? value.allowCustomDropdownOptions
+            : false,
+        allowCreateRelationshipRecords:
+          value.type === E_FIELD_TYPE.RELATIONSHIP
+            ? value.allowCreateRelationshipRecords
+            : false,
         relationship: hasRelationship
           ? {
               table: {
@@ -380,11 +401,14 @@ function FieldUpdateContent({
                 slug: value.relationship.fieldSlug,
               },
               order: (value.relationship.order || 'asc') as 'asc' | 'desc',
+              customLabel: value.relationship.customLabel,
+              labelParts: value.relationship.customLabel
+                ? value.relationship.labelParts
+                : [],
+              labelSeparator: value.relationship.labelSeparator || ' - ',
             }
           : null,
-        category: hasCategory
-          ? (value.category as unknown as IField['category'])
-          : [],
+        category: hasCategory ? value.category : [],
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,
       };
@@ -401,6 +425,8 @@ function FieldUpdateContent({
       }
     },
   });
+
+  useApiErrorAutoClear(form);
 
   const isPending = _update.status === 'pending' || _updateGroupField.isPending;
 
@@ -444,7 +470,10 @@ function FieldUpdateContent({
             isPending={isPending}
             mode={mode}
             tableSlug={slug}
+            table={table}
+            targetField={data}
             isLocked={data.locked ?? false}
+            isGroupField={Boolean(groupSlug)}
           />
         </form>
       )}

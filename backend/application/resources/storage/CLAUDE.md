@@ -1,6 +1,6 @@
 # Storage
 
-Upload e exclusao de arquivos. Usa AWS SDK (S3/MinIO) + fs nativo (local).
+Upload e exclusao de arquivos. Usa AWS SDK (S3) + fs nativo (local).
 
 ## Base Route
 

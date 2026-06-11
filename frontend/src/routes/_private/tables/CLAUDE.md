@@ -1,7 +1,8 @@
 # Tabelas - Funcionalidade Central da Plataforma Low-Code
 
 Gerenciamento de tabelas dinamicas. Rota base `/tables` com listagem paginada,
-filtros, importacao/exportacao e acoes de lixeira.
+filtros e acoes de lixeira. Importacao/exportacao de tabelas vive na tool
+`tables-import-export` (`/tools/core/tables-import-export`).
 
 ## Rota
 
@@ -17,8 +18,6 @@ filtros, importacao/exportacao e acoes de lixeira.
 | `index.lazy.tsx`             | Componente         | Layout com header, FilterSidebar, TableTables, ChatSidebar e Pagination                                        |
 | `-table-tables.tsx`          | Componente privado | DataTable com colunas: nome, slug, visibilidade, criado por, criado em, acoes                                  |
 | `-table-tables-skeleton.tsx` | Skeleton           | Skeleton da tabela de listagem                                                                                 |
-| `-export-dialog.tsx`         | Dialog             | Exportar tabela como JSON (estrutura, dados ou ambos) via POST `/tools/export-table`                           |
-| `-import-dialog.tsx`         | Dialog             | Importar tabela de arquivo JSON exportado via POST `/tools/import-table`                                       |
 
 ## Visibilidades (E_TABLE_VISIBILITY)
 
@@ -38,12 +37,13 @@ LIST, GALLERY, DOCUMENT, CARD, MOSAIC, KANBAN, FORUM, CALENDAR, GANTT
 
 ## Subdiretorios
 
-| Diretorio | Rota             | Descricao                                       |
-| --------- | ---------------- | ----------------------------------------------- |
-| `create/` | `/tables/create` | Formulario de criacao de tabela                 |
-| `clone/`  | `/tables/clone`  | Formulario de clonagem a partir de modelo       |
-| `new/`    | `/tables/new`    | Wizard com opcoes: criar do zero ou usar modelo |
-| `$slug/`  | `/tables/:slug`  | Visualizacao de tabela com multiplos modos      |
+| Diretorio        | Rota                    | Descricao                                                 |
+| ---------------- | ----------------------- | --------------------------------------------------------- |
+| `create/`        | `/tables/create`        | Formulario de criacao de tabela                           |
+| `clone/`         | `/tables/clone`         | Formulario de clonagem a partir de modelo                 |
+| `new/`           | `/tables/new`           | Wizard com 3 opcoes: criar do zero, usar modelo, importar |
+| `schema-import/` | `/tables/schema-import` | Editor YAML para criar varias tabelas de uma vez          |
+| `$slug/`         | `/tables/:slug`         | Visualizacao de tabela com multiplos modos                |
 
 ## Padroes
 

@@ -4,11 +4,14 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
+import { E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { validateRowPayload } from '@application/core/row-payload-validator.core';
+import { FieldSlug } from '@application/core/field-slug.core';
+import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
 
@@ -27,6 +30,7 @@ export default class TableRowCreateUseCase {
     private readonly userRepository: UserContractRepository,
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly scriptExecutionService: ScriptExecutionContractService,
+    private readonly rowMemberNotificationService: RowMemberNotificationContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -39,7 +43,11 @@ export default class TableRowCreateUseCase {
         );
       }
 
-      const errors = validateRowPayload(payload, table.fields, table.groups);
+      const errors = RowPayloadValidator.validate(
+        payload,
+        table.fields,
+        table.groups,
+      );
 
       if (errors) {
         return left(
@@ -51,11 +59,28 @@ export default class TableRowCreateUseCase {
         );
       }
 
+      if (table.rowSlugFieldId) {
+        const slugField = table.fields.find(
+          (f) => f._id === table.rowSlugFieldId,
+        );
+        if (slugField && payload[slugField.slug]) {
+          const existing = await this.rowRepository.listSlugs(table);
+          payload.sharedRowSlug = FieldSlug.suggestUnique(
+            String(payload[slugField.slug]),
+            existing,
+          );
+        }
+      }
+
       await this.rowPasswordService.hash(payload, table.fields);
 
       const createData: Record<string, any> = {
         ...payload,
         creator: payload.creator ?? null,
+        // Salvar via create publica o registro (fonte de verdade = status).
+        status: E_ROW_STATUS.PUBLISHED,
+        draftAt: null,
+        trashedAt: null,
       };
 
       const beforeSaveCode = table.methods?.beforeSave?.code;
@@ -115,6 +140,8 @@ export default class TableRowCreateUseCase {
             executionMoment: 'antes_salvar',
             userId: payload.creator ?? undefined,
             isNew: true,
+            viaSaveHook: false,
+            previous: null,
             tableInfo: {
               _id: table._id?.toString() ?? '',
               name: table.name,
@@ -124,7 +151,7 @@ export default class TableRowCreateUseCase {
         });
 
         if (result.logs.length > 0) {
-          console.log(
+          console.info(
             `[beforeSave][${table.slug}] logs:`,
             result.logs.join('\n'),
           );
@@ -148,6 +175,13 @@ export default class TableRowCreateUseCase {
       const row = await this.rowRepository.create({
         table,
         data: createData,
+      });
+
+      await this.rowMemberNotificationService.notifyNewMembers({
+        table,
+        previousRow: null,
+        nextRow: row,
+        actorUserId: typeof payload.creator === 'string' ? payload.creator : '',
       });
 
       this.rowPasswordService.mask(row, table.fields);

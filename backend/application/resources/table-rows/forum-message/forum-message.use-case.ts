@@ -12,11 +12,13 @@ import {
   type IRow,
   type ITable,
 } from '@application/core/entity.core';
+import { E_NOTIFICATION_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
-import { EmailContractService } from '@application/services/email/email-contract.service';
+import { EmailQueueContractService } from '@application/services/email-queue/email-queue-contract.service';
+import { NotificationContractService } from '@application/services/notification/notification-contract.service';
 import { Env } from '@start/env';
 
 import type {
@@ -57,8 +59,9 @@ export default class ForumMessageUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly userRepository: UserContractRepository,
-    private readonly emailService: EmailContractService,
+    private readonly emailQueue: EmailQueueContractService,
     private readonly rowRepository: RowContractRepository,
+    private readonly notificationService: NotificationContractService,
   ) {}
 
   async create(payload: ForumMessageCreatePayload): Promise<Response> {
@@ -140,9 +143,41 @@ export default class ForumMessageUseCase {
         tableSlug: table.slug,
       });
 
+      const messageId = randomUUID();
+      await this.dispatchForumMentionNotifications({
+        recipientIds: mentions,
+        actorUserId: payload.user,
+        tableName: table.name,
+        tableSlug: table.slug,
+        rowId: payload._id,
+        messageId,
+        channelName,
+        messageText: text,
+      });
+
       const nextMessages = this.getMessages(row, config.messagesSlug);
+
+      if (replyTo) {
+        const originalAuthorId = this.findMessageAuthorId(
+          nextMessages,
+          config,
+          replyTo,
+        );
+        if (originalAuthorId && originalAuthorId !== payload.user) {
+          await this.dispatchForumReplyNotification({
+            recipientId: originalAuthorId,
+            actorUserId: payload.user,
+            tableName: table.name,
+            tableSlug: table.slug,
+            rowId: payload._id,
+            messageId,
+            channelName,
+            messageText: text,
+          });
+        }
+      }
       const newMessage: Record<string, unknown> = {
-        [config.messageIdSlug]: randomUUID(),
+        [config.messageIdSlug]: messageId,
         [config.messageTextSlug]: text,
         [config.messageAuthorSlug]: [payload.user],
         [config.messageDateSlug]: new Date().toISOString(),
@@ -307,6 +342,24 @@ export default class ForumMessageUseCase {
         messageText: nextText,
         tableName: table.name,
         tableSlug: table.slug,
+      });
+
+      const previousMentionIds = this.normalizeIdList(
+        currentMessage?.[config.messageMentionsSlug],
+      );
+      const previousMentionSet = new Set(previousMentionIds);
+      const newMentionIds = nextMentions.filter(
+        (id) => id && id !== payload.user && !previousMentionSet.has(id),
+      );
+      await this.dispatchForumMentionNotifications({
+        recipientIds: newMentionIds,
+        actorUserId: payload.user,
+        tableName: table.name,
+        tableSlug: table.slug,
+        rowId: payload._id,
+        messageId: payload.messageId,
+        channelName: updateChannelName,
+        messageText: nextText,
       });
 
       let nextReplyTo: string | null;
@@ -812,22 +865,125 @@ export default class ForumMessageUseCase {
         data['Acessar'] = Env.APP_CLIENT_URL + '/tables/' + opts.tableSlug;
       }
 
-      const body = await this.emailService.buildTemplate({
+      await this.emailQueue.enqueue({
         template: 'notification',
         data: {
           title: 'Você foi mencionado em um canal',
           message: 'Você recebeu uma menção em uma mensagem do fórum.',
           data,
         },
-      });
-      await this.emailService.sendEmail({
         to: opts.emails,
         subject: 'Você foi mencionado em um canal',
-        body,
       });
     } catch {
-      // Keep forum message flow resilient even if email provider fails.
+      // Keep forum message flow resilient even if email queue fails.
     }
+  }
+
+  private findMessageAuthorId(
+    messages: Array<Record<string, unknown>>,
+    config: ForumConfig,
+    messageId: string,
+  ): string | null {
+    const found = messages.find(
+      (message) =>
+        this.normalizeId(message?.[config.messageIdSlug]) === messageId,
+    );
+    if (!found) return null;
+    return this.getMessageAuthorId(found[config.messageAuthorSlug]);
+  }
+
+  private async dispatchForumReplyNotification(opts: {
+    recipientId: string;
+    actorUserId: string;
+    tableName: string;
+    tableSlug: string;
+    rowId: string;
+    messageId: string;
+    channelName: string;
+    messageText: string;
+  }): Promise<void> {
+    if (!opts.recipientId || opts.recipientId === opts.actorUserId) return;
+
+    const snippet = opts.messageText
+      ? opts.messageText
+          .replace(/<[^>]*>/g, '')
+          .replace(/&nbsp;/g, ' ')
+          .trim()
+          .slice(0, 200)
+      : '';
+
+    const title = opts.channelName
+      ? `Nova resposta em #${opts.channelName}`
+      : 'Alguém respondeu sua mensagem';
+
+    await this.notificationService.notify({
+      userIds: [opts.recipientId],
+      type: E_NOTIFICATION_TYPE.FORUM_MENTION,
+      title,
+      body: snippet,
+      action: {
+        type: 'route',
+        href: `/tables/${opts.tableSlug}?channelId=${opts.rowId}&messageId=${opts.messageId}`,
+        label: 'Abrir resposta',
+      },
+      source: {
+        tableSlug: opts.tableSlug,
+        rowId: opts.rowId,
+        anchorId: opts.messageId,
+      },
+      actorUserId: opts.actorUserId,
+    });
+  }
+
+  private async dispatchForumMentionNotifications(opts: {
+    recipientIds: string[];
+    actorUserId: string;
+    tableName: string;
+    tableSlug: string;
+    rowId: string;
+    messageId: string;
+    channelName: string;
+    messageText: string;
+  }): Promise<void> {
+    const recipients = Array.from(
+      new Set(
+        opts.recipientIds.filter(
+          (id) => typeof id === 'string' && id && id !== opts.actorUserId,
+        ),
+      ),
+    );
+    if (recipients.length === 0) return;
+
+    const snippet = opts.messageText
+      ? opts.messageText
+          .replace(/<[^>]*>/g, '')
+          .replace(/&nbsp;/g, ' ')
+          .trim()
+          .slice(0, 200)
+      : '';
+
+    const title = opts.channelName
+      ? `Você foi mencionado em #${opts.channelName}`
+      : 'Você foi mencionado em uma mensagem';
+
+    await this.notificationService.notify({
+      userIds: recipients,
+      type: E_NOTIFICATION_TYPE.FORUM_MENTION,
+      title,
+      body: snippet,
+      action: {
+        type: 'route',
+        href: `/tables/${opts.tableSlug}?channelId=${opts.rowId}&messageId=${opts.messageId}`,
+        label: 'Abrir mensagem',
+      },
+      source: {
+        tableSlug: opts.tableSlug,
+        rowId: opts.rowId,
+        anchorId: opts.messageId,
+      },
+      actorUserId: opts.actorUserId,
+    });
   }
 
   private hasMessageContent(text: string, attachments: string[]): boolean {

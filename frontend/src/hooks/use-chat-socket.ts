@@ -26,6 +26,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   file?: FileData;
+  variant?: 'default' | 'system-warning';
 }
 
 export interface ToolActivity {
@@ -58,22 +59,54 @@ function nextId(): string {
   return `msg-${messageIdCounter}-${Date.now()}`;
 }
 
-export function useChatSocket(baseUrl: string): {
+export function useChatSocket(
+  baseUrl: string,
+  persistHistory = false,
+): {
   messages: Array<ChatMessage>;
   toolActivities: Array<ToolActivity>;
   status: ChatStatus;
   statusMessage: string;
   toolsCount: number;
+  llmProviderLabel: string | null;
+  llmModel: string | null;
   sendMessage: (text: string, file?: FileData) => void;
   clearMessages: () => void;
+  reconnect: () => void;
   isConnected: boolean;
 } {
+  const STORAGE_KEY = 'chat-messages';
+  const MAX_MESSAGES = 100;
+
+  function loadMessages(): Array<ChatMessage> {
+    if (!persistHistory) return [];
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      return JSON.parse(raw) as Array<ChatMessage>;
+    } catch {
+      return [];
+    }
+  }
+
+  function saveMessages(msgs: Array<ChatMessage>): void {
+    if (!persistHistory) return;
+    try {
+      const capped = msgs.slice(-MAX_MESSAGES);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(capped));
+    } catch {
+      /* ignore quota errors */
+    }
+  }
+
   const queryClient = useQueryClient();
-  const [messages, setMessages] = useState<Array<ChatMessage>>([]);
+  const [messages, setMessages] = useState<Array<ChatMessage>>(loadMessages);
   const [toolActivities, setToolActivities] = useState<Array<ToolActivity>>([]);
   const [status, setStatus] = useState<ChatStatus>('connecting');
   const [statusMessage, setStatusMessage] = useState('Conectando...');
   const [toolsCount, setToolsCount] = useState(0);
+  const [llmProviderLabel, setLlmProviderLabel] = useState<string | null>(null);
+  const [llmModel, setLlmModel] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
 
@@ -114,15 +147,22 @@ export function useChatSocket(baseUrl: string): {
 
     socketRef.current = socket;
 
+    // Track if server explicitly sent an error (config/auth issue)
+    let serverError = false;
+
     socket.on('connect', () => {
+      serverError = false;
       setIsConnected(true);
       setStatus('connecting');
     });
 
     socket.on('disconnect', () => {
       setIsConnected(false);
-      setStatus('connecting');
-      setStatusMessage('Reconectando...');
+      // Don't overwrite status/message when server already sent an error
+      if (!serverError) {
+        setStatus('connecting');
+        setStatusMessage('Reconectando...');
+      }
     });
 
     // --- Eventos do protocolo do agent ---
@@ -133,10 +173,33 @@ export function useChatSocket(baseUrl: string): {
 
     socket.on(
       E_CHAT_EVENT.READY,
-      (data: { message: string; tools_count: number }) => {
+      (data: {
+        message: string;
+        tools_count: number;
+        llm_provider?: string;
+        llm_provider_label?: string;
+        llm_model?: string;
+      }) => {
         setStatusMessage(data.message);
         setToolsCount(data.tools_count);
+        setLlmProviderLabel(
+          data.llm_provider_label ?? data.llm_provider ?? null,
+        );
+        setLlmModel(data.llm_model ?? null);
         setStatus('idle');
+
+        // Restore history so backend has conversation context
+        if (persistHistory) {
+          const stored = loadMessages();
+          if (stored.length > 0) {
+            socket.emit(E_CHAT_EVENT.HISTORY, {
+              messages: stored.map((m) => ({
+                role: m.role,
+                content: m.content,
+              })),
+            });
+          }
+        }
       },
     );
 
@@ -144,6 +207,20 @@ export function useChatSocket(baseUrl: string): {
       setStatus('thinking');
       setToolActivities([]);
     });
+
+    socket.on(
+      E_CHAT_EVENT.LLM_INFO,
+      (data: {
+        llm_provider?: string;
+        llm_provider_label?: string;
+        llm_model?: string;
+      }) => {
+        setLlmProviderLabel(
+          data.llm_provider_label ?? data.llm_provider ?? null,
+        );
+        setLlmModel(data.llm_model ?? null);
+      },
+    );
 
     socket.on(
       E_CHAT_EVENT.TOOL_CALL,
@@ -209,18 +286,57 @@ export function useChatSocket(baseUrl: string): {
       },
     );
 
-    socket.on(E_CHAT_EVENT.MESSAGE, (data: { content: string }) => {
-      setMessages((prev) => [
-        ...prev,
-        { id: nextId(), role: 'assistant', content: data.content },
-      ]);
-      setToolActivities([]);
-      setStatus('idle');
-    });
+    socket.on(
+      E_CHAT_EVENT.MESSAGE,
+      (data: { content: string; variant?: 'system-warning' }) => {
+        setMessages((prev) => {
+          const next = [
+            ...prev,
+            {
+              id: nextId(),
+              role: 'assistant' as const,
+              content: data.content,
+              variant: data.variant ?? 'default',
+            },
+          ];
+          saveMessages(next);
+          return next;
+        });
+        setToolActivities([]);
+        setStatus('idle');
+      },
+    );
 
     socket.on(E_CHAT_EVENT.ERROR, (data: { message: string }) => {
-      setStatus('error');
-      setStatusMessage(data.message);
+      const fatal =
+        data.message.includes('Autenticação') ||
+        data.message.includes('Token inválido') ||
+        data.message.includes('não está habilitado') ||
+        data.message.includes('não está configurado');
+
+      if (fatal) {
+        serverError = true;
+        socket.io.opts.reconnection = false;
+        setStatus('error');
+        setStatusMessage(data.message);
+        return;
+      }
+
+      setMessages((prev) => {
+        const next = [
+          ...prev,
+          {
+            id: nextId(),
+            role: 'assistant' as const,
+            content: data.message,
+            variant: 'system-warning' as const,
+          },
+        ];
+        saveMessages(next);
+        return next;
+      });
+      setToolActivities([]);
+      setStatus('idle');
     });
 
     return (): void => {
@@ -232,10 +348,14 @@ export function useChatSocket(baseUrl: string): {
   const sendMessage = useCallback((text: string, file?: FileData) => {
     if (!socketRef.current) return;
 
-    setMessages((prev) => [
-      ...prev,
-      { id: nextId(), role: 'user', content: text, file },
-    ]);
+    setMessages((prev) => {
+      const next = [
+        ...prev,
+        { id: nextId(), role: 'user' as const, content: text, file },
+      ];
+      saveMessages(next);
+      return next;
+    });
 
     socketRef.current.emit(E_CHAT_EVENT.MESSAGE, {
       message: text,
@@ -247,6 +367,22 @@ export function useChatSocket(baseUrl: string): {
     setMessages([]);
     setToolActivities([]);
     setStatus('idle');
+    if (persistHistory) {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
+  const reconnect = useCallback(() => {
+    const socket = socketRef.current;
+    if (!socket) return;
+    socket.io.opts.reconnection = true;
+    setStatus('connecting');
+    setStatusMessage('Conectando...');
+    socket.connect();
   }, []);
 
   return {
@@ -255,8 +391,11 @@ export function useChatSocket(baseUrl: string): {
     status,
     statusMessage,
     toolsCount,
+    llmProviderLabel,
+    llmModel,
     sendMessage,
     clearMessages,
+    reconnect,
     isConnected,
   };
 }

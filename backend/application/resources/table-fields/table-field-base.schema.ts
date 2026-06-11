@@ -8,6 +8,11 @@ const Category = z.object({
   children: z.array(z.unknown()).default([]), // aceita qualquer coisa
 });
 
+const RelationshipLabelPart = z.object({
+  path: z.string().trim().min(1),
+  label: z.string().trim().optional(),
+});
+
 const Relationship = z.object({
   table: z.object({
     _id: z.string().trim(),
@@ -18,6 +23,9 @@ const Relationship = z.object({
     slug: z.string().trim(),
   }),
   order: z.enum(['asc', 'desc']).default('asc'),
+  customLabel: z.boolean().optional(),
+  labelParts: z.array(RelationshipLabelPart).optional(),
+  labelSeparator: z.string().optional(),
 });
 
 const Dropdown = z.object({
@@ -44,6 +52,13 @@ export const FieldWidthInDetailSchema = z
   .min(0)
   .nullable()
   .default(50);
+export const FieldTipSchema = z
+  .string()
+  .trim()
+  .max(500)
+  .nullable()
+  .default(null)
+  .transform((value) => (value && value.length > 0 ? value : null));
 export const FieldLockedSchema = z.boolean().default(false);
 export const FieldDefaultValueSchema = z
   .union([z.string(), z.array(z.string())])
@@ -51,13 +66,23 @@ export const FieldDefaultValueSchema = z
   .default(null);
 export const FieldRelationshipSchema = Relationship.nullable().default(null);
 export const FieldDropdownSchema = z.array(Dropdown).default([]);
+export const FieldAllowCustomDropdownOptionsSchema = z.boolean().default(false);
+export const FieldAllowCreateRelationshipRecordsSchema = z
+  .boolean()
+  .default(false);
 export const FieldCategorySchema = z.array(Category).default([]);
 // For API input: can be just a slug string or the full object
 export const FieldGroupSchema = z
   .union([
     z.string().trim(),
     z.object({
-      _id: z.string().trim().optional(),
+      _id: z
+        .string()
+        .trim()
+        .nullish()
+        .transform((v) => v || undefined)
+        .optional(),
+
       slug: z.string().trim(),
     }),
   ])
@@ -110,6 +135,22 @@ export function normalizeDefaultValue(
   return null;
 }
 
+export function hasDuplicateDropdownLabels(
+  dropdown: Array<{ label: string }> | null | undefined,
+): boolean {
+  if (!dropdown || dropdown.length === 0) return false;
+
+  const labels = new Set<string>();
+
+  for (const item of dropdown) {
+    const label = item.label.trim().toLowerCase();
+    if (labels.has(label)) return true;
+    labels.add(label);
+  }
+
+  return false;
+}
+
 // Schema para body de criação/atualização de campos
 export const TableFieldBaseSchema = z.object({
   required: FieldRequiredSchema,
@@ -122,10 +163,13 @@ export const TableFieldBaseSchema = z.object({
   widthInForm: FieldWidthInFormSchema,
   widthInList: FieldWidthInListSchema,
   widthInDetail: FieldWidthInDetailSchema,
+  tip: FieldTipSchema,
   locked: FieldLockedSchema,
   defaultValue: FieldDefaultValueSchema,
   relationship: FieldRelationshipSchema,
   dropdown: FieldDropdownSchema,
+  allowCustomDropdownOptions: FieldAllowCustomDropdownOptionsSchema,
+  allowCreateRelationshipRecords: FieldAllowCreateRelationshipRecordsSchema,
   category: FieldCategorySchema,
   group: FieldGroupSchema,
 });

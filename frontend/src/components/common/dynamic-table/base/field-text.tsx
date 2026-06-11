@@ -12,6 +12,8 @@ interface FieldTextProps {
   disabled?: boolean;
   icon?: React.ReactNode;
   required?: boolean;
+  description?: string;
+  onChangeTransform?: (value: string) => string;
 }
 
 export function FieldText({
@@ -20,6 +22,8 @@ export function FieldText({
   disabled,
   icon,
   required,
+  description,
+  onChangeTransform,
 }: FieldTextProps): React.JSX.Element {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
@@ -50,13 +54,23 @@ export function FieldText({
           placeholder={placeholder}
           value={field.state.value}
           onBlur={field.handleBlur}
-          onChange={(e) => field.handleChange(e.target.value)}
+          onChange={(e) => {
+            const raw = e.target.value;
+            if (onChangeTransform) {
+              field.handleChange(onChangeTransform(raw));
+              return;
+            }
+            field.handleChange(raw);
+          }}
           aria-invalid={isInvalid}
           aria-required={required || undefined}
           aria-describedby={ariaDescribedBy}
         />
         {icon && <InputGroupAddon>{icon}</InputGroupAddon>}
       </InputGroup>
+      {description && (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      )}
       {isInvalid && (
         <FieldError
           id={errorId}

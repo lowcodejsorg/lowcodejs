@@ -11,14 +11,16 @@ import type { FieldCreatePayload } from '@application/repositories/field/field-c
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
-import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
+import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
+import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
 import TableFieldUpdateUseCase from '../update.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
 let rowInMemoryRepository: RowInMemoryRepository;
-let tableSchemaService: TableSchemaInMemoryService;
+let schemaBuilder: InMemorySchemaBuilder;
+let modelBuilder: InMemoryModelBuilder;
 let sut: TableFieldUpdateUseCase;
 
 const FIELD_DEFAULTS = {
@@ -30,6 +32,7 @@ const FIELD_DEFAULTS = {
   showInDetail: true,
   showInFilter: false,
   locked: false,
+  allowCreateRelationshipRecords: false,
   native: false,
   required: false,
   category: [],
@@ -99,6 +102,7 @@ function buildUpdatePayload(
     trashed: false,
     trashedAt: null,
     locked: false,
+    allowCreateRelationshipRecords: false,
     showInList: field.showInList,
     showInForm: field.showInForm,
     showInDetail: field.showInDetail,
@@ -116,13 +120,15 @@ describe('Table Field Update - RELATIONSHIP', () => {
     fieldInMemoryRepository = new FieldInMemoryRepository();
     rowInMemoryRepository = new RowInMemoryRepository();
 
-    tableSchemaService = new TableSchemaInMemoryService();
+    schemaBuilder = new InMemorySchemaBuilder();
+    modelBuilder = new InMemoryModelBuilder();
 
     sut = new TableFieldUpdateUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
       rowInMemoryRepository,
-      tableSchemaService,
+      schemaBuilder,
+      modelBuilder,
     );
   });
 

@@ -20,6 +20,17 @@ export const SettingUpdateSchema: FastifySchema = {
           maxLength: 'O nome do sistema deve ter no máximo 100 caracteres',
         },
       },
+      SYSTEM_DESCRIPTION: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 200,
+        description: 'Descrição curta do sistema usada em SEO/og:description',
+        errorMessage: {
+          type: 'A descrição do sistema deve ser um texto',
+          minLength: 'A descrição do sistema deve ter ao menos 1 caractere',
+          maxLength: 'A descrição do sistema deve ter no máximo 200 caracteres',
+        },
+      },
       LOCALE: {
         type: 'string',
         enum: ['pt-br', 'en-us'],
@@ -109,6 +120,53 @@ export const SettingUpdateSchema: FastifySchema = {
         nullable: true,
         description: 'Habilitar ou desabilitar o assistente IA',
       },
+      CHAT_HISTORY_ENABLED: {
+        type: 'boolean',
+        nullable: true,
+        description: 'Salvar histórico do chat entre atualizações de página',
+      },
+      MCP_SERVER_URL: {
+        type: 'string',
+        nullable: true,
+        description: 'URL do servidor MCP para o assistente IA',
+      },
+      MCP_SERVER_TOKEN: {
+        type: 'string',
+        nullable: true,
+        description: 'Token de autenticação do servidor MCP (Bearer)',
+      },
+      MCP_LOWCODE_API_URL: {
+        type: 'string',
+        nullable: true,
+        description:
+          'URL da API LowCodeJS enviada ao MCP no header X-Lowcode-Api-Url',
+      },
+      OPENAI_MODEL: {
+        type: 'string',
+        nullable: true,
+        description: 'Modelo OpenAI usado pelo assistente IA (legado)',
+      },
+      AI_LLM_PROVIDER: {
+        type: 'string',
+        enum: ['openai', 'gemini', 'claude', 'openrouter', 'ollama'],
+        nullable: true,
+        description: 'Provedor LLM do assistente IA',
+      },
+      LLM_API_KEY: {
+        type: 'string',
+        nullable: true,
+        description: 'Chave da API do provedor LLM',
+      },
+      LLM_MODEL: {
+        type: 'string',
+        nullable: true,
+        description: 'Modelo LLM do provedor selecionado',
+      },
+      LLM_BASE_URL: {
+        type: 'string',
+        nullable: true,
+        description: 'URL base do LLM (ex.: Ollama local)',
+      },
       LOGO_SMALL_URL: {
         type: 'string',
         nullable: true,
@@ -125,16 +183,40 @@ export const SettingUpdateSchema: FastifySchema = {
           type: 'A URL do logo grande deve ser um texto',
         },
       },
+      LOGO_SMALL_DARK_URL: {
+        type: 'string',
+        nullable: true,
+        description: 'URL do logo pequeno para o modo escuro',
+        errorMessage: {
+          type: 'A URL do logo pequeno (modo escuro) deve ser um texto',
+        },
+      },
+      LOGO_LARGE_DARK_URL: {
+        type: 'string',
+        nullable: true,
+        description: 'URL do logo grande para o modo escuro',
+        errorMessage: {
+          type: 'A URL do logo grande (modo escuro) deve ser um texto',
+        },
+      },
+      LOGIN_BACKGROUND_URL: {
+        type: 'string',
+        nullable: true,
+        description: 'URL da imagem de fundo da tela de login',
+        errorMessage: {
+          type: 'A URL da imagem de fundo do login deve ser um texto',
+        },
+      },
       STORAGE_DRIVER: {
         type: 'string',
         enum: ['local', 's3'],
         nullable: true,
-        description: 'Driver de armazenamento (local ou S3/MinIO)',
+        description: 'Driver de armazenamento (local ou S3)',
       },
       STORAGE_ENDPOINT: {
         type: 'string',
         nullable: true,
-        description: 'Endpoint do servidor S3/MinIO',
+        description: 'Endpoint do servidor S3',
       },
       STORAGE_REGION: {
         type: 'string',
@@ -170,6 +252,10 @@ export const SettingUpdateSchema: FastifySchema = {
         SYSTEM_NAME: {
           type: 'string',
           description: 'Nome do sistema exibido no título da plataforma',
+        },
+        SYSTEM_DESCRIPTION: {
+          type: 'string',
+          description: 'Descrição curta do sistema usada em SEO/og:description',
         },
         LOCALE: {
           type: 'string',
@@ -232,6 +318,62 @@ export const SettingUpdateSchema: FastifySchema = {
           type: 'boolean',
           description: 'Habilitar ou desabilitar o assistente IA',
         },
+        CHAT_HISTORY_ENABLED: {
+          type: 'boolean',
+          description: 'Salvar histórico do chat entre atualizações de página',
+        },
+        MCP_SERVER_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL do servidor MCP para o assistente IA',
+        },
+        MCP_SERVER_TOKEN: {
+          type: 'string',
+          nullable: true,
+          description: 'Token de autenticação do servidor MCP (Bearer)',
+        },
+        MCP_LOWCODE_API_URL: {
+          type: 'string',
+          nullable: true,
+          description:
+            'URL da API LowCodeJS enviada ao MCP no header X-Lowcode-Api-Url',
+        },
+        OPENAI_MODEL: {
+          type: 'string',
+          nullable: true,
+          description: 'Modelo OpenAI usado pelo assistente IA (legado)',
+        },
+        AI_LLM_PROVIDER: {
+          type: 'string',
+          enum: ['openai', 'gemini', 'claude', 'openrouter', 'ollama'],
+          nullable: true,
+          description: 'Provedor LLM do assistente IA',
+        },
+        LLM_API_KEY: {
+          type: 'string',
+          nullable: true,
+          description: 'Chave da API do provedor LLM',
+        },
+        LLM_MODEL: {
+          type: 'string',
+          nullable: true,
+          description: 'Modelo LLM do provedor selecionado',
+        },
+        LLM_BASE_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL base do LLM (ex.: Ollama local)',
+        },
+        SETUP_COMPLETED: {
+          type: 'boolean',
+          description: 'Indica se o setup inicial foi concluído',
+        },
+        SETUP_CURRENT_STEP: {
+          type: 'string',
+          nullable: true,
+          enum: ['admin', 'name', 'logos', 'upload', 'paging', 'email'],
+          description: 'Etapa atual do setup wizard (null se concluído)',
+        },
         LOGO_SMALL_URL: {
           type: 'string',
           nullable: true,
@@ -242,13 +384,28 @@ export const SettingUpdateSchema: FastifySchema = {
           nullable: true,
           description: 'URL do logo grande',
         },
+        LOGO_SMALL_DARK_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL do logo pequeno para o modo escuro',
+        },
+        LOGO_LARGE_DARK_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL do logo grande para o modo escuro',
+        },
+        LOGIN_BACKGROUND_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL da imagem de fundo da tela de login',
+        },
         STORAGE_DRIVER: {
           type: 'string',
-          description: 'Driver de armazenamento (local ou S3/MinIO)',
+          description: 'Driver de armazenamento (local ou S3)',
         },
         STORAGE_ENDPOINT: {
           type: 'string',
-          description: 'Endpoint do servidor S3/MinIO',
+          description: 'Endpoint do servidor S3',
         },
         STORAGE_REGION: {
           type: 'string',

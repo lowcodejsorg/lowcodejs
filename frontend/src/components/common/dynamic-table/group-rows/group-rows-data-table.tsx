@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { PencilIcon, PlusIcon, TrashIcon } from 'lucide-react';
+import { PencilIcon, PlusIcon, Settings2Icon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
 import { TableRowCategoryCell } from '../table-cells/table-row-category-cell';
@@ -11,12 +11,14 @@ import { TableRowTextLongCell } from '../table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '../table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '../table-cells/table-row-user-cell';
 
+import { GroupFieldManagementSheet } from './group-field-management-sheet';
 import { GroupRowDeleteDialog } from './group-row-delete-dialog';
 import { GroupRowFormDialog } from './group-row-form-dialog';
 
+import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { groupRowListOptions } from '@/hooks/tanstack-query/_query-options';
+import { groupRowListPaginatedOptions } from '@/hooks/tanstack-query/_query-options';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type {
   IField,
@@ -25,11 +27,19 @@ import type {
   ITable,
 } from '@/lib/interfaces';
 
+// Largura da coluna a partir de widthInList (px), seguindo a mesma semântica do
+// `size` da lista normal. Sem valor → coluna dimensionada pelo conteúdo.
+function columnWidth(field: IField): string | undefined {
+  if (!field.widthInList) return undefined;
+  return `${field.widthInList}px`;
+}
+
 interface GroupRowsDataTableProps {
   tableSlug: string;
   rowId: string;
   field: IField;
   table: ITable;
+  canManage?: boolean;
 }
 
 export function GroupRowsDataTable({
@@ -37,6 +47,7 @@ export function GroupRowsDataTable({
   rowId,
   field,
   table,
+  canManage = false,
 }: GroupRowsDataTableProps): React.JSX.Element {
   const groupSlug = field.group?.slug;
 
@@ -47,19 +58,59 @@ export function GroupRowsDataTable({
   const [formOpen, setFormOpen] = React.useState(false);
   const [editItem, setEditItem] = React.useState<IRow | null>(null);
   const [deleteItem, setDeleteItem] = React.useState<IRow | null>(null);
+  const [managementOpen, setManagementOpen] = React.useState(false);
+  const [page, setPage] = React.useState(1);
+  const [perPage, setPerPage] = React.useState(6);
 
-  const { data: items = [], status } = useQuery(
-    groupRowListOptions(tableSlug, rowId, groupSlug ?? ''),
+  const { data, status } = useQuery(
+    groupRowListPaginatedOptions(tableSlug, rowId, groupSlug ?? '', {
+      page,
+      perPage,
+    }),
   );
 
-  const groupFields = React.useMemo(
+  const items = data?.data ?? [];
+  const meta = data?.meta ?? {
+    total: 0,
+    page,
+    perPage,
+    lastPage: 1,
+    firstPage: 0,
+  };
+
+  const formFields = React.useMemo(
     () =>
-      group?.fields.filter(
+      (group?.fields ?? []).filter(
         (f): f is IField =>
-          !!f && f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
-      ) ?? [],
+          !!f &&
+          f.type !== E_FIELD_TYPE.FIELD_GROUP &&
+          f.type !== E_FIELD_TYPE.IDENTIFIER &&
+          f.type !== E_FIELD_TYPE.STATUS &&
+          f.type !== E_FIELD_TYPE.TRASHED_AT &&
+          !f.trashed,
+      ),
     [group],
   );
+
+  const displayableFields = React.useMemo(
+    () =>
+      (group?.fields ?? []).filter(
+        (f): f is IField =>
+          !!f &&
+          f.type !== E_FIELD_TYPE.FIELD_GROUP &&
+          f.type !== E_FIELD_TYPE.STATUS &&
+          f.type !== E_FIELD_TYPE.TRASHED_AT &&
+          !f.trashed,
+      ),
+    [group],
+  );
+
+  const columnFields = React.useMemo(() => {
+    const visible = displayableFields.filter((f) => f.showInList);
+    const hasAnyUserField = displayableFields.some((f) => !f.native);
+    if (hasAnyUserField) return visible;
+    return formFields;
+  }, [displayableFields, formFields]);
 
   if (!groupSlug || !group) {
     return <span className="text-muted-foreground text-sm">-</span>;
@@ -81,29 +132,43 @@ export function GroupRowsDataTable({
     >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium ml-2">{field.name}</span>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setEditItem(null);
-            setFormOpen(true);
-          }}
-          disabled={field.multiple === false && items.length >= 1}
-        >
-          <PlusIcon className="size-4" />
-          <span>Adicionar item</span>
-        </Button>
+        <div className="inline-flex items-center gap-2">
+          {canManage && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setManagementOpen(true)}
+            >
+              <Settings2Icon className="size-4" />
+              <span>Gerenciar campos</span>
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setEditItem(null);
+              setFormOpen(true);
+            }}
+            disabled={field.multiple === false && meta.total >= 1}
+          >
+            <PlusIcon className="size-4" />
+            <span>Adicionar item</span>
+          </Button>
+        </div>
       </div>
 
       <div className="w-full overflow-x-auto border rounded-md">
         <table className="w-full text-sm">
           <thead className="border-b bg-muted/50">
             <tr>
-              {groupFields.map((gf) => (
+              {columnFields.map((gf) => (
                 <th
                   key={gf._id}
                   className="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
+                  style={{ width: columnWidth(gf) }}
                 >
                   {gf.name}
                 </th>
@@ -117,7 +182,7 @@ export function GroupRowsDataTable({
             {items.length === 0 && (
               <tr>
                 <td
-                  colSpan={groupFields.length + 1}
+                  colSpan={columnFields.length + 1}
                   className="px-4 py-8 text-center text-sm text-muted-foreground"
                 >
                   Nenhum item encontrado
@@ -133,7 +198,7 @@ export function GroupRowsDataTable({
                   setFormOpen(true);
                 }}
               >
-                {groupFields.map((gf) => (
+                {columnFields.map((gf) => (
                   <td
                     key={gf._id}
                     className="px-4 py-2"
@@ -178,6 +243,19 @@ export function GroupRowsDataTable({
         </table>
       </div>
 
+      {field.multiple !== false && meta.total > 0 && (
+        <Pagination
+          meta={meta}
+          page={page}
+          perPage={perPage}
+          onPageChange={(nextPage) => setPage(nextPage)}
+          onPerPageChange={(nextPerPage) => {
+            setPerPage(nextPerPage);
+            setPage(1);
+          }}
+        />
+      )}
+
       <GroupRowFormDialog
         open={formOpen}
         onOpenChange={(open) => {
@@ -187,7 +265,7 @@ export function GroupRowsDataTable({
         tableSlug={tableSlug}
         rowId={rowId}
         groupSlug={groupSlug}
-        groupFields={groupFields}
+        groupFields={formFields}
         editItem={editItem}
       />
 
@@ -201,6 +279,15 @@ export function GroupRowsDataTable({
           rowId={rowId}
           groupSlug={groupSlug}
           itemId={deleteItem._id}
+        />
+      )}
+
+      {canManage && (
+        <GroupFieldManagementSheet
+          open={managementOpen}
+          onOpenChange={setManagementOpen}
+          table={table}
+          groupSlug={groupSlug}
         />
       )}
     </div>

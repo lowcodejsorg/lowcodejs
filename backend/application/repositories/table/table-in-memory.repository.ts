@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type {
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
@@ -80,6 +81,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
         participants: null,
         reminder: null,
       },
+      rowSlugFieldId: payload.rowSlugFieldId ?? null,
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -137,9 +139,16 @@ export default class TableInMemoryRepository implements TableContractRepository 
       filtered = filtered.filter((t) => t.type === payload.type);
     }
 
-    if (payload?.owner) {
-      filtered = filtered.filter(
-        (t) => (t.owner as IUser)?._id === payload.owner,
+    if (payload?.owner?.length) {
+      const ownerIds = payload.owner;
+      filtered = filtered.filter((t) =>
+        ownerIds.includes(String((t.owner as IUser)?._id)),
+      );
+    }
+
+    if (payload?.visibility?.length) {
+      filtered = filtered.filter((t) =>
+        payload.visibility!.includes(t.visibility),
       );
     }
 
@@ -204,6 +213,8 @@ export default class TableInMemoryRepository implements TableContractRepository 
     if (payload.type !== undefined) table.type = payload.type;
     if (payload._schema !== undefined) table._schema = payload._schema;
     if (payload.methods !== undefined) table.methods = payload.methods;
+    if (payload.rowSlugFieldId !== undefined)
+      table.rowSlugFieldId = payload.rowSlugFieldId;
     if (payload.trashed !== undefined) table.trashed = payload.trashed;
     if (payload.trashedAt !== undefined) table.trashedAt = payload.trashedAt;
 
@@ -257,7 +268,6 @@ export default class TableInMemoryRepository implements TableContractRepository 
     return filtered.length;
   }
 
-  // eslint-disable-next-line no-unused-vars
   async dropCollection(_slug: string): Promise<void> {
     // No-op em memória — os registros não existem separadamente
   }

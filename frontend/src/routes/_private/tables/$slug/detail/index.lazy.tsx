@@ -5,6 +5,7 @@ import {
 } from '@tanstack/react-router';
 import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
 import { UpdateTableFormSkeleton } from './-update-form-skeleton';
@@ -25,7 +26,6 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { API } from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/tables/$slug/detail/')({
   component: RouteComponent,
@@ -107,10 +107,9 @@ function TableUpdateContent({
   const router = useRouter();
   const _update = useUpdateTable({
     onSuccess(responseData) {
-      toastSuccess(
-        'Tabela atualizada',
-        'Os dados da tabela foram atualizados com sucesso',
-      );
+      toast.success('Tabela atualizada', {
+        description: 'Os dados da tabela foram atualizados com sucesso',
+      });
 
       sidebar.setOpen(false);
       router.navigate({
@@ -128,6 +127,7 @@ function TableUpdateContent({
   const form = useAppForm({
     defaultValues: {
       name: data.name,
+      slug: data.slug,
       description: data.description ?? '',
       style: data.style,
       visibility: data.visibility,
@@ -152,6 +152,7 @@ function TableUpdateContent({
         participants: data.layoutFields?.participants ?? '',
         reminder: data.layoutFields?.reminder ?? '',
       },
+      rowSlugFieldId: data.rowSlugFieldId ?? null,
     },
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: TableUpdateSchema, onSubmit: TableUpdateSchema },
@@ -169,7 +170,8 @@ function TableUpdateContent({
       }
 
       await _update.mutateAsync({
-        slug: data.slug,
+        routeSlug: data.slug,
+        slug: value.slug.trim() || undefined,
         name: value.name || data.name,
         description: value.description || null,
         logo: value.logo || data.logo?._id || null,
@@ -196,6 +198,7 @@ function TableUpdateContent({
           participants: value.layoutFields.participants || null,
           reminder: value.layoutFields.reminder || null,
         },
+        rowSlugFieldId: value.rowSlugFieldId || null,
       });
     },
   });

@@ -3,9 +3,11 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
+import { E_AI_LLM_PROVIDER } from '@application/core/entity.core';
 import type { ISetting } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { SettingContractRepository } from '@application/repositories/setting/setting-contract.repository';
+import { projectAiSettingsFields } from '@application/services/llm/ai-setting-fields';
 
 type Response = Either<HTTPException, ISetting | Record<string, unknown>>;
 
@@ -99,6 +101,7 @@ export default class SettingShowUseCase {
       if (!setting) {
         return right({
           SYSTEM_NAME: 'LowCodeJs',
+          SYSTEM_DESCRIPTION: 'Plataforma Oficial',
           LOCALE: 'pt-br',
           STORAGE_DRIVER: 'local',
           FILE_UPLOAD_MAX_SIZE: 10485760,
@@ -107,6 +110,9 @@ export default class SettingShowUseCase {
           PAGINATION_PER_PAGE: 20,
           LOGO_SMALL_URL: null,
           LOGO_LARGE_URL: null,
+          LOGO_SMALL_DARK_URL: null,
+          LOGO_LARGE_DARK_URL: null,
+          LOGIN_BACKGROUND_URL: null,
           EMAIL_PROVIDER_HOST: null,
           EMAIL_PROVIDER_PORT: null,
           EMAIL_PROVIDER_USER: null,
@@ -114,6 +120,17 @@ export default class SettingShowUseCase {
           EMAIL_PROVIDER_FROM: null,
           OPENAI_API_KEY: null,
           AI_ASSISTANT_ENABLED: false,
+          CHAT_HISTORY_ENABLED: false,
+          MCP_SERVER_URL: null,
+          MCP_SERVER_TOKEN: null,
+          MCP_LOWCODE_API_URL: null,
+          OPENAI_MODEL: 'gpt-4.1-nano',
+          AI_LLM_PROVIDER: E_AI_LLM_PROVIDER.OPENAI,
+          LLM_API_KEY: null,
+          LLM_MODEL: 'gpt-4.1-nano',
+          LLM_BASE_URL: null,
+          SETUP_COMPLETED: false,
+          SETUP_CURRENT_STEP: 'admin',
           MODEL_CLONE_TABLES: [
             getKanbanTemplateEntry(),
             getCardsTemplateEntry(),
@@ -127,6 +144,7 @@ export default class SettingShowUseCase {
 
       return right({
         ...setting,
+        ...projectAiSettingsFields(setting),
         FILE_UPLOAD_ACCEPTED: setting.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
         MODEL_CLONE_TABLES: [
           getKanbanTemplateEntry(),

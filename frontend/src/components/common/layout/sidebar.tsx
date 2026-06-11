@@ -1,6 +1,7 @@
 import { Link, useLocation, useRouter } from '@tanstack/react-router';
 import { ChevronRightIcon, LogOutIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import {
@@ -30,17 +31,86 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authentication-sign-out';
+import { useMenuReadList } from '@/hooks/tanstack-query/use-menu-read-list';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
+import { resolveInitialMenuRoute } from '@/lib/menu/initial-menu-route';
 import type { MenuItem, MenuRoute } from '@/lib/menu/menu-route';
-import { toastSuccess } from '@/lib/toast';
 
 interface SidebarProps {
   menu: MenuRoute;
 }
 
 const MAX_DEPTH = 4;
+const INDENT_PX = 16;
+
+function SidebarLabelTooltip({
+  children,
+  label,
+}: {
+  children: React.ReactElement;
+  label: string;
+}): React.JSX.Element {
+  return (
+    <Tooltip delayDuration={250}>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent
+        side="right"
+        align="center"
+        sideOffset={8}
+        className="max-w-80"
+      >
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function SidebarItemIcon({
+  item,
+  className = '',
+}: {
+  item: MenuItem;
+  className?: string;
+}): React.JSX.Element {
+  const wrapper =
+    `inline-flex size-4 shrink-0 items-center justify-center ${className}`.trim();
+
+  if (item.iconUrl) {
+    return (
+      <span
+        aria-hidden="true"
+        className={wrapper}
+      >
+        <img
+          src={item.iconUrl}
+          alt=""
+          className="size-full object-contain"
+        />
+      </span>
+    );
+  }
+
+  if (item.icon) {
+    const Icon = item.icon;
+    return (
+      <span
+        aria-hidden="true"
+        className={wrapper}
+      >
+        <Icon className="text-primary size-4" />
+      </span>
+    );
+  }
+
+  return (
+    <span
+      aria-hidden="true"
+      className={wrapper}
+    />
+  );
+}
 
 function SidebarMenuItemRecursive({
   item,
@@ -65,20 +135,16 @@ function SidebarMenuItemRecursive({
           <CollapsibleTrigger asChild>
             <SidebarMenuButton
               data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-              tooltip={item.title}
+              tooltip={{ children: item.title, hidden: false }}
+              style={{ paddingLeft: `${depth * INDENT_PX + 8}px` }}
             >
-              {item.icon && (
-                <item.icon
-                  className="text-primary"
-                  width={32}
-                />
-              )}
-              <span>{item.title}</span>
-              <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              <SidebarItemIcon item={item} />
+              <span className="flex-1 truncate">{item.title}</span>
+              <ChevronRightIcon className="ml-auto shrink-0 size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
             </SidebarMenuButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <SidebarMenuSub>
+            <SidebarMenuSub className="mx-0 border-l-0 px-0 py-0 translate-x-0">
               {item.items.map((subItem) => {
                 // If sub-item has its own children and we haven't hit max depth, recurse
                 if (
@@ -118,10 +184,9 @@ function SidebarMenuItemRecursive({
                       data-test-id={`sidebar-menu-${subItem.title.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={() => setOpenMobile(false)}
                     >
-                      {subItem.icon && (
-                        <subItem.icon className="text-primary size-4" />
-                      )}
-                      <span>{subItem.title}</span>
+                      <SidebarItemIcon item={subItem} />
+                      <span className="flex-1 truncate">{subItem.title}</span>
+                      <ChevronRightIcon className="ml-auto shrink-0 size-4 text-sidebar-foreground/40" />
                     </a>
                   );
                 } else {
@@ -131,22 +196,28 @@ function SidebarMenuItemRecursive({
                       data-test-id={`sidebar-menu-${subItem.title.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={() => setOpenMobile(false)}
                     >
-                      {subItem.icon && (
-                        <subItem.icon className="text-primary size-4" />
-                      )}
-                      <span>{subItem.title}</span>
+                      <SidebarItemIcon item={subItem} />
+                      <span className="flex-1 truncate">{subItem.title}</span>
+                      <ChevronRightIcon className="ml-auto shrink-0 size-4 text-sidebar-foreground/40" />
                     </Link>
                   );
                 }
 
                 return (
                   <SidebarMenuSubItem key={subItem.title}>
-                    <SidebarMenuSubButton
-                      asChild
-                      isActive={!isExternal && location.pathname === subUrl}
-                    >
-                      {subItemLink}
-                    </SidebarMenuSubButton>
+                    <SidebarLabelTooltip label={subItem.title}>
+                      <SidebarMenuSubButton
+                        asChild
+                        size="md"
+                        isActive={!isExternal && location.pathname === subUrl}
+                        className="h-8 translate-x-0 text-sm"
+                        style={{
+                          paddingLeft: `${(depth + 1) * INDENT_PX + 8}px`,
+                        }}
+                      >
+                        {subItemLink}
+                      </SidebarMenuSubButton>
+                    </SidebarLabelTooltip>
                   </SidebarMenuSubItem>
                 );
               })}
@@ -167,15 +238,11 @@ function SidebarMenuItemRecursive({
       <SidebarMenuItem>
         <SidebarMenuButton
           data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-          tooltip={item.title}
+          tooltip={{ children: item.title, hidden: false }}
+          style={{ paddingLeft: `${depth * INDENT_PX + 8}px` }}
         >
-          {item.icon && (
-            <item.icon
-              className="text-primary"
-              width={32}
-            />
-          )}
-          <span>{item.title}</span>
+          <SidebarItemIcon item={item} />
+          <span className="flex-1 truncate">{item.title}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
@@ -195,13 +262,11 @@ function SidebarMenuItemRecursive({
         data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
         onClick={() => setOpenMobile(false)}
       >
-        {item.icon && (
-          <item.icon
-            className="text-primary group-data-[active=true]:text-primary-foreground"
-            width={32}
-          />
-        )}
-        <span>{item.title}</span>
+        <SidebarItemIcon
+          item={item}
+          className="group-data-[active=true]:text-primary-foreground"
+        />
+        <span className="flex-1 truncate">{item.title}</span>
       </a>
     );
   } else {
@@ -211,15 +276,15 @@ function SidebarMenuItemRecursive({
         data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
         onClick={() => setOpenMobile(false)}
       >
-        {item.icon && (
-          <item.icon
-            className="text-primary group-data-[active=true]:text-primary-foreground"
-            width={32}
-          />
-        )}
-        <span>{item.title}</span>
+        <SidebarItemIcon
+          item={item}
+          className="group-data-[active=true]:text-primary-foreground"
+        />
+        <span className="flex-1 truncate">{item.title}</span>
         {item.badge && (
-          <Badge className="rounded-full px-1  text-xs">{item.badge}</Badge>
+          <Badge className="ml-auto rounded-full px-1 text-xs">
+            {item.badge}
+          </Badge>
         )}
       </Link>
     );
@@ -231,7 +296,8 @@ function SidebarMenuItemRecursive({
         asChild
         className="group data-[active=true]:bg-primary data-[active=true]:text-primary-foreground "
         isActive={!isExternal && location.pathname === to}
-        tooltip={item.title}
+        tooltip={{ children: item.title, hidden: false }}
+        style={{ paddingLeft: `${depth * INDENT_PX + 8}px` }}
       >
         {itemLink}
       </SidebarMenuButton>
@@ -249,9 +315,26 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
 
   const setting = useSettingRead();
 
+  const menus = useMenuReadList();
+
+  function goToInitialPage(): void {
+    const initialRoute = resolveInitialMenuRoute(menus.data ?? []);
+
+    setOpenMobile(false);
+
+    if (initialRoute?.type === 'external') {
+      window.location.assign(initialRoute.href);
+      return;
+    }
+
+    router.navigate({ to: initialRoute?.to ?? '/tables', replace: false });
+  }
+
   const signOut = useAuthenticationSignOut({
     onSuccess() {
-      toastSuccess('Logout realizado com sucesso!', 'Volte sempre!');
+      toast.success('Logout realizado com sucesso!', {
+        description: 'Volte sempre!',
+      });
 
       router.navigate({
         to: '/',
@@ -273,10 +356,28 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
       <SidebarHeader className="inline-flex items-center justify-center py-6">
         {setting.status === 'pending' && <Skeleton className="h-8 w-32" />}
         {setting.status === 'success' && (
-          <img
-            src={setting.data.LOGO_LARGE_URL ?? ''}
-            className="w-32"
-          />
+          <button
+            type="button"
+            onClick={goToInitialPage}
+            aria-label="Ir para página inicial"
+            data-test-id="sidebar-logo-link"
+            className="cursor-pointer border-0 bg-transparent p-0"
+          >
+            <img
+              src={setting.data.LOGO_LARGE_URL ?? ''}
+              alt="Logo"
+              className="w-32 dark:hidden"
+            />
+            <img
+              src={
+                setting.data.LOGO_LARGE_DARK_URL ??
+                setting.data.LOGO_LARGE_URL ??
+                ''
+              }
+              alt="Logo"
+              className="hidden w-32 dark:block"
+            />
+          </button>
         )}
       </SidebarHeader>
       <SidebarContent data-test-id="sidebar-nav">

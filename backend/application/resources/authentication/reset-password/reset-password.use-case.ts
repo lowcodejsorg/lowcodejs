@@ -4,6 +4,7 @@ import { Service } from 'fastify-decorators';
 import { left, right, type Either } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { EmailQueueContractService } from '@application/services/email-queue/email-queue-contract.service';
 import { PasswordContractService } from '@application/services/password/password-contract.service';
 
 import type { ResetPasswordPayload } from './reset-password.validator';
@@ -16,6 +17,7 @@ export default class UpdatePasswordRecoveryUseCase {
   constructor(
     private readonly userRepository: UserContractRepository,
     private readonly passwordService: PasswordContractService,
+    private readonly emailQueue: EmailQueueContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -32,6 +34,13 @@ export default class UpdatePasswordRecoveryUseCase {
       await this.userRepository.update({
         _id: user._id,
         password: hashedPassword,
+      });
+
+      await this.emailQueue.enqueue({
+        template: 'reset-password-confirmation',
+        data: { name: user.name },
+        to: [user.email],
+        subject: 'Senha redefinida com sucesso',
       });
 
       return right(null);

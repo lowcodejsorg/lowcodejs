@@ -29,7 +29,14 @@ export const MenuCreateSchema: FastifySchema = {
       },
       type: {
         type: 'string',
-        enum: ['TABLE', 'PAGE', 'FORM', 'EXTERNAL', 'SEPARATOR'],
+        enum: [
+          'TABLE',
+          'PAGE',
+          'FORM',
+          'EXTERNAL',
+          'SEPARATOR',
+          'EXTENSION_MODULE',
+        ],
         description: 'Tipo do item de menu',
         errorMessage: {
           type: 'O tipo deve ser um texto',
@@ -68,6 +75,33 @@ export const MenuCreateSchema: FastifySchema = {
           type: 'A URL deve ser um texto',
         },
       },
+      icon: {
+        type: 'string',
+        description:
+          'URL da imagem usada como ícone. Quando ausente, o frontend usa o ícone padrão por tipo',
+        nullable: true,
+        errorMessage: {
+          type: 'O ícone deve ser um texto',
+        },
+      },
+      isInitial: {
+        type: 'boolean',
+        description: 'Define se este menu será carregado ao acessar o sistema',
+        errorMessage: {
+          type: 'Página inicial inválida',
+        },
+      },
+      extension: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          pkg: { type: 'string' },
+          extensionId: { type: 'string' },
+        },
+        required: ['pkg', 'extensionId'],
+        description:
+          'Referência a um módulo de extensão (obrigatório quando type=EXTENSION_MODULE)',
+      },
     },
   },
   response: {
@@ -84,7 +118,16 @@ export const MenuCreateSchema: FastifySchema = {
         owner: { type: 'string', nullable: true, description: 'ID do criador' },
         html: { type: 'string', nullable: true, description: 'Conteúdo HTML' },
         url: { type: 'string', nullable: true, description: 'URL' },
+        icon: {
+          type: 'string',
+          nullable: true,
+          description: 'URL do ícone',
+        },
         order: { type: 'number', description: 'Ordem do menu' },
+        isInitial: {
+          type: 'boolean',
+          description: 'Se é o menu inicial do sistema',
+        },
         trashed: { type: 'boolean', description: 'Se está na lixeira' },
         trashedAt: {
           type: 'string',

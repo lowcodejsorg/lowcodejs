@@ -1,16 +1,14 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import type { ColumnDef } from '@tanstack/react-table';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
   ArchiveRestoreIcon,
   CopyIcon,
-  DownloadIcon,
   EllipsisIcon,
   EyeIcon,
   ImageOffIcon,
   LoaderCircleIcon,
+  PencilIcon,
   Share2Icon,
   Trash2Icon,
   TrashIcon,
@@ -18,8 +16,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
-
-import { TableExportDialog } from './-export-dialog';
+import { toast } from 'sonner';
 
 import { ActionDialog } from '@/components/common/action-dialog';
 import {
@@ -27,6 +24,7 @@ import {
   DataTableColumnToggle,
 } from '@/components/common/data-table';
 import { DataTableColumnHeader } from '@/components/common/data-table/data-table-column-header';
+import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -57,9 +55,10 @@ import {
 } from '@/hooks/use-table-permission';
 import { API } from '@/lib/api';
 import { E_TABLE_VISIBILITY } from '@/lib/constant';
+import { formatDate } from '@/lib/format-date';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
-import { toastInfo, toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 const ROUTE_ID = '/_private/tables/';
@@ -79,18 +78,43 @@ const VISIBILITY_CONFIG: Record<
 };
 
 function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
-  const tableDeleteButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const tableRemoveFromTrashButtonRef = React.useRef<HTMLButtonElement | null>(
     null,
   );
   const tableSendToTrashButtonRef = React.useRef<HTMLButtonElement | null>(
     null,
   );
-  const tableExportButtonRef = React.useRef<HTMLButtonElement | null>(null);
 
   const permission = useTablePermission(table);
   const router = useRouter();
   const sidebar = useSidebar();
+  const [hardDeleteOpen, setHardDeleteOpen] = React.useState(false);
+
+  const hardDelete = useMutation({
+    mutationFn: async function () {
+      await API.delete('/tables/'.concat(table.slug));
+    },
+    onSuccess() {
+      setHardDeleteOpen(false);
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.tables.detail(table.slug),
+      });
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.tables.lists(),
+      });
+      toast.success('Tabela excluída permanentemente!', {
+        description: 'A tabela foi excluída permanentemente',
+      });
+      router.navigate({
+        to: '/tables',
+        replace: true,
+        search: { page: 1, perPage: 50 },
+      });
+    },
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao excluir tabela' });
+    },
+  });
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
@@ -121,11 +145,28 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
           </DropdownMenuItem>
 
           <DropdownMenuItem
+            className={cn(
+              'inline-flex space-x-1 w-full cursor-pointer',
+              !permission.can('UPDATE_TABLE') && 'hidden',
+            )}
+            onClick={() => {
+              sidebar.setOpen(false);
+              router.navigate({
+                to: '/tables/$slug/detail',
+                params: { slug: table.slug },
+              });
+            }}
+          >
+            <PencilIcon className="size-4" />
+            <span>Editar</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
             className="inline-flex space-x-1 w-full cursor-pointer"
             onClick={() => {
               const url = `${window.location.origin}/tables/${table.slug}`;
               navigator.clipboard.writeText(url);
-              toastInfo('Link da tabela copiado');
+              toast.info('Link da tabela copiado');
             }}
           >
             <Share2Icon className="size-4" />
@@ -135,21 +176,10 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
           <DropdownMenuItem
             className={cn(
               'inline-flex space-x-1 w-full cursor-pointer',
-              table.trashed && 'hidden',
-            )}
-            onClick={() => tableExportButtonRef.current?.click()}
-          >
-            <DownloadIcon className="size-4" />
-            <span>Exportar</span>
-          </DropdownMenuItem>
-
-          <DropdownMenuItem
-            className={cn(
-              'inline-flex space-x-1 w-full cursor-pointer',
               !table.trashed && 'hidden',
               !permission.can('REMOVE_TABLE') && 'hidden',
             )}
-            onClick={() => tableDeleteButtonRef.current?.click()}
+            onClick={() => setHardDeleteOpen(true)}
           >
             <TrashIcon className="size-4" />
             <span>Excluir</span>
@@ -181,34 +211,15 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <TableExportDialog
-        ref={tableExportButtonRef}
-        slug={table.slug}
-        tableName={table.name}
-      />
-      <ActionDialog
-        ref={tableDeleteButtonRef}
-        config={{
-          mutationFn: async function () {
-            await API.delete('/tables/'.concat(table.slug));
-          },
-          invalidateKeys: [
-            queryKeys.tables.detail(table.slug),
-            queryKeys.tables.lists(),
-          ],
-          toast: {
-            title: 'Tabela excluída permanentemente!',
-            description: 'A tabela foi excluída permanentemente',
-          },
-          navigation: { to: '/tables', search: { page: 1, perPage: 50 } },
-          errorContext: 'Erro ao excluir tabela',
-          title: 'Excluir tabela permanentemente',
-          description:
-            'Essa ação é irreversível. A tabela será excluída permanentemente e não poderá ser recuperada.',
-          testId: 'delete-table-dialog',
-          cancelTestId: 'delete-table-cancel-btn',
-          confirmTestId: 'delete-table-confirm-btn',
-        }}
+      <PermanentDeleteConfirmDialog
+        open={hardDeleteOpen}
+        onOpenChange={setHardDeleteOpen}
+        title="Excluir tabela permanentemente"
+        description="Essa ação é irreversível. A tabela será excluída permanentemente e não poderá ser recuperada."
+        itemsCount={1}
+        isPending={hardDelete.isPending}
+        onConfirm={() => hardDelete.mutate()}
+        testId="delete-table-dialog"
       />
       <ActionDialog
         ref={tableRemoveFromTrashButtonRef}
@@ -311,7 +322,7 @@ const columns: Array<ColumnDef<ITable, any>> = [
               e.stopPropagation();
               const url = `${window.location.origin}/tables/${slug}`;
               navigator.clipboard.writeText(url);
-              toastInfo('Link da tabela copiado');
+              toast.info('Link da tabela copiado');
             }}
           >
             <CopyIcon className="size-3" />
@@ -372,11 +383,7 @@ const columns: Array<ColumnDef<ITable, any>> = [
       const date = getValue() as string | undefined;
       return (
         <span className="text-sm text-muted-foreground">
-          {date
-            ? format(new Date(date), "dd 'de' MMM 'de' yyyy 'as' HH:mm", {
-                locale: ptBR,
-              })
-            : 'N/A'}
+          {formatDate(date)}
         </span>
       );
     },
@@ -479,21 +486,21 @@ export function TableTables({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.tables.lists(),
       });
-      toastSuccess(
+      toast.success(
         result.modified === 1
           ? '1 tabela enviada para lixeira!'
           : `${result.modified} tabelas enviadas para lixeira!`,
-        'As tabelas foram movidas para a lixeira',
+        { description: 'As tabelas foram movidas para a lixeira' },
       );
     },
   });
 
   const bulkRestore = useMutation({
     mutationFn: async function (ids: Array<string>) {
-      const response = await API.patch<{ modified: number }>(
-        '/tables/bulk-restore',
-        { ids },
-      );
+      const response = await API.patch<{
+        modified: number;
+        skipped?: Array<string>;
+      }>('/tables/bulk-restore', { ids });
       return response.data;
     },
     onSuccess(result) {
@@ -502,12 +509,26 @@ export function TableTables({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.tables.lists(),
       });
-      toastSuccess(
-        result.modified === 1
-          ? '1 tabela restaurada!'
-          : `${result.modified} tabelas restauradas!`,
-        'As tabelas foram restauradas da lixeira',
-      );
+
+      if (result.modified > 0) {
+        toast.success(
+          result.modified === 1
+            ? '1 tabela restaurada!'
+            : `${result.modified} tabelas restauradas!`,
+          { description: 'As tabelas foram restauradas da lixeira' },
+        );
+      }
+
+      if (result.skipped && result.skipped.length > 0) {
+        toast.warning(
+          result.skipped.length === 1
+            ? '1 tabela não foi restaurada'
+            : `${result.skipped.length} tabelas não foram restauradas`,
+          {
+            description: `Já existe uma tabela ativa com o mesmo slug: ${result.skipped.join(', ')}. Renomeie ou exclua a tabela ativa antes de restaurar.`,
+          },
+        );
+      }
     },
   });
 
@@ -526,7 +547,7 @@ export function TableTables({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.tables.lists(),
       });
-      toastSuccess(
+      toast.success(
         result.deleted === 1
           ? '1 tabela excluída permanentemente!'
           : `${result.deleted} tabelas excluídas permanentemente!`,
@@ -614,7 +635,7 @@ export function TableTables({
 
       <Dialog
         modal
-        open={showConfirmDialog}
+        open={showConfirmDialog && dialogAction !== 'delete'}
         onOpenChange={setShowConfirmDialog}
       >
         <DialogContent className="py-4 px-6">
@@ -622,7 +643,6 @@ export function TableTables({
             <DialogTitle>
               {dialogAction === 'trash' && 'Enviar tabelas para a lixeira'}
               {dialogAction === 'restore' && 'Restaurar tabelas da lixeira'}
-              {dialogAction === 'delete' && 'Excluir tabelas permanentemente'}
             </DialogTitle>
             <DialogDescription>
               {dialogAction === 'trash' &&
@@ -633,10 +653,6 @@ export function TableTables({
                 (selectedCount === 1
                   ? 'Ao confirmar essa ação, 1 tabela será restaurada da lixeira.'
                   : `Ao confirmar essa ação, ${selectedCount} tabelas serão restauradas da lixeira.`)}
-              {dialogAction === 'delete' &&
-                (selectedCount === 1
-                  ? 'Essa ação é irreversível. 1 tabela será excluída permanentemente, incluindo seus campos e registros.'
-                  : `Essa ação é irreversível. ${selectedCount} tabelas serão excluídas permanentemente, incluindo seus campos e registros.`)}
             </DialogDescription>
           </DialogHeader>
           <section>
@@ -651,8 +667,7 @@ export function TableTables({
                   type="button"
                   disabled={
                     bulkTrash.status === 'pending' ||
-                    bulkRestore.status === 'pending' ||
-                    bulkDelete.status === 'pending'
+                    bulkRestore.status === 'pending'
                   }
                   onClick={() => {
                     if (dialogAction === 'trash') {
@@ -661,20 +676,15 @@ export function TableTables({
                     if (dialogAction === 'restore') {
                       bulkRestore.mutateAsync(selectedIds);
                     }
-                    if (dialogAction === 'delete') {
-                      bulkDelete.mutateAsync(selectedSlugs);
-                    }
                   }}
                 >
                   {(bulkTrash.status === 'pending' ||
-                    bulkRestore.status === 'pending' ||
-                    bulkDelete.status === 'pending') && (
+                    bulkRestore.status === 'pending') && (
                     <LoaderCircleIcon className="size-4 animate-spin" />
                   )}
                   {!(
                     bulkTrash.status === 'pending' ||
-                    bulkRestore.status === 'pending' ||
-                    bulkDelete.status === 'pending'
+                    bulkRestore.status === 'pending'
                   ) && <span>Confirmar</span>}
                 </Button>
               </DialogFooter>
@@ -682,6 +692,17 @@ export function TableTables({
           </section>
         </DialogContent>
       </Dialog>
+
+      <PermanentDeleteConfirmDialog
+        open={showConfirmDialog && dialogAction === 'delete'}
+        onOpenChange={setShowConfirmDialog}
+        title="Excluir tabelas permanentemente"
+        description="Essa ação é irreversível. As tabelas selecionadas serão excluídas permanentemente, incluindo seus campos e registros."
+        itemsCount={selectedCount}
+        isPending={bulkDelete.status === 'pending'}
+        onConfirm={() => bulkDelete.mutateAsync(selectedSlugs)}
+        testId="bulk-delete-tables-dialog"
+      />
     </div>
   );
 }

@@ -7,8 +7,8 @@ import type { IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { RowContextContractService } from '@application/services/row-context/row-context-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
+import { RowContextBuilderContractService } from '@application/services/table/row-context-builder-contract.service';
 
 import type { TableRowShowPayload } from './show.validator';
 
@@ -22,7 +22,7 @@ export default class TableRowShowUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
     private readonly rowPasswordService: RowPasswordContractService,
-    private readonly rowContextService: RowContextContractService,
+    private readonly rowContextBuilder: RowContextBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -38,7 +38,6 @@ export default class TableRowShowUseCase {
       const row = await this.rowRepository.findOne({
         table,
         query: { _id: payload._id },
-        includeReverseRelationships: true,
       });
 
       if (!row) {
@@ -50,7 +49,7 @@ export default class TableRowShowUseCase {
       this.rowPasswordService.mask(row, table.fields);
 
       return right(
-        this.rowContextService.transform(row, table.fields, payload.user),
+        this.rowContextBuilder.transform(row, table.fields, payload.user),
       );
     } catch (error) {
       console.error('[table-rows > show][error]:', error);

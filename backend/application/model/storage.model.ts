@@ -1,6 +1,13 @@
 import mongoose from 'mongoose';
 
-import type { IStorage as Core, Merge } from '@application/core/entity.core';
+import {
+  E_STORAGE_LOCATION,
+  E_STORAGE_MIGRATION_STATUS,
+  type IStorage as Core,
+  type Merge,
+  type TStorageLocation,
+} from '@application/core/entity.core';
+import { getStorageDriver } from '@config/storage.config';
 import { Env } from '@start/env';
 
 type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
@@ -12,6 +19,19 @@ export const Schema = new mongoose.Schema(
     mimetype: { type: String, required: true },
     size: { type: Number, required: true },
     originalName: { type: String, required: true },
+
+    location: {
+      type: String,
+      enum: Object.values(E_STORAGE_LOCATION),
+      required: true,
+      default: (): TStorageLocation => getStorageDriver(),
+    },
+    migration_status: {
+      type: String,
+      enum: Object.values(E_STORAGE_MIGRATION_STATUS),
+      required: true,
+      default: E_STORAGE_MIGRATION_STATUS.IDLE,
+    },
 
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },

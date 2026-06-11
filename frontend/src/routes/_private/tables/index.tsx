@@ -11,21 +11,34 @@ const defaultSearch = { page: 1, perPage: 50 };
 export const Route = createFileRoute('/_private/tables/')({
   beforeLoad: async ({ context, location }) => {
     const hasExplicitPerPage = location.searchStr.includes('perPage');
+    const hasExplicitSort =
+      location.searchStr.includes('order-name') ||
+      location.searchStr.includes('order-link') ||
+      location.searchStr.includes('order-created-at') ||
+      location.searchStr.includes('order-visibility') ||
+      location.searchStr.includes('order-owner');
+
+    let customPerPage: number | undefined;
     if (!hasExplicitPerPage) {
       const settings = context.queryClient.getQueryData<ISetting>(
         queryKeys.settings.all,
       );
       if (settings && settings.PAGINATION_PER_PAGE !== 50) {
-        const { redirect } = await import('@tanstack/react-router');
-        throw redirect({
-          to: '/tables',
-          search: (prev) => ({
-            ...prev,
-            perPage: settings.PAGINATION_PER_PAGE,
-          }),
-          replace: true,
-        });
+        customPerPage = settings.PAGINATION_PER_PAGE;
       }
+    }
+
+    if (customPerPage !== undefined || !hasExplicitSort) {
+      const { redirect } = await import('@tanstack/react-router');
+      throw redirect({
+        to: '/tables',
+        search: (prev) => ({
+          ...prev,
+          ...(customPerPage !== undefined ? { perPage: customPerPage } : {}),
+          ...(!hasExplicitSort ? { 'order-created-at': 'desc' } : {}),
+        }),
+        replace: true,
+      });
     }
   },
   pendingComponent: () => (

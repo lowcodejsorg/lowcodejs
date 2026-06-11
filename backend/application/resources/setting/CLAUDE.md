@@ -10,7 +10,8 @@ Configuracoes globais da plataforma (singleton). Leitura e atualizacao.
 
 | Operacao | Metodo | Rota | Auth |
 |----------|--------|------|------|
-| show | GET | `/setting` | Opcional |
+| show | GET | `/setting` | Obrigatorio |
+| public | GET | `/setting/public` | Nenhuma (publico, subset seguro p/ SSR) |
 | update | PUT | `/setting` | Obrigatorio |
 
 ## Repositorios Utilizados

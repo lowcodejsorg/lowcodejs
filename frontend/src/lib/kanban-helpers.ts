@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react';
 
-import { hexToRgb } from '@/components/common/dynamic-table/table-cells/table-row-badge-list';
+import { hexToRgb } from '@/components/common/dynamic-table/table-cells/utils';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow, IUser } from '@/lib/interfaces';
+import type { IField, IRow, IStorage, IUser } from '@/lib/interfaces';
 
 export const ORDER_FIELD_SLUG = 'ordem-kanban';
 export const ORDER_FIELD_NAME = 'Ordem Kanban';
@@ -64,6 +64,50 @@ export function normalizeIdList(value: unknown): Array<string> {
 
   if (value === null || value === undefined || value === '') return [];
   return [String(value)];
+}
+
+function isStorageValue(value: unknown): value is IStorage {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    '_id' in value &&
+    'url' in value &&
+    'originalName' in value
+  );
+}
+
+export function getAttachmentStorages(
+  row: IRow,
+  field?: IField,
+): Array<IStorage> {
+  if (!field) return [];
+  const raw = row[field.slug];
+  if (!Array.isArray(raw)) return [];
+
+  if (field.type === E_FIELD_TYPE.FILE) {
+    return raw.filter(isStorageValue);
+  }
+
+  if (field.type === E_FIELD_TYPE.FIELD_GROUP) {
+    const fileFieldSlug = (field.group?.fields ?? []).find(
+      (groupField: IField) => groupField.type === E_FIELD_TYPE.FILE,
+    )?.slug;
+    if (!fileFieldSlug) return [];
+
+    const storages: Array<IStorage> = [];
+    for (const groupRow of raw) {
+      if (typeof groupRow !== 'object' || groupRow === null) continue;
+      const files = groupRow[fileFieldSlug];
+      if (Array.isArray(files)) {
+        storages.push(...files.filter(isStorageValue));
+      } else if (isStorageValue(files)) {
+        storages.push(files);
+      }
+    }
+    return storages;
+  }
+
+  return [];
 }
 
 export function getUserInitials(user: Partial<IUser> | string): string {

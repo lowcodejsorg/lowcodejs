@@ -108,6 +108,68 @@ describe('Menu Reorder Use Case', () => {
     expect(result.value.cause).toBe('INVALID_PARAMETERS');
   });
 
+  it('deve mover menu para outro pai quando parent for informado', async () => {
+    const parent1 = await menuInMemoryRepository.create({
+      name: 'Parent 1',
+      slug: 'parent-1',
+      type: 'SEPARATOR',
+    });
+
+    const parent2 = await menuInMemoryRepository.create({
+      name: 'Parent 2',
+      slug: 'parent-2',
+      type: 'SEPARATOR',
+    });
+
+    const child = await menuInMemoryRepository.create({
+      name: 'Child',
+      slug: 'child',
+      type: 'PAGE',
+      parent: parent1._id,
+      order: 0,
+    });
+
+    const result = await sut.execute({
+      items: [{ _id: child._id, parent: parent2._id, order: 1 }],
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+
+    const updatedChild = await menuInMemoryRepository.findById(child._id);
+    expect(updatedChild).not.toBeNull();
+    if (!updatedChild) throw new Error('Expected child');
+    expect(updatedChild.parent).toBe(parent2._id);
+    expect(updatedChild.order).toBe(1);
+  });
+
+  it('deve retornar erro INVALID_PARAMETERS quando parent gera ciclo', async () => {
+    const parent = await menuInMemoryRepository.create({
+      name: 'Parent',
+      slug: 'parent',
+      type: 'SEPARATOR',
+    });
+
+    const child = await menuInMemoryRepository.create({
+      name: 'Child',
+      slug: 'child',
+      type: 'SEPARATOR',
+      parent: parent._id,
+    });
+
+    const result = await sut.execute({
+      items: [
+        { _id: parent._id, parent: child._id, order: 0 },
+        { _id: child._id, parent: parent._id, order: 0 },
+      ],
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(400);
+    expect(result.value.cause).toBe('INVALID_PARAMETERS');
+  });
+
   it('deve retornar erro REORDER_MENU_ERROR quando houver falha', async () => {
     menuInMemoryRepository.simulateError(
       'findById',

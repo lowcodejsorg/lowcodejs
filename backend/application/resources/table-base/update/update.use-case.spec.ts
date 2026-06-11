@@ -8,14 +8,14 @@ import {
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
-import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
+import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
 
 import TableUpdateUseCase from './update.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let userInMemoryRepository: UserInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
-let tableSchemaService: TableSchemaInMemoryService;
+let modelBuilder: InMemoryModelBuilder;
 let sut: TableUpdateUseCase;
 
 describe('Table Update Use Case', () => {
@@ -23,13 +23,13 @@ describe('Table Update Use Case', () => {
     tableInMemoryRepository = new TableInMemoryRepository();
     userInMemoryRepository = new UserInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
-    tableSchemaService = new TableSchemaInMemoryService();
+    modelBuilder = new InMemoryModelBuilder();
 
     sut = new TableUpdateUseCase(
       tableInMemoryRepository,
       userInMemoryRepository,
       fieldInMemoryRepository,
-      tableSchemaService,
+      modelBuilder,
     );
   });
 
@@ -51,7 +51,8 @@ describe('Table Update Use Case', () => {
     });
 
     const result = await sut.execute({
-      slug: 'clientes',
+      routeSlug: 'clientes',
+      slug: 'clientes-atualizado',
       name: 'Clientes Atualizado',
       description: 'Tabela de clientes',
       logo: 'logo-url',
@@ -86,7 +87,8 @@ describe('Table Update Use Case', () => {
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
     const result = await sut.execute({
-      slug: 'non-existent',
+      routeSlug: 'non-existent',
+      slug: 'test',
       name: 'Test',
       description: 'Tabela de clientes',
       logo: 'logo-url',
@@ -138,7 +140,8 @@ describe('Table Update Use Case', () => {
     });
 
     const result = await sut.execute({
-      slug: 'clientes',
+      routeSlug: 'clientes',
+      slug: 'test',
       name: 'Test',
       description: 'Tabela de clientes',
       logo: 'logo-url',
@@ -181,7 +184,8 @@ describe('Table Update Use Case', () => {
     );
 
     const result = await sut.execute({
-      slug: 'some-slug',
+      routeSlug: 'some-slug',
+      slug: 'test',
       name: 'Test',
       description: 'Tabela de clientes',
       logo: 'logo-url',

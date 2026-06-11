@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { getLlmProviderLabel } from '@/lib/ai-llm-providers';
 import type { ISetting } from '@/lib/interfaces';
 
 interface SettingViewProps {
@@ -63,11 +64,19 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Nome do sistema</p>
-            <p className="text-sm text-muted-foreground">
-              {data.SYSTEM_NAME || 'LowCodeJs'}
-            </p>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Nome do sistema</p>
+              <p className="text-sm text-muted-foreground">
+                {data.SYSTEM_NAME || 'LowCodeJs'}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Descrição do sistema</p>
+              <p className="text-sm text-muted-foreground">
+                {data.SYSTEM_DESCRIPTION || 'Plataforma Oficial'}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -108,7 +117,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
           <div className="space-y-1">
             <p className="text-sm font-medium">Driver</p>
             {data.STORAGE_DRIVER === 's3' ? (
-              <Badge variant="default">S3 / MinIO</Badge>
+              <Badge variant="default">S3</Badge>
             ) : (
               <Badge variant="secondary">Local</Badge>
             )}
@@ -295,9 +304,56 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
             )}
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium">Chave da API OpenAI</p>
+            <p className="text-sm font-medium">Histórico do Chat</p>
+            {data.CHAT_HISTORY_ENABLED ? (
+              <Badge variant="default">Habilitado</Badge>
+            ) : (
+              <Badge variant="secondary">Desabilitado</Badge>
+            )}
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Provedor de IA</p>
+            <p className="text-sm text-muted-foreground">
+              {getLlmProviderLabel(data.AI_LLM_PROVIDER || 'openai')}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Chave da API</p>
             <p className="text-sm text-muted-foreground font-mono">
-              {data.OPENAI_API_KEY ? '••••••••' : '-'}
+              {data.LLM_API_KEY || data.OPENAI_API_KEY ? '••••••••' : '-'}
+            </p>
+          </div>
+          {data.AI_LLM_PROVIDER === 'ollama' && (
+            <div className="space-y-1">
+              <p className="text-sm font-medium">URL base (Ollama)</p>
+              <p className="text-sm text-muted-foreground font-mono">
+                {data.LLM_BASE_URL || '-'}
+              </p>
+            </div>
+          )}
+          <div className="space-y-1">
+            <p className="text-sm font-medium">URL do Servidor MCP</p>
+            <p className="text-sm text-muted-foreground font-mono">
+              {data.MCP_SERVER_URL || '-'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">URL da API (header MCP)</p>
+            <p className="text-sm text-muted-foreground font-mono">
+              {data.MCP_LOWCODE_API_URL ||
+                'Padrão do servidor (APP_SERVER_URL)'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Token MCP</p>
+            <p className="text-sm text-muted-foreground font-mono">
+              {data.MCP_SERVER_TOKEN ? '••••••••' : '-'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Modelo</p>
+            <p className="text-sm text-muted-foreground font-mono">
+              {data.LLM_MODEL || data.OPENAI_MODEL || 'gpt-4.1-nano'}
             </p>
           </div>
         </CardContent>
