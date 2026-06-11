@@ -6,17 +6,12 @@
  * leitura). Logo, registros criados ANTES de a tabela ter `rowSlugFieldId`
  * configurado ficam com `sharedRowSlug` nulo e a URL amigável retorna 404.
  *
- * Esta migration percorre TODAS as tabelas. A URL amigável só vale para estilos
- * com página de detalhe de 1 registro (LIST/GALLERY/CARD/MOSAIC — ver
- * ROW_SLUG_SUPPORTED_STYLES). Para esses, gera o `sharedRowSlug` dos registros que
- * ainda não têm, a partir do valor do campo de slug — usando o MESMO algoritmo do
- * create/update de row (`FieldSlug`). Para tabelas SEM `rowSlugFieldId` (tabelas
+ * Esta migration percorre TODAS as tabelas e gera o `sharedRowSlug` dos registros
+ * que ainda não têm, a partir do valor do campo de slug — usando o MESMO algoritmo
+ * do create/update de row (`FieldSlug`). Para tabelas SEM `rowSlugFieldId` (tabelas
  * antigas), faz fallback: pega o primeiro campo TEXT_SHORT ativo, PERSISTE-o em
- * `table.rowSlugFieldId` e usa-o como fonte do backfill.
- *
- * Para estilos NÃO suportados (FORUM/KANBAN/CALENDAR/GANTT/DOCUMENT) faz auto-heal:
- * remove `rowSlugFieldId` da tabela e limpa `sharedRowSlug` das rows — desfazendo o
- * que versões anteriores do backfill atribuíram indevidamente.
+ * `table.rowSlugFieldId` (para registros novos também ganharem slug no runtime) e
+ * usa-o como fonte do backfill.
  *
  * Idempotente: só preenche o que falta (nunca sobrescreve slug existente nem
  * rowSlugFieldId já setado, pula registros na lixeira e registros sem valor no
@@ -41,10 +36,7 @@
 import { config } from 'dotenv';
 import mongoose from 'mongoose';
 
-import {
-  E_FIELD_TYPE,
-  ROW_SLUG_SUPPORTED_STYLES,
-} from '../../application/core/entity.core';
+import { E_FIELD_TYPE } from '../../application/core/entity.core';
 import { FieldSlug } from '../../application/core/field-slug.core';
 
 config({ path: '.env' });
@@ -63,39 +55,7 @@ type MigrationStats = {
   tablesProcessed: number;
   rowsUpdated: number;
   fieldsAssigned: number;
-  tablesHealed: number;
-  rowsHealed: number;
 };
-
-function isSupportedStyle(style: unknown): boolean {
-  return ROW_SLUG_SUPPORTED_STYLES.some((value) => value === style);
-}
-
-// Auto-heal de tabelas de estilo NÃO suportado (FORUM/KANBAN/etc.): remove o
-// rowSlugFieldId atribuído errado e limpa o sharedRowSlug das rows — conserta o
-// que versões anteriores do backfill geraram indevidamente. Idempotente.
-async function healUnsupportedTable(
-  tablesCol: mongoose.mongo.Collection,
-  dataDb: mongoose.mongo.Db,
-  table: mongoose.mongo.Document,
-  slug: string,
-): Promise<{ rowsHealed: number }> {
-  if (table.rowSlugFieldId) {
-    await tablesCol.updateOne(
-      { _id: table._id },
-      { $unset: { rowSlugFieldId: '' } },
-    );
-  }
-
-  const result = await dataDb
-    .collection(slug)
-    .updateMany(
-      { sharedRowSlug: { $exists: true } },
-      { $unset: { sharedRowSlug: '' } },
-    );
-
-  return { rowsHealed: result.modifiedCount };
-}
 
 // Resolve a chave da coluna usada como fonte do slug numa tabela. Quando a tabela
 // já tem rowSlugFieldId configurado, usa esse campo. Senão (tabela antiga), pega o
@@ -251,8 +211,6 @@ async function migrate(): Promise<void> {
       tablesProcessed: 0,
       rowsUpdated: 0,
       fieldsAssigned: 0,
-      tablesHealed: 0,
-      rowsHealed: 0,
     };
 
     for (const table of tables) {
@@ -261,25 +219,6 @@ async function migrate(): Promise<void> {
 
       const exists = await dataDb.listCollections({ name: slug }).hasNext();
       if (!exists) continue;
-
-      // Estilos sem página de detalhe de 1 registro (FORUM/KANBAN/etc.) não têm
-      // URL amigável: limpa o que versões anteriores atribuíram errado.
-      if (!isSupportedStyle(table.style)) {
-        const { rowsHealed } = await healUnsupportedTable(
-          tablesCol,
-          dataDb,
-          table,
-          slug,
-        );
-        if (table.rowSlugFieldId || rowsHealed > 0) {
-          stats.tablesHealed++;
-          stats.rowsHealed += rowsHealed;
-          console.info(
-            `  [heal] ${slug} — rowSlugFieldId/sharedRowSlug removidos em ${rowsHealed} row(s) (style não suportado)`,
-          );
-        }
-        continue;
-      }
 
       // Resolve o campo de slug -> chave da coluna (field.slug) na row, com
       // fallback para o primeiro TEXT_SHORT ativo em tabelas sem rowSlugFieldId.
@@ -309,7 +248,7 @@ async function migrate(): Promise<void> {
 
     console.info('---');
     console.info(
-      `Done. Tables: ${stats.tablesProcessed}, rows backfilled: ${stats.rowsUpdated}, fields assigned: ${stats.fieldsAssigned}, tables healed: ${stats.tablesHealed}, rows healed: ${stats.rowsHealed}`,
+      `Done. Tables: ${stats.tablesProcessed}, rows backfilled: ${stats.rowsUpdated}, fields assigned: ${stats.fieldsAssigned}`,
     );
 
     const now = new Date();

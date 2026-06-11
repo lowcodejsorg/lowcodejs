@@ -14,9 +14,17 @@ export const Route = createFileRoute('/_private/tables/$slug/$rowSlug/')({
     // Backend resolve o slug amigavel -> registro; aqui o frontend decide a
     // navegacao (abre a pagina do registro por _id). Mantem a rota /row?_id=
     // intacta e permite frontends customizados trocarem este comportamento.
-    const row = await context.queryClient.ensureQueryData(
-      rowBySlugOptions(params.slug, params.rowSlug),
-    );
+    let row;
+    try {
+      row = await context.queryClient.ensureQueryData(
+        rowBySlugOptions(params.slug, params.rowSlug),
+      );
+    } catch (error) {
+      // Slug nao resolve (tabela restrita / nao autenticado no SSR / nao achou):
+      // 404 gracioso em vez de estourar 500 no SSR. Log diagnostico do motivo.
+      console.error('[rowSlug][error]', params.slug, params.rowSlug, error);
+      throw notFound();
+    }
 
     throw redirect({
       to: '/tables/$slug/row',

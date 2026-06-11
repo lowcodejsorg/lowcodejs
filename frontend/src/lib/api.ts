@@ -32,6 +32,8 @@ API.interceptors.request.use(async (config) => {
     try {
       const cookies = await getServerCookies();
       if (cookies) config.headers.set('Cookie', cookies);
+      // Log diagnostico: confirma se a request SSR leva cookie de auth.
+      console.info('[api][ssr]', config.url, 'cookie?', Boolean(cookies));
     } catch {
       /* not in request context */
     }

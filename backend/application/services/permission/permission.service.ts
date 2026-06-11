@@ -104,6 +104,19 @@ export default class PermissionService implements PermissionContractService {
     const { table, userId, userRole, user, requiredPermission } = input;
 
     if (!userId || !userRole) {
+      // Log diagnostico: ajuda a entender 401 em URL amigavel via SSR (request
+      // sem cookie -> visitante -> tabela nao publica nega aqui).
+      console.warn(
+        '[permission][401]',
+        'table:',
+        table?.slug,
+        'visibility:',
+        table?.visibility,
+        'requiredPermission:',
+        requiredPermission,
+        'hasUser:',
+        Boolean(userId),
+      );
       throw HTTPException.Unauthorized(
         'Usuário não autenticado',
         'USER_NOT_AUTHENTICATED',
