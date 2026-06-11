@@ -10,9 +10,7 @@ import {
   type ITable as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
-import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
@@ -28,7 +26,6 @@ export default class TableUpdateUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly userRepository: UserContractRepository,
     private readonly fieldRepository: FieldContractRepository,
-    private readonly rowRepository: RowContractRepository,
     private readonly modelBuilder: ModelBuilderContractService,
   ) {}
 
@@ -139,15 +136,6 @@ export default class TableUpdateUseCase {
 
       await this.modelBuilder.build(updated);
 
-      // Backfill (links amigaveis): quando a tabela tem campo de slug do
-      // registro configurado, gera sharedRowSlug para os registros existentes
-      // que ainda nao tem. Idempotente — nunca sobrescreve slug existente, nao
-      // quebra registros novos. Garante compatibilidade retroativa: re-salvar a
-      // configuracao da tabela popula os registros antigos.
-      if (payload.rowSlugFieldId !== undefined && rowSlugFieldId) {
-        await this.backfillRowSlugs(updated);
-      }
-
       // Reconstruir tabelas que têm RELATIONSHIP apontando para esta
       if (slugChanged) {
         const pointingFields =
@@ -173,39 +161,6 @@ export default class TableUpdateUseCase {
           'UPDATE_TABLE_ERROR',
         ),
       );
-    }
-  }
-
-  // Gera sharedRowSlug para registros existentes que ainda nao tem, a partir do
-  // valor do campo configurado como slug do registro. Idempotente: pula
-  // registros na lixeira, registros que ja tem slug e registros sem valor no
-  // campo. Comparacao de _id via String() para evitar falso-negativo com ObjectId.
-  private async backfillRowSlugs(table: Entity): Promise<void> {
-    if (!table.rowSlugFieldId) return;
-
-    const slugField = table.fields?.find(
-      (f) => String(f._id) === String(table.rowSlugFieldId),
-    );
-    if (!slugField) return;
-
-    const rows = await this.rowRepository.findAllRaw(table);
-    const used = new Set<string>(await this.rowRepository.listSlugs(table));
-
-    for (const row of rows) {
-      if (row.trashed) continue;
-      if (row.sharedRowSlug) continue;
-
-      const value = row[slugField.slug];
-      if (value === null || value === undefined || value === '') continue;
-
-      const slug = FieldSlug.suggestUnique(String(value), Array.from(used));
-      used.add(slug);
-
-      await this.rowRepository.update({
-        table,
-        _id: String(row._id),
-        data: { sharedRowSlug: slug },
-      });
     }
   }
 }

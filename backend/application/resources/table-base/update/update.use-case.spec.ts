@@ -4,11 +4,8 @@ import {
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
-  type IField,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
-import type { RowTableContext } from '@application/repositories/row/row-contract.repository';
-import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
@@ -18,7 +15,6 @@ import TableUpdateUseCase from './update.use-case';
 let tableInMemoryRepository: TableInMemoryRepository;
 let userInMemoryRepository: UserInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
-let rowInMemoryRepository: RowInMemoryRepository;
 let modelBuilder: InMemoryModelBuilder;
 let sut: TableUpdateUseCase;
 
@@ -27,14 +23,12 @@ describe('Table Update Use Case', () => {
     tableInMemoryRepository = new TableInMemoryRepository();
     userInMemoryRepository = new UserInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
-    rowInMemoryRepository = new RowInMemoryRepository();
     modelBuilder = new InMemoryModelBuilder();
 
     sut = new TableUpdateUseCase(
       tableInMemoryRepository,
       userInMemoryRepository,
       fieldInMemoryRepository,
-      rowInMemoryRepository,
       modelBuilder,
     );
   });
@@ -89,79 +83,6 @@ describe('Table Update Use Case', () => {
 
     expect(result.value.name).toBe('Clientes Atualizado');
     expect(result.value.style).toBe(E_TABLE_STYLE.GALLERY);
-  });
-
-  it('deve gerar sharedRowSlug para registros antigos ao configurar o campo de slug (backfill retroativo)', async () => {
-    const nomeField = {
-      _id: 'field-nome',
-      slug: 'nome',
-      name: 'Nome',
-      type: 'TEXT_SHORT',
-    } as unknown as IField;
-
-    await tableInMemoryRepository.create({
-      name: 'Releases',
-      slug: 'releases',
-      _schema: {},
-      fields: [nomeField] as unknown as string[],
-      owner: 'owner-id',
-      administrators: [],
-      style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-      fieldOrderList: [],
-      fieldOrderForm: [],
-      fieldOrderFilter: [],
-      fieldOrderDetail: [],
-    });
-
-    const tableContext = {
-      slug: 'releases',
-      fields: [nomeField],
-    } as RowTableContext;
-
-    // Registros ANTIGOS: criados sem sharedRowSlug (antes de configurar o slug)
-    await rowInMemoryRepository.create({
-      table: tableContext,
-      data: { nome: 'Release Um' },
-    });
-    await rowInMemoryRepository.create({
-      table: tableContext,
-      data: { nome: 'Release Dois' },
-    });
-
-    // Configura o campo de slug do registro -> dispara o backfill retroativo
-    const result = await sut.execute({
-      routeSlug: 'releases',
-      slug: 'releases',
-      name: 'Releases',
-      description: null,
-      logo: null,
-      methods: {
-        afterSave: { code: null },
-        beforeSave: { code: null },
-        onLoad: { code: null },
-      },
-      style: E_TABLE_STYLE.LIST,
-      administrators: [],
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-      fieldOrderForm: [],
-      fieldOrderList: [],
-      fieldOrderFilter: [],
-      fieldOrderDetail: [],
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      order: null,
-      rowSlugFieldId: 'field-nome',
-    });
-
-    expect(result.isRight()).toBe(true);
-
-    const rows = await rowInMemoryRepository.findAllRaw(tableContext);
-    const slugs = rows.map((r) => r.sharedRowSlug);
-
-    expect(rows.every((r) => Boolean(r.sharedRowSlug))).toBe(true);
-    expect(slugs).toContain('release-um');
-    expect(slugs).toContain('release-dois');
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
