@@ -24,6 +24,8 @@ export default class {
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     clearCookieTokens(response);
 
-    return response.status(200).send({ message: 'Successfully signed out' });
+    return response
+      .status(200)
+      .send({ message: 'Logout realizado com sucesso' });
   }
 }

@@ -41,22 +41,6 @@ export const BulkTrashSchema: FastifySchema = {
         },
       },
     },
-    400: {
-      description: 'Requisição inválida',
-      type: 'object',
-      properties: {
-        message: { type: 'string' },
-        code: { type: 'number', enum: [400] },
-        cause: {
-          type: 'string',
-          enum: ['INVALID_PARAMETERS', 'TABLE_REQUIRED'],
-        },
-        errors: {
-          type: 'object',
-          additionalProperties: { type: 'string' },
-        },
-      },
-    },
     401: {
       description: 'Não autorizado - Autenticação necessária',
       type: 'object',

@@ -25,7 +25,8 @@ export const TableFieldSuggestSlugSchema: FastifySchema = {
         type: 'string',
         minLength: 1,
         maxLength: 500,
-        description: 'Título de exibição usado como base para a sugestão do slug',
+        description:
+          'Título de exibição usado como base para a sugestão do slug',
       },
     },
     additionalProperties: false,
@@ -51,7 +52,7 @@ export const TableFieldSuggestSlugSchema: FastifySchema = {
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS'],
+          enum: ['INVALID_PAYLOAD_FORMAT'],
         },
         errors: {
           type: 'object',

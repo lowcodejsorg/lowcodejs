@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const TableRemoveFromTrashSchema: FastifySchema = {
-  tags: ['Tables'],
+  tags: ['Tabelas'],
   summary: 'Restaurar tabela da lixeira',
   description:
     'Restaura uma tabela da lixeira, tornando-a ativa novamente. Bloqueia a restauração quando já existe uma tabela ativa com o mesmo slug.',
@@ -12,7 +12,7 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
     properties: {
       slug: {
         type: 'string',
-        description: 'table slug identifier',
+        description: 'Identificador slug da tabela',
         examples: ['users', 'products', 'blog-posts'],
       },
     },
@@ -20,39 +20,40 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
   },
   response: {
     200: {
-      description: 'table restored from trash successfully with populated data',
+      description:
+        'Tabela restaurada da lixeira com sucesso com dados populados',
       type: 'object',
       properties: {
-        _id: { type: 'string', description: 'table ID' },
-        name: { type: 'string', description: 'table name' },
+        _id: { type: 'string', description: 'ID da tabela' },
+        name: { type: 'string', description: 'Nome da tabela' },
         description: {
           type: 'string',
           nullable: true,
-          description: 'table description',
+          description: 'Descrição da tabela',
         },
-        slug: { type: 'string', description: 'table URL slug' },
+        slug: { type: 'string', description: 'Slug de URL da tabela' },
         logo: {
           type: 'object',
           nullable: true,
-          description: 'table logo storage details (populated)',
+          description: 'Detalhes de armazenamento do logo da tabela (populado)',
           properties: {
-            _id: { type: 'string', description: 'Storage ID' },
-            url: { type: 'string', description: 'File URL' },
+            _id: { type: 'string', description: 'ID de armazenamento' },
+            url: { type: 'string', description: 'URL do arquivo' },
             filename: {
               type: 'string',
-              description: 'Original filename',
+              description: 'Nome original do arquivo',
             },
           },
         },
         fields: {
           type: 'array',
-          description: 'table fields (populated)',
+          description: 'Campos da tabela (populado)',
           items: {
             type: 'object',
             properties: {
-              _id: { type: 'string', description: 'Field ID' },
-              name: { type: 'string', description: 'Field name' },
-              slug: { type: 'string', description: 'Field slug' },
+              _id: { type: 'string', description: 'ID do campo' },
+              name: { type: 'string', description: 'Nome do campo' },
+              slug: { type: 'string', description: 'Slug do campo' },
               type: {
                 type: 'string',
                 enum: [
@@ -73,46 +74,47 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                   'STATUS',
                   'TRASHED_AT',
                 ],
-                description: 'Field type from FIELD_TYPE enum',
+                description: 'Tipo do campo do enum FIELD_TYPE',
               },
               required: {
                 type: 'boolean',
-                description: 'Is field required',
+                description: 'Se o campo é obrigatório',
               },
               multiple: {
                 type: 'boolean',
-                description: 'Allows multiple values',
+                description: 'Permite múltiplos valores',
               },
               format: {
                 type: 'string',
                 nullable: true,
                 enum: ['email', 'phone', 'url', 'color', 'password'],
-                description: 'Field format validation',
+                description: 'Validação de formato do campo',
               },
               showInList: {
                 type: 'boolean',
-                description: 'Show in listings',
+                description: 'Exibir nas listagens',
               },
               showInForm: {
                 type: 'boolean',
-                description: 'Show in form view',
+                description: 'Exibir na visualização em formulário',
               },
               showInDetail: {
                 type: 'boolean',
-                description: 'Show in detail view',
+                description: 'Exibir na visualização de detalhes',
               },
               showInFilter: {
                 type: 'boolean',
-                description: 'Allow filtering',
+                description: 'Permitir filtragem',
               },
               tip: {
                 type: 'string',
                 nullable: true,
-                description: 'Optional help text shown in row forms',
+                description:
+                  'Texto de ajuda opcional exibido nos formulários de registro',
               },
               locked: {
                 type: 'boolean',
-                description: 'Field is locked and cannot be modified',
+                description: 'O campo está bloqueado e não pode ser modificado',
               },
               defaultValue: {
                 anyOf: [
@@ -120,13 +122,13 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                   { type: 'array', items: { type: 'string' } },
                   { type: 'null' },
                 ],
-                description: 'Default field value',
+                description: 'Valor padrão do campo',
               },
               relationship: {
                 type: 'object',
                 nullable: true,
                 description:
-                  'Relationship configuration for RELATIONSHIP fields',
+                  'Configuração de relacionamento para campos RELATIONSHIP',
                 properties: {
                   table: {
                     type: 'object',
@@ -159,7 +161,7 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
               },
               dropdown: {
                 type: 'array',
-                description: 'Dropdown options for DROPDOWN fields',
+                description: 'Opções de seleção para campos DROPDOWN',
                 items: {
                   type: 'object',
                   properties: {
@@ -171,16 +173,16 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
               allowCustomDropdownOptions: {
                 type: 'boolean',
                 description:
-                  'Allow users to create new dropdown options from row input',
+                  'Permite que usuários criem novas opções de seleção a partir do registro',
               },
               allowCreateRelationshipRecords: {
                 type: 'boolean',
                 description:
-                  'Allow users to create records in the related table from row input',
+                  'Permite que usuários criem registros na tabela relacionada a partir do registro',
               },
               category: {
                 type: 'array',
-                description: 'Category tree for CATEGORY fields',
+                description: 'Árvore de categorias para campos CATEGORY',
                 items: {
                   type: 'object',
                   properties: {
@@ -193,7 +195,7 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
               group: {
                 type: 'object',
                 nullable: true,
-                description: 'Field group configuration',
+                description: 'Configuração de grupo de campos',
                 properties: {
                   _id: { type: 'string', nullable: true },
                   slug: { type: 'string', nullable: true },
@@ -201,13 +203,13 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
               },
               trashed: {
                 type: 'boolean',
-                description: 'Is field in trash',
+                description: 'Se o campo está na lixeira',
               },
               trashedAt: {
                 type: 'string',
                 format: 'date-time',
                 nullable: true,
-                description: 'When field was trashed',
+                description: 'Quando o campo foi enviado para a lixeira',
               },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' },
@@ -217,46 +219,46 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
         style: {
           type: 'string',
           enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
-          description: 'Display style',
+          description: 'Estilo de exibição',
         },
         visibility: {
           type: 'string',
           enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-          description: 'Visibility setting',
+          description: 'Configuração de visibilidade',
         },
         collaboration: {
           type: 'string',
           enum: ['OPEN', 'RESTRICTED'],
-          description: 'Collaboration setting',
+          description: 'Configuração de colaboração',
         },
         administrators: {
           type: 'array',
-          description: 'Administrator users (populated)',
+          description: 'Usuários administradores (populado)',
           items: {
             type: 'object',
             properties: {
-              _id: { type: 'string', description: 'User ID' },
-              name: { type: 'string', description: 'User name' },
+              _id: { type: 'string', description: 'ID do usuário' },
+              name: { type: 'string', description: 'Nome do usuário' },
             },
           },
         },
         owner: {
           type: 'object',
-          description: 'table owner (populated)',
+          description: 'Proprietário da tabela (populado)',
           properties: {
-            _id: { type: 'string', description: 'User ID' },
-            name: { type: 'string', description: 'User name' },
+            _id: { type: 'string', description: 'ID do usuário' },
+            name: { type: 'string', description: 'Nome do usuário' },
           },
         },
         fieldOrderList: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Field order for list view',
+          description: 'Ordem dos campos na visualização em lista',
         },
         fieldOrderForm: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Field order for form view',
+          description: 'Ordem dos campos na visualização em formulário',
         },
         fieldOrderFilter: {
           type: 'array',
@@ -269,11 +271,11 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
         type: {
           type: 'string',
           enum: ['TABLE', 'FIELD_GROUP'],
-          description: 'table type',
+          description: 'Tipo da tabela',
         },
         order: {
           type: 'object',
-          description: 'Default sort order for table records',
+          description: 'Ordenação padrão dos registros da tabela',
           properties: {
             field: { type: 'string', nullable: true },
             direction: {
@@ -286,28 +288,29 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
         _schema: {
           type: 'object',
           description:
-            'Generated MongoDB schema based on fields with trashedAt and trashed properties',
+            'Schema MongoDB gerado a partir dos campos com as propriedades trashedAt e trashed',
           additionalProperties: true,
         },
         trashed: {
           type: 'boolean',
           enum: [false],
-          description: 'table is no longer in trash',
+          description: 'A tabela não está mais na lixeira',
         },
         trashedAt: {
           type: 'string',
           nullable: true,
-          description: 'Timestamp when moved to trash (now null)',
+          description:
+            'Data/hora em que foi enviada para a lixeira (agora null)',
         },
         createdAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Creation timestamp',
+          description: 'Data/hora de criação',
         },
         updatedAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Last update timestamp',
+          description: 'Data/hora da última atualização',
         },
       },
     },

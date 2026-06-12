@@ -37,12 +37,12 @@ export const TableFieldDeleteSchema: FastifySchema = {
       type: 'null',
     },
     400: {
-      description: 'Requisição inválida - Parâmetros inválidos',
+      description: 'Requisição inválida - Falha na validação do payload',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+        cause: { type: 'string', enum: ['INVALID_PAYLOAD_FORMAT'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },

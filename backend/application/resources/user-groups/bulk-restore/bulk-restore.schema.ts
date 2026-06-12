@@ -19,7 +19,10 @@ export const UserGroupBulkRestoreSchema: FastifySchema = {
       description: 'Quantidade de grupos restaurados da lixeira',
       type: 'object',
       properties: {
-        modified: { type: 'number', description: 'Total de grupos restaurados' },
+        modified: {
+          type: 'number',
+          description: 'Total de grupos restaurados',
+        },
       },
     },
     400: {

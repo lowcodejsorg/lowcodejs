@@ -3,8 +3,7 @@ import type { FastifySchema } from 'fastify';
 export const UserGroupRemoveFromTrashSchema: FastifySchema = {
   tags: ['Grupos de Usuários'],
   summary: 'Restaurar grupo da lixeira',
-  description:
-    'Restaura um grupo que esteja na lixeira. Restrito ao MASTER.',
+  description: 'Restaura um grupo que esteja na lixeira. Restrito ao MASTER.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',

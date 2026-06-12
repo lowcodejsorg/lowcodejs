@@ -119,7 +119,10 @@ export const SetupEmailSubmitSchema: FastifySchema = {
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['SETUP_EMAIL_ERROR'] },
+        cause: {
+          type: 'string',
+          enum: ['SETUP_EMAIL_ERROR', 'SETUP_COMPLETE_FAILED'],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },

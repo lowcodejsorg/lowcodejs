@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const BulkTrashSchema: FastifySchema = {
-  tags: ['Tables'],
+  tags: ['Tabelas'],
   summary: 'Enviar tabelas para a lixeira em lote',
   description:
     'Move múltiplas tabelas para a lixeira (trashed=true, trashedAt=timestamp atual). Retorna a quantidade de tabelas afetadas.',
@@ -14,19 +14,19 @@ export const BulkTrashSchema: FastifySchema = {
         type: 'array',
         items: { type: 'string' },
         minItems: 1,
-        description: 'Array of table IDs to move to trash',
+        description: 'Lista de IDs das tabelas a mover para a lixeira',
       },
     },
     additionalProperties: false,
   },
   response: {
     200: {
-      description: 'Tables moved to trash successfully',
+      description: 'Tabelas movidas para a lixeira com sucesso',
       type: 'object',
       properties: {
         modified: {
           type: 'number',
-          description: 'Number of tables moved to trash',
+          description: 'Quantidade de tabelas movidas para a lixeira',
         },
       },
     },

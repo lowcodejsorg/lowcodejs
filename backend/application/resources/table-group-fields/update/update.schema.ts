@@ -60,13 +60,29 @@ export const GroupFieldUpdateSchema: FastifySchema = {
       allowCreateRelationshipRecords: { type: 'boolean', default: false },
       relationship: { type: 'object', nullable: true, default: null },
       category: { type: 'array', nullable: true, default: [] },
-      trashed: { type: 'boolean' },
+      group: {
+        anyOf: [
+          { type: 'string' },
+          {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              slug: { type: 'string' },
+            },
+          },
+          { type: 'null' },
+        ],
+        default: null,
+        description: 'Grupo de destino do campo (slug ou objeto)',
+      },
+      trashed: { type: 'boolean', default: false },
       trashedAt: { type: 'string', format: 'date-time', nullable: true },
     },
+    additionalProperties: false,
   },
   response: {
     200: {
-      description: 'Field updated successfully',
+      description: 'Campo atualizado com sucesso',
       type: 'object',
       properties: {
         _id: { type: 'string' },
@@ -175,6 +191,7 @@ export const GroupFieldUpdateSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: [
+            'INVALID_PAYLOAD_FORMAT',
             'INVALID_PARAMETERS',
             'INVALID_TABLE_SLUG',
             'INVALID_FIELD_SLUG',
@@ -214,6 +231,8 @@ export const GroupFieldUpdateSchema: FastifySchema = {
           enum: [
             'USER_NOT_FOUND',
             'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
             'OWNER_OR_ADMIN_REQUIRED',
             'NATIVE_FIELD_CANNOT_BE_TRASHED',
             'FIELD_LOCKED',

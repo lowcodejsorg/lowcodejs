@@ -87,14 +87,14 @@ export const TableFieldAddCategorySchema: FastifySchema = {
       },
     },
     400: {
-      description: 'Requisição inválida - Parâmetros ou tipo de campo inválido',
+      description: 'Requisição inválida - Tipo de campo inválido',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['INVALID_PARAMETERS', 'INVALID_FIELD_TYPE'],
+          enum: ['INVALID_FIELD_TYPE'],
         },
         errors: {
           type: 'object',

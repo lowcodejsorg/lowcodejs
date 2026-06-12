@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const EmptyTrashSchema: FastifySchema = {
-  tags: ['Tables'],
+  tags: ['Tabelas'],
   summary: 'Esvaziar lixeira - excluir todas as tabelas na lixeira',
   description:
     'Exclui permanentemente todas as tabelas na lixeira, incluindo seus campos e coleções dinâmicas. Esta ação não pode ser desfeita.',

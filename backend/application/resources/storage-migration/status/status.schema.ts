@@ -60,5 +60,15 @@ export const StorageMigrationStatusSchema: FastifySchema = {
         errors: { type: 'object', additionalProperties: { type: 'string' } },
       },
     },
+    500: {
+      description: 'Erro interno do servidor',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [500] },
+        cause: { type: 'string', enum: ['SERVER_ERROR'] },
+        errors: { type: 'object', additionalProperties: { type: 'string' } },
+      },
+    },
   },
 };

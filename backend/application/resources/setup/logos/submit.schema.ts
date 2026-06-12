@@ -8,7 +8,6 @@ export const SetupLogosSubmitSchema: FastifySchema = {
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
-    required: ['LOGO_SMALL_URL', 'LOGO_LARGE_URL'],
     properties: {
       LOGO_SMALL_URL: {
         type: 'string',

@@ -4,6 +4,7 @@ import { Controller, getInstanceByToken, PATCH } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
+import { MenuUpdateSchema } from './update.schema';
 import MenuUpdateUseCase from './update.use-case';
 import {
   MenuUpdateBodyValidator,
@@ -26,7 +27,7 @@ export default class {
           optional: false,
         }),
       ],
-      // schema: MenuUpdateSchema,
+      schema: MenuUpdateSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

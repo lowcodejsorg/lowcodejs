@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const TableDeleteSchema: FastifySchema = {
-  tags: ['Tables'],
+  tags: ['Tabelas'],
   summary: 'Excluir tabela permanentemente',
   description:
     'Exclui permanentemente uma tabela, seus campos e a coleção dinâmica de registros. Esta ação não pode ser desfeita.',
@@ -12,7 +12,7 @@ export const TableDeleteSchema: FastifySchema = {
     properties: {
       slug: {
         type: 'string',
-        description: 'Table slug identifier',
+        description: 'Identificador slug da tabela',
         examples: ['users', 'products', 'blog-posts'],
       },
     },

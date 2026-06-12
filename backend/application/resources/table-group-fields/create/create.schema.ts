@@ -78,7 +78,23 @@ export const GroupFieldCreateSchema: FastifySchema = {
       allowCreateRelationshipRecords: { type: 'boolean', default: false },
       relationship: { type: 'object', nullable: true, default: null },
       category: { type: 'array', nullable: true, default: [] },
+      group: {
+        anyOf: [
+          { type: 'string' },
+          {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              slug: { type: 'string' },
+            },
+          },
+          { type: 'null' },
+        ],
+        default: null,
+        description: 'Grupo de destino do campo (slug ou objeto)',
+      },
     },
+    additionalProperties: false,
   },
   response: {
     201: {

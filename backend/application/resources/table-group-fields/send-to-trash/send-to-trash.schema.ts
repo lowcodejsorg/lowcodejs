@@ -12,7 +12,10 @@ export const GroupFieldSendToTrashSchema: FastifySchema = {
     properties: {
       slug: { type: 'string', description: 'Slug da tabela' },
       groupSlug: { type: 'string', description: 'Slug do grupo' },
-      fieldId: { type: 'string', description: 'ID do campo a ser enviado para a lixeira' },
+      fieldId: {
+        type: 'string',
+        description: 'ID do campo a ser enviado para a lixeira',
+      },
     },
     additionalProperties: false,
   },
@@ -34,6 +37,7 @@ export const GroupFieldSendToTrashSchema: FastifySchema = {
         widthInForm: { type: 'number', nullable: true },
         widthInList: { type: 'number', nullable: true },
         widthInDetail: { type: 'number', nullable: true },
+        tip: { type: 'string', nullable: true },
         locked: { type: 'boolean' },
         native: { type: 'boolean' },
         format: { type: 'string', nullable: true },
@@ -56,6 +60,7 @@ export const GroupFieldSendToTrashSchema: FastifySchema = {
             },
           },
         },
+        allowCustomDropdownOptions: { type: 'boolean' },
         relationship: {
           type: 'object',
           nullable: true,
@@ -121,7 +126,10 @@ export const GroupFieldSendToTrashSchema: FastifySchema = {
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+        cause: {
+          type: 'string',
+          enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS'],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -156,6 +164,8 @@ export const GroupFieldSendToTrashSchema: FastifySchema = {
           enum: [
             'USER_NOT_FOUND',
             'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
             'OWNER_OR_ADMIN_REQUIRED',
             'NATIVE_FIELD_CANNOT_BE_TRASHED',
             'FIELD_LOCKED',

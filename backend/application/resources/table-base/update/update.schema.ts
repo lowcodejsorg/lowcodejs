@@ -1,7 +1,7 @@
 import { FastifySchema } from 'fastify';
 
 export const TableUpdateSchema: FastifySchema = {
-  tags: ['Tables'],
+  tags: ['Tabelas'],
   summary: 'Atualizar tabela',
   description:
     'Atualiza uma tabela existente: nome, estilo, visibilidade, colaboração, administradores, ordenação de campos e layout. Renomear o slug propaga para a coleção dinâmica e campos de relacionamento.',
@@ -12,7 +12,7 @@ export const TableUpdateSchema: FastifySchema = {
     properties: {
       slug: {
         type: 'string',
-        description: 'Table slug identifier',
+        description: 'Identificador slug da tabela',
         examples: ['users', 'products', 'blog-posts'],
       },
     },
@@ -20,21 +20,26 @@ export const TableUpdateSchema: FastifySchema = {
   },
   body: {
     type: 'object',
-    required: ['name', 'style', 'visibility', 'collaboration'],
+    required: ['name', 'description', 'logo', 'methods'],
     properties: {
       name: {
         type: 'string',
-        description: 'Table name',
+        description: 'Nome da tabela',
+      },
+      slug: {
+        type: 'string',
+        description:
+          'Slug da tabela (opcional; gerado a partir do nome quando ausente)',
       },
       description: {
         type: 'string',
         nullable: true,
-        description: 'Table description',
+        description: 'Descrição da tabela',
       },
       logo: {
         type: 'string',
         nullable: true,
-        description: 'Table logo URL or storage ID',
+        description: 'URL do logo ou ID de armazenamento da tabela',
       },
       style: {
         type: 'string',
@@ -50,36 +55,37 @@ export const TableUpdateSchema: FastifySchema = {
           'GANTT',
         ],
         default: 'LIST',
-        description: 'Display style',
+        description: 'Estilo de exibição',
       },
       visibility: {
         type: 'string',
         enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
         default: 'PUBLIC',
-        description: 'Visibility setting',
+        description: 'Configuração de visibilidade',
       },
       collaboration: {
         type: 'string',
         enum: ['OPEN', 'RESTRICTED'],
         default: 'OPEN',
-        description: 'Collaboration setting',
+        description: 'Configuração de colaboração',
       },
       administrators: {
         type: 'array',
         items: { type: 'string' },
-        description: 'Array of administrator user IDs',
+        default: [],
+        description: 'Lista de IDs dos usuários administradores',
       },
       fieldOrderList: {
         type: 'array',
         items: { type: 'string' },
         default: [],
-        description: 'Field order for list view',
+        description: 'Ordem dos campos na visualização em lista',
       },
       fieldOrderForm: {
         type: 'array',
         items: { type: 'string' },
         default: [],
-        description: 'Field order for form view',
+        description: 'Ordem dos campos na visualização em formulário',
       },
       fieldOrderFilter: {
         type: 'array',
@@ -98,64 +104,78 @@ export const TableUpdateSchema: FastifySchema = {
             type: 'object',
             required: ['field', 'direction'],
             properties: {
-              field: { type: 'string', description: 'Field slug to sort by' },
+              field: {
+                type: 'string',
+                description: 'Slug do campo para ordenação',
+              },
               direction: {
                 type: 'string',
                 enum: ['asc', 'desc'],
-                description: 'Sort direction',
+                description: 'Direção da ordenação',
               },
             },
           },
         ],
         default: null,
-        description: 'Default sort order for table records',
+        description: 'Ordenação padrão dos registros da tabela',
       },
       methods: {
         type: 'object',
-        description: 'Table methods configuration',
+        description: 'Configuração de métodos da tabela',
       },
       layoutFields: {
         type: 'object',
-        description: 'Layout fields configuration',
+        description: 'Configuração de campos de layout',
+      },
+      groups: {
+        type: 'array',
+        items: { type: 'object', additionalProperties: true },
+        description: 'Configuração de grupos de campos',
+      },
+      rowSlugFieldId: {
+        type: 'string',
+        nullable: true,
+        description: 'ID do campo usado para gerar slugs amigáveis de registro',
       },
     },
+    additionalProperties: false,
   },
   response: {
     200: {
-      description: 'Table updated successfully',
+      description: 'Tabela atualizada com sucesso',
       type: 'object',
       properties: {
-        _id: { type: 'string', description: 'Table ID' },
-        name: { type: 'string', description: 'Table name' },
+        _id: { type: 'string', description: 'ID da tabela' },
+        name: { type: 'string', description: 'Nome da tabela' },
         description: {
           type: 'string',
           nullable: true,
-          description: 'Table description',
+          description: 'Descrição da tabela',
         },
-        slug: { type: 'string', description: 'Table URL slug' },
+        slug: { type: 'string', description: 'Slug de URL da tabela' },
         logo: {
           type: 'object',
           nullable: true,
-          description: 'Table logo storage details (populated)',
+          description: 'Detalhes de armazenamento do logo da tabela (populado)',
           properties: {
-            _id: { type: 'string', description: 'Storage ID' },
-            url: { type: 'string', description: 'File URL' },
+            _id: { type: 'string', description: 'ID de armazenamento' },
+            url: { type: 'string', description: 'URL do arquivo' },
             filename: {
               type: 'string',
-              description: 'Original filename',
+              description: 'Nome original do arquivo',
             },
-            type: { type: 'string', description: 'MIME type' },
+            type: { type: 'string', description: 'Tipo MIME' },
           },
         },
         fields: {
           type: 'array',
-          description: 'Table fields',
+          description: 'Campos da tabela',
           items: {
             type: 'object',
             properties: {
-              _id: { type: 'string', description: 'Field ID' },
-              name: { type: 'string', description: 'Field name' },
-              slug: { type: 'string', description: 'Field slug' },
+              _id: { type: 'string', description: 'ID do campo' },
+              name: { type: 'string', description: 'Nome do campo' },
+              slug: { type: 'string', description: 'Slug do campo' },
               type: {
                 type: 'string',
                 enum: [
@@ -170,56 +190,68 @@ export const TableUpdateSchema: FastifySchema = {
                   'EVALUATION',
                   'CATEGORY',
                 ],
-                description: 'Field type',
+                description: 'Tipo do campo',
               },
-              required: { type: 'boolean', description: 'Is field required' },
+              required: {
+                type: 'boolean',
+                description: 'Se o campo é obrigatório',
+              },
               multiple: {
                 type: 'boolean',
-                description: 'Allows multiple values',
+                description: 'Permite múltiplos valores',
               },
               format: {
                 type: 'string',
                 nullable: true,
-                description: 'Field format validation',
+                description: 'Validação de formato do campo',
               },
               showInList: {
                 type: 'boolean',
-                description: 'Show in listings',
+                description: 'Exibir nas listagens',
               },
-              showInForm: { type: 'boolean', description: 'Show in form view' },
+              showInForm: {
+                type: 'boolean',
+                description: 'Exibir na visualização em formulário',
+              },
               showInDetail: {
                 type: 'boolean',
-                description: 'Show in detail view',
+                description: 'Exibir na visualização de detalhes',
               },
-              showInFilter: { type: 'boolean', description: 'Allow filtering' },
+              showInFilter: {
+                type: 'boolean',
+                description: 'Permitir filtragem',
+              },
               widthInForm: {
                 type: 'number',
                 nullable: true,
-                description: 'Field width in forms, integer 0-100 (%)',
+                description:
+                  'Largura do campo em formulários, inteiro 0-100 (%)',
               },
               widthInList: {
                 type: 'number',
                 nullable: true,
                 description:
-                  'Field width in list/grid views, integer 0-100 (px)',
+                  'Largura do campo em visualizações de lista/grade, inteiro 0-100 (px)',
               },
               widthInDetail: {
                 type: 'number',
                 nullable: true,
-                description: 'Field width in detail views, integer 0-100 (%)',
+                description:
+                  'Largura do campo em visualizações de detalhe, inteiro 0-100 (%)',
               },
               tip: {
                 type: 'string',
                 nullable: true,
-                description: 'Optional help text shown in row forms',
+                description:
+                  'Texto de ajuda opcional exibido nos formulários de registro',
               },
               locked: {
                 type: 'boolean',
-                description: 'Field is locked and cannot be modified',
+                description: 'O campo está bloqueado e não pode ser modificado',
               },
               native: {
                 type: 'boolean',
-                description: 'Field is native',
+                description: 'O campo é nativo',
               },
               defaultValue: {
                 anyOf: [
@@ -227,47 +259,47 @@ export const TableUpdateSchema: FastifySchema = {
                   { type: 'array', items: { type: 'string' } },
                   { type: 'null' },
                 ],
-                description: 'Default field value',
+                description: 'Valor padrão do campo',
               },
               relationship: {
                 type: 'object',
                 nullable: true,
-                description: 'Relationship configuration',
+                description: 'Configuração de relacionamento',
               },
               dropdown: {
                 type: 'array',
                 nullable: true,
-                description: 'Dropdown options',
+                description: 'Opções de seleção',
               },
               allowCustomDropdownOptions: {
                 type: 'boolean',
                 description:
-                  'Allow users to create new dropdown options from row input',
+                  'Permite que usuários criem novas opções de seleção a partir do registro',
               },
               allowCreateRelationshipRecords: {
                 type: 'boolean',
                 description:
-                  'Allow users to create records in the related table from row input',
+                  'Permite que usuários criem registros na tabela relacionada a partir do registro',
               },
               category: {
                 type: 'array',
                 nullable: true,
-                description: 'Category options',
+                description: 'Opções de categoria',
               },
               group: {
                 type: 'object',
                 nullable: true,
-                description: 'Field group configuration',
+                description: 'Configuração de grupo de campos',
               },
               trashed: {
                 type: 'boolean',
-                description: 'Is field in trash',
+                description: 'Se o campo está na lixeira',
               },
               trashedAt: {
                 type: 'string',
                 format: 'date-time',
                 nullable: true,
-                description: 'When field was trashed',
+                description: 'Quando o campo foi enviado para a lixeira',
               },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' },
@@ -287,46 +319,46 @@ export const TableUpdateSchema: FastifySchema = {
             'CALENDAR',
             'GANTT',
           ],
-          description: 'Display style',
+          description: 'Estilo de exibição',
         },
         visibility: {
           type: 'string',
           enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-          description: 'Visibility setting',
+          description: 'Configuração de visibilidade',
         },
         collaboration: {
           type: 'string',
           enum: ['OPEN', 'RESTRICTED'],
-          description: 'Collaboration setting',
+          description: 'Configuração de colaboração',
         },
         administrators: {
           type: 'array',
-          description: 'Administrator users (populated)',
+          description: 'Usuários administradores (populado)',
           items: {
             type: 'object',
             properties: {
-              _id: { type: 'string', description: 'User ID' },
-              name: { type: 'string', description: 'User name' },
+              _id: { type: 'string', description: 'ID do usuário' },
+              name: { type: 'string', description: 'Nome do usuário' },
             },
           },
         },
         owner: {
           type: 'object',
-          description: 'Table owner (populated)',
+          description: 'Proprietário da tabela (populado)',
           properties: {
-            _id: { type: 'string', description: 'User ID' },
-            name: { type: 'string', description: 'User name' },
+            _id: { type: 'string', description: 'ID do usuário' },
+            name: { type: 'string', description: 'Nome do usuário' },
           },
         },
         fieldOrderList: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Field order for list view',
+          description: 'Ordem dos campos na visualização em lista',
         },
         fieldOrderForm: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Field order for form view',
+          description: 'Ordem dos campos na visualização em formulário',
         },
         fieldOrderFilter: {
           type: 'array',
@@ -339,7 +371,7 @@ export const TableUpdateSchema: FastifySchema = {
         type: {
           type: 'string',
           enum: ['TABLE', 'FIELD_GROUP'],
-          description: 'Table type',
+          description: 'Tipo da tabela',
         },
         methods: {
           type: 'object',
@@ -350,7 +382,7 @@ export const TableUpdateSchema: FastifySchema = {
                 code: {
                   type: 'string',
                   nullable: true,
-                  description: 'Code to execute before saving',
+                  description: 'Código a executar antes de salvar',
                 },
               },
             },
@@ -360,7 +392,7 @@ export const TableUpdateSchema: FastifySchema = {
                 code: {
                   type: 'string',
                   nullable: true,
-                  description: 'Code to execute after saving',
+                  description: 'Código a executar depois de salvar',
                 },
               },
             },
@@ -370,24 +402,24 @@ export const TableUpdateSchema: FastifySchema = {
                 code: {
                   type: 'string',
                   nullable: true,
-                  description: 'Code to execute before saving',
+                  description: 'Código a executar antes de salvar',
                 },
               },
             },
           },
-          description: 'Table methods configuration',
+          description: 'Configuração de métodos da tabela',
         },
         groups: {
           type: 'array',
-          description: 'Field groups configuration',
+          description: 'Configuração de grupos de campos',
           items: {
             type: 'object',
             properties: {
-              slug: { type: 'string', description: 'Group slug' },
-              name: { type: 'string', description: 'Group name' },
+              slug: { type: 'string', description: 'Slug do grupo' },
+              name: { type: 'string', description: 'Nome do grupo' },
               fields: {
                 type: 'array',
-                description: 'Fields within the group',
+                description: 'Campos dentro do grupo',
                 items: {
                   type: 'object',
                   properties: {
@@ -451,7 +483,7 @@ export const TableUpdateSchema: FastifySchema = {
               },
               _schema: {
                 type: 'object',
-                description: 'Group schema',
+                description: 'Schema do grupo',
                 additionalProperties: true,
               },
             },
@@ -459,7 +491,7 @@ export const TableUpdateSchema: FastifySchema = {
         },
         order: {
           type: 'object',
-          description: 'Default sort order for table records',
+          description: 'Ordenação padrão dos registros da tabela',
           properties: {
             field: { type: 'string', nullable: true },
             direction: {
@@ -472,46 +504,46 @@ export const TableUpdateSchema: FastifySchema = {
         _schema: {
           type: 'object',
           description:
-            'Generated MongoDB schema based on fields with trashedAt and trashed properties',
+            'Schema MongoDB gerado a partir dos campos com as propriedades trashedAt e trashed',
           additionalProperties: true,
         },
         rowSlugFieldId: {
           type: 'string',
           nullable: true,
-          description: 'Field ID used to generate friendly row slugs',
+          description:
+            'ID do campo usado para gerar slugs amigáveis de registro',
         },
         trashed: {
           type: 'boolean',
-          description: 'Is table in trash',
+          description: 'Se a tabela está na lixeira',
         },
         trashedAt: {
           type: 'string',
           format: 'date-time',
           nullable: true,
-          description: 'When table was trashed',
+          description: 'Quando a tabela foi enviada para a lixeira',
         },
         createdAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Creation timestamp',
+          description: 'Data/hora de criação',
         },
         updatedAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Last update timestamp',
+          description: 'Data/hora da última atualização',
         },
       },
     },
     400: {
-      description:
-        'Requisição inválida - Parâmetros inválidos ou administradores inativos',
+      description: 'Requisição inválida - Administradores inativos',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['INVALID_PARAMETERS', 'INACTIVE_ADMINISTRATORS'],
+          enum: ['INACTIVE_ADMINISTRATORS'],
         },
         errors: {
           type: 'object',

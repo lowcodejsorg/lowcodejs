@@ -92,14 +92,14 @@ export const GroupRowCreateSchema: FastifySchema = {
       },
     },
     404: {
-      description: 'Tabela, row ou grupo não encontrado',
+      description: 'Tabela ou grupo não encontrado',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [404] },
         cause: {
           type: 'string',
-          enum: ['TABLE_NOT_FOUND', 'ROW_NOT_FOUND', 'GROUP_NOT_FOUND'],
+          enum: ['TABLE_NOT_FOUND', 'GROUP_NOT_FOUND'],
         },
         errors: { type: 'object', additionalProperties: { type: 'string' } },
       },

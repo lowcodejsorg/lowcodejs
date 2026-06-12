@@ -20,7 +20,8 @@ export const TableSendToTrashSchema: FastifySchema = {
   },
   response: {
     200: {
-      description: 'Tabela enviada para a lixeira com sucesso, com dados populados',
+      description:
+        'Tabela enviada para a lixeira com sucesso, com dados populados',
       type: 'object',
       properties: {
         _id: { type: 'string', description: 'ID da tabela' },
@@ -108,7 +109,8 @@ export const TableSendToTrashSchema: FastifySchema = {
               tip: {
                 type: 'string',
                 nullable: true,
-                description: 'Texto de ajuda opcional exibido nos formulários de registro',
+                description:
+                  'Texto de ajuda opcional exibido nos formulários de registro',
               },
               locked: {
                 type: 'boolean',

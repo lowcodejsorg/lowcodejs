@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const TableExportCsvSchema: FastifySchema = {
-  tags: ['Tables'],
+  tags: ['Tabelas'],
   summary: 'Exporta tabelas em CSV',
   description:
     'Gera um arquivo CSV com a metadata de todas as tabelas que casam com os filtros aplicados. Restrito a MASTER e ADMINISTRATOR. Cap de 500.000 linhas por export.',

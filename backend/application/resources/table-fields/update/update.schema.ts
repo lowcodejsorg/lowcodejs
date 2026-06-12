@@ -1,10 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
 export const TableFieldUpdateSchema: FastifySchema = {
-  tags: ['Fields'],
-  summary: 'Update field',
+  tags: ['Campos'],
+  summary: 'Atualizar campo',
   description:
-    'Updates an existing field in a table. Changing name only changes the display title. Slug is the safe technical key and only changes when explicitly sent.',
+    'Atualiza um campo existente em uma tabela. Alterar name muda apenas o título de exibição. O slug é a chave técnica segura e só muda quando enviado explicitamente.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -12,12 +12,12 @@ export const TableFieldUpdateSchema: FastifySchema = {
     properties: {
       slug: {
         type: 'string',
-        description: 'Table slug containing the field',
+        description: 'Slug da tabela que contém o campo',
         examples: ['users', 'products', 'blog-posts'],
       },
       _id: {
         type: 'string',
-        description: 'Field ID to update',
+        description: 'ID do campo a ser atualizado',
         examples: ['507f1f77bcf86cd799439011'],
       },
     },
@@ -31,7 +31,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
         type: 'string',
         minLength: 1,
         maxLength: 500,
-        description: 'Field display title shown to end users',
+        description: 'Título de exibição do campo mostrado aos usuários finais',
         examples: [
           'Full Name Updated',
           'Pesquise na base do USPTO e digite os resultados encontrados na busca de anterioridade (padrão). Você tem condições?',
@@ -43,7 +43,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
         maxLength: 80,
         pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
         description:
-          'Safe technical field key. Changing it renames the stored field data.',
+          'Chave técnica segura do campo. Alterá-la renomeia os dados armazenados do campo.',
         examples: ['full-name', 'nome-slug-campo'],
       },
       type: {
@@ -66,72 +66,74 @@ export const TableFieldUpdateSchema: FastifySchema = {
           'STATUS',
           'TRASHED_AT',
         ],
-        description: 'Field type from FIELD_TYPE enum',
+        description: 'Tipo do campo (do enum FIELD_TYPE)',
       },
       required: {
         type: 'boolean',
         default: false,
-        description: 'Field is required for data entry',
+        description: 'Campo é obrigatório no preenchimento',
       },
       multiple: {
         type: 'boolean',
         default: false,
-        description: 'Field accepts multiple values',
+        description: 'Campo aceita múltiplos valores',
       },
       showInFilter: {
         type: 'boolean',
         default: false,
-        description: 'Allow filtering by this field',
+        description: 'Permitir filtrar por este campo',
       },
       showInForm: {
         type: 'boolean',
         default: false,
-        description: 'Show field in create/edit forms',
+        description: 'Exibir o campo nos formulários de criação/edição',
       },
       showInDetail: {
         type: 'boolean',
         default: false,
-        description: 'Show field in detail pages',
+        description: 'Exibir o campo nas páginas de detalhe',
       },
       showInList: {
         type: 'boolean',
         default: false,
-        description: 'Show field in list/grid/kanban views',
+        description: 'Exibir o campo nas visualizações de lista/grade/kanban',
       },
       widthInForm: {
         type: 'number',
         nullable: true,
         default: 50,
-        description: 'Field width in forms, integer 0-100 (%)',
+        description: 'Largura do campo nos formulários, inteiro 0-100 (%)',
       },
       widthInList: {
         type: 'number',
         nullable: true,
         default: 10,
-        description: 'Field width in list/grid views, integer 0-100 (px)',
+        description:
+          'Largura do campo nas visualizações de lista/grade, inteiro 0-100 (px)',
       },
       widthInDetail: {
         type: 'number',
         nullable: true,
         default: 50,
-        description: 'Field width in detail views, integer 0-100 (%)',
+        description:
+          'Largura do campo nas visualizações de detalhe, inteiro 0-100 (%)',
       },
       tip: {
         type: 'string',
         nullable: true,
         default: null,
-        description: 'Optional help text shown in row forms',
+        description: 'Texto de ajuda opcional exibido nos formulários',
       },
       locked: {
         type: 'boolean',
         default: false,
-        description: 'Field is locked and cannot be modified',
+        description: 'Campo está bloqueado e não pode ser modificado',
       },
       format: {
         type: 'string',
         nullable: true,
         default: null,
-        description: 'Field format',
+        description: 'Formato do campo',
       },
       defaultValue: {
         anyOf: [
@@ -140,13 +142,13 @@ export const TableFieldUpdateSchema: FastifySchema = {
           { type: 'null' },
         ],
         default: null,
-        description: 'Default field value',
+        description: 'Valor padrão do campo',
       },
       dropdown: {
         type: 'array',
         nullable: true,
         default: [],
-        description: 'Options for DROPDOWN type',
+        description: 'Opções para o tipo DROPDOWN',
         items: {
           type: 'object',
           properties: {
@@ -166,19 +168,19 @@ export const TableFieldUpdateSchema: FastifySchema = {
         type: 'boolean',
         default: false,
         description:
-          'Allow users to create new dropdown options from row input',
+          'Permitir que usuários criem novas opções de seleção a partir do formulário',
       },
       allowCreateRelationshipRecords: {
         type: 'boolean',
         default: false,
         description:
-          'Allow users to create records in the related table from row input',
+          'Permitir que usuários criem registros na tabela relacionada a partir do formulário',
       },
       relationship: {
         type: 'object',
         nullable: true,
         default: null,
-        description: 'Configuration for RELATIONSHIP type',
+        description: 'Configuração para o tipo RELATIONSHIP',
         properties: {
           table: {
             type: 'object',
@@ -198,11 +200,13 @@ export const TableFieldUpdateSchema: FastifySchema = {
           customLabel: {
             type: 'boolean',
             default: false,
-            description: 'Enable composite/custom label for select options',
+            description:
+              'Habilitar rótulo composto/personalizado para as opções de seleção',
           },
           labelParts: {
             type: 'array',
-            description: 'Ordered dot-paths composing the custom label',
+            description:
+              'Caminhos (dot-paths) ordenados que compõem o rótulo personalizado',
             items: {
               type: 'object',
               required: ['path'],
@@ -215,14 +219,14 @@ export const TableFieldUpdateSchema: FastifySchema = {
           labelSeparator: {
             type: 'string',
             default: ' - ',
-            description: 'Separator between label parts',
+            description: 'Separador entre as partes do rótulo',
           },
         },
       },
       group: {
         anyOf: [
           { type: 'null' },
-          { type: 'string', description: 'Group slug' },
+          { type: 'string', description: 'Slug do grupo' },
           {
             type: 'object',
             properties: {
@@ -232,13 +236,13 @@ export const TableFieldUpdateSchema: FastifySchema = {
           },
         ],
         default: null,
-        description: 'Configuration for FIELD_GROUP type (slug or object)',
+        description: 'Configuração para o tipo FIELD_GROUP (slug ou objeto)',
       },
       category: {
         type: 'array',
         nullable: true,
         default: [],
-        description: 'Categories for CATEGORY type',
+        description: 'Categorias para o tipo CATEGORY',
         items: {
           type: 'object',
           properties: {
@@ -250,26 +254,27 @@ export const TableFieldUpdateSchema: FastifySchema = {
       },
       trashed: {
         type: 'boolean',
-        description: 'Set field as trashed',
+        description: 'Definir o campo como enviado para a lixeira',
         examples: [true, false],
       },
       trashedAt: {
         type: 'string',
         format: 'date-time',
         nullable: true,
-        description: 'Timestamp when field was trashed',
+        description: 'Data/hora em que o campo foi enviado para a lixeira',
         examples: ['2023-01-01T00:00:00.000Z', null],
       },
     },
+    additionalProperties: false,
   },
   response: {
     200: {
-      description: 'Field updated successfully',
+      description: 'Campo atualizado com sucesso',
       type: 'object',
       properties: {
-        _id: { type: 'string', description: 'Field ID' },
-        name: { type: 'string', description: 'Field name' },
-        slug: { type: 'string', description: 'Field slug' },
+        _id: { type: 'string', description: 'ID do campo' },
+        name: { type: 'string', description: 'Nome do campo' },
+        slug: { type: 'string', description: 'Slug do campo' },
         type: {
           type: 'string',
           enum: [
@@ -290,55 +295,57 @@ export const TableFieldUpdateSchema: FastifySchema = {
             'STATUS',
             'TRASHED_AT',
           ],
-          description: 'Field type',
+          description: 'Tipo do campo',
         },
-        required: { type: 'boolean', description: 'Field is required' },
+        required: { type: 'boolean', description: 'Campo é obrigatório' },
         multiple: {
           type: 'boolean',
-          description: 'Field accepts multiple values',
+          description: 'Campo aceita múltiplos valores',
         },
         showInFilter: {
           type: 'boolean',
-          description: 'Allow filtering by this field',
+          description: 'Permitir filtrar por este campo',
         },
         showInForm: {
           type: 'boolean',
-          description: 'Show field in create/edit forms',
+          description: 'Exibir o campo nos formulários de criação/edição',
         },
         showInDetail: {
           type: 'boolean',
-          description: 'Show field in detail pages',
+          description: 'Exibir o campo nas páginas de detalhe',
         },
         showInList: {
           type: 'boolean',
-          description: 'Show field in list/grid/kanban views',
+          description: 'Exibir o campo nas visualizações de lista/grade/kanban',
         },
         widthInForm: {
           type: 'number',
           nullable: true,
-          description: 'Field width in forms, integer 0-100 (%)',
+          description: 'Largura do campo nos formulários, inteiro 0-100 (%)',
         },
         widthInList: {
           type: 'number',
           nullable: true,
-          description: 'Field width in list/grid views, integer 0-100 (px)',
+          description:
+            'Largura do campo nas visualizações de lista/grade, inteiro 0-100 (px)',
         },
         widthInDetail: {
           type: 'number',
           nullable: true,
-          description: 'Field width in detail views, integer 0-100 (%)',
+          description:
+            'Largura do campo nas visualizações de detalhe, inteiro 0-100 (%)',
         },
         tip: {
           type: 'string',
           nullable: true,
-          description: 'Optional help text shown in row forms',
+          description: 'Texto de ajuda opcional exibido nos formulários',
         },
-        locked: { type: 'boolean', description: 'Field is locked' },
-        native: { type: 'boolean', description: 'Field is native' },
+        locked: { type: 'boolean', description: 'Campo está bloqueado' },
+        native: { type: 'boolean', description: 'Campo é nativo' },
         format: {
           type: 'string',
           nullable: true,
-          description: 'Field format',
+          description: 'Formato do campo',
         },
         defaultValue: {
           anyOf: [
@@ -346,12 +353,12 @@ export const TableFieldUpdateSchema: FastifySchema = {
             { type: 'array', items: { type: 'string' } },
             { type: 'null' },
           ],
-          description: 'Default field value',
+          description: 'Valor padrão do campo',
         },
         dropdown: {
           type: 'array',
           nullable: true,
-          description: 'Dropdown options',
+          description: 'Opções de dropdown',
           items: {
             type: 'object',
             properties: {
@@ -370,17 +377,17 @@ export const TableFieldUpdateSchema: FastifySchema = {
         allowCustomDropdownOptions: {
           type: 'boolean',
           description:
-            'Allow users to create new dropdown options from row input',
+            'Permitir que usuários criem novas opções de seleção a partir do formulário',
         },
         allowCreateRelationshipRecords: {
           type: 'boolean',
           description:
-            'Allow users to create records in the related table from row input',
+            'Permitir que usuários criem registros na tabela relacionada a partir do formulário',
         },
         relationship: {
           type: 'object',
           nullable: true,
-          description: 'Relationship configuration',
+          description: 'Configuração do relacionamento',
           properties: {
             table: {
               type: 'object',
@@ -414,7 +421,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
         category: {
           type: 'array',
           nullable: true,
-          description: 'Category options',
+          description: 'Opções de categoria',
           items: {
             type: 'object',
             properties: {
@@ -427,28 +434,31 @@ export const TableFieldUpdateSchema: FastifySchema = {
         group: {
           type: 'object',
           nullable: true,
-          description: 'Field group configuration',
+          description: 'Configuração do grupo de campos',
           properties: {
             _id: { type: 'string' },
             slug: { type: 'string' },
           },
         },
-        trashed: { type: 'boolean', description: 'Is field in trash' },
+        trashed: {
+          type: 'boolean',
+          description: 'Campo está na lixeira',
+        },
         trashedAt: {
           type: 'string',
           format: 'date-time',
           nullable: true,
-          description: 'When field was trashed',
+          description: 'Quando o campo foi enviado para a lixeira',
         },
         createdAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Creation timestamp',
+          description: 'Data/hora de criação',
         },
         updatedAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Last update timestamp',
+          description: 'Data/hora da última atualização',
         },
       },
     },
@@ -463,7 +473,6 @@ export const TableFieldUpdateSchema: FastifySchema = {
           type: 'string',
           enum: [
             'INVALID_PAYLOAD_FORMAT',
-            'INVALID_PARAMETERS',
             'INVALID_TABLE_SLUG',
             'INVALID_FIELD_SLUG',
           ],

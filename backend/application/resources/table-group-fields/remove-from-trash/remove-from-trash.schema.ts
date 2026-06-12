@@ -1,24 +1,24 @@
 import type { FastifySchema } from 'fastify';
 
 export const GroupFieldRemoveFromTrashSchema: FastifySchema = {
-  tags: ['Group Fields'],
-  summary: 'Restore group field from trash',
+  tags: ['Campos de Grupo'],
+  summary: 'Restaurar campo de grupo da lixeira',
   description:
-    'Restores a field within a FIELD_GROUP from trash. Sets trashed=false and re-enables display properties.',
+    'Restaura um campo dentro de um FIELD_GROUP da lixeira. Define trashed=false e reabilita as propriedades de exibição.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
     required: ['slug', 'groupSlug', 'fieldId'],
     properties: {
-      slug: { type: 'string', description: 'Table slug' },
-      groupSlug: { type: 'string', description: 'Group slug' },
-      fieldId: { type: 'string', description: 'Field ID to restore' },
+      slug: { type: 'string', description: 'Slug da tabela' },
+      groupSlug: { type: 'string', description: 'Slug do grupo' },
+      fieldId: { type: 'string', description: 'ID do campo a restaurar' },
     },
     additionalProperties: false,
   },
   response: {
     200: {
-      description: 'Field restored from trash successfully',
+      description: 'Campo restaurado da lixeira com sucesso',
       type: 'object',
       properties: {
         _id: { type: 'string' },
@@ -34,6 +34,7 @@ export const GroupFieldRemoveFromTrashSchema: FastifySchema = {
         widthInForm: { type: 'number', nullable: true },
         widthInList: { type: 'number', nullable: true },
         widthInDetail: { type: 'number', nullable: true },
+        tip: { type: 'string', nullable: true },
         locked: { type: 'boolean' },
         native: { type: 'boolean' },
         format: { type: 'string', nullable: true },
@@ -56,6 +57,7 @@ export const GroupFieldRemoveFromTrashSchema: FastifySchema = {
             },
           },
         },
+        allowCustomDropdownOptions: { type: 'boolean' },
         relationship: {
           type: 'object',
           nullable: true,
@@ -121,7 +123,10 @@ export const GroupFieldRemoveFromTrashSchema: FastifySchema = {
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+        cause: {
+          type: 'string',
+          enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS'],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -155,6 +160,8 @@ export const GroupFieldRemoveFromTrashSchema: FastifySchema = {
           enum: [
             'USER_NOT_FOUND',
             'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
             'OWNER_OR_ADMIN_REQUIRED',
           ],
         },

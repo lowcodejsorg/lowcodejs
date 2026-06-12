@@ -2,9 +2,9 @@ import type { FastifySchema } from 'fastify';
 
 export const TableRowSendToTrashSchema: FastifySchema = {
   tags: ['Registros'],
-  summary: 'Send row to trash',
+  summary: 'Enviar registro para a lixeira',
   description:
-    'Moves a row to trash by setting the trashedAt timestamp. The row can be restored later or permanently deleted.',
+    'Move um registro para a lixeira definindo o timestamp trashedAt. O registro pode ser restaurado posteriormente ou excluído permanentemente.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -12,12 +12,12 @@ export const TableRowSendToTrashSchema: FastifySchema = {
     properties: {
       slug: {
         type: 'string',
-        description: 'Table slug containing the row',
+        description: 'Slug da tabela que contém o registro',
         examples: ['users', 'products', 'blog-posts'],
       },
       _id: {
         type: 'string',
-        description: 'Row ID to move to trash',
+        description: 'ID do registro a enviar para a lixeira',
         examples: ['507f1f77bcf86cd799439011'],
       },
     },
@@ -25,24 +25,24 @@ export const TableRowSendToTrashSchema: FastifySchema = {
   },
   response: {
     200: {
-      description: 'Row moved to trash successfully',
+      description: 'Registro enviado para a lixeira com sucesso',
       type: 'object',
       properties: {
-        _id: { type: 'string', description: 'Row ID' },
+        _id: { type: 'string', description: 'ID do registro' },
         trashedAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Timestamp when moved to trash',
+          description: 'Data/hora em que foi enviado para a lixeira',
         },
         createdAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Creation timestamp',
+          description: 'Data/hora de criação',
         },
         updatedAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Last update timestamp',
+          description: 'Data/hora da última atualização',
         },
       },
       additionalProperties: true,

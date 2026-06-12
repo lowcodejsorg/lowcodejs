@@ -1,8 +1,8 @@
 import type { FastifySchema } from 'fastify';
 
 export const SchemaImportSchema: FastifySchema = {
-  tags: ['Tables'],
-  summary: 'Bulk import tables from a YAML schema',
+  tags: ['Tabelas'],
+  summary: 'Importar tabelas em lote a partir de um schema YAML',
   description:
     'Cria múltiplas tabelas em uma única requisição a partir de um YAML declarativo. Cada tabela e seus campos são criados em sequência; erros são reportados individualmente sem abortar as demais. Relacionamentos cross-table dentro do mesmo schema são resolvidos em um segundo passe.',
   security: [{ cookieAuth: [] }],
@@ -16,6 +16,7 @@ export const SchemaImportSchema: FastifySchema = {
           'Conteúdo YAML descrevendo as tabelas (até 5 MB). Veja a documentação para o formato suportado.',
       },
     },
+    additionalProperties: false,
   },
   response: {
     201: {

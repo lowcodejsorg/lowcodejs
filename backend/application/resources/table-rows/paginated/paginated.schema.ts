@@ -86,7 +86,10 @@ export const TableRowPaginatedSchema: FastifySchema = {
               description: 'Quantidade de itens por página',
             },
             page: { type: 'number', description: 'Número da página atual' },
-            lastPage: { type: 'number', description: 'Número da última página' },
+            lastPage: {
+              type: 'number',
+              description: 'Número da última página',
+            },
             firstPage: {
               type: 'number',
               description: 'Número da primeira página',
@@ -140,7 +143,7 @@ export const TableRowPaginatedSchema: FastifySchema = {
       description: 'Tabela não encontrada',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Table not found'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
         errors: {
@@ -150,17 +153,18 @@ export const TableRowPaginatedSchema: FastifySchema = {
       },
       examples: [
         {
-          message: 'Table not found',
+          message: 'Tabela não encontrada',
           code: 404,
           cause: 'TABLE_NOT_FOUND',
         },
       ],
     },
     500: {
-      description: 'Erro interno do servidor - Problemas no banco ou no servidor',
+      description:
+        'Erro interno do servidor - Problemas no banco ou no servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: {
           type: 'string',
