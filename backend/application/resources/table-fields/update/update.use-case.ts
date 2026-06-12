@@ -92,6 +92,8 @@ export default class TableFieldUpdateUseCase {
           showInForm: payload.showInForm,
           showInDetail: payload.showInDetail,
           showInList: payload.showInList,
+          // Visibilidade por grupo também é permitida em campos nativos.
+          permissions: payload.permissions,
           widthInForm: payload.widthInForm,
           widthInList: payload.widthInList,
           widthInDetail: payload.widthInDetail,

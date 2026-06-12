@@ -5,7 +5,11 @@ import z from 'zod';
 import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import { ExtensionSlot } from '@/components/common/extension-slot';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
+import {
+  E_FIELD_FORMAT,
+  E_FIELD_TYPE,
+  E_PERMISSION_TARGET,
+} from '@/lib/constant';
 import {
   FIELD_NAME_MAX_LENGTH,
   FIELD_SLUG_MAX_LENGTH,
@@ -19,6 +23,15 @@ import type {
   IRelationshipLabelPart,
   ITable,
 } from '@/lib/interfaces';
+
+const FieldPermissionBindingSchema = z.object({
+  kind: z.enum([
+    E_PERMISSION_TARGET.PUBLIC,
+    E_PERMISSION_TARGET.NOBODY,
+    E_PERMISSION_TARGET.GROUP,
+  ]),
+  group: z.string().nullable().default(null),
+});
 
 export const FieldUpdateSchema = z.object({
   name: z
@@ -64,6 +77,17 @@ export const FieldUpdateSchema = z.object({
   showInForm: z.boolean().default(false),
   showInDetail: z.boolean().default(false),
   showInList: z.boolean().default(false),
+  permissions: z
+    .object({
+      list: FieldPermissionBindingSchema,
+      form: FieldPermissionBindingSchema,
+      detail: FieldPermissionBindingSchema,
+    })
+    .default({
+      list: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+      form: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+      detail: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+    }),
   required: z.boolean().default(false),
   trashed: z.boolean().default(false),
   widthInForm: z.number().default(50),
@@ -98,6 +122,11 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   showInForm: false,
   showInDetail: false,
   showInList: false,
+  permissions: {
+    list: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+    form: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+    detail: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+  },
   required: false,
   trashed: false,
   widthInForm: 50,
@@ -649,6 +678,37 @@ export const UpdateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {/* Visibilidade do campo por grupo (Lista / Formulário / Detalhes) */}
+        <div className="space-y-3 rounded-lg border p-3">
+          <p className="text-sm font-medium text-muted-foreground">
+            Visibilidade por grupo
+          </p>
+          <form.AppField name="permissions.list">
+            {(field) => (
+              <field.FieldPermissionBinding
+                label="Lista"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="permissions.form">
+            {(field) => (
+              <field.FieldPermissionBinding
+                label="Formulário"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="permissions.detail">
+            {(field) => (
+              <field.FieldPermissionBinding
+                label="Detalhes"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+        </div>
 
         {/* Exibição do grupo de campos: formulário e/ou detalhes */}
         {isFieldGroup && (

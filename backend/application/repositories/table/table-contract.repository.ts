@@ -8,7 +8,9 @@ import type {
   IGroupConfiguration,
   ILayoutFields,
   ITable,
+  ITableMember,
   ITableMethod,
+  ITablePermissions,
   ITableSchema,
   Merge,
   ValueOf,
@@ -27,6 +29,8 @@ export type TableCreatePayload = Merge<
     collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
     administrators?: string[];
     owner: string;
+    permissions?: ITablePermissions | null;
+    members?: ITableMember[];
     fieldOrderList?: string[];
     fieldOrderForm?: string[];
     fieldOrderFilter?: string[];

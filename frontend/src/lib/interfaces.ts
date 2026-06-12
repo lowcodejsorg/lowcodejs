@@ -23,10 +23,13 @@ import type {
   E_LOGGER_OBJECT_TYPE,
   E_MENU_ITEM_TYPE,
   E_NOTIFICATION_TYPE,
+  E_PERMISSION_TARGET,
   E_REACTION_TYPE,
   E_ROLE,
   E_ROW_STATUS,
   E_TABLE_COLLABORATION,
+  E_TABLE_PERMISSION,
+  E_TABLE_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
@@ -94,6 +97,8 @@ export type IGroup = Merge<
     slug: string;
     description: string | null;
     permissions: Array<IPermission>;
+    // IDs dos grupos englobados (quem pertence a este grupo herda o acesso deles).
+    encompasses: Array<string>;
   }
 >;
 
@@ -104,7 +109,10 @@ export type IUser = Merge<
     email: string;
     password: string;
     status: ValueOf<typeof E_USER_STATUS>;
+    // Grupo principal (define o papel no sistema).
     group: IGroup;
+    // Grupos adicionais do usuario (multi-grupo).
+    groups: Array<IGroup>;
     notificationsEnabled: boolean;
   }
 >;
@@ -173,6 +181,8 @@ export type IMenu = Merge<
     order: number;
     isInitial: boolean;
     extension: IMenuExtensionRef | null;
+    // Visibilidade da opção (Grupo|Public|Nobody). null em menus legados.
+    visibility?: IPermissionBinding | null;
     children?: Array<IMenu>;
   }
 >;
@@ -237,6 +247,13 @@ export type IField = Merge<
     showInForm: boolean;
     showInDetail: boolean;
     showInList: boolean;
+    // Visibilidade do campo por contexto (Grupo|Public|Nobody). null em campos
+    // legados ainda não migrados.
+    permissions?: {
+      list: IPermissionBinding;
+      form: IPermissionBinding;
+      detail: IPermissionBinding;
+    } | null;
     widthInForm: number | null;
     widthInList: number | null;
     widthInDetail: number | null;
@@ -297,6 +314,23 @@ export type ILayoutFields = {
   reminder: string | null;
 };
 
+// Vínculo de uma ação a quem pode realizá-la. `group` só é usado quando
+// kind === 'GROUP'.
+export type IPermissionBinding = {
+  kind: ValueOf<typeof E_PERMISSION_TARGET>;
+  group: string | null;
+};
+
+// Mapa ação -> binding. Parcial: tabelas legadas podem não ter o mapa.
+export type ITablePermissions = Partial<
+  Record<ValueOf<typeof E_TABLE_PERMISSION>, IPermissionBinding>
+>;
+
+export type ITableMember = {
+  user: string;
+  profile: ValueOf<typeof E_TABLE_PROFILE>;
+};
+
 export type ITable = Merge<
   Base,
   {
@@ -312,6 +346,11 @@ export type ITable = Merge<
     collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
     administrators: Array<IUser>;
     owner: IUser;
+    // Novo modelo: cada ação aponta para um binding (Grupo|Public|Nobody).
+    // null em tabelas legadas ainda não migradas.
+    permissions: ITablePermissions | null;
+    // Convidados da tabela e seus perfis.
+    members: Array<ITableMember>;
     fieldOrderList: Array<string>;
     fieldOrderForm: Array<string>;
     fieldOrderFilter: Array<string>;

@@ -88,6 +88,35 @@ export const TableFieldCreateSchema: FastifySchema = {
         default: false,
         description: 'Exibir campo nas visualizações de lista/grade/kanban',
       },
+      permissions: {
+        type: 'object',
+        nullable: true,
+        description:
+          'Visibilidade do campo por contexto (lista/formulário/detalhe)',
+        properties: {
+          list: {
+            type: 'object',
+            properties: {
+              kind: { type: 'string', enum: ['PUBLIC', 'NOBODY', 'GROUP'] },
+              group: { type: 'string', nullable: true },
+            },
+          },
+          form: {
+            type: 'object',
+            properties: {
+              kind: { type: 'string', enum: ['PUBLIC', 'NOBODY', 'GROUP'] },
+              group: { type: 'string', nullable: true },
+            },
+          },
+          detail: {
+            type: 'object',
+            properties: {
+              kind: { type: 'string', enum: ['PUBLIC', 'NOBODY', 'GROUP'] },
+              group: { type: 'string', nullable: true },
+            },
+          },
+        },
+      },
       widthInForm: {
         type: 'number',
         nullable: true,

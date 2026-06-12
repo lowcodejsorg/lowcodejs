@@ -10,8 +10,10 @@ import {
   TableFieldOrderFormSchema,
   TableFieldOrderListSchema,
   TableLayoutFieldsSchema,
+  TableMembersSchema,
   TableMethodSchema,
   TableOrderSchema,
+  TablePermissionsSchema,
   TableStyleSchema,
   TableVisibilitySchema,
 } from '../table-base.schema';
@@ -43,6 +45,11 @@ export const TableUpdateBodyValidator = z
     layoutFields: TableLayoutFieldsSchema.optional(),
     groups: z.array(GroupConfigurationSchema).optional(),
     rowSlugFieldId: z.string().trim().nullable().optional(),
+    // Novo modelo de permissoes (Grupo|Public|Nobody por acao) + convidados +
+    // troca de dono. Opcionais: tabelas legadas continuam enviando visibility.
+    permissions: TablePermissionsSchema.optional(),
+    members: TableMembersSchema.optional(),
+    owner: z.string().trim().min(1).optional(),
   })
   .transform((data) => {
     let slug = slugify(data.name, { lower: true, strict: true, trim: true });

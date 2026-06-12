@@ -32,6 +32,7 @@ import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useDeleteTableRow } from '@/hooks/tanstack-query/use-table-row-delete';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useAutoSave } from '@/hooks/use-auto-save';
+import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
@@ -127,10 +128,12 @@ function AutoSaveRowFormContent({
 
   const slug = table.slug;
 
+  const { isFieldVisible } = useFieldVisibility();
+
   const fields = React.useMemo((): Array<IField> => {
     const order = table.fieldOrderForm;
     return table.fields
-      .filter((f) => !f.trashed && f.showInForm)
+      .filter((f) => !f.trashed && isFieldVisible(f, 'form'))
       .sort((a: IField, b: IField): number => {
         const idxA = order.indexOf(a._id);
         const idxB = order.indexOf(b._id);
@@ -140,7 +143,7 @@ function AutoSaveRowFormContent({
         if (idxB === -1) sortB = Infinity;
         return sortA - sortB;
       });
-  }, [table.fields, table.fieldOrderForm]);
+  }, [table.fields, table.fieldOrderForm, isFieldVisible]);
 
   const requiredFields = React.useMemo((): Array<IField> => {
     return fields.filter((f) => f.required && !f.native);
@@ -150,9 +153,12 @@ function AutoSaveRowFormContent({
   // group-rows (precisam de rowId), não no payload do registro principal.
   const formGroupFields = React.useMemo((): Array<IField> => {
     return table.fields.filter(
-      (f) => f.type === E_FIELD_TYPE.FIELD_GROUP && f.showInForm && !f.trashed,
+      (f) =>
+        f.type === E_FIELD_TYPE.FIELD_GROUP &&
+        isFieldVisible(f, 'form') &&
+        !f.trashed,
     );
-  }, [table.fields]);
+  }, [table.fields, isFieldVisible]);
 
   const categoryOverride = React.useMemo(():
     | CreateRowDefaultValue

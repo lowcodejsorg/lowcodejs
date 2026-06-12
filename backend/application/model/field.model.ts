@@ -2,9 +2,39 @@
 import mongoose from 'mongoose';
 
 import type { IField as Core, Merge } from '@application/core/entity.core';
-import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@application/core/entity.core';
+import {
+  E_FIELD_FORMAT,
+  E_FIELD_TYPE,
+  E_PERMISSION_TARGET,
+} from '@application/core/entity.core';
 
 type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
+
+// Binding de visibilidade do campo num contexto (lista/formulario/detalhe).
+const FieldPermissionBinding = new mongoose.Schema(
+  {
+    kind: {
+      type: String,
+      enum: Object.values(E_PERMISSION_TARGET),
+      default: E_PERMISSION_TARGET.PUBLIC,
+    },
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'UserGroup',
+      default: null,
+    },
+  },
+  { _id: false },
+);
+
+const FieldPermissions = new mongoose.Schema(
+  {
+    list: { type: FieldPermissionBinding },
+    form: { type: FieldPermissionBinding },
+    detail: { type: FieldPermissionBinding },
+  },
+  { _id: false },
+);
 
 const RelationshipLabelPart = new mongoose.Schema(
   {
@@ -171,6 +201,11 @@ export const Schema = new mongoose.Schema(
     showInList: {
       type: Boolean,
       default: false,
+    },
+    // Novo modelo de visibilidade por contexto. null em campos legados.
+    permissions: {
+      type: FieldPermissions,
+      default: null,
     },
     widthInForm: {
       type: Number,

@@ -1,13 +1,14 @@
 # Update Table
 
-Atualiza uma tabela existente, incluindo nome, estilo, visibilidade, administradores e layout.
+Atualiza uma tabela existente, incluindo nome, estilo, permissoes (binding por
+acao), membros (convidados), dono e layout.
 
 ## Endpoint
 `PUT /tables/:slug` | Auth: Sim | Permission: UPDATE_TABLE
 
 ## Fluxo
 1. Middleware: AuthenticationMiddleware (required), TableAccessMiddleware (UPDATE_TABLE)
-2. Validator: TableUpdateBodyValidator - campos: name (string, trim, min 1, max 40, regex), description (string nullable), logo (string nullable), style (TableStyleSchema), visibility (TableVisibilitySchema), collaboration (TableCollaborationSchema), administrators (array string), fieldOrderList (array string), fieldOrderForm (array string), methods (TableMethodSchema), order (TableOrderSchema), layoutFields (TableLayoutFieldsSchema optional). TableUpdateParamsValidator - campos: slug (string, trim)
+2. Validator: TableUpdateBodyValidator - campos: name (string, trim, min 1, max 40, regex), description (string nullable), logo (string nullable), style (TableStyleSchema), permissions (TablePermissionsSchema optional, mapa acao→binding), members (TableMembersSchema optional, `{ user, profile }`), owner (string optional, troca de dono), fieldOrderList/Form/Filter/Detail (array string), methods (TableMethodSchema), order (TableOrderSchema), layoutFields (TableLayoutFieldsSchema optional), groups, rowSlugFieldId. **Legados (opcionais, mantidos para tabelas nao migradas)**: visibility (TableVisibilitySchema), collaboration (TableCollaborationSchema), administrators (array string). TableUpdateParamsValidator - campos: slug (string, trim)
 3. UseCase:
    - Busca tabela por slug exato
    - Valida administradores: todos devem ser usuarios ativos (status ACTIVE, trashed false)
@@ -22,9 +23,11 @@ Atualiza uma tabela existente, incluindo nome, estilo, visibilidade, administrad
 
 ## Regras de Negocio
 - Nome gera novo slug automaticamente
-- Administradores devem ser usuarios ativos
+- `permissions`, `members` e `owner` (troca de dono) sao persistidos quando
+  enviados; caso contrario preservam o valor atual
+- Administradores (legado) devem ser usuarios ativos quando informados
 - Rename de slug propaga para colecao MongoDB, campos RELATIONSHIP e tabelas relacionadas
-- Visibilidade propaga para sub-tabelas FIELD_GROUP
+- Visibilidade (legado) propaga para sub-tabelas FIELD_GROUP
 
 ## Erros Possiveis
 | Code | Cause | Quando |

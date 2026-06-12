@@ -50,6 +50,11 @@ export const UserGroupShowSchema: FastifySchema = {
             },
           },
         },
+        encompasses: {
+          type: 'array',
+          description: 'IDs dos grupos englobados',
+          items: { type: 'string' },
+        },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' },
       },

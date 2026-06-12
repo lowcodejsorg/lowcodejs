@@ -27,7 +27,18 @@ Gerenciamento de usuarios da plataforma (CRUD).
 
 ## Auth
 
-Todas as operacoes exigem autenticacao (`AuthenticationMiddleware({ optional: false })`).
+Todas as operacoes rodam primeiro `AuthenticationMiddleware({ optional: false })`
+(autenticacao obrigatoria) e, em seguida,
+`PermissionMiddleware(E_AREA_CAPABILITY.MANAGE_USERS)` — ou seja, exigem a
+capability MANAGE_USERS. Isso vale para create, update, show, bulk-update,
+bulk-trash, bulk-restore, bulk-delete, send-to-trash, remove-from-trash,
+empty-trash, delete e export-csv.
+
+**Excecao — `paginated`**: permanece apenas autenticada (somente
+`AuthenticationMiddleware`, sem `PermissionMiddleware`). Isso e intencional:
+o endpoint alimenta os pickers de campos USER em toda a aplicacao, members de
+tabela e selects de forum; gatear este endpoint quebraria a edicao normal de
+registros para usuarios sem MANAGE_USERS.
 
 ## Validator Base
 

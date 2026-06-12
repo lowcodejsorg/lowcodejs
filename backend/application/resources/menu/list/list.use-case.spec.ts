@@ -1,16 +1,27 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
+import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
+import GroupResolverService from '@application/services/group-resolver/group-resolver.service';
 
 import MenuListUseCase from './list.use-case';
 
 let menuInMemoryRepository: MenuInMemoryRepository;
+let userInMemoryRepository: UserInMemoryRepository;
+let groupResolver: GroupResolverService;
 let sut: MenuListUseCase;
 
 describe('Menu List Use Case', () => {
   beforeEach(() => {
     menuInMemoryRepository = new MenuInMemoryRepository();
-    sut = new MenuListUseCase(menuInMemoryRepository);
+    userInMemoryRepository = new UserInMemoryRepository();
+    groupResolver = new GroupResolverService(new UserGroupInMemoryRepository());
+    sut = new MenuListUseCase(
+      menuInMemoryRepository,
+      userInMemoryRepository,
+      groupResolver,
+    );
   });
 
   it('deve retornar lista vazia quando nao houver menus', async () => {

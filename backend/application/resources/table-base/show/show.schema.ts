@@ -99,6 +99,44 @@ export const TableShowSchema: FastifySchema = {
                 type: 'boolean',
                 description: 'Permitir filtragem',
               },
+              permissions: {
+                type: 'object',
+                nullable: true,
+                description:
+                  'Visibilidade do campo por contexto (lista/formulário/detalhe)',
+                properties: {
+                  list: {
+                    type: 'object',
+                    properties: {
+                      kind: {
+                        type: 'string',
+                        enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                      },
+                      group: { type: 'string', nullable: true },
+                    },
+                  },
+                  form: {
+                    type: 'object',
+                    properties: {
+                      kind: {
+                        type: 'string',
+                        enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                      },
+                      group: { type: 'string', nullable: true },
+                    },
+                  },
+                  detail: {
+                    type: 'object',
+                    properties: {
+                      kind: {
+                        type: 'string',
+                        enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                      },
+                      group: { type: 'string', nullable: true },
+                    },
+                  },
+                },
+              },
               widthInForm: {
                 type: 'number',
                 nullable: true,
@@ -270,6 +308,33 @@ export const TableShowSchema: FastifySchema = {
           properties: {
             _id: { type: 'string', description: 'ID do usuário' },
             name: { type: 'string', description: 'Nome do usuário' },
+          },
+        },
+        permissions: {
+          type: 'object',
+          nullable: true,
+          description:
+            'Mapa de cada ação para um binding (Grupo|Public|Nobody)',
+          additionalProperties: {
+            type: 'object',
+            properties: {
+              kind: { type: 'string', enum: ['PUBLIC', 'NOBODY', 'GROUP'] },
+              group: { type: 'string', nullable: true },
+            },
+          },
+        },
+        members: {
+          type: 'array',
+          description: 'Convidados da tabela e seus perfis',
+          items: {
+            type: 'object',
+            properties: {
+              user: { type: 'string', description: 'ID do usuário' },
+              profile: {
+                type: 'string',
+                enum: ['OWNER', 'ADMIN', 'EDITOR', 'CONTRIBUTOR', 'VIEWER'],
+              },
+            },
           },
         },
         fieldOrderList: {

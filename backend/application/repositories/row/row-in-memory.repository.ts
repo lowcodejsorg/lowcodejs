@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import type { IRow } from '@application/core/entity.core';
+import { resolveCreatorId } from '@application/core/row-ownership.core';
 
 import type {
   RowBulkDeletePayload,
@@ -185,6 +186,11 @@ export default class RowInMemoryRepository implements RowContractRepository {
     let count = 0;
 
     for (const row of collection) {
+      if (
+        payload.creatorId &&
+        resolveCreatorId(row.creator) !== payload.creatorId
+      )
+        continue;
       if (payload.ids.includes(row._id) && row.trashedAt == null) {
         row.trashedAt = new Date();
         count++;
@@ -199,6 +205,11 @@ export default class RowInMemoryRepository implements RowContractRepository {
     let count = 0;
 
     for (const row of collection) {
+      if (
+        payload.creatorId &&
+        resolveCreatorId(row.creator) !== payload.creatorId
+      )
+        continue;
       if (payload.ids.includes(row._id) && row.trashedAt != null) {
         row.trashedAt = null;
         count++;
@@ -214,7 +225,14 @@ export default class RowInMemoryRepository implements RowContractRepository {
     const remaining: IRow[] = [];
 
     for (const row of collection) {
-      if (payload.ids.includes(row._id) && row.trashedAt != null) {
+      const ownedByOther =
+        !!payload.creatorId &&
+        resolveCreatorId(row.creator) !== payload.creatorId;
+      if (
+        !ownedByOther &&
+        payload.ids.includes(row._id) &&
+        row.trashedAt != null
+      ) {
         count++;
       } else {
         remaining.push(row);
@@ -225,9 +243,17 @@ export default class RowInMemoryRepository implements RowContractRepository {
     return count;
   }
 
-  async emptyTrash(table: RowTableContext): Promise<number> {
+  async emptyTrash(
+    table: RowTableContext,
+    creatorId?: string,
+  ): Promise<number> {
     const collection = this.getCollection(table.slug);
-    const remaining = collection.filter((item) => item.trashedAt == null);
+    const remaining = collection.filter((item) => {
+      if (item.trashedAt == null) return true;
+      if (creatorId && resolveCreatorId(item.creator) !== creatorId)
+        return true;
+      return false;
+    });
     const count = collection.length - remaining.length;
 
     this.collections.set(table.slug, remaining);

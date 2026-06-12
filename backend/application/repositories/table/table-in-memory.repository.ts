@@ -59,6 +59,8 @@ export default class TableInMemoryRepository implements TableContractRepository 
         (a) => ({ _id: a }) as IUser,
       ),
       owner: { _id: payload.owner } as IUser,
+      permissions: payload.permissions ?? null,
+      members: payload.members ?? [],
       fieldOrderList: payload.fieldOrderList ?? [],
       fieldOrderForm: payload.fieldOrderForm ?? [],
       fieldOrderFilter: payload.fieldOrderFilter ?? [],

@@ -3,10 +3,11 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IRow } from '@application/core/entity.core';
+import type { IRow, ITable } from '@application/core/entity.core';
 import { E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldSlug } from '@application/core/field-slug.core';
+import { resolveCreatorId } from '@application/core/row-ownership.core';
 import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -22,6 +23,8 @@ type Payload = Record<string, unknown> & {
   slug: string;
   _id: string;
   __actorUserId?: string;
+  // Convidado contributor: só pode editar os próprios registros.
+  __ownOnly?: boolean;
 };
 
 @Service()
@@ -45,6 +48,9 @@ export default class TableRowUpdateUseCase {
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
       }
+
+      const ownGuard = await this.enforceOwnRow(payload, table);
+      if (ownGuard) return left(ownGuard);
 
       const errors = RowPayloadValidator.validate(
         payload,
@@ -265,5 +271,36 @@ export default class TableRowUpdateUseCase {
         ),
       );
     }
+  }
+
+  /**
+   * Quando o acesso veio de um convidado contributor (__ownOnly), o registro só
+   * pode ser editado pelo seu próprio criador. Retorna a exceção a propagar ou
+   * null quando liberado.
+   */
+  private async enforceOwnRow(
+    payload: Payload,
+    table: ITable,
+  ): Promise<HTTPException | null> {
+    if (!payload.__ownOnly) return null;
+
+    const current = await this.rowRepository.findOne({
+      table,
+      query: { _id: payload._id },
+    });
+
+    if (!current) {
+      return HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND');
+    }
+
+    const creatorId = resolveCreatorId(current.creator);
+    if (!payload.__actorUserId || creatorId !== payload.__actorUserId) {
+      return HTTPException.Forbidden(
+        'Você só pode editar os seus próprios registros',
+        'OWN_ROW_ONLY',
+      );
+    }
+
+    return null;
   }
 }

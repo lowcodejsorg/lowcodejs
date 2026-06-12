@@ -137,6 +137,37 @@ export const TableUpdateSchema: FastifySchema = {
         nullable: true,
         description: 'ID do campo usado para gerar slugs amigáveis de registro',
       },
+      permissions: {
+        type: 'object',
+        description:
+          'Mapa de cada ação da tabela para um binding (Grupo|Public|Nobody)',
+        additionalProperties: {
+          type: 'object',
+          properties: {
+            kind: { type: 'string', enum: ['PUBLIC', 'NOBODY', 'GROUP'] },
+            group: { type: 'string', nullable: true },
+          },
+        },
+      },
+      members: {
+        type: 'array',
+        description: 'Convidados da tabela e seus perfis',
+        items: {
+          type: 'object',
+          required: ['user', 'profile'],
+          properties: {
+            user: { type: 'string' },
+            profile: {
+              type: 'string',
+              enum: ['OWNER', 'ADMIN', 'EDITOR', 'CONTRIBUTOR', 'VIEWER'],
+            },
+          },
+        },
+      },
+      owner: {
+        type: 'string',
+        description: 'ID do novo dono da tabela (troca de dono)',
+      },
     },
     additionalProperties: false,
   },
@@ -348,6 +379,33 @@ export const TableUpdateSchema: FastifySchema = {
           properties: {
             _id: { type: 'string', description: 'ID do usuário' },
             name: { type: 'string', description: 'Nome do usuário' },
+          },
+        },
+        permissions: {
+          type: 'object',
+          nullable: true,
+          description:
+            'Mapa de cada ação para um binding (Grupo|Public|Nobody)',
+          additionalProperties: {
+            type: 'object',
+            properties: {
+              kind: { type: 'string', enum: ['PUBLIC', 'NOBODY', 'GROUP'] },
+              group: { type: 'string', nullable: true },
+            },
+          },
+        },
+        members: {
+          type: 'array',
+          description: 'Convidados da tabela e seus perfis',
+          items: {
+            type: 'object',
+            properties: {
+              user: { type: 'string', description: 'ID do usuário' },
+              profile: {
+                type: 'string',
+                enum: ['OWNER', 'ADMIN', 'EDITOR', 'CONTRIBUTOR', 'VIEWER'],
+              },
+            },
           },
         },
         fieldOrderList: {

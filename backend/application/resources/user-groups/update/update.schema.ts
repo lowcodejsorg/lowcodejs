@@ -58,6 +58,14 @@ export const UserGroupUpdateSchema: FastifySchema = {
           type: 'Permissões deve ser uma lista',
         },
       },
+      encompasses: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Lista atualizada de IDs de grupos englobados',
+        errorMessage: {
+          type: 'Grupos englobados deve ser uma lista',
+        },
+      },
     },
   },
   response: {
@@ -84,6 +92,11 @@ export const UserGroupUpdateSchema: FastifySchema = {
               },
             },
           },
+        },
+        encompasses: {
+          type: 'array',
+          description: 'IDs dos grupos englobados',
+          items: { type: 'string' },
         },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' },

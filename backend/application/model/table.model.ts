@@ -1,13 +1,63 @@
 import mongoose from 'mongoose';
 
 import {
+  E_PERMISSION_TARGET,
   E_TABLE_COLLABORATION,
+  E_TABLE_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
   Merge,
   type ITable as Core,
 } from '@application/core/entity.core';
+
+// Binding de uma acao da tabela: a quem ela esta liberada.
+const PermissionBinding = new mongoose.Schema(
+  {
+    kind: {
+      type: String,
+      enum: Object.values(E_PERMISSION_TARGET),
+      default: E_PERMISSION_TARGET.NOBODY,
+    },
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'UserGroup',
+      default: null,
+    },
+  },
+  { _id: false },
+);
+
+// Convidado da tabela com seu perfil de colaboracao.
+const TableMember = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    profile: {
+      type: String,
+      enum: Object.values(E_TABLE_PROFILE),
+      default: E_TABLE_PROFILE.VIEWER,
+    },
+  },
+  { _id: false },
+);
+
+// Mapa das 10 acoes da tabela -> binding. Cada acao usa as chaves do
+// E_TABLE_PERMISSION (VIEW_TABLE, UPDATE_TABLE, ...).
+const TablePermissions = new mongoose.Schema(
+  {
+    VIEW_TABLE: { type: PermissionBinding },
+    UPDATE_TABLE: { type: PermissionBinding },
+    CREATE_FIELD: { type: PermissionBinding },
+    UPDATE_FIELD: { type: PermissionBinding },
+    REMOVE_FIELD: { type: PermissionBinding },
+    VIEW_FIELD: { type: PermissionBinding },
+    CREATE_ROW: { type: PermissionBinding },
+    UPDATE_ROW: { type: PermissionBinding },
+    REMOVE_ROW: { type: PermissionBinding },
+    VIEW_ROW: { type: PermissionBinding },
+  },
+  { _id: false },
+);
 
 const LayoutFields = new mongoose.Schema(
   {
@@ -110,6 +160,17 @@ export const Schema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    // Novo modelo de permissoes por acao. null em tabelas legadas (o enforcement
+    // cai no modelo de visibilidade enquanto nao migradas).
+    permissions: {
+      type: TablePermissions,
+      default: null,
+    },
+    // Convidados da tabela e seus perfis.
+    members: {
+      type: [TableMember],
+      default: [],
     },
     fieldOrderList: {
       type: [String],

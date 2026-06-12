@@ -108,7 +108,8 @@ backend/
 
 ### Middleware
 - `authentication.middleware.ts` - Extrai JWT de cookie/header, popula `request.user`
-- `table-access.middleware.ts` - Verifica permissoes RBAC + visibilidade de tabela
+- `permission.middleware.ts` - `PermissionMiddleware(capability)`: exige uma capacidade de area (`E_AREA_CAPABILITY`) resolvida pelo fecho de grupos. Substitui o RoleMiddleware nas areas; MASTER bypassa
+- `table-access.middleware.ts` - Verifica acesso a tabela: bindings por acao (`table.permissions`) + perfil de membro (`table.members`) + dono, com fallback ao modelo legado (visibilidade/administrators)
 
 ### Model (`*.model.ts`)
 - Mongoose schemas com timestamps
@@ -159,24 +160,76 @@ Codigo de usuario (beforeSave, afterSave, onLoad) roda em Node VM isolada com ti
 | `E_TABLE_VISIBILITY` | PUBLIC, RESTRICTED, OPEN, FORM, PRIVATE |
 | `E_TABLE_COLLABORATION` | OPEN, RESTRICTED |
 | `E_TABLE_PERMISSION` | CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW (12 total) |
+| `E_AREA_CAPABILITY` | MANAGE_USERS, MANAGE_MENU, MANAGE_USER_GROUPS, MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS |
+| `E_PERMISSION_TARGET` | PUBLIC, NOBODY, GROUP (binding `{ kind, group }`) |
+| `E_TABLE_PROFILE` | OWNER, ADMIN, EDITOR, CONTRIBUTOR, VIEWER (perfis de membro) |
+| `E_PROFILE_ACCESS` | ALLOW, DENY, OWN (celula da `TABLE_PROFILE_MATRIX`) |
 | `E_JWT_TYPE` | ACCESS, REFRESH |
 | `E_USER_STATUS` | ACTIVE, INACTIVE |
 
 ## Sistema de Permissoes (RBAC)
 
-| Role | Permissoes |
-|------|-----------|
-| MASTER | Todas (bypassa checks) |
-| ADMINISTRATOR | Todas (acesso a todas as tabelas) |
-| MANAGER | CRUD + VIEW (respeita ownership) |
-| REGISTERED | VIEW + CREATE_ROW apenas |
+O modelo de permissoes foi reescrito. Nao ha mais 4 roles fixos governando tudo
+— roles continuam existindo apenas para compat (JWT/derivacao). O controle real
+gira em torno de **grupos custom + capacidades + bindings por acao**.
 
-Visibilidade de tabela (para nao-owners):
+### Grupos custom com hierarquia
+
+- Grupos sao configuraveis e podem englobar outros via `encompasses[]` (fecho
+  transitivo / "Engloba"): um grupo herda as permissoes de tudo que engloba.
+- Um usuario pertence a **varios grupos** (`user.groups[]`). O campo legado
+  `user.group` foi **mantido** para compat e fallback.
+- Resolver: `application/services/group-resolver/` —
+  `resolveUserGroupIds(user)` (fecho dos ids) e `resolveCapabilities(user)`
+  (uniao das permissoes do fecho).
+
+### Capacidades de area
+
+`E_AREA_CAPABILITY` (MANAGE_USERS, MANAGE_MENU, MANAGE_USER_GROUPS,
+MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS) sao permissoes atribuiveis a
+qualquer grupo, enforcadas por `PermissionMiddleware(capability)` — substitui o
+`RoleMiddleware` nas areas do sistema. MASTER bypassa.
+
+### Bindings por acao (`E_PERMISSION_TARGET`)
+
+Alvo `{ kind, group }` onde `kind ∈ { PUBLIC, NOBODY, GROUP }` (PUBLIC inclui
+visitante; GROUP libera se o grupo estiver no fecho do usuario). Reusado em:
+
+- `table.permissions`: mapa das 10 acoes de tabela (viewTable/updateTable/
+  createField/updateField/removeField/viewField/createRow/updateRow/removeRow/
+  viewRow) → binding.
+- `field.permissions: { list, form, detail }` → binding por contexto.
+- `menu.visibility` → binding.
+
+### Convidados da tabela (membros)
+
+`table.members[]` (`{ user, profile }`) com perfis fixos `E_TABLE_PROFILE`
+(owner/admin/editor/contributor/viewer) avaliados pela matriz
+`TABLE_PROFILE_MATRIX`. `contributor` edita/remove **apenas as suas** rows (OWN).
+`owner` tem acesso total e pode "trocar dono". Substituem `administrators[]`.
+
+### Fallback legado (importante)
+
+Os campos antigos `visibility`/`collaboration`/`administrators` (tabela),
+`showInList`/`showInForm`/`showInDetail` (campo) foram **mantidos e estao
+deprecated**. O enforcement cai para o modelo legado quando
+`table.permissions == null` (tabela ainda nao migrada). As migrations
+idempotentes (09 table-permissions, 10 field-permissions, 11 menu-visibility)
+fazem o backfill e rodam no `docker-entrypoint.sh`.
+
+Visibilidade de tabela (modelo **legado/fallback**, para nao-owners de tabelas
+ainda nao migradas):
 - **PUBLIC**: GET view liberado para visitantes
 - **FORM**: POST create liberado para visitantes
 - **OPEN**: VIEW + CREATE_ROW
 - **RESTRICTED**: VIEW only
 - **PRIVATE**: bloqueado
+
+### JWT
+
+Payload **inalterado** (`{ sub, email, role, type }`); `role` ainda e derivado
+do grupo de sistema (compat). Os grupos sao resolvidos server-side a cada
+request.
 
 ## Convencoes de Nomenclatura
 

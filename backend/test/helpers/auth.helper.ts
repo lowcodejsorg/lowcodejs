@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import supertest from 'supertest';
 
 import {
+  E_AREA_CAPABILITY,
   E_TABLE_PERMISSION,
   E_USER_STATUS,
 } from '@application/core/entity.core';
@@ -86,6 +87,36 @@ export async function createAuthenticatedUser(
       slug: E_TABLE_PERMISSION.VIEW_ROW,
       description: 'Allows viewing and listening rows from an existing table.',
     },
+    {
+      name: 'Gerenciar usuários',
+      slug: E_AREA_CAPABILITY.MANAGE_USERS,
+      description: 'Gerencia a área de usuários',
+    },
+    {
+      name: 'Gerenciar menu',
+      slug: E_AREA_CAPABILITY.MANAGE_MENU,
+      description: 'Gerencia a área de menu',
+    },
+    {
+      name: 'Gerenciar grupos de usuários',
+      slug: E_AREA_CAPABILITY.MANAGE_USER_GROUPS,
+      description: 'Gerencia a área de grupos de usuários',
+    },
+    {
+      name: 'Gerenciar configurações',
+      slug: E_AREA_CAPABILITY.MANAGE_SETTINGS,
+      description: 'Gerencia a área de configurações',
+    },
+    {
+      name: 'Gerenciar ferramentas',
+      slug: E_AREA_CAPABILITY.MANAGE_TOOLS,
+      description: 'Gerencia a área de ferramentas',
+    },
+    {
+      name: 'Gerenciar plugins',
+      slug: E_AREA_CAPABILITY.MANAGE_PLUGINS,
+      description: 'Gerencia a área de plugins',
+    },
   ]);
 
   if (!group) {
@@ -102,6 +133,7 @@ export async function createAuthenticatedUser(
     password: hashedPassword,
     status: E_USER_STATUS.ACTIVE,
     group: group._id,
+    groups: [group._id],
   });
 
   const response = await supertest(kernel.server)

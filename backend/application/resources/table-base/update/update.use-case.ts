@@ -97,7 +97,12 @@ export default class TableUpdateUseCase {
         _id: table._id,
         ...payload,
         slug: newSlug,
-        owner: table.owner._id,
+        // Troca de dono: aceita payload.owner; caso contrario preserva o atual.
+        owner: payload.owner ?? table.owner._id,
+        // Novo modelo de permissoes/convidados: preserva o existente quando o
+        // cliente nao envia (transicao com a UI antiga).
+        permissions: payload.permissions ?? table.permissions,
+        members: payload.members ?? table.members,
         rowSlugFieldId,
         style: payload.style ?? table.style,
         visibility: payload.visibility ?? table.visibility,

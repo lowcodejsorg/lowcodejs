@@ -6,6 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE, E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { resolveCreatorId } from '@application/core/row-ownership.core';
 import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -17,6 +18,9 @@ type Payload = Record<string, unknown> & {
   rowId: string;
   groupSlug: string;
   itemId: string;
+  __actorUserId?: string;
+  // Convidado contributor: só altera itens da própria row pai.
+  __ownOnly?: boolean;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -97,6 +101,19 @@ export default class GroupRowUpdateUseCase {
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
 
+      // Convidado contributor só altera itens da row pai que ele criou.
+      if (payload.__ownOnly) {
+        const creatorId = resolveCreatorId(existingRow.creator);
+        if (!payload.__actorUserId || creatorId !== payload.__actorUserId) {
+          return left(
+            HTTPException.Forbidden(
+              'Você só pode alterar os seus próprios registros',
+              'OWN_ROW_ONLY',
+            ),
+          );
+        }
+      }
+
       // Verifica se o item existe na row
       const existingItems = existingRow[groupField.slug];
       let itemExists = false;
@@ -122,7 +139,15 @@ export default class GroupRowUpdateUseCase {
         );
 
       // Atualiza o subdocumento com os dados do payload
-      const { slug, rowId, groupSlug, itemId, ...itemData } = payload;
+      const {
+        slug,
+        rowId,
+        groupSlug,
+        itemId,
+        __actorUserId,
+        __ownOnly,
+        ...itemData
+      } = payload;
 
       // O ato de salvar via update publica o item de grupo (rascunho -> publicado).
       itemData.status = E_ROW_STATUS.PUBLISHED;

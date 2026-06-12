@@ -28,11 +28,21 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE, E_PERMISSION_TARGET } from '@/lib/constant';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
 import { QueryClient as queryClient } from '@/lib/query-client';
+
+// Deriva o binding de visibilidade a partir do boolean showIn* legado (usado
+// quando o campo ainda não tem o mapa permissions).
+function bindingFromBool(visible: boolean): {
+  kind: ValueOf<typeof E_PERMISSION_TARGET>;
+  group: string | null;
+} {
+  if (visible) return { kind: E_PERMISSION_TARGET.PUBLIC, group: null };
+  return { kind: E_PERMISSION_TARGET.NOBODY, group: null };
+}
 
 function normalizeDefaultValue(
   type: string,
@@ -347,6 +357,11 @@ function FieldUpdateContent({
       showInForm: data.showInForm,
       showInDetail: data.showInDetail,
       showInList: data.showInList,
+      permissions: data.permissions ?? {
+        list: bindingFromBool(data.showInList),
+        form: bindingFromBool(data.showInForm),
+        detail: bindingFromBool(data.showInDetail),
+      },
       required: data.required,
       trashed: Boolean((data as IField & { trashed?: boolean }).trashed),
       widthInForm: data.widthInForm ?? 50,
@@ -375,6 +390,7 @@ function FieldUpdateContent({
         showInForm: value.showInForm,
         showInDetail: value.showInDetail,
         showInList: value.showInList,
+        permissions: value.permissions,
         widthInForm: value.widthInForm,
         widthInList: value.widthInList,
         format: value.format

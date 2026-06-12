@@ -11,6 +11,12 @@ import type { BulkTrashPayload } from './bulk-trash.validator';
 
 type Response = Either<HTTPException, { modified: number }>;
 
+type Payload = BulkTrashPayload & {
+  __actorUserId?: string;
+  // Convidado contributor: só envia para a lixeira os próprios registros.
+  __ownOnly?: boolean;
+};
+
 @Service()
 export default class BulkTrashUseCase {
   constructor(
@@ -18,7 +24,7 @@ export default class BulkTrashUseCase {
     private readonly rowRepository: RowContractRepository,
   ) {}
 
-  async execute(payload: BulkTrashPayload): Promise<Response> {
+  async execute(payload: Payload): Promise<Response> {
     try {
       const table = await this.tableRepository.findBySlug(payload.slug);
 
@@ -28,9 +34,13 @@ export default class BulkTrashUseCase {
         );
       }
 
+      let creatorId: string | undefined = undefined;
+      if (payload.__ownOnly) creatorId = payload.__actorUserId;
+
       const modified = await this.rowRepository.bulkTrash({
         table,
         ids: payload.ids,
+        ...(creatorId && { creatorId }),
       });
 
       return right({ modified });

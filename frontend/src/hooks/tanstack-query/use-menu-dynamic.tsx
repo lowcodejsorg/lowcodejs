@@ -13,12 +13,39 @@ import { useMemo } from 'react';
 
 import { useExtensionsActiveList } from './use-extensions-active-list';
 import type { IActiveExtension } from './use-extensions-active-list';
+import { useGroupReadList } from './use-group-read-list';
 import { useMenuReadList } from './use-menu-read-list';
 
-import { E_EXTENSION_TYPE, E_MENU_ITEM_TYPE } from '@/lib/constant';
+import { E_EXTENSION_TYPE, E_MENU_ITEM_TYPE, E_ROLE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
 import { getStaticMenusByRole } from '@/lib/menu/menu';
 import type { MenuGroupItem, MenuItem, MenuRoute } from '@/lib/menu/menu-route';
+import { resolveUserGroupIds, userSatisfiesBinding } from '@/lib/permission';
+import { useAuthStore } from '@/stores/authentication';
+
+// Mantém o menu (e seus filhos) só se o próprio e todos os ancestrais forem
+// visíveis ao usuário. "Pai oculto esconde a subárvore".
+function isMenuVisible(
+  menu: IMenu,
+  byId: Map<string, IMenu>,
+  userGroupIds: Set<string>,
+): boolean {
+  const guard = new Set<string>();
+  let current: IMenu | undefined = menu;
+
+  while (current) {
+    if (guard.has(current._id)) break;
+    guard.add(current._id);
+
+    if (!userSatisfiesBinding(current.visibility, userGroupIds)) return false;
+
+    const parentId = current.parent?._id;
+    if (!parentId) break;
+    current = byId.get(parentId);
+  }
+
+  return true;
+}
 
 // Mapeamento de ícones por tipo de menu
 const TYPE_ICONS: Record<string, LucideIcon> = {
@@ -235,10 +262,30 @@ export function useMenuDynamic(role: string): {
     return [];
   }, [dynamicMenusData]);
 
+  // Fecho de grupos do usuário (para esconder opções por visibilidade).
+  const user = useAuthStore((state) => state.user);
+  const { data: groupsData } = useGroupReadList();
+  const userGroupIds = useMemo(
+    () => resolveUserGroupIds(user, groupsData ?? []),
+    [user, groupsData],
+  );
+
+  // MASTER e ADMINISTRATOR enxergam todas as opções.
+  const userRole = user?.group?.slug;
+  const isPrivileged =
+    userRole === E_ROLE.MASTER || userRole === E_ROLE.ADMINISTRATOR;
+
+  // Filtra menus por visibilidade (respeitando os ancestrais).
+  const visibleMenuData = useMemo(() => {
+    if (isPrivileged) return menuData;
+    const byId = new Map(menuData.map((menu) => [menu._id, menu]));
+    return menuData.filter((menu) => isMenuVisible(menu, byId, userGroupIds));
+  }, [menuData, isPrivileged, userGroupIds]);
+
   // 2. Construir árvore hierárquica
   const dynamicMenuTree = useMemo(() => {
-    return buildMenuTree(menuData);
-  }, [menuData]);
+    return buildMenuTree(visibleMenuData);
+  }, [visibleMenuData]);
 
   // 3. Converter menus dinâmicos para formato MenuRoute
   const dynamicMenuRoute = useMemo(() => {

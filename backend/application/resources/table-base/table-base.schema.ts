@@ -1,10 +1,55 @@
 import z from 'zod';
 
 import {
+  E_PERMISSION_TARGET,
   E_TABLE_COLLABORATION,
+  E_TABLE_PERMISSION,
+  E_TABLE_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
+
+// Binding de uma acao: a quem ela esta liberada (Grupo|Public|Nobody).
+export const TablePermissionBindingSchema = z.object({
+  kind: z.enum([
+    E_PERMISSION_TARGET.PUBLIC,
+    E_PERMISSION_TARGET.NOBODY,
+    E_PERMISSION_TARGET.GROUP,
+  ]),
+  group: z.string().trim().nullable().default(null),
+});
+
+// Mapa das 10 acoes -> binding. Todas opcionais.
+export const TablePermissionsSchema = z
+  .object({
+    [E_TABLE_PERMISSION.VIEW_TABLE]: TablePermissionBindingSchema,
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: TablePermissionBindingSchema,
+    [E_TABLE_PERMISSION.CREATE_FIELD]: TablePermissionBindingSchema,
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: TablePermissionBindingSchema,
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: TablePermissionBindingSchema,
+    [E_TABLE_PERMISSION.VIEW_FIELD]: TablePermissionBindingSchema,
+    [E_TABLE_PERMISSION.CREATE_ROW]: TablePermissionBindingSchema,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: TablePermissionBindingSchema,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: TablePermissionBindingSchema,
+    [E_TABLE_PERMISSION.VIEW_ROW]: TablePermissionBindingSchema,
+  })
+  .partial();
+
+// Convidados da tabela e seus perfis.
+export const TableMembersSchema = z
+  .array(
+    z.object({
+      user: z.string().trim().min(1),
+      profile: z.enum([
+        E_TABLE_PROFILE.OWNER,
+        E_TABLE_PROFILE.ADMIN,
+        E_TABLE_PROFILE.EDITOR,
+        E_TABLE_PROFILE.CONTRIBUTOR,
+        E_TABLE_PROFILE.VIEWER,
+      ]),
+    }),
+  )
+  .default([]);
 
 export const GroupConfigurationSchema = z.object({
   slug: z.string().trim(),

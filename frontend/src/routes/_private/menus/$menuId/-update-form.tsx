@@ -7,8 +7,13 @@ import { FileUploadWithStorage } from '@/components/common/file-upload/file-uplo
 import { ExtensionModuleSelect } from '@/components/common/selectors/extension-module-select';
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { E_MENU_ITEM_TYPE } from '@/lib/constant';
-import type { IMenuExtensionRef, IStorage, ValueOf } from '@/lib/interfaces';
+import { E_MENU_ITEM_TYPE, E_PERMISSION_TARGET } from '@/lib/constant';
+import type {
+  IMenuExtensionRef,
+  IPermissionBinding,
+  IStorage,
+  ValueOf,
+} from '@/lib/interfaces';
 import { MenuUpdateBodySchema } from '@/lib/schemas';
 
 export const MenuUpdateSchema = MenuUpdateBodySchema;
@@ -24,6 +29,7 @@ export type MenuUpdateFormValues = {
   isInitial: boolean;
   extension: IMenuExtensionRef | null;
   iconFile: Array<File>;
+  visibility: IPermissionBinding;
 };
 
 export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
@@ -38,6 +44,7 @@ export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
   isInitial: false,
   extension: null,
   iconFile: [],
+  visibility: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
 };
 
 export const UpdateMenuFormFields = withForm({
@@ -229,6 +236,16 @@ export const UpdateMenuFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {/* Visibilidade da opção de menu (Grupo | Público | Ninguém) */}
+        <form.AppField name="visibility">
+          {(field) => (
+            <field.FieldPermissionBinding
+              label="Visibilidade"
+              disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
 
         {/* Campo Tabela - Condicional para tipos TABLE e FORM */}
         {(menuType === E_MENU_ITEM_TYPE.TABLE ||

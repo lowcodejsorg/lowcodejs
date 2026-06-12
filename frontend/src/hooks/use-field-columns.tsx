@@ -15,6 +15,7 @@ import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-ce
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
 import { Badge } from '@/components/ui/badge';
+import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow } from '@/lib/interfaces';
 
@@ -164,10 +165,11 @@ export function useFieldColumns({
 }: UseFieldColumnsOptions): Array<ColumnDef<IRow, any>> {
   const router = useRouter();
   const { slug } = useParams({ from: ROUTE_ID });
+  const { isFieldVisible } = useFieldVisibility();
 
   return React.useMemo(() => {
     const sorted = fields
-      .filter((f) => f.showInList && !f.trashed)
+      .filter((f) => isFieldVisible(f, 'list') && !f.trashed)
       .sort((a, b) => {
         const idxA = fieldOrder.indexOf(a._id);
         const idxB = fieldOrder.indexOf(b._id);
@@ -223,5 +225,13 @@ export function useFieldColumns({
         ),
       }),
     );
-  }, [fields, fieldOrder, tableSlug, canEditField, router, slug]);
+  }, [
+    fields,
+    fieldOrder,
+    tableSlug,
+    canEditField,
+    router,
+    slug,
+    isFieldVisible,
+  ]);
 }

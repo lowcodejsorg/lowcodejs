@@ -1,37 +1,50 @@
 # Permission Service
 
-Servico de logica de permissoes e controle de acesso (RBAC + visibilidade de tabela).
+Servico de logica de permissoes e controle de acesso a tabelas. Avalia o novo
+modelo (bindings por acao + perfis de membro) com fallback ao modelo legado
+(visibilidade + administrators) para tabelas ainda nao migradas.
 
 ## Arquivos
 
 | Arquivo | Descricao |
 |---------|-----------|
 | `permission-contract.service.ts` | Classe abstrata com tipos AccessCheckResult e AccessCheckInput |
-| `permission.service.ts` | Implementacao com queries diretas ao UserModel |
+| `permission.service.ts` | Implementacao; delega resolucao de grupos ao `GroupResolverContractService` |
 
 ## Metodos
 
 | Metodo | Retorno | Descricao |
 |--------|---------|-----------|
-| `checkUserHasPermission(userId, permission)` | `void` | Verifica se o grupo do usuario possui a permissao; lanca Forbidden se nao |
-| `checkUserIsActive(userId)` | `void` | Verifica se usuario esta ativo; lanca Forbidden se inativo |
-| `isPublicAccess(input)` | `boolean` | Checa se a acao e publica (PUBLIC + GET view, ou FORM + POST CREATE_ROW) |
+| `checkUserHasPermission(user, permission)` | `void` | Verifica se as capacidades do **fecho de grupos** do usuario contem a permissao; lanca Forbidden se nao |
+| `checkUserIsActive(user)` | `void` | Verifica se usuario esta ativo; lanca Forbidden se inativo |
+| `isPublicAccess(input)` | `boolean` | Acao publica quando o binding aponta para PUBLIC (novo modelo) ou, no legado, PUBLIC+GET view / FORM+POST CREATE_ROW |
 | `checkTableAccess(input)` | `AccessCheckResult` | Verificacao completa de acesso a tabela |
 
 ## Tipos
 
-- `AccessCheckInput` - table, userId, userRole, requiredPermission (E_TABLE_PERMISSION), httpMethod
-- `AccessCheckResult` - allowed (boolean), ownership (isOwner, isAdministrator)
+- `AccessCheckInput` - table, userId, userRole, user, requiredPermission (E_TABLE_PERMISSION), httpMethod
+- `AccessCheckResult` - allowed (boolean), ownership (isOwner, isAdministrator, ownOnly?)
 
 ## Logica de checkTableAccess
 
 1. MASTER - acesso total (sem verificacao adicional)
 2. ADMINISTRATOR - acesso total (verifica apenas se esta ativo)
-3. CREATE_TABLE - apenas verifica permissao no grupo
-4. Owner/Admin da tabela - acesso total (verifica se ativo)
-5. Demais usuarios - aplica regras de visibilidade + verifica permissao no grupo
+3. CREATE_TABLE - apenas verifica capacidade no fecho de grupos
+4. Dono da tabela (`table.owner` legado **ou** membro com perfil OWNER) - acesso total
+5. Tabela **nao migrada** (`table.permissions == null`) - cai no caminho legado (`checkLegacyAccess`)
+6. Tabela migrada - avalia, nesta ordem:
+   - perfil de membro via `TABLE_PROFILE_MATRIX[profile][acao]` → ALLOW libera, OWN libera apenas as proprias rows (`ownership.ownOnly`), DENY segue
+   - binding da acao (`bindingAllows`): PUBLIC libera todos; GROUP libera se o grupo estiver no fecho do usuario; NOBODY nega
 
-## Regras de Visibilidade
+## Perfis de membro (`TABLE_PROFILE_MATRIX`)
+
+Perfis fixos (`E_TABLE_PROFILE`): owner, admin, editor, contributor, viewer.
+`contributor` recebe OWN em update/remove de row (apenas as suas). Matriz
+definida em `entity.core.ts`.
+
+## Regras de Visibilidade (modelo legado/fallback)
+
+Aplicadas apenas em `checkLegacyAccess` quando a tabela nao tem `permissions`.
 
 | Visibilidade | Restricao |
 |-------------|-----------|
@@ -43,5 +56,7 @@ Servico de logica de permissoes e controle de acesso (RBAC + visibilidade de tab
 ## Comportamentos Unicos
 
 - Nao possui implementacao in-memory (apenas contract + implementacao)
-- Acessa UserModel diretamente (com populate de group.permissions)
-- Metodo privado `checkVisibilityRules` aplica restricoes por tipo de visibilidade
+- Resolucao de grupos/capacidades delegada ao `GroupResolverContractService`
+  (fecho transitivo de `encompasses[]`), nao queries diretas ao UserModel
+- Metodo privado `checkVisibilityRules` aplica restricoes do modelo legado
+- `bindingAllows` avalia o binding `{ kind, group }` por acao

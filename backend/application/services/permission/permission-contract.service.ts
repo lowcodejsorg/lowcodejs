@@ -6,7 +6,14 @@ import type { E_TABLE_PERMISSION } from '@application/core/entity.core';
 
 export type AccessCheckResult = {
   allowed: boolean;
-  ownership?: { isOwner: boolean; isAdministrator: boolean };
+  ownership?: {
+    isOwner: boolean;
+    isAdministrator: boolean;
+    // Quando true, o acesso foi concedido a um convidado com perfil que so pode
+    // agir sobre os proprios registros (perfil contributor). O use-case da row
+    // deve comparar `row.creator` com o usuario antes de concluir update/remove.
+    ownOnly?: boolean;
+  };
 };
 
 export type AccessCheckInput = {

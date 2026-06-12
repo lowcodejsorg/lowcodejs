@@ -49,11 +49,17 @@ export type RowSetFieldPayload = {
 export type RowBulkUpdatePayload = {
   table: RowTableContext;
   ids: string[];
+  // Convidado contributor ("apenas a sua"): escopa a operacao apenas aos
+  // registros criados por este usuario. Ausente = sem escopo de dono.
+  creatorId?: string;
 };
 
 export type RowBulkDeletePayload = {
   table: RowTableContext;
   ids: string[];
+  // Convidado contributor ("apenas a sua"): escopa a operacao apenas aos
+  // registros criados por este usuario. Ausente = sem escopo de dono.
+  creatorId?: string;
 };
 
 export type RowGroupItemPayload = {
@@ -96,7 +102,10 @@ export abstract class RowContractRepository {
 
   abstract bulkDelete(payload: RowBulkDeletePayload): Promise<number>;
 
-  abstract emptyTrash(table: RowTableContext): Promise<number>;
+  abstract emptyTrash(
+    table: RowTableContext,
+    creatorId?: string,
+  ): Promise<number>;
 
   // ── Field-level (reaction / evaluation) ───────────────────
 

@@ -1,6 +1,29 @@
 import z from 'zod';
 
-import { E_FIELD_FORMAT } from '@application/core/entity.core';
+import {
+  E_FIELD_FORMAT,
+  E_PERMISSION_TARGET,
+} from '@application/core/entity.core';
+
+// Binding de visibilidade do campo num contexto (Grupo|Public|Nobody).
+const FieldPermissionBindingSchema = z.object({
+  kind: z.enum([
+    E_PERMISSION_TARGET.PUBLIC,
+    E_PERMISSION_TARGET.NOBODY,
+    E_PERMISSION_TARGET.GROUP,
+  ]),
+  group: z.string().trim().nullable().default(null),
+});
+
+// Visibilidade do campo por contexto (lista/formulario/detalhe).
+export const FieldPermissionsSchema = z
+  .object({
+    list: FieldPermissionBindingSchema,
+    form: FieldPermissionBindingSchema,
+    detail: FieldPermissionBindingSchema,
+  })
+  .nullable()
+  .optional();
 
 const Category = z.object({
   id: z.string().trim(),
@@ -170,6 +193,7 @@ export const TableFieldBaseSchema = z.object({
   showInForm: FieldShowInFormSchema,
   showInDetail: FieldShowInDetailSchema,
   showInList: FieldShowInListSchema,
+  permissions: FieldPermissionsSchema,
   widthInForm: FieldWidthInFormSchema,
   widthInList: FieldWidthInListSchema,
   widthInDetail: FieldWidthInDetailSchema,

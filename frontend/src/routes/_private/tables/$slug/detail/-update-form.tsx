@@ -5,13 +5,51 @@ import { z } from 'zod';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import {
   E_FIELD_TYPE,
+  E_PERMISSION_TARGET,
   E_TABLE_COLLABORATION,
+  E_TABLE_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
+  PERMISSION_LABEL_MAPPER,
   TABLE_NAME_REGEX,
+  TABLE_PERMISSION_ACTIONS,
 } from '@/lib/constant';
-import type { IField, ILayoutFields, ITable } from '@/lib/interfaces';
+import type {
+  IField,
+  ILayoutFields,
+  IPermissionBinding,
+  ITable,
+} from '@/lib/interfaces';
 import { getAllowedTableStyles } from '@/lib/table-style';
+
+const PermissionBindingSchema = z.object({
+  kind: z.enum([
+    E_PERMISSION_TARGET.PUBLIC,
+    E_PERMISSION_TARGET.NOBODY,
+    E_PERMISSION_TARGET.GROUP,
+  ]),
+  group: z.string().nullable().default(null),
+});
+
+const TableMemberSchema = z.object({
+  user: z.string(),
+  profile: z.enum([
+    E_TABLE_PROFILE.OWNER,
+    E_TABLE_PROFILE.ADMIN,
+    E_TABLE_PROFILE.EDITOR,
+    E_TABLE_PROFILE.CONTRIBUTOR,
+    E_TABLE_PROFILE.VIEWER,
+  ]),
+});
+
+// Mapa default (tudo "Ninguém"): tabelas legadas sem permissions começam assim.
+export function buildDefaultPermissions(): Record<string, IPermissionBinding> {
+  const permissions: Record<string, IPermissionBinding> = {};
+  for (const action of TABLE_PERMISSION_ACTIONS) {
+    permissions[action] = { kind: E_PERMISSION_TARGET.NOBODY, group: null };
+  }
+  return permissions;
+}
 
 const LayoutFieldsSchema = z.object({
   title: z.string().default(''),
@@ -58,6 +96,9 @@ export const TableUpdateSchema = z.object({
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
+  permissions: z.record(z.string(), PermissionBindingSchema).default({}),
+  members: z.array(TableMemberSchema).default([]),
+  owner: z.string().default(''),
   order: z.string().default('none'),
   rowSlugFieldId: z.string().nullable().default(null),
   layoutFields: LayoutFieldsSchema.default({
@@ -85,6 +126,9 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   logo: null,
   logoFile: [],
   administrators: [],
+  permissions: buildDefaultPermissions(),
+  members: [],
+  owner: '',
   order: 'none',
   rowSlugFieldId: null,
   layoutFields: {
@@ -345,68 +389,41 @@ export const UpdateTableFormFields = withForm({
           }}
         </form.Subscribe>
 
-        {/* Campo Visibility */}
-        <form.AppField
-          name="visibility"
-          validators={{
-            onChange: ({ value }) => {
-              if (value.trim() === '') {
-                return 'Visibilidade é obrigatória';
-              }
-              return undefined;
-            },
-            onBlur: ({ value }) => {
-              if (value.trim() === '') {
-                return 'Visibilidade é obrigatória';
-              }
-              return undefined;
-            },
-          }}
-        >
+        {/* Permissões por ação (Grupo | Público | Ninguém) */}
+        <div className="space-y-3 rounded-lg border p-3">
+          <p className="text-sm font-medium text-muted-foreground">
+            Permissões da tabela
+          </p>
+          {TABLE_PERMISSION_ACTIONS.map((action) => (
+            <form.AppField
+              key={action}
+              name={`permissions.${action}`}
+            >
+              {(field) => (
+                <field.FieldPermissionBinding
+                  label={PERMISSION_LABEL_MAPPER[action] ?? action}
+                  disabled={isDisabled}
+                />
+              )}
+            </form.AppField>
+          ))}
+        </div>
+
+        {/* Dono da tabela (troca de dono) */}
+        <form.AppField name="owner">
           {(field) => (
-            <field.TableVisibilitySelectField
-              label="Visibilidade"
-              placeholder="Selecione a visibilidade"
+            <field.FieldOwnerSelect
+              label="Dono"
               disabled={isDisabled}
-              required
             />
           )}
         </form.AppField>
 
-        {/* Campo Collaboration */}
-        <form.AppField
-          name="collaboration"
-          validators={{
-            onChange: ({ value }) => {
-              if (value.trim() === '') {
-                return 'Colaboração é obrigatória';
-              }
-              return undefined;
-            },
-            onBlur: ({ value }) => {
-              if (value.trim() === '') {
-                return 'Colaboração é obrigatória';
-              }
-              return undefined;
-            },
-          }}
-        >
+        {/* Convidados (perfis de colaboração) */}
+        <form.AppField name="members">
           {(field) => (
-            <field.TableCollaborationSelectField
-              label="Colaboração"
-              placeholder="Selecione o modo de colaboração"
-              disabled={isDisabled}
-              required
-            />
-          )}
-        </form.AppField>
-
-        {/* Campo Administradores */}
-        <form.AppField name="administrators">
-          {(field) => (
-            <field.FieldUserMultiSelect
-              label="Administradores"
-              placeholder="Selecione administradores"
+            <field.FieldTableMembers
+              label="Convidados"
               disabled={isDisabled}
             />
           )}

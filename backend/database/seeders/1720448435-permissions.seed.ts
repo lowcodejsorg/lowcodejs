@@ -1,4 +1,5 @@
 import {
+  E_AREA_CAPABILITY,
   E_TABLE_PERMISSION,
   IPermission,
   Merge,
@@ -8,7 +9,11 @@ import { Permission } from '@application/model/permission.model';
 
 export type PayloadPermissionSeeder = Merge<
   Pick<IPermission, 'name' | 'description'>,
-  { slug: ValueOf<typeof E_TABLE_PERMISSION> }
+  {
+    slug:
+      | ValueOf<typeof E_TABLE_PERMISSION>
+      | ValueOf<typeof E_AREA_CAPABILITY>;
+  }
 >;
 
 export default async function Seed(): Promise<void> {
@@ -73,6 +78,37 @@ export default async function Seed(): Promise<void> {
       name: 'Visualizar registro',
       slug: E_TABLE_PERMISSION.VIEW_ROW,
       description: 'Permite visualizar registros de uma tabela existente',
+    },
+    // Capacidades de area do sistema (antes gateadas por role fixo).
+    {
+      name: 'Gerenciar usuários',
+      slug: E_AREA_CAPABILITY.MANAGE_USERS,
+      description: 'Permite gerenciar os usuários do sistema',
+    },
+    {
+      name: 'Gerenciar menu',
+      slug: E_AREA_CAPABILITY.MANAGE_MENU,
+      description: 'Permite gerenciar as opções de menu',
+    },
+    {
+      name: 'Gerenciar grupos de usuários',
+      slug: E_AREA_CAPABILITY.MANAGE_USER_GROUPS,
+      description: 'Permite gerenciar os grupos de usuários e suas permissões',
+    },
+    {
+      name: 'Gerenciar configurações',
+      slug: E_AREA_CAPABILITY.MANAGE_SETTINGS,
+      description: 'Permite gerenciar as configurações do sistema',
+    },
+    {
+      name: 'Gerenciar ferramentas',
+      slug: E_AREA_CAPABILITY.MANAGE_TOOLS,
+      description: 'Permite gerenciar as ferramentas (extensões do tipo tool)',
+    },
+    {
+      name: 'Gerenciar plugins',
+      slug: E_AREA_CAPABILITY.MANAGE_PLUGINS,
+      description: 'Permite gerenciar os plugins',
     },
   ];
 

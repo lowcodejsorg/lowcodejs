@@ -11,6 +11,12 @@ import type { BulkDeletePayload } from './bulk-delete.validator';
 
 type Response = Either<HTTPException, { deleted: number }>;
 
+type Payload = BulkDeletePayload & {
+  __actorUserId?: string;
+  // Convidado contributor: só exclui os próprios registros.
+  __ownOnly?: boolean;
+};
+
 @Service()
 export default class BulkDeleteUseCase {
   constructor(
@@ -18,7 +24,7 @@ export default class BulkDeleteUseCase {
     private readonly rowRepository: RowContractRepository,
   ) {}
 
-  async execute(payload: BulkDeletePayload): Promise<Response> {
+  async execute(payload: Payload): Promise<Response> {
     try {
       const table = await this.tableRepository.findBySlug(payload.slug);
 
@@ -28,9 +34,13 @@ export default class BulkDeleteUseCase {
         );
       }
 
+      let creatorId: string | undefined = undefined;
+      if (payload.__ownOnly) creatorId = payload.__actorUserId;
+
       const deleted = await this.rowRepository.bulkDelete({
         table,
         ids: payload.ids,
+        ...(creatorId && { creatorId }),
       });
 
       return right({ deleted });

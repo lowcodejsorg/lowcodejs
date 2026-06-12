@@ -42,3 +42,16 @@ Os menus seguem o padrao `{ before: MenuRoute, after: MenuRoute }`. O array
 `before` e reservado para menus dinamicos criados pelo usuario no sistema
 (gerenciados via `/menus`). Os menus estaticos ficam em `after`. A composicao
 final e `[...before, ...after]`.
+
+Cada opcao de menu dinamico tem `visibility` — um binding
+(Grupo/Publico/Ninguem, `{ kind, group }`). O backend resolve a visibilidade
+pelos grupos do usuario; `null` = legado/visivel.
+
+## Relacao com o novo modelo de permissoes (backend)
+
+O RBAC foi reescrito: o backend e a fonte de verdade e governa acesso por
+**capacidades de area** (`E_AREA_CAPABILITY`) resolvidas pelo fecho de grupos do
+usuario (`encompasses[]`), nao por role fixo. As tabelas `ROLE_ROUTES` /
+`ROLE_DEFAULT_ROUTE` e `getStaticMenusByRole` aqui sao apenas um **hint
+client-side** para montar a navegacao; a autorizacao efetiva (incluindo a
+visibilidade de cada menu via binding) e sempre verificada no servidor.

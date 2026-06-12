@@ -20,6 +20,7 @@ export default class UserMongooseRepository implements UserContractRepository {
 
   private readonly populateOptions = [
     { path: 'group', populate: { path: 'permissions' } },
+    { path: 'groups', populate: { path: 'permissions' } },
   ];
 
   private async buildWhereClause(

@@ -76,6 +76,15 @@ export const MenuShowSchema: FastifySchema = {
           type: 'boolean',
           description: 'Se é o menu inicial do sistema',
         },
+        visibility: {
+          type: 'object',
+          nullable: true,
+          description: 'Visibilidade da opção de menu (Grupo|Public|Nobody)',
+          properties: {
+            kind: { type: 'string', enum: ['PUBLIC', 'NOBODY', 'GROUP'] },
+            group: { type: 'string', nullable: true },
+          },
+        },
         trashed: { type: 'boolean', description: 'Se está na lixeira' },
         trashedAt: {
           type: 'string',

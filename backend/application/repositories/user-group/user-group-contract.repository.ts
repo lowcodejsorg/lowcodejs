@@ -13,6 +13,8 @@ export type UserGroupCreatePayload = Merge<
   {
     description?: string | null;
     permissions: string[];
+    // Ids dos grupos englobados. Opcional: grupos sem hierarquia ficam [].
+    encompasses?: string[];
   }
 >;
 

@@ -22,6 +22,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { DocBlock } from '@/lib/document-helpers';
@@ -155,6 +156,7 @@ export function DocumentRow({
 
   const table = useReadTable({ slug });
   const permission = useTablePermission(table.data);
+  const { isFieldVisible } = useFieldVisibility();
 
   const docBlockSlugs = new Set<string>();
   for (const b of blocks) {
@@ -168,12 +170,12 @@ export function DocumentRow({
       (field) =>
         !field.trashed &&
         !field.native &&
-        field.showInDetail &&
+        isFieldVisible(field, 'detail') &&
         !docBlockSlugs.has(field.slug) &&
         field.slug !== categorySlug,
     );
     return fields.sort(headerSorter(table.data.fieldOrderList));
-  }, [table.data, categorySlug, blocks]);
+  }, [table.data, categorySlug, blocks, isFieldVisible]);
 
   return (
     <article

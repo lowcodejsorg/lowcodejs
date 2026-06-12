@@ -74,11 +74,14 @@ export default class BulkUpdateUseCase {
           ...(payload.__actorUserId && {
             __actorUserId: payload.__actorUserId,
           }),
+          ...(payload.__ownOnly && { __ownOnly: true }),
         });
 
         if (result.isRight()) {
           modified += 1;
-        } else {
+        } else if (result.value.cause !== 'OWN_ROW_ONLY') {
+          // Convidado contributor: registros de outros donos são ignorados
+          // silenciosamente (escopo "apenas a sua"), não viram erro do lote.
           errors[_id] = result.value.cause;
         }
       }

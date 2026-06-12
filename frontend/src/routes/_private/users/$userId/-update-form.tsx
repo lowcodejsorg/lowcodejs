@@ -14,6 +14,7 @@ export type UserUpdateFormValues = {
   password: string;
   status: ValueOf<typeof E_USER_STATUS>;
   group: string;
+  groups: Array<string>;
 };
 
 export const userUpdateFormDefaultValues: UserUpdateFormValues = {
@@ -22,6 +23,7 @@ export const userUpdateFormDefaultValues: UserUpdateFormValues = {
   password: '',
   status: E_USER_STATUS.ACTIVE,
   group: '',
+  groups: [],
 };
 
 export const UpdateUserFormFields = withForm({
@@ -144,7 +146,7 @@ export const UpdateUserFormFields = withForm({
           )}
         </form.AppField>
 
-        {/* Campo Grupo */}
+        {/* Campo Grupo principal */}
         <form.AppField name="group">
           {(field) => (
             <field.FieldGroupCombobox
@@ -152,6 +154,17 @@ export const UpdateUserFormFields = withForm({
               placeholder="Selecione um grupo..."
               disabled={isDisabled}
               required
+            />
+          )}
+        </form.AppField>
+
+        {/* Campo Grupos adicionais (multi-grupo) */}
+        <form.AppField name="groups">
+          {(field) => (
+            <field.FieldGroupMultiSelect
+              label="Grupos adicionais (opcional)"
+              placeholder="Selecione grupos adicionais..."
+              disabled={isDisabled}
             />
           )}
         </form.AppField>

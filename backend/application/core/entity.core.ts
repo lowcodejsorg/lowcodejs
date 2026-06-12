@@ -253,6 +253,10 @@ export type IGroup = Merge<
     slug: string;
     description: string | null;
     permissions: IPermission[];
+    // Ids dos grupos englobados (multi-link). Quem pertence a este grupo herda
+    // o acesso liberado a eles (fecho transitivo). Ex.: Manager engloba
+    // Registered. Mantido como ids (nao populado) — referencia, nao agregado.
+    encompasses: string[];
   }
 >;
 
@@ -268,7 +272,12 @@ export type IUser = Merge<
     email: string;
     password: string;
     status: ValueOf<typeof E_USER_STATUS>;
+    // Grupo principal: define o `role` no JWT e a compatibilidade com o RBAC
+    // legado. Continua obrigatorio.
     group: IGroup;
+    // Grupos adicionais: o usuario tambem pertence a estes. O acesso efetivo e
+    // o fecho de `{group} ∪ groups` seguindo `encompasses`.
+    groups: IGroup[];
     notificationsEnabled: boolean;
   }
 >;
@@ -352,10 +361,17 @@ export type ITable = Merge<
     fields: IField[];
     type: ValueOf<typeof E_TABLE_TYPE>;
     style: ValueOf<typeof E_TABLE_STYLE>;
+    // Modelo legado de acesso (mantido durante a transicao; o novo modelo usa
+    // `permissions` por acao + `members`). Removidos em cleanup futuro.
     visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
     collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
     administrators: IUser[];
     owner: IUser;
+    // Novo modelo: cada acao aponta para um binding (Grupo|Public|Nobody).
+    // null em tabelas legadas ainda nao migradas.
+    permissions: ITablePermissions | null;
+    // Convidados da tabela com seu perfil (owner/admin/editor/contributor/viewer).
+    members: ITableMember[];
     fieldOrderList: string[];
     fieldOrderForm: string[];
     fieldOrderFilter: string[];
@@ -414,6 +430,15 @@ export type IFieldConfigurationGroup = {
   slug: string;
 };
 
+// Visibilidade do campo por contexto: cada contexto aponta para um binding
+// (Grupo|Public|Nobody). Nobody = oculto. Substitui os booleans showIn* (que
+// continuam preenchidos durante a transicao).
+export type IFieldPermissions = {
+  list: IPermissionBinding;
+  form: IPermissionBinding;
+  detail: IPermissionBinding;
+};
+
 export type IField = Merge<
   Base,
   {
@@ -427,6 +452,9 @@ export type IField = Merge<
     showInForm: boolean;
     showInDetail: boolean;
     showInList: boolean;
+    // null/ausente em campos legados ainda nao migrados (cai no comportamento
+    // showIn*).
+    permissions?: IFieldPermissions | null;
     widthInForm: number | null;
     widthInList: number | null;
     widthInDetail: number | null;
@@ -455,6 +483,7 @@ export type FieldCreatePayload = Pick<
   | 'showInForm'
   | 'showInDetail'
   | 'showInList'
+  | 'permissions'
   | 'widthInForm'
   | 'widthInList'
   | 'widthInDetail'
@@ -568,6 +597,8 @@ export type IMenu = Merge<
     isInitial: boolean;
     /** Referência a uma extensão (apenas para type=EXTENSION_MODULE). */
     extension: IMenuExtensionRef | null;
+    // Visibilidade da opção de menu (Grupo|Public|Nobody). null em menus legados.
+    visibility?: IPermissionBinding | null;
   }
 >;
 
@@ -748,6 +779,157 @@ export const E_TABLE_PERMISSION = {
   REMOVE_ROW: 'REMOVE_ROW',
   VIEW_ROW: 'VIEW_ROW',
 } as const;
+
+// Capacidades de area do sistema. Antes eram gateadas por role fixo
+// (RoleMiddleware); agora viram permissoes atribuiveis a qualquer grupo, como
+// pede a especificacao (colunas Usuarios, Menu, Grupos, Configuracoes,
+// Ferramentas, Plugins). As acoes de tabela (Ver/Criar/Editar/Remover Tabelas)
+// continuam em E_TABLE_PERMISSION. Persistidas como Permission (mesmo slug).
+export const E_AREA_CAPABILITY = {
+  MANAGE_USERS: 'MANAGE_USERS',
+  MANAGE_MENU: 'MANAGE_MENU',
+  MANAGE_USER_GROUPS: 'MANAGE_USER_GROUPS',
+  MANAGE_SETTINGS: 'MANAGE_SETTINGS',
+  MANAGE_TOOLS: 'MANAGE_TOOLS',
+  MANAGE_PLUGINS: 'MANAGE_PLUGINS',
+} as const;
+
+// Alvo de uma permissao de acao da tabela: um grupo especifico, todos (Public,
+// inclui visitante) ou ninguem (Nobody).
+export const E_PERMISSION_TARGET = {
+  PUBLIC: 'PUBLIC',
+  NOBODY: 'NOBODY',
+  GROUP: 'GROUP',
+} as const;
+
+// Vinculo de uma acao a quem pode realiza-la. `group` so e usado quando
+// kind === GROUP (id do grupo).
+export type IPermissionBinding = {
+  kind: ValueOf<typeof E_PERMISSION_TARGET>;
+  group: string | null;
+};
+
+// As 10 acoes da tabela vinculaveis por binding (Create/Remove TABLE continuam
+// sendo capacidades de grupo, nao por-tabela).
+export const TABLE_PERMISSION_ACTIONS = [
+  E_TABLE_PERMISSION.VIEW_TABLE,
+  E_TABLE_PERMISSION.UPDATE_TABLE,
+  E_TABLE_PERMISSION.CREATE_FIELD,
+  E_TABLE_PERMISSION.UPDATE_FIELD,
+  E_TABLE_PERMISSION.REMOVE_FIELD,
+  E_TABLE_PERMISSION.VIEW_FIELD,
+  E_TABLE_PERMISSION.CREATE_ROW,
+  E_TABLE_PERMISSION.UPDATE_ROW,
+  E_TABLE_PERMISSION.REMOVE_ROW,
+  E_TABLE_PERMISSION.VIEW_ROW,
+] as const;
+
+// Mapa acao -> binding. Parcial: tabelas legadas (ainda nao migradas) podem nao
+// ter o mapa, e o enforcement cai no modelo antigo de visibilidade.
+export type ITablePermissions = Partial<
+  Record<ValueOf<typeof E_TABLE_PERMISSION>, IPermissionBinding>
+>;
+
+// Perfis fixos de convidados da tabela (colaboracao).
+export const E_TABLE_PROFILE = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  EDITOR: 'EDITOR',
+  CONTRIBUTOR: 'CONTRIBUTOR',
+  VIEWER: 'VIEWER',
+} as const;
+
+export type ITableMember = {
+  user: string;
+  profile: ValueOf<typeof E_TABLE_PROFILE>;
+};
+
+// Nivel de acesso de um perfil a uma acao: libera, nega ou libera apenas para os
+// proprios registros (apenas a sua).
+export const E_PROFILE_ACCESS = {
+  ALLOW: 'ALLOW',
+  DENY: 'DENY',
+  OWN: 'OWN',
+} as const;
+
+// Matriz fixa de perfis x acoes, conforme a especificacao (aba 060226-Oficial).
+// Observacao: na spec os perfis editor/viewer sao identicos e View field aparece
+// como "nao" para editor/contributor/viewer — mantido fiel ao documento.
+export const TABLE_PROFILE_MATRIX: Record<
+  ValueOf<typeof E_TABLE_PROFILE>,
+  Record<ValueOf<typeof E_TABLE_PERMISSION>, ValueOf<typeof E_PROFILE_ACCESS>>
+> = {
+  [E_TABLE_PROFILE.OWNER]: {
+    [E_TABLE_PERMISSION.CREATE_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.CREATE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
+  },
+  [E_TABLE_PROFILE.ADMIN]: {
+    [E_TABLE_PERMISSION.CREATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
+  },
+  [E_TABLE_PROFILE.EDITOR]: {
+    [E_TABLE_PERMISSION.CREATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
+  },
+  [E_TABLE_PROFILE.CONTRIBUTOR]: {
+    [E_TABLE_PERMISSION.CREATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.OWN,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.OWN,
+    [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
+  },
+  [E_TABLE_PROFILE.VIEWER]: {
+    [E_TABLE_PERMISSION.CREATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
+  },
+};
 
 export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
   {

@@ -35,6 +35,7 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
       _id: crypto.randomUUID(),
       description: payload.description ?? null,
       permissions: payload.permissions.map((p) => ({ _id: p }) as IPermission),
+      encompasses: payload.encompasses ?? [],
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,

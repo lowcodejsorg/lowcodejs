@@ -49,6 +49,14 @@ export const UserCreateSchema: FastifySchema = {
           minLength: 'O grupo é obrigatório',
         },
       },
+      groups: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'IDs dos grupos adicionais do usuário',
+        errorMessage: {
+          type: 'Grupos deve ser uma lista',
+        },
+      },
     },
     additionalProperties: false,
     errorMessage: {

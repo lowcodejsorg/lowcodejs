@@ -15,6 +15,7 @@ export type MenuCreatePayload = Merge<
       | 'order'
       | 'isInitial'
       | 'extension'
+      | 'visibility'
     >
   >
 >;

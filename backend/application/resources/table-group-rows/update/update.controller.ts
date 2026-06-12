@@ -38,6 +38,8 @@ export default class {
     const result = await this.useCase.execute({
       ...(request.body as Record<string, any>),
       ...params,
+      ...(request?.user?.sub && { __actorUserId: request.user.sub }),
+      ...(request.ownership?.ownOnly && { __ownOnly: true }),
     });
 
     if (result.isLeft()) {

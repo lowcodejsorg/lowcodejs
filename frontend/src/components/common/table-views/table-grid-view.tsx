@@ -21,11 +21,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
 import { resolveLayoutField } from '@/lib/layout-field-resolver';
-import { HeaderFilter, HeaderSorter } from '@/lib/layout-pickers';
+import { HeaderSorter } from '@/lib/layout-pickers';
 
 interface TableGridViewProps {
   data: Array<IRow>;
@@ -174,8 +175,11 @@ export function TableGridView({
 
   const canCreateRow = permission.can('CREATE_ROW');
   const canSelect = permission.can('UPDATE_ROW');
+  const { isFieldVisible } = useFieldVisibility();
 
-  const visibleHeaders = headers.filter(HeaderFilter).sort(HeaderSorter(order));
+  const visibleHeaders = headers
+    .filter((header) => isFieldVisible(header, 'list') && !header.trashed)
+    .sort(HeaderSorter(order));
 
   const thumbField = resolveLayoutField(
     visibleHeaders,

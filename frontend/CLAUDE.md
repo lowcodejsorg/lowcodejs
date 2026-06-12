@@ -243,22 +243,31 @@ capturar erros de queries e permitir retry.
 
 ## Sistema de Permissoes (RBAC)
 
-| Role          | Acesso                                              |
-| ------------- | --------------------------------------------------- |
-| MASTER        | Tudo (dashboard, settings, tools, todas as tabelas) |
-| ADMINISTRATOR | Tabelas, menus, usuarios                            |
-| MANAGER       | Tabelas (respeita ownership)                        |
-| REGISTERED    | Tabelas (VIEW + CREATE_ROW apenas)                  |
+O modelo foi reescrito: o acesso e governado por **grupos custom + capacidades
+de area + bindings por acao**, nao mais por 4 roles fixos. Roles continuam no
+JWT apenas para compat. O backend e a fonte de verdade — resolve os grupos do
+usuario (incluindo o fecho `encompasses[]`) a cada request.
+
+- **Capacidades de area** (`E_AREA_CAPABILITY`: MANAGE_USERS, MANAGE_MENU,
+  MANAGE_USER_GROUPS, MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS) liberam o
+  acesso as areas do sistema; sao atribuiveis a qualquer grupo.
+- **Bindings por acao** (`{ kind, group }` com `kind ∈ PUBLIC|NOBODY|GROUP`)
+  controlam tabela (`table.permissions`), visibilidade de campo
+  (`field.permissions.{list,form,detail}`) e menu (`menu.visibility`).
+- **Membros da tabela** (`table.members[]` com perfis owner/admin/editor/
+  contributor/viewer) substituem `administrators[]`.
 
 Implementado em:
 
-- `lib/menu/menu-access-permissions.ts`: ROLE_ROUTES (rotas por role),
-  ROLE_DEFAULT_ROUTE (redirect pos-login), canAccessRoute(role, route)
-- `lib/menu/menu.ts`: getStaticMenusByRole(role) retorna menus before/after
+- `lib/menu/menu-access-permissions.ts`: rotas permitidas resolvidas pelas
+  capacidades do usuario, `ROLE_DEFAULT_ROUTE` (redirect pos-login),
+  `canAccessRoute(...)`
+- `lib/menu/menu.ts`: monta os menus before/after a partir das capacidades
 - `hooks/use-table-permission.ts`: verifica permissoes granulares
   (VIEW/CREATE/UPDATE/REMOVE para TABLE/FIELD/ROW)
 
-Visibilidade de tabela (para visitantes nao autenticados):
+Visibilidade de tabela (modelo **legado/fallback**, para visitantes nao
+autenticados em tabelas ainda nao migradas para `table.permissions`):
 
 | Visibilidade | Comportamento                |
 | ------------ | ---------------------------- |

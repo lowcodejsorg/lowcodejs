@@ -54,6 +54,14 @@ export const UserUpdateSchema: FastifySchema = {
           minLength: 'O grupo é obrigatório',
         },
       },
+      groups: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'IDs dos grupos adicionais do usuário',
+        errorMessage: {
+          type: 'Grupos deve ser uma lista',
+        },
+      },
       password: {
         type: 'string',
         minLength: 6,

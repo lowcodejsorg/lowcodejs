@@ -52,8 +52,36 @@ export const ProfileShowSchema: FastifySchema = {
                 },
               },
             },
+            encompasses: {
+              type: 'array',
+              description: 'IDs dos grupos englobados',
+              items: { type: 'string' },
+            },
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        groups: {
+          type: 'array',
+          description: 'Grupos adicionais do usuário (multi-grupo)',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              name: { type: 'string' },
+              slug: { type: 'string' },
+              permissions: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    _id: { type: 'string' },
+                    slug: { type: 'string' },
+                  },
+                },
+              },
+              encompasses: { type: 'array', items: { type: 'string' } },
+            },
           },
         },
         createdAt: {

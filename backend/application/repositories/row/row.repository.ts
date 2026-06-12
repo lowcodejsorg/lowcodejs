@@ -206,7 +206,11 @@ export default class RowMongooseRepository implements RowContractRepository {
   async bulkTrash(payload: RowBulkUpdatePayload): Promise<number> {
     const model = await this.getModel(payload.table);
     const result = await model.updateMany(
-      { _id: { $in: payload.ids }, trashedAt: null },
+      {
+        _id: { $in: payload.ids },
+        trashedAt: null,
+        ...(payload.creatorId && { creator: payload.creatorId }),
+      },
       { $set: { trashedAt: new Date() } },
     );
     return result.modifiedCount;
@@ -215,7 +219,11 @@ export default class RowMongooseRepository implements RowContractRepository {
   async bulkRestore(payload: RowBulkUpdatePayload): Promise<number> {
     const model = await this.getModel(payload.table);
     const result = await model.updateMany(
-      { _id: { $in: payload.ids }, trashedAt: { $ne: null } },
+      {
+        _id: { $in: payload.ids },
+        trashedAt: { $ne: null },
+        ...(payload.creatorId && { creator: payload.creatorId }),
+      },
       { $set: { trashedAt: null } },
     );
     return result.modifiedCount;
@@ -226,13 +234,20 @@ export default class RowMongooseRepository implements RowContractRepository {
     const result = await model.deleteMany({
       _id: { $in: payload.ids },
       trashedAt: { $ne: null },
+      ...(payload.creatorId && { creator: payload.creatorId }),
     });
     return result.deletedCount;
   }
 
-  async emptyTrash(table: RowTableContext): Promise<number> {
+  async emptyTrash(
+    table: RowTableContext,
+    creatorId?: string,
+  ): Promise<number> {
     const model = await this.getModel(table);
-    const result = await model.deleteMany({ trashedAt: { $ne: null } });
+    const result = await model.deleteMany({
+      trashedAt: { $ne: null },
+      ...(creatorId && { creator: creatorId }),
+    });
     return result.deletedCount;
   }
 

@@ -20,6 +20,7 @@ import { useCreateGroupRow } from '@/hooks/tanstack-query/use-group-row-create';
 import { useDeleteGroupRow } from '@/hooks/tanstack-query/use-group-row-delete';
 import { useUpdateGroupRow } from '@/hooks/tanstack-query/use-group-row-update';
 import { useAutoSave } from '@/hooks/use-auto-save';
+import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
@@ -72,6 +73,8 @@ export function GroupRowsInline(
     (g) => g?.slug === groupSlug,
   );
 
+  const { isFieldVisible } = useFieldVisibility();
+
   const formFields = React.useMemo(
     (): Array<IField> =>
       (group?.fields ?? []).filter(
@@ -82,9 +85,9 @@ export function GroupRowsInline(
           f.type !== E_FIELD_TYPE.STATUS &&
           f.type !== E_FIELD_TYPE.TRASHED_AT &&
           !f.trashed &&
-          f.showInForm,
+          isFieldVisible(f, 'form'),
       ),
-    [group],
+    [group, isFieldVisible],
   );
 
   // Semeia os cards a partir dos itens persistidos embutidos no registro pai

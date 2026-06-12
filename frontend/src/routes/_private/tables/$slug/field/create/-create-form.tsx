@@ -6,7 +6,11 @@ import z from 'zod';
 import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
+import {
+  E_FIELD_FORMAT,
+  E_FIELD_TYPE,
+  E_PERMISSION_TARGET,
+} from '@/lib/constant';
 import {
   FIELD_NAME_MAX_LENGTH,
   FIELD_SLUG_MAX_LENGTH,
@@ -14,6 +18,15 @@ import {
   normalizeFieldSlug,
 } from '@/lib/field-slug';
 import type { IDropdown, IRelationshipLabelPart } from '@/lib/interfaces';
+
+const FieldPermissionBindingSchema = z.object({
+  kind: z.enum([
+    E_PERMISSION_TARGET.PUBLIC,
+    E_PERMISSION_TARGET.NOBODY,
+    E_PERMISSION_TARGET.GROUP,
+  ]),
+  group: z.string().nullable().default(null),
+});
 
 export const FieldCreateSchema = z.object({
   name: z
@@ -59,6 +72,17 @@ export const FieldCreateSchema = z.object({
   showInForm: z.boolean().default(true),
   showInDetail: z.boolean().default(true),
   showInList: z.boolean().default(false),
+  permissions: z
+    .object({
+      list: FieldPermissionBindingSchema,
+      form: FieldPermissionBindingSchema,
+      detail: FieldPermissionBindingSchema,
+    })
+    .default({
+      list: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+      form: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+      detail: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+    }),
   required: z.boolean().default(false),
   widthInForm: z.number().default(50),
   widthInList: z.number().default(10),
@@ -92,6 +116,11 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   showInForm: true,
   showInDetail: true,
   showInList: false,
+  permissions: {
+    list: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+    form: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+    detail: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+  },
   required: false,
   widthInForm: 50,
   widthInList: 10,
@@ -728,6 +757,37 @@ export const CreateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {/* Visibilidade do campo por grupo (Lista / Formulário / Detalhes) */}
+        <div className="space-y-3 rounded-lg border p-3">
+          <p className="text-sm font-medium text-muted-foreground">
+            Visibilidade por grupo
+          </p>
+          <form.AppField name="permissions.list">
+            {(field) => (
+              <field.FieldPermissionBinding
+                label="Lista"
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="permissions.form">
+            {(field) => (
+              <field.FieldPermissionBinding
+                label="Formulário"
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="permissions.detail">
+            {(field) => (
+              <field.FieldPermissionBinding
+                label="Detalhes"
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+        </div>
 
         {/* Campo Listagem - Desabilitado por enquanto a solicitação para desabilitar
         foi solicitada em 21/03/2026 pois não fazia mais sentido para o que temos hoje, e será analisado se vai continuar ou não. */}

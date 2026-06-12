@@ -45,6 +45,14 @@ export const UserGroupCreateSchema: FastifySchema = {
           minItems: 'Pelo menos uma permissão é obrigatória',
         },
       },
+      encompasses: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Lista de IDs de grupos englobados',
+        errorMessage: {
+          type: 'Grupos englobados deve ser uma lista',
+        },
+      },
     },
   },
   response: {
@@ -83,6 +91,11 @@ export const UserGroupCreateSchema: FastifySchema = {
               updatedAt: { type: 'string', format: 'date-time' },
             },
           },
+        },
+        encompasses: {
+          type: 'array',
+          description: 'IDs dos grupos englobados',
+          items: { type: 'string' },
         },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' },

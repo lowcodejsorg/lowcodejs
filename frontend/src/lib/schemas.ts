@@ -4,6 +4,7 @@ import {
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
   E_MENU_ITEM_TYPE,
+  E_PERMISSION_TARGET,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
@@ -53,6 +54,7 @@ export const UserBaseSchema = z.object({
   group: z
     .string({ message: 'O grupo é obrigatório' })
     .min(1, 'O grupo é obrigatório'),
+  groups: z.array(z.string().trim()).default([]),
 });
 
 export const UserCreateBodySchema = UserBaseSchema.extend({
@@ -107,6 +109,7 @@ export const UserGroupCreateBodySchema = z.object({
   name: z.string().trim(),
   description: z.string().trim().nullable(),
   permissions: z.array(z.string().trim()).default([]),
+  encompasses: z.array(z.string().trim()).default([]),
 });
 
 export const UserGroupUpdateParamsSchema = z.object({
@@ -117,6 +120,7 @@ export const UserGroupUpdateBodySchema = z.object({
   name: z.string().trim().optional(),
   description: z.string().trim().nullable().optional(),
   permissions: z.array(z.string().trim()).default([]),
+  encompasses: z.array(z.string().trim()).default([]),
 });
 
 // ============== MENU ==============
@@ -134,6 +138,18 @@ const MenuExtensionRefSchema = z.object({
   extensionId: z.string(),
 });
 
+// Visibilidade da opção de menu (Grupo|Public|Nobody).
+const MenuVisibilitySchema = z
+  .object({
+    kind: z.enum([
+      E_PERMISSION_TARGET.PUBLIC,
+      E_PERMISSION_TARGET.NOBODY,
+      E_PERMISSION_TARGET.GROUP,
+    ]),
+    group: z.string().nullable().default(null),
+  })
+  .optional();
+
 export const MenuCreateBodySchema = z
   .object({
     name: z.string().trim().min(1, 'Nome é obrigatório'),
@@ -146,6 +162,7 @@ export const MenuCreateBodySchema = z
     order: z.number().default(0),
     isInitial: z.boolean().default(false),
     extension: MenuExtensionRefSchema.nullable().optional(),
+    visibility: MenuVisibilitySchema,
   })
   .superRefine((data, ctx) => {
     if (
@@ -210,6 +227,7 @@ export const MenuUpdateBodySchema = z
     order: z.number().default(0),
     isInitial: z.boolean().default(false),
     extension: MenuExtensionRefSchema.nullable().optional(),
+    visibility: MenuVisibilitySchema,
   })
   .superRefine((data, ctx) => {
     if (

@@ -177,6 +177,54 @@ export const E_TABLE_PERMISSION = {
   VIEW_ROW: 'VIEW_ROW',
 } as const;
 
+// Capacidades de area do sistema (gerenciamento por area, atribuiveis a grupos).
+export const E_AREA_CAPABILITY = {
+  MANAGE_USERS: 'MANAGE_USERS',
+  MANAGE_MENU: 'MANAGE_MENU',
+  MANAGE_USER_GROUPS: 'MANAGE_USER_GROUPS',
+  MANAGE_SETTINGS: 'MANAGE_SETTINGS',
+  MANAGE_TOOLS: 'MANAGE_TOOLS',
+  MANAGE_PLUGINS: 'MANAGE_PLUGINS',
+} as const;
+
+// Alvo de uma permissao de acao da tabela.
+export const E_PERMISSION_TARGET = {
+  PUBLIC: 'PUBLIC',
+  NOBODY: 'NOBODY',
+  GROUP: 'GROUP',
+} as const;
+
+// Perfis fixos de convidados da tabela.
+export const E_TABLE_PROFILE = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  EDITOR: 'EDITOR',
+  CONTRIBUTOR: 'CONTRIBUTOR',
+  VIEWER: 'VIEWER',
+} as const;
+
+export const TABLE_PROFILE_MAPPER: Record<string, string> = {
+  [E_TABLE_PROFILE.OWNER]: 'Dono',
+  [E_TABLE_PROFILE.ADMIN]: 'Administrador',
+  [E_TABLE_PROFILE.EDITOR]: 'Editor',
+  [E_TABLE_PROFILE.CONTRIBUTOR]: 'Colaborador',
+  [E_TABLE_PROFILE.VIEWER]: 'Visualizador',
+};
+
+// As 10 acoes da tabela vinculaveis por binding, na ordem de exibicao.
+export const TABLE_PERMISSION_ACTIONS = [
+  E_TABLE_PERMISSION.VIEW_TABLE,
+  E_TABLE_PERMISSION.UPDATE_TABLE,
+  E_TABLE_PERMISSION.CREATE_FIELD,
+  E_TABLE_PERMISSION.UPDATE_FIELD,
+  E_TABLE_PERMISSION.REMOVE_FIELD,
+  E_TABLE_PERMISSION.VIEW_FIELD,
+  E_TABLE_PERMISSION.CREATE_ROW,
+  E_TABLE_PERMISSION.UPDATE_ROW,
+  E_TABLE_PERMISSION.REMOVE_ROW,
+  E_TABLE_PERMISSION.VIEW_ROW,
+] as const;
+
 export const PERMISSION_LABEL_MAPPER: Record<string, string> = {
   [E_TABLE_PERMISSION.CREATE_TABLE]: 'Criar tabela',
   [E_TABLE_PERMISSION.UPDATE_TABLE]: 'Editar tabela',
@@ -190,6 +238,12 @@ export const PERMISSION_LABEL_MAPPER: Record<string, string> = {
   [E_TABLE_PERMISSION.UPDATE_ROW]: 'Editar registro',
   [E_TABLE_PERMISSION.REMOVE_ROW]: 'Remover registro',
   [E_TABLE_PERMISSION.VIEW_ROW]: 'Visualizar registro',
+  [E_AREA_CAPABILITY.MANAGE_USERS]: 'Gerenciar usuários',
+  [E_AREA_CAPABILITY.MANAGE_MENU]: 'Gerenciar menu',
+  [E_AREA_CAPABILITY.MANAGE_USER_GROUPS]: 'Gerenciar grupos de usuários',
+  [E_AREA_CAPABILITY.MANAGE_SETTINGS]: 'Gerenciar configurações',
+  [E_AREA_CAPABILITY.MANAGE_TOOLS]: 'Gerenciar ferramentas',
+  [E_AREA_CAPABILITY.MANAGE_PLUGINS]: 'Gerenciar plugins',
 };
 
 // ============== OPTIONS PARA SELECTS ==============

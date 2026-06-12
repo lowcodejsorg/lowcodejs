@@ -44,6 +44,7 @@ export default class {
       ...params,
       ...body,
       ...(request?.user?.sub && { __actorUserId: request.user.sub }),
+      ...(request.ownership?.ownOnly && { __ownOnly: true }),
     });
 
     if (result.isLeft()) {

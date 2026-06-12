@@ -74,6 +74,7 @@ function RouteComponent(): React.JSX.Element {
         order,
         isInitial: value.type === 'SEPARATOR' ? false : value.isInitial,
         extension: value.extension ?? null,
+        visibility: value.visibility,
       });
     },
   });

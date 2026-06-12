@@ -20,10 +20,14 @@ Cria uma nova tabela dinamica com campos nativos e campo "Nome" padrao.
 4. Repository: TableContractRepository.findBy, TableContractRepository.create, TableContractRepository.update, FieldContractRepository.createMany
 
 ## Regras de Negocio
-- Owner e obrigatorio (extraido de request.user.sub pelo controller)
+- Owner e obrigatorio (extraido de request.user.sub pelo controller) e gravado em `owner`
 - Slug deve ser unico entre tabelas existentes
 - Campos nativos sao criados automaticamente junto com o campo "Nome"
-- Style padrao: LIST, Visibility padrao: RESTRICTED, Collaboration padrao: RESTRICTED
+- Style padrao: LIST. Os campos legados `visibility` (RESTRICTED) e
+  `collaboration` (RESTRICTED) seguem sendo gravados para compat. O novo mapa
+  `table.permissions` e `members[]` nao sao seedados aqui — sao preenchidos pela
+  migration 09 (backfill) ou ajustados via UI; ate la o enforcement cai no
+  fallback legado.
 
 ## Erros Possiveis
 | Code | Cause | Quando |

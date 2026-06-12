@@ -4,7 +4,10 @@ CRUD e gerenciamento de campos de uma tabela dinamica.
 
 ## Entidade
 
-`IField` - Campo de tabela com tipo, formato, visibilidade, validacao e configuracoes (relationship, dropdown, category, group).
+`IField` - Campo de tabela com tipo, formato, `permissions` ({ list, form,
+detail } com binding por contexto), validacao e configuracoes (relationship,
+dropdown, category, group). Os flags `showInList/showInForm/showInFilter/
+showInDetail` sao legados/fallback.
 
 ## Endpoints
 
@@ -26,4 +29,8 @@ CRUD e gerenciamento de campos de uma tabela dinamica.
 
 ## Schema Base
 
-Definido em `table-field-base.schema.ts`: required, multiple, format, showInFilter, showInForm, showInDetail, showInList, widthInForm, widthInList, widthInDetail, locked, defaultValue, relationship, dropdown, category, group.
+Definido em `table-field-base.schema.ts`: required, multiple, format,
+`permissions` (FieldPermissionsSchema: { list, form, detail } → binding),
+widthInForm, widthInList, widthInDetail, locked, defaultValue, relationship,
+dropdown, category, group. Legados (mantidos): showInFilter, showInForm,
+showInDetail, showInList.

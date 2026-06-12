@@ -151,6 +151,7 @@ function RouteComponent(): React.JSX.Element {
         showInForm: value.showInForm,
         showInDetail: value.showInDetail,
         showInList: value.showInList,
+        permissions: value.permissions,
         widthInForm: value.widthInForm,
         widthInList: value.widthInList,
         format: value.format

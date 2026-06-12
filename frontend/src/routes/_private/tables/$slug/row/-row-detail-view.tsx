@@ -33,6 +33,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
+import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
@@ -201,11 +202,15 @@ export function RowDetailView({
     },
   });
 
+  const { isFieldVisible } = useFieldVisibility();
+
   const visibleFields = React.useMemo((): Array<IField> => {
     const detailOrder = table.fieldOrderDetail ?? [];
     const order =
       detailOrder.length > 0 ? detailOrder : (table.fieldOrderForm ?? []);
-    const filtered = table.fields.filter((f) => !f.trashed && f.showInDetail);
+    const filtered = table.fields.filter(
+      (f) => !f.trashed && isFieldVisible(f, 'detail'),
+    );
     if (order.length === 0) return filtered;
     return [...filtered].sort((a, b): number => {
       const idxA = order.indexOf(a._id);
@@ -214,7 +219,12 @@ export function RowDetailView({
       const sortB = idxB === -1 ? Infinity : idxB;
       return sortA - sortB;
     });
-  }, [table.fields, table.fieldOrderDetail, table.fieldOrderForm]);
+  }, [
+    table.fields,
+    table.fieldOrderDetail,
+    table.fieldOrderForm,
+    isFieldVisible,
+  ]);
 
   const mainFields = React.useMemo(
     (): Array<IField> =>

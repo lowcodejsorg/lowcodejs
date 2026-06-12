@@ -15,6 +15,7 @@ function makeGroup(slug: string): IGroup {
     slug,
     description: null,
     permissions: [],
+    encompasses: [],
     createdAt: new Date(),
     updatedAt: new Date(),
     trashed: false,

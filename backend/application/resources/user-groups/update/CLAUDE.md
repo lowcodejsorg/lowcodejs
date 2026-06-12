@@ -3,10 +3,10 @@
 Atualiza um grupo de usuarios existente com novos dados.
 
 ## Endpoint
-`PATCH /user-group/:_id` | Auth: Yes | Permission: -
+`PATCH /user-group/:_id` | Auth: Yes | Permission: MANAGE_USER_GROUPS
 
 ## Fluxo
-1. Middleware: `AuthenticationMiddleware({ optional: false })`
+1. Middleware: `AuthenticationMiddleware({ optional: false })` seguido de `PermissionMiddleware(E_AREA_CAPABILITY.MANAGE_USER_GROUPS)`
 2. Validator: `UserGroupUpdateParamsValidator` - campos: _id (string, required, trim, min 1). `UserGroupUpdateBodyValidator` - campos: name (string, trim, min 1, optional), description (string, trim, nullable, optional), permissions (array de strings, optional)
 3. UseCase: `UserGroupUpdateUseCase`
    - Busca grupo por _id exato
