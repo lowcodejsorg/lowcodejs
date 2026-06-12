@@ -11,6 +11,7 @@ import { RowPayloadValidator } from '@application/core/row-payload-validator.cor
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
 import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
@@ -20,6 +21,11 @@ type Response = Either<HTTPException, IRow>;
 type Payload = Record<string, unknown> & {
   slug: string;
   creator?: string | null;
+  // Sinais do solicitante (TableAccessMiddleware) para a visibilidade de campo
+  // no formulario. Mongoose strict descarta as chaves __ ao persistir.
+  __role?: string;
+  __isOwner?: boolean;
+  __isAdministrator?: boolean;
 };
 
 @Service()
@@ -31,6 +37,7 @@ export default class TableRowCreateUseCase {
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly scriptExecutionService: ScriptExecutionContractService,
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
+    private readonly fieldVisibility: FieldVisibilityContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -42,6 +49,20 @@ export default class TableRowCreateUseCase {
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
       }
+
+      // Descarta escritas em campos ocultos no formulario para o solicitante.
+      const hidden = await this.fieldVisibility.hiddenSlugs({
+        fields: table.fields,
+        context: 'form',
+        userId: payload.creator,
+        userRole: payload.__role,
+        isOwner: payload.__isOwner,
+        isAdministrator: payload.__isAdministrator,
+      });
+      this.fieldVisibility.project(payload, hidden);
+      delete payload.__role;
+      delete payload.__isOwner;
+      delete payload.__isAdministrator;
 
       const errors = RowPayloadValidator.validate(
         payload,

@@ -199,6 +199,12 @@ visitante; GROUP libera se o grupo estiver no fecho do usuario). Reusado em:
   createField/updateField/removeField/viewField/createRow/updateRow/removeRow/
   viewRow) → binding.
 - `field.permissions: { list, form, detail }` → binding por contexto.
+  Enforcado server-side pelo `FieldVisibilityService` (`services/field-visibility/`):
+  remove os valores de campos ocultos das respostas de row (`paginated`=list,
+  `show`=detail) e descarta escritas em campos ocultos (`create`/`update`/
+  `bulk-update`=form). Campos nativos e usuarios privilegiados (MASTER/ADMIN/dono)
+  nunca sao filtrados. Fallback ao boolean `showIn*` quando `field.permissions`
+  e null.
 - `menu.visibility` → binding.
 
 ### Convidados da tabela (membros)

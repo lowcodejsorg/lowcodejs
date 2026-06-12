@@ -12,6 +12,7 @@ import { RowPayloadValidator } from '@application/core/row-payload-validator.cor
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
 import { KanbanCommentMentionContractService } from '@application/services/kanban-comment-mention/kanban-comment-mention-contract.service';
 import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
@@ -25,6 +26,10 @@ type Payload = Record<string, unknown> & {
   __actorUserId?: string;
   // Convidado contributor: só pode editar os próprios registros.
   __ownOnly?: boolean;
+  // Sinais do solicitante para a visibilidade de campo no formulario.
+  __role?: string;
+  __isOwner?: boolean;
+  __isAdministrator?: boolean;
 };
 
 @Service()
@@ -37,6 +42,7 @@ export default class TableRowUpdateUseCase {
     private readonly scriptExecutionService: ScriptExecutionContractService,
     private readonly kanbanCommentMentionService: KanbanCommentMentionContractService,
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
+    private readonly fieldVisibility: FieldVisibilityContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -51,6 +57,20 @@ export default class TableRowUpdateUseCase {
 
       const ownGuard = await this.enforceOwnRow(payload, table);
       if (ownGuard) return left(ownGuard);
+
+      // Descarta escritas em campos ocultos no formulario para o solicitante.
+      const hidden = await this.fieldVisibility.hiddenSlugs({
+        fields: table.fields,
+        context: 'form',
+        userId: payload.__actorUserId,
+        userRole: payload.__role,
+        isOwner: payload.__isOwner,
+        isAdministrator: payload.__isAdministrator,
+      });
+      this.fieldVisibility.project(payload, hidden);
+      delete payload.__role;
+      delete payload.__isOwner;
+      delete payload.__isAdministrator;
 
       const errors = RowPayloadValidator.validate(
         payload,

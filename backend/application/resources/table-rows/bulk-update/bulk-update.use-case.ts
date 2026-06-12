@@ -6,6 +6,7 @@ import HTTPException from '@application/core/exception.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
 import { KanbanCommentMentionContractService } from '@application/services/kanban-comment-mention/kanban-comment-mention-contract.service';
 import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
@@ -40,6 +41,7 @@ export default class BulkUpdateUseCase {
     private readonly scriptExecutionService: ScriptExecutionContractService,
     private readonly kanbanCommentMentionService: KanbanCommentMentionContractService,
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
+    private readonly fieldVisibility: FieldVisibilityContractService,
   ) {
     this.updateUseCase = new TableRowUpdateUseCase(
       tableRepository,
@@ -49,6 +51,7 @@ export default class BulkUpdateUseCase {
       scriptExecutionService,
       kanbanCommentMentionService,
       rowMemberNotificationService,
+      fieldVisibility,
     );
   }
 
@@ -75,6 +78,9 @@ export default class BulkUpdateUseCase {
             __actorUserId: payload.__actorUserId,
           }),
           ...(payload.__ownOnly && { __ownOnly: true }),
+          __role: payload.__role,
+          __isOwner: payload.__isOwner,
+          __isAdministrator: payload.__isAdministrator,
         });
 
         if (result.isRight()) {

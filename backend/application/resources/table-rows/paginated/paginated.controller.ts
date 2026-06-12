@@ -44,6 +44,9 @@ export default class {
       ...query,
       ...params,
       user: request.user?.sub,
+      userRole: request.user?.role,
+      isOwner: request.ownership?.isOwner,
+      isAdministrator: request.ownership?.isAdministrator,
     });
 
     if (result.isLeft()) {

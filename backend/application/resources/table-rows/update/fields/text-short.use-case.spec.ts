@@ -5,6 +5,7 @@ import { E_FIELD_FORMAT } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryFieldVisibilityService from '@application/services/field-visibility/in-memory-field-visibility.service';
 import InMemoryKanbanCommentMentionService from '@application/services/kanban-comment-mention/in-memory-kanban-comment-mention.service';
 import InMemoryRowMemberNotificationService from '@application/services/row-member-notification/in-memory-row-member-notification.service';
 import BcryptRowPasswordService from '@application/services/row-password/row-password.service';
@@ -39,6 +40,7 @@ describe('Table Row Update - TEXT_SHORT', () => {
       scriptExecutionService,
       new InMemoryKanbanCommentMentionService(),
       new InMemoryRowMemberNotificationService(),
+      new InMemoryFieldVisibilityService(),
     );
   });
 
