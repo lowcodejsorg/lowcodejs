@@ -40,6 +40,30 @@ const Schema = new mongoose.Schema(
       required: false,
       default: null,
     },
+    // Dados do registro referenciado por object_id (nao do log). Preenchidos no
+    // hook e pela migration de backfill. Null quando o objeto nao for uma ROW.
+    creator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+      default: null,
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+      default: null,
+    },
+    objectCreatedAt: {
+      type: Date,
+      required: false,
+      default: null,
+    },
+    objectUpdatedAt: {
+      type: Date,
+      required: false,
+      default: null,
+    },
   },
   { timestamps: true },
 );

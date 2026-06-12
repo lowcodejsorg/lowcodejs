@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { getInstanceByToken } from 'fastify-decorators';
+import mongoose from 'mongoose';
 import z from 'zod';
 
 import {
@@ -7,10 +8,15 @@ import {
   E_LOGGER_OBJECT_TYPE,
 } from '@application/core/entity.core';
 import {
+  EMPTY_OBJECT_AUDIT,
+  resolveLoggerObjectAudit,
+} from '@application/core/logger/resolve-object-audit';
+import {
   LoggerContractRepository,
   LoggerCreatePayload,
 } from '@application/repositories/logger/logger-contract.repository';
 import LoggerMongooseRepository from '@application/repositories/logger/logger.repository';
+import { getDataConnection } from '@config/database.config';
 
 const ACTION_MAP: Record<string, keyof typeof E_LOGGER_ACTION_TYPE> = {
   GET: E_LOGGER_ACTION_TYPE.VIEW,
@@ -236,6 +242,22 @@ export async function LoggerUserActionHook(
 
     if (request.headers['x-skip-log']) return;
 
+    // Resolve creator/updatedBy/createdAt/updatedAt do registro referenciado
+    // (object_id), lendo os campos ja gravados na propria ROW. Objetos que nao
+    // sao ROW retornam tudo null.
+    let audit = EMPTY_OBJECT_AUDIT;
+    const systemDb = mongoose.connection.db;
+    const dataDb = getDataConnection().db;
+    if (systemDb && dataDb) {
+      audit = await resolveLoggerObjectAudit({
+        systemDb,
+        dataDb,
+        object,
+        objectId: object_id,
+        url: request.url,
+      });
+    }
+
     const payload = {
       action,
       url: request.url,
@@ -243,6 +265,10 @@ export async function LoggerUserActionHook(
       content,
       object,
       object_id,
+      creator: audit.creator ? audit.creator.toString() : null,
+      updatedBy: audit.updatedBy ? audit.updatedBy.toString() : null,
+      objectCreatedAt: audit.objectCreatedAt,
+      objectUpdatedAt: audit.objectUpdatedAt,
     } satisfies LoggerCreatePayload;
 
     await repo.create(payload);

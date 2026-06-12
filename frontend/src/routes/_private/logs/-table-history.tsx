@@ -79,6 +79,41 @@ function ActionsCell({
   );
 }
 
+function UserRefCell({
+  user,
+}: {
+  user: ILogger['creator'];
+}): React.JSX.Element {
+  if (!user) {
+    return (
+      <span className="text-xs italic text-muted-foreground">
+        Não informado
+      </span>
+    );
+  }
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 font-medium"
+      title={user.email}
+    >
+      {user.name}
+    </span>
+  );
+}
+
+function DateRefCell({ value }: { value: string | null }): React.JSX.Element {
+  if (!value) {
+    return (
+      <span className="text-xs italic text-muted-foreground">
+        Não informado
+      </span>
+    );
+  }
+  return (
+    <span className="text-sm text-muted-foreground">{formatDate(value)}</span>
+  );
+}
+
 function buildColumns(params: {
   currentUserId: string;
   onOpenJson: (entry: ILogger) => void;
@@ -203,9 +238,66 @@ function buildColumns(params: {
       },
     },
     {
+      id: 'creator',
+      accessorKey: 'creator',
+      meta: { label: 'Criado por' },
+      header: () => (
+        <DataTableColumnHeader
+          title="Criado por"
+          routeId={ROUTE_ID}
+        />
+      ),
+      cell: ({ row }): React.JSX.Element => (
+        <UserRefCell user={row.original.creator} />
+      ),
+    },
+    {
+      id: 'objectCreatedAt',
+      accessorKey: 'objectCreatedAt',
+      meta: { label: 'Criado em' },
+      header: () => (
+        <DataTableColumnHeader
+          title="Criado em"
+          routeId={ROUTE_ID}
+        />
+      ),
+      cell: ({ row }): React.JSX.Element => (
+        <DateRefCell value={row.original.objectCreatedAt} />
+      ),
+    },
+    {
+      id: 'updatedBy',
+      accessorKey: 'updatedBy',
+      meta: { label: 'Modificado por' },
+      header: () => (
+        <DataTableColumnHeader
+          title="Modificado por"
+          routeId={ROUTE_ID}
+        />
+      ),
+      cell: ({ row }): React.JSX.Element => (
+        <UserRefCell user={row.original.updatedBy} />
+      ),
+    },
+    {
+      id: 'objectUpdatedAt',
+      accessorKey: 'objectUpdatedAt',
+      meta: { label: 'Modificado em' },
+      header: () => (
+        <DataTableColumnHeader
+          title="Modificado em"
+          routeId={ROUTE_ID}
+        />
+      ),
+      cell: ({ row }): React.JSX.Element => (
+        <DateRefCell value={row.original.objectUpdatedAt} />
+      ),
+    },
+    {
       id: 'url',
       accessorKey: 'url',
       meta: { label: 'URL' },
+      size: 240,
       header: () => (
         <DataTableColumnHeader
           title="URL"
@@ -217,7 +309,10 @@ function buildColumns(params: {
         const entry = row.original;
         if (!params.canNavigate(entry)) {
           return (
-            <span className="text-sm text-muted-foreground break-all">
+            <span
+              className="block max-w-[220px] truncate text-sm text-muted-foreground"
+              title={entry.url}
+            >
               {entry.url}
             </span>
           );
@@ -229,7 +324,8 @@ function buildColumns(params: {
               e.stopPropagation();
               params.onNavigate(entry);
             }}
-            className="text-left text-sm text-sky-600 hover:underline break-all cursor-pointer dark:text-sky-400"
+            title={entry.url}
+            className="block max-w-[220px] truncate text-left text-sm text-sky-600 hover:underline cursor-pointer dark:text-sky-400"
           >
             {entry.url}
           </button>
