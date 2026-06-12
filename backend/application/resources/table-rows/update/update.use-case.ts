@@ -207,6 +207,11 @@ export default class TableRowUpdateUseCase {
           : undefined;
       delete payload.__actorUserId;
 
+      // Auditoria nativa: registra quem fez a ultima alteracao (UPDATED_BY).
+      // updatedAt e gerenciado automaticamente pelo Mongoose (timestamps).
+      // Espelha o comportamento de `creator` (CREATED_BY) no create.
+      payload.updatedBy = actorUserId ?? null;
+
       // O ato de salvar via update publica o registro (rascunho -> publicado).
       // Nao mexe em trashedAt: lixeira e controlada pelos endpoints de trash.
       payload.status = E_ROW_STATUS.PUBLISHED;

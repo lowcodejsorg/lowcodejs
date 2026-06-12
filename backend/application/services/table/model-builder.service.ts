@@ -96,6 +96,17 @@ export default class MongooseModelBuilder implements ModelBuilderContractService
       index: true,
     };
 
+    // Auditoria nativa: quem fez a ultima alteracao (UPDATED_BY). Propriedade-base
+    // injetada em toda build (como sharedRowSlug) — garante o path mesmo em
+    // tabelas criadas antes do recurso, sem migracao de _schema. Sem isso o
+    // Mongoose (strict) descartaria o updatedBy no $set de tabelas antigas.
+    // updatedAt ja e gerado automaticamente pelo timestamps abaixo.
+    schemaDefinition['updatedBy'] = {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    };
+
     const schema = new mongoose.Schema(schemaDefinition, {
       timestamps: true,
       toJSON: { virtuals: true },

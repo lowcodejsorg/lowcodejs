@@ -283,6 +283,8 @@ export const TableFieldCreateSchema: FastifySchema = {
             'CREATOR',
             'IDENTIFIER',
             'CREATED_AT',
+            'UPDATED_AT',
+            'UPDATED_BY',
             'STATUS',
             'TRASHED_AT',
           ],

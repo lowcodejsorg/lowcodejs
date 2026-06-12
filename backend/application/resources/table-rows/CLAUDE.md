@@ -4,7 +4,21 @@ CRUD e operacoes especiais em registros (rows) de tabelas dinamicas.
 
 ## Entidade
 
-`IRow` - Registro dinamico de tabela. Schema definido em runtime pela tabela pai. Campos nativos: _id, creator, trashed, trashedAt, createdAt, updatedAt.
+`IRow` - Registro dinamico de tabela. Schema definido em runtime pela tabela pai. Campos nativos: _id, creator, trashed, trashedAt, createdAt, updatedAt, updatedBy.
+
+### Campos nativos de auditoria
+
+| Campo | Tipo | Label | Preenchimento |
+|-------|------|-------|---------------|
+| `createdAt` | CREATED_AT | Criado em | Automatico (Mongoose `timestamps`) na criacao |
+| `creator` | CREATOR (CREATED_BY) | Criado por | Setado no create com o usuario autor |
+| `updatedAt` | UPDATED_AT | Modificado em | Automatico (Mongoose `timestamps`) em toda alteracao |
+| `updatedBy` | UPDATED_BY | Modificado por | Setado no `update`/`bulk-update` com o usuario da ultima alteracao (`__actorUserId`) |
+
+Os 4 sao **nativos + locked**: nao podem ser excluidos, apenas ocultados
+(showIn*). `updatedAt` ja existe em toda collection via `timestamps`; `updatedBy`
+e um path injetado pelo `model-builder` (igual `sharedRowSlug`), garantindo
+gravacao mesmo em tabelas criadas antes do recurso.
 
 ## Endpoints
 

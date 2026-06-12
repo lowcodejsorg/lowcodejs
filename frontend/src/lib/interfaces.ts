@@ -395,6 +395,7 @@ export type IRow = Merge<
   Omit<Base, 'trashed'>,
   {
     creator: IUser;
+    updatedBy?: IUser | null;
     status?: ValueOf<typeof E_ROW_STATUS>;
     draftAt?: string | null;
     sharedRowSlug?: string | null;

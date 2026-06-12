@@ -1,7 +1,7 @@
 #!/bin/sh
 # Migration: group-native-fields
-# Garante que cada Field do tipo FIELD_GROUP tenha os 5 campos nativos
-# (_id, creator, createdAt, trashed, trashedAt) em sua subtabela.
+# Garante que cada Field do tipo FIELD_GROUP tenha os 7 campos nativos
+# (_id, creator, createdAt, trashed, trashedAt, updatedAt, updatedBy) em sua subtabela.
 # Idempotente: verifica presença dos campos antes de inserir.
 set -e
 

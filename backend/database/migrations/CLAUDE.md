@@ -9,10 +9,9 @@ servidor subir; no segundo boot em diante sao no-op com 1 query.
 | Arquivo | Marker no Setting | Proposito |
 |---------|-------------------|-----------|
 | `migrate-dual-connection.ts` | `MIGRATION_DUAL_CONNECTION_AT` (+ `MIGRATION_DUAL_CONNECTION_DROPPED_AT` se rodar com `--drop-source`) | Copia collections dinamicas do DB **system** (`DB_DATABASE`) para o DB **data** (`DB_DATA_DATABASE`). Habilita o split em 2 conexoes Mongoose. |
-| `migrate-group-native-fields.ts` | (idempotente por presenca dos campos nativos) | Garante que cada `Field` de tipo `FIELD_GROUP` tenha os campos nativos esperados em sua subtabela. |
+| `migrate-group-native-fields.ts` | `MIGRATION_NATIVE_FIELDS_AT` (idempotente por presenca dos campos nativos) | Garante os campos nativos esperados tanto no **nivel raiz** de cada tabela (`FIELD_NATIVE_LIST`, anexando aos `fieldOrder*`) quanto em cada subtabela de grupo de campos (`FIELD_GROUP_NATIVE_LIST`). Cobre os nativos de auditoria `updatedAt` (UPDATED_AT) e `updatedBy` (UPDATED_BY); o marker foi versionado p/ re-rodar uma vez em bases ja migradas. Nao toca nos dados das rows (`updatedAt` vem do `timestamps`; `updatedBy` e gravado na proxima edicao). |
 | `migrate-backfill-storage-location.ts` | `MIGRATION_STORAGE_LOCATION_AT` | Popula o campo `location` em docs `Storage` existentes (necessario apos a feature `storage-migration`). |
 | `migrate-backfill-row-slugs.ts` | `MIGRATION_ROW_SLUG_BACKFILL_AT` + `MIGRATION_ROW_SLUG_BACKFILL_FALLBACK_AT` | Gera `sharedRowSlug` em rows antigas, habilitando a URL amigavel (`/tables/:slug/:rowSlug`). Tabelas SEM `rowSlugFieldId` recebem fallback: pega o primeiro campo TEXT_SHORT ativo, seta `table.rowSlugFieldId` nele e faz o backfill. Vale para qualquer estilo de tabela (todo registro e uma row). Re-rodar com `--force` apos ativar o campo de slug numa tabela ja populada. |
-
 ## Comandos
 
 ```bash

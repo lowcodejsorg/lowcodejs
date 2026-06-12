@@ -36,6 +36,7 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
       E_FIELD_TYPE.EVALUATION,
       E_FIELD_TYPE.USER,
       E_FIELD_TYPE.CREATOR,
+      E_FIELD_TYPE.UPDATED_BY,
     ];
 
     return fields.filter(
@@ -69,6 +70,14 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
       }
 
       if (field.type === E_FIELD_TYPE.CREATOR) {
+        populate.push({
+          path: field.slug,
+          model: User,
+          select: 'name email _id',
+        });
+      }
+
+      if (field.type === E_FIELD_TYPE.UPDATED_BY) {
         populate.push({
           path: field.slug,
           model: User,
@@ -159,6 +168,14 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
           }
 
           if (groupField.type === E_FIELD_TYPE.CREATOR) {
+            populate.push({
+              path: `${field.slug}.${groupField.slug}`,
+              model: User,
+              select: 'name email _id',
+            });
+          }
+
+          if (groupField.type === E_FIELD_TYPE.UPDATED_BY) {
             populate.push({
               path: `${field.slug}.${groupField.slug}`,
               model: User,

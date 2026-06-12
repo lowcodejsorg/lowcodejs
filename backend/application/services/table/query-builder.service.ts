@@ -85,7 +85,8 @@ export default class MongooseQueryBuilder implements QueryBuilderContractService
           field.type === E_FIELD_TYPE.DROPDOWN ||
           field.type === E_FIELD_TYPE.CATEGORY ||
           field.type === E_FIELD_TYPE.USER ||
-          field.type === E_FIELD_TYPE.CREATOR) &&
+          field.type === E_FIELD_TYPE.CREATOR ||
+          field.type === E_FIELD_TYPE.UPDATED_BY) &&
         payload[slug]
       ) {
         query[slug] = {
@@ -95,7 +96,8 @@ export default class MongooseQueryBuilder implements QueryBuilderContractService
 
       if (
         field.type === E_FIELD_TYPE.DATE ||
-        field.type === E_FIELD_TYPE.CREATED_AT
+        field.type === E_FIELD_TYPE.CREATED_AT ||
+        field.type === E_FIELD_TYPE.UPDATED_AT
       ) {
         const initialKey = `${slug}-initial`;
         const finalKey = `${slug}-final`;
@@ -156,7 +158,8 @@ export default class MongooseQueryBuilder implements QueryBuilderContractService
             groupField.type === E_FIELD_TYPE.DROPDOWN ||
             groupField.type === E_FIELD_TYPE.CATEGORY ||
             groupField.type === E_FIELD_TYPE.USER ||
-            groupField.type === E_FIELD_TYPE.CREATOR
+            groupField.type === E_FIELD_TYPE.CREATOR ||
+            groupField.type === E_FIELD_TYPE.UPDATED_BY
           ) {
             query[embeddedPath] = {
               $in: String(payload[payloadKey]).split(','),

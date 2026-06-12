@@ -112,6 +112,7 @@ export function useFilterState(
           field.type === E_FIELD_TYPE.CATEGORY ||
           field.type === E_FIELD_TYPE.USER ||
           field.type === E_FIELD_TYPE.CREATOR ||
+          field.type === E_FIELD_TYPE.UPDATED_BY ||
           field.type === E_FIELD_TYPE.RELATIONSHIP
         ) {
           initialValues[field.slug] = fieldValue.split(',');
@@ -122,7 +123,8 @@ export function useFilterState(
 
       if (
         field.type === E_FIELD_TYPE.DATE ||
-        field.type === E_FIELD_TYPE.CREATED_AT
+        field.type === E_FIELD_TYPE.CREATED_AT ||
+        field.type === E_FIELD_TYPE.UPDATED_AT
       ) {
         const initialDateStr = search[`${field.slug}-initial`];
         const finalDateStr = search[`${field.slug}-final`];
@@ -154,7 +156,8 @@ export function useFilterState(
       filters[field.slug] = undefined;
       if (
         field.type === E_FIELD_TYPE.DATE ||
-        field.type === E_FIELD_TYPE.CREATED_AT
+        field.type === E_FIELD_TYPE.CREATED_AT ||
+        field.type === E_FIELD_TYPE.UPDATED_AT
       ) {
         filters[`${field.slug}-initial`] = undefined;
         filters[`${field.slug}-final`] = undefined;
@@ -190,6 +193,7 @@ export function useFilterState(
       if (
         (field.type === E_FIELD_TYPE.USER ||
           field.type === E_FIELD_TYPE.CREATOR ||
+          field.type === E_FIELD_TYPE.UPDATED_BY ||
           field.type === E_FIELD_TYPE.RELATIONSHIP) &&
         Array.isArray(value)
       ) {
@@ -201,7 +205,8 @@ export function useFilterState(
 
       if (
         field.type === E_FIELD_TYPE.DATE ||
-        field.type === E_FIELD_TYPE.CREATED_AT
+        field.type === E_FIELD_TYPE.CREATED_AT ||
+        field.type === E_FIELD_TYPE.UPDATED_AT
       ) {
         const dateValue = filterValues[field.slug] as DatepickerValue | null;
 
@@ -401,7 +406,8 @@ export function FilterFieldsForm({
             />
           )}
 
-          {field.type === E_FIELD_TYPE.CREATED_AT && (
+          {(field.type === E_FIELD_TYPE.CREATED_AT ||
+            field.type === E_FIELD_TYPE.UPDATED_AT) && (
             <FilterDate
               field={field}
               value={filterValues[field.slug] ?? null}
@@ -415,7 +421,8 @@ export function FilterFieldsForm({
           )}
 
           {(field.type === E_FIELD_TYPE.USER ||
-            field.type === E_FIELD_TYPE.CREATOR) && (
+            field.type === E_FIELD_TYPE.CREATOR ||
+            field.type === E_FIELD_TYPE.UPDATED_BY) && (
             <FilterUser
               field={field}
               value={filterValues[field.slug] ?? []}

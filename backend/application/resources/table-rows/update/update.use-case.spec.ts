@@ -75,6 +75,41 @@ describe('Table Row Update Use Case', () => {
     }
   });
 
+  it('deve preencher updatedBy (auditoria nativa) com o usuario da alteracao', async () => {
+    const table = await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+
+    const row = await rowRepository.create({
+      table,
+      data: { nome: 'Original Name', updatedBy: null },
+    });
+
+    const result = await sut.execute({
+      slug: 'clientes',
+      _id: row._id,
+      nome: 'Updated Name',
+      __actorUserId: 'user-123',
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect((result.value as Record<string, unknown>).updatedBy).toBe(
+        'user-123',
+      );
+    }
+  });
+
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
     const result = await sut.execute({
       slug: 'non-existent',

@@ -356,6 +356,7 @@ function RenderGroupCell({
         />
       );
     case E_FIELD_TYPE.USER:
+    case E_FIELD_TYPE.UPDATED_BY:
     case E_FIELD_TYPE.CREATOR:
       return (
         <TableRowUserCell
@@ -370,6 +371,7 @@ function RenderGroupCell({
           row={row}
         />
       );
+    case E_FIELD_TYPE.UPDATED_AT:
     case E_FIELD_TYPE.CREATED_AT:
       return (
         <TableRowDateCell

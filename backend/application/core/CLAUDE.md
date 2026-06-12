@@ -19,8 +19,10 @@ Enums, tipos e interfaces do dominio. Fonte unica de verdade para:
   trashedAt)
 - Helpers: `Optional<T, K>`, `Merge<T, U>`, `ValueOf<T>`, `Paginated<Entity>`,
   `IMeta`, `ISearch`
-- Constantes: `FIELD_NATIVE_LIST`, `FIELD_GROUP_NATIVE_LIST` (5 campos nativos
-  cada)
+- Constantes: `FIELD_NATIVE_LIST`, `FIELD_GROUP_NATIVE_LIST` (7 campos nativos
+  cada: \_id, creator/CREATED_BY, createdAt, updatedAt, updatedBy, status,
+  trashedAt — os 4 de auditoria createdAt/creator/updatedAt/updatedBy seguem o
+  mesmo padrao: nativos, locked, nao excluiveis, apenas ocultaveis)
 
 ### `exception.core.ts`
 
