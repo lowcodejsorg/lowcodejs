@@ -28,6 +28,7 @@ mecanismo de marcadores no documento Setting singleton.
 | 10 | `10-field-permissions.sh` | `migrate-field-permissions.ts` | Backfill de `permissions.{list,form,detail}` a partir dos booleans legados `showInList/showInForm/showInDetail`. Não toca em `showInFilter`. Marker `MIGRATION_FIELD_PERMISSIONS_AT` |
 | 11 | `11-menu-visibility.sh` | `migrate-menu-visibility.ts` | Define `visibility=PUBLIC` (binding visível) nos menus sem o campo. Marker `MIGRATION_MENU_VISIBILITY_AT` |
 | 12 | `12-drop-legacy-permission-fields.sh` | `migrate-drop-legacy-permission-fields.ts` | `$unset` **permanente** dos campos legados (`visibility`/`collaboration`/`administrators` das tabelas; `showInList`/`showInForm`/`showInDetail` dos campos — **não** `showInFilter`). Roda depois de 09/10/11; como o dual-write foi removido, o drop é definitivo. Marker `MIGRATION_DROP_LEGACY_PERMISSION_FIELDS_AT` |
+| 13 | `13-backfill-logger-audit.sh` | `migrate-backfill-logger-audit.ts` | Backfilla nos logs de `ROW` os campos do registro referenciado (`creator`/`updater`/`objectCreatedAt`/`objectUpdatedAt`), lidos das linhas de tabela dinâmica (dual-connection). Marker `MIGRATION_LOGGER_AUDIT_AT` |
 
 ## Fluxo
 

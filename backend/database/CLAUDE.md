@@ -32,6 +32,7 @@ sao scripts manuais executados via npm script dedicado.
 | `migrate-group-native-fields.ts` | Garante os campos nativos no nivel raiz da tabela (`FIELD_NATIVE_LIST` + `fieldOrder*`) e em cada `Table.groups[*]` (`FIELD_GROUP_NATIVE_LIST`), criando os faltantes na collection `fields`. Idempotente por slug. Marcador versionado `MIGRATION_NATIVE_FIELDS_AT` (re-roda uma vez em bases que so tinham `MIGRATION_GROUP_NATIVE_FIELDS_AT`, p/ backfill de `updatedAt`/`updater`) |
 | `migrate-relationship-table-id.ts` | Backfill de `relationship.table._id` em Fields RELATIONSHIP (lookup por slug), tornando refs slug-independentes. Marcador `MIGRATION_RELATIONSHIP_TABLE_ID_AT` |
 | `migrate-row-status-trashed.ts` | Introduz `status`/`draftAt` em rows dinamicas (e itens FIELD_GROUP embedded) e remove o boolean `trashed` — trash passa a ser derivado de `trashedAt`. Roda no DB data |
+| `migrate-backfill-logger-audit.ts` | Backfilla nos logs de `ROW` os campos `creator`/`updater`/`objectCreatedAt`/`objectUpdatedAt` do registro referenciado (lidos da ROW via dual-connection). Marcador `MIGRATION_LOGGER_AUDIT_AT` |
 
 ### Execucao
 

@@ -16,6 +16,7 @@ servidor subir; no segundo boot em diante sao no-op com 1 query.
 | `migrate-field-permissions.ts` | `MIGRATION_FIELD_PERMISSIONS_AT` | Backfill de `permissions.{list,form,detail}` a partir dos booleans legados `showInList/showInForm/showInDetail` (true→PUBLIC, false→NOBODY). Nao toca em `showInFilter`. |
 | `migrate-menu-visibility.ts` | `MIGRATION_MENU_VISIBILITY_AT` | Define `visibility=PUBLIC` (binding visivel) nos menus sem o campo. |
 | `migrate-drop-legacy-permission-fields.ts` | `MIGRATION_DROP_LEGACY_PERMISSION_FIELDS_AT` | `$unset` **permanente** dos campos legados (`visibility`/`collaboration`/`administrators` das tabelas; `showInList`/`showInForm`/`showInDetail` dos campos — **nao** `showInFilter`). Roda depois dos backfills 09/10/11. Como o dual-write dos legados foi removido, o drop e coerente e definitivo. Acesso raw (independente do schema Mongoose). |
+| `migrate-backfill-logger-audit.ts` | `MIGRATION_LOGGER_AUDIT_AT` | Backfill nos logs de `object: 'ROW'` dos campos do registro referenciado (`creator`/`updater`/`objectCreatedAt`/`objectUpdatedAt`), lidos da propria ROW via `resolveLoggerObjectAudit` (dual-connection system+data). Logs de outros tipos ficam null. Idempotente (`bulkWrite` em lote de 500). |
 
 ## Comandos
 

@@ -558,6 +558,12 @@ export type ILogger = Merge<
     object: ValueOf<typeof E_LOGGER_OBJECT_TYPE> | null;
     object_id: string | null;
     content: Record<string, unknown> | null;
+    // Dados do registro referenciado por object_id (nao do log). Null quando o
+    // objeto nao for uma ROW de tabela dinamica.
+    creator: ILoggerUserRef | null;
+    updater: ILoggerUserRef | null;
+    objectCreatedAt: string | null;
+    objectUpdatedAt: string | null;
   }
 >;
 

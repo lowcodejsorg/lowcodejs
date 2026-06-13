@@ -88,6 +88,40 @@ export const LoggerPaginatedSchema: FastifySchema = {
                   'Conteúdo/payload adicional do registro (nullable, qualquer tipo)',
                 nullable: true,
               },
+              creator: {
+                type: 'object',
+                nullable: true,
+                description:
+                  'Usuário que criou o registro referenciado (nullable)',
+                properties: {
+                  _id: { type: 'string' },
+                  name: { type: 'string' },
+                  email: { type: 'string' },
+                },
+              },
+              updater: {
+                type: 'object',
+                nullable: true,
+                description:
+                  'Usuário que modificou por último o registro referenciado (nullable)',
+                properties: {
+                  _id: { type: 'string' },
+                  name: { type: 'string' },
+                  email: { type: 'string' },
+                },
+              },
+              objectCreatedAt: {
+                type: ['string', 'null'],
+                format: 'date-time',
+                description:
+                  'Quando o registro referenciado foi criado (nullable)',
+              },
+              objectUpdatedAt: {
+                type: ['string', 'null'],
+                format: 'date-time',
+                description:
+                  'Quando o registro referenciado foi modificado por último (nullable)',
+              },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' },
             },

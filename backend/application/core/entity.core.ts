@@ -686,6 +686,12 @@ export type ILogger = Merge<
       | null;
     object_id: string | null;
     content: Record<string, unknown> | null;
+    // Dados do registro referenciado por object_id (nao do log). Null quando o
+    // objeto referenciado nao for uma ROW de tabela dinamica.
+    creator: IUser | null;
+    updater: IUser | null;
+    objectCreatedAt: Date | null;
+    objectUpdatedAt: Date | null;
   }
 >;
 
