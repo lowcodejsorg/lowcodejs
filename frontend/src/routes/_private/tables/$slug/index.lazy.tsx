@@ -58,8 +58,14 @@ import { useTableRowsExportCsv } from '@/hooks/tanstack-query/use-table-rows-exp
 import { useChatSidebar } from '@/hooks/use-chat-sidebar';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import { useTablePermission } from '@/hooks/use-table-permission';
-import { E_ROLE, E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
+import {
+  E_AREA_CAPABILITY,
+  E_ROLE,
+  E_TABLE_STYLE,
+  MetaDefault,
+} from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
+import { hasAreaCapability } from '@/lib/menu/menu-access-permissions';
 import { useAuthStore } from '@/stores/authentication';
 
 const rootApi = getRouteApi('__root__');
@@ -210,6 +216,15 @@ function RouteComponent(): React.JSX.Element {
   const canExportCsv =
     auth.user?.group?.slug === E_ROLE.MASTER ||
     auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+  // Chat exige o toggle global E a capacidade MANAGE_CHAT (MASTER/ADMINISTRATOR
+  // bypassam a capacidade). Espelha o gate do socket no backend.
+  const canUseChat =
+    aiAssistantEnabled &&
+    (canExportCsv ||
+      hasAreaCapability(
+        auth.user?.capabilities,
+        E_AREA_CAPABILITY.MANAGE_CHAT,
+      ));
   const exportCsv = useTableRowsExportCsv({
     onError(error) {
       handleApiError(error, { context: 'Erro ao exportar CSV' });
@@ -320,7 +335,7 @@ function RouteComponent(): React.JSX.Element {
               />
             )}
             <TableConfigurationDropdown tableSlug={slug} />
-            {aiAssistantEnabled && (
+            {canUseChat && (
               <ChatTrigger
                 onClick={() => handleChatOpenChange(!chatOpen)}
                 isOpen={chatOpen}
@@ -457,7 +472,7 @@ function RouteComponent(): React.JSX.Element {
               isTrashView={search.trashed === true}
             />
           </PageShell.Content>
-          {aiAssistantEnabled && (
+          {canUseChat && (
             <ChatSidebar
               open={chatOpen}
               onOpenChange={handleChatOpenChange}

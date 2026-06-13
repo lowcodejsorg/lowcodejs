@@ -172,6 +172,7 @@ export const E_AREA_CAPABILITY = {
   MANAGE_SETTINGS: 'MANAGE_SETTINGS',
   MANAGE_TOOLS: 'MANAGE_TOOLS',
   MANAGE_PLUGINS: 'MANAGE_PLUGINS',
+  MANAGE_CHAT: 'MANAGE_CHAT',
 } as const;
 
 // Alvo de uma permissao de acao da tabela.
@@ -231,6 +232,7 @@ export const PERMISSION_LABEL_MAPPER: Record<string, string> = {
   [E_AREA_CAPABILITY.MANAGE_SETTINGS]: 'Gerenciar configurações',
   [E_AREA_CAPABILITY.MANAGE_TOOLS]: 'Gerenciar ferramentas',
   [E_AREA_CAPABILITY.MANAGE_PLUGINS]: 'Gerenciar plugins',
+  [E_AREA_CAPABILITY.MANAGE_CHAT]: 'Usar o assistente de IA',
 };
 
 // ============== OPTIONS PARA SELECTS ==============

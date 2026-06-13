@@ -75,6 +75,12 @@ const ADMINISTRATOR_CAPABILITIES: ValueOf<typeof E_AREA_CAPABILITY>[] = [
   E_AREA_CAPABILITY.MANAGE_MENU,
 ];
 
+// Chat liberado a todos os grupos por padrao (mantem o comportamento antigo de
+// "qualquer logado usa o chat"), agora revogavel por grupo via permissao.
+const CHAT_CAPABILITIES: ValueOf<typeof E_AREA_CAPABILITY>[] = [
+  E_AREA_CAPABILITY.MANAGE_CHAT,
+];
+
 // Hierarquia fixa dos grupos de sistema (Master engloba Administrator, e assim
 // por diante). Como sao grupos do sistema, a hierarquia e definida pelo codigo.
 const ENCOMPASSES_BY_SLUG: Record<
@@ -107,9 +113,16 @@ export default async function Seed(): Promise<void> {
     [E_ROLE.ADMINISTRATOR]: idsForSlugs([
       ...MANAGER_PERMISSIONS,
       ...ADMINISTRATOR_CAPABILITIES,
+      ...CHAT_CAPABILITIES,
     ]),
-    [E_ROLE.MANAGER]: idsForSlugs(MANAGER_PERMISSIONS),
-    [E_ROLE.REGISTERED]: idsForSlugs(REGISTERED_PERMISSIONS),
+    [E_ROLE.MANAGER]: idsForSlugs([
+      ...MANAGER_PERMISSIONS,
+      ...CHAT_CAPABILITIES,
+    ]),
+    [E_ROLE.REGISTERED]: idsForSlugs([
+      ...REGISTERED_PERMISSIONS,
+      ...CHAT_CAPABILITIES,
+    ]),
   };
 
   const ops = GROUP_METADATA.map(({ slug, name, description }) => ({
@@ -156,7 +169,12 @@ export default async function Seed(): Promise<void> {
 
   const capabilityOps = [
     { slug: E_ROLE.MASTER, capabilities: MASTER_CAPABILITIES },
-    { slug: E_ROLE.ADMINISTRATOR, capabilities: ADMINISTRATOR_CAPABILITIES },
+    {
+      slug: E_ROLE.ADMINISTRATOR,
+      capabilities: [...ADMINISTRATOR_CAPABILITIES, ...CHAT_CAPABILITIES],
+    },
+    { slug: E_ROLE.MANAGER, capabilities: CHAT_CAPABILITIES },
+    { slug: E_ROLE.REGISTERED, capabilities: CHAT_CAPABILITIES },
   ].map(({ slug, capabilities }) => ({
     updateOne: {
       filter: { slug },

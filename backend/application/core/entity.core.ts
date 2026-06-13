@@ -777,6 +777,7 @@ export const E_AREA_CAPABILITY = {
   MANAGE_SETTINGS: 'MANAGE_SETTINGS',
   MANAGE_TOOLS: 'MANAGE_TOOLS',
   MANAGE_PLUGINS: 'MANAGE_PLUGINS',
+  MANAGE_CHAT: 'MANAGE_CHAT',
 } as const;
 
 // Alvo de uma permissao de acao da tabela: um grupo especifico, todos (Public,

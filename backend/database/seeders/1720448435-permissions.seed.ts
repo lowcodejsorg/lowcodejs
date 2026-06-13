@@ -112,6 +112,11 @@ export default async function Seed(): Promise<void> {
       slug: E_AREA_CAPABILITY.MANAGE_PLUGINS,
       description: 'Permite gerenciar os plugins',
     },
+    {
+      name: 'Usar o assistente de IA',
+      slug: E_AREA_CAPABILITY.MANAGE_CHAT,
+      description: 'Permite usar o chat do assistente de IA',
+    },
   ];
 
   await Permission.bulkWrite(

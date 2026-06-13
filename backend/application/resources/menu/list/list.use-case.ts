@@ -5,18 +5,17 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type {
   IMenu as Entity,
-  IPermissionBinding,
   ITable,
   IUser,
   ValueOf,
 } from '@application/core/entity.core';
 import {
   E_MENU_ITEM_TYPE,
-  E_PERMISSION_TARGET,
   E_ROLE,
   E_TABLE_PERMISSION,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { MenuVisibility } from '@application/core/menu-visibility.core';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
@@ -50,43 +49,6 @@ export default class MenuListUseCase {
     private readonly permissionService: PermissionContractService,
     private readonly groupResolver: GroupResolverContractService,
   ) {}
-
-  // Binding ausente (menu legado) = visível. PUBLIC visível, NOBODY oculto,
-  // GROUP visível só para quem está no grupo (fecho transitivo).
-  private bindingAllows(
-    visibility: IPermissionBinding | null | undefined,
-    userGroupIds: Set<string>,
-  ): boolean {
-    if (!visibility) return true;
-    if (visibility.kind === E_PERMISSION_TARGET.PUBLIC) return true;
-    if (visibility.kind === E_PERMISSION_TARGET.NOBODY) return false;
-    if (!visibility.group) return false;
-    return userGroupIds.has(String(visibility.group));
-  }
-
-  // Visível só se o próprio e todos os ancestrais forem visíveis
-  // ("pai oculto esconde a subárvore"). Espelha o filtro do frontend.
-  private isVisible(
-    menu: Entity,
-    byId: Map<string, Entity>,
-    userGroupIds: Set<string>,
-  ): boolean {
-    const guard = new Set<string>();
-    let current: Entity | undefined = menu;
-
-    while (current) {
-      const currentId = String(current._id);
-      if (guard.has(currentId)) break;
-      guard.add(currentId);
-
-      if (!this.bindingAllows(current.visibility, userGroupIds)) return false;
-
-      if (!current.parent) break;
-      current = byId.get(String(current.parent));
-    }
-
-    return true;
-  }
 
   // Menu do tipo TABLE/FORM só aparece se o usuário tem a permissão da tabela
   // vinculada (lista usa VIEW; formulário usa CREATE_ROW). Tabela inexistente
@@ -174,7 +136,7 @@ export default class MenuListUseCase {
       const visible: Entity[] = [];
 
       for (const menu of menus) {
-        if (!this.isVisible(menu, byId, userGroupIds)) continue;
+        if (!MenuVisibility.isVisible(menu, byId, userGroupIds)) continue;
 
         const requiredPermission = TABLE_LINKED_PERMISSION[menu.type];
         if (requiredPermission && menu.table) {
