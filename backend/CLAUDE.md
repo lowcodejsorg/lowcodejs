@@ -158,7 +158,7 @@ Codigo de usuario (beforeSave, afterSave, onLoad) roda em Node VM isolada com ti
 | `E_TABLE_TYPE` | TABLE, FIELD_GROUP |
 | `E_TABLE_STYLE` | LIST, GALLERY, DOCUMENT, CARD, MOSAIC, KANBAN, FORUM, CALENDAR, GANTT |
 | `E_TABLE_PERMISSION` | CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW (12 total) |
-| `E_AREA_CAPABILITY` | MANAGE_USERS, MANAGE_MENU, MANAGE_USER_GROUPS, MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS |
+| `E_AREA_CAPABILITY` | MANAGE_USERS, MANAGE_MENU, MANAGE_USER_GROUPS, MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS, MANAGE_CHAT (7 total) |
 | `E_PERMISSION_TARGET` | PUBLIC, NOBODY, GROUP (binding `{ kind, group }`) |
 | `E_TABLE_PROFILE` | OWNER, ADMIN, EDITOR, CONTRIBUTOR, VIEWER (perfis de membro) |
 | `E_PROFILE_ACCESS` | ALLOW, DENY, OWN (celula da `TABLE_PROFILE_MATRIX`) |
@@ -184,9 +184,10 @@ gira em torno de **grupos custom + capacidades + bindings por acao**.
 ### Capacidades de area
 
 `E_AREA_CAPABILITY` (MANAGE_USERS, MANAGE_MENU, MANAGE_USER_GROUPS,
-MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS) sao permissoes atribuiveis a
-qualquer grupo, enforcadas por `PermissionMiddleware(capability)` — substitui o
-`RoleMiddleware` nas areas do sistema. MASTER bypassa.
+MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS, MANAGE_CHAT — 7 capacidades) sao
+permissoes atribuiveis a qualquer grupo, enforcadas por
+`PermissionMiddleware(capability)` — substitui o `RoleMiddleware` nas areas do
+sistema. MASTER bypassa.
 
 ### Bindings por acao (`E_PERMISSION_TARGET`)
 
@@ -513,7 +514,7 @@ o campo `location` em docs Storage existentes (idempotente via marker
 | Runner | threads | forks |
 
 Helpers (`test/helpers/auth.helper.ts`):
-- `createAuthenticatedUser(overrides?)` - cria user + grupo Master + 12 permissoes, faz sign-in, retorna cookies + user
+- `createAuthenticatedUser(overrides?)` - cria user + grupo Master + 18 permissoes (12 de tabela + 6 capacidades de area, sem MANAGE_CHAT), faz sign-in, retorna cookies + user
 - `cleanDatabase()` - deleta User e UserGroup
 
 ## Build & Deploy
@@ -591,7 +592,7 @@ Comando: `npm run seed`
 
 | Seeder | Dados |
 |--------|-------|
-| 1720448435-permissions.seed.ts | 12 permissoes (CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW). Upsert por `slug` com `$set` |
+| 1720448435-permissions.seed.ts | 19 permissoes: 12 de tabela (CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW) + 7 capacidades de area (E_AREA_CAPABILITY, inclui MANAGE_CHAT). Upsert por `slug` com `$set` |
 | 1720448445-user-group.seed.ts | 4 grupos (MASTER, ADMINISTRATOR, MANAGER, REGISTERED). Metadados via `$set`; `permissions` via `$setOnInsert` (preserva customizacoes manuais) |
 | 1720465893-settings.seed.ts | Setting singleton. Marca SETUP_COMPLETED=true se ja existe MASTER; caso contrario, `$setOnInsert: {}` |
 | 1778025600-demo-users.seed.ts | Gated por `DEMO_MODE=true`. Cria/atualiza `admin@admin.com` (ADMINISTRATOR) e `registered@registered.com` (REGISTERED). `$set` em todos os campos, password re-hashado a cada `npm run seed`. No-op silencioso fora de demo |

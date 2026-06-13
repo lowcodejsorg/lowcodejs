@@ -249,8 +249,9 @@ JWT apenas para compat. O backend e a fonte de verdade — resolve os grupos do
 usuario (incluindo o fecho `encompasses[]`) a cada request.
 
 - **Capacidades de area** (`E_AREA_CAPABILITY`: MANAGE_USERS, MANAGE_MENU,
-  MANAGE_USER_GROUPS, MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS) liberam o
-  acesso as areas do sistema; sao atribuiveis a qualquer grupo.
+  MANAGE_USER_GROUPS, MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS, MANAGE_CHAT
+  — 7 capacidades) liberam o acesso as areas do sistema; sao atribuiveis a
+  qualquer grupo.
 - **Bindings por acao** (`{ kind, group }` com `kind ∈ PUBLIC|NOBODY|GROUP`)
   controlam tabela (`table.permissions`), visibilidade de campo
   (`field.permissions.{list,form,detail}`) e menu (`menu.visibility`).
@@ -297,7 +298,7 @@ impactar bundle inicial.
 
 | Arquivo             | Conteudo                                                                                                                                                                                                                                                                                |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `lib/constant.ts`   | Enums: E*FIELD_TYPE (14 tipos), E_FIELD_FORMAT (15 formatos), E_ROLE (4), E_TABLE_TYPE (2), E_TABLE_STYLE (9 visualizacoes), E_TABLE_PERMISSION (12), E_PERMISSION_TARGET (PUBLIC/NOBODY/GROUP), E_TABLE_PROFILE (owner/admin/editor/contributor/viewer), E_AREA_CAPABILITY (MANAGE*\*) |
+| `lib/constant.ts`   | Enums: E*FIELD_TYPE (14 tipos), E_FIELD_FORMAT (15 formatos), E_ROLE (4), E_TABLE_TYPE (2), E_TABLE_STYLE (9 visualizacoes), E_TABLE_PERMISSION (12), E_PERMISSION_TARGET (PUBLIC/NOBODY/GROUP), E_TABLE_PROFILE (owner/admin/editor/contributor/viewer), E_AREA_CAPABILITY (7: MANAGE*\*, inclui MANAGE_CHAT) |
 | `lib/interfaces.ts` | Tipos: IUser, ITable, IField, IRow, IMenu, IPermission, ISetting, Meta (paginacao), etc.                                                                                                                                                                                                |
 | `lib/schemas.ts`    | Zod schemas compartilhados entre formularios                                                                                                                                                                                                                                            |
 | `lib/payloads.ts`   | DTOs tipados para requisicoes API                                                                                                                                                                                                                                                       |
