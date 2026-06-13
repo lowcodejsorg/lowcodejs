@@ -39,6 +39,7 @@ export default class TableRowEvaluationUseCase {
       const row = await this.rowRepository.findOne({
         table,
         query: { _id: payload._id },
+        populate: false,
       });
 
       if (!row)

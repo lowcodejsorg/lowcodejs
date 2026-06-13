@@ -257,10 +257,17 @@ export default class RowMongooseRepository implements RowContractRepository {
     const model = await this.getModel(payload.table);
     const populate = await this.getPopulate(payload.table);
 
-    const row = await model.findOne({ _id: payload._id });
+    // Update atomico do unico campo (reaction/evaluation): findOneAndUpdate nao
+    // roda validators por padrao, evitando revalidar campos required nao
+    // relacionados que estejam null em rows legadas/draft (full-doc .save()
+    // quebrava com "Path X is required").
+    const row = await model.findOneAndUpdate(
+      { _id: payload._id },
+      { $set: { [payload.field]: payload.value } },
+      { new: true },
+    );
     if (!row) throw new Error('Row not found');
 
-    await row.set(payload.field, payload.value).save();
     await row.populate(populate);
 
     return this.transformRow(row);
