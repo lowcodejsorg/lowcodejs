@@ -19,7 +19,6 @@ runas() {
   fi
 }
 
-echo "🔗 Verificando backfill de relacionamento criar registros..."
 if [ -f "$MIGRATION_DIR/migrate-backfill-relationship-create-records.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-backfill-relationship-create-records.ts"
 else

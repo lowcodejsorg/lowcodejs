@@ -22,11 +22,14 @@
 import { config } from 'dotenv';
 import mongoose from 'mongoose';
 
-config({ path: '.env' });
+import { TaskLogger } from '../shared/task-logger';
+
+config({ path: '.env', quiet: true });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const DB_DATABASE = process.env.DB_DATABASE ?? 'lowcodejs';
 const FORCE = process.argv.includes('--force');
+const TITLE = 'ID de tabela em relacionamentos';
 
 type SettingMarkerDoc = {
   MIGRATION_RELATIONSHIP_TABLE_ID_AT?: Date | null;
@@ -75,6 +78,7 @@ const SettingMarkerSchema = new mongoose.Schema(
 async function backfillRelationshipTableId(
   FieldModel: mongoose.Model<FieldMigrationDoc>,
   TableModel: mongoose.Model<TableMigrationDoc>,
+  logger: TaskLogger,
 ): Promise<{ updated: number; skipped: number }> {
   const fields = await FieldModel.find({
     type: 'RELATIONSHIP',
@@ -84,16 +88,7 @@ async function backfillRelationshipTableId(
     ],
   }).lean();
 
-  if (fields.length === 0) {
-    console.info(
-      'No fields with missing relationship.table._id found. Nothing to backfill.',
-    );
-    return { updated: 0, skipped: 0 };
-  }
-
-  console.info(
-    `Found ${fields.length} field(s) with missing relationship.table._id.`,
-  );
+  if (fields.length === 0) return { updated: 0, skipped: 0 };
 
   let updated = 0;
   let skipped = 0;
@@ -102,9 +97,7 @@ async function backfillRelationshipTableId(
     const slug = field.relationship?.table?.slug;
 
     if (!slug) {
-      console.warn(
-        `Field ${field._id.toString()} has no relationship.table.slug — skipping.`,
-      );
+      logger.item(`campo ${field._id.toString()} — sem slug de tabela, pulado`);
       skipped++;
       continue;
     }
@@ -112,9 +105,7 @@ async function backfillRelationshipTableId(
     const table = await TableModel.findOne({ slug }).lean();
 
     if (!table) {
-      console.warn(
-        `Table with slug "${slug}" not found for field ${field._id.toString()} — skipping.`,
-      );
+      logger.item(`${slug} — tabela não encontrada, pulado`);
       skipped++;
       continue;
     }
@@ -124,23 +115,19 @@ async function backfillRelationshipTableId(
       { $set: { 'relationship.table._id': table._id } },
     );
     updated++;
-    console.info(
-      `Updated field ${field._id.toString()} → relationship.table._id = ${table._id.toString()}`,
-    );
+    logger.item(`${slug} — vínculo atualizado`);
   }
 
   return { updated, skipped };
 }
 
 async function migrate(): Promise<void> {
+  const logger = new TaskLogger(TITLE);
+
   if (!DATABASE_URL) {
-    console.error('DATABASE_URL is required');
+    logger.failed('DATABASE_URL não configurada');
     process.exit(1);
   }
-
-  console.info(`Database: ${DB_DATABASE}`);
-  if (FORCE) console.info('Force: true (bypassing marker)');
-  console.info('---');
 
   const conn = mongoose.createConnection(DATABASE_URL, {
     dbName: DB_DATABASE,
@@ -163,31 +150,31 @@ async function migrate(): Promise<void> {
   const setting = await SettingMarker.findOne({}).lean();
 
   try {
-    if (setting?.MIGRATION_RELATIONSHIP_TABLE_ID_AT && !FORCE) {
-      console.info(
-        `Already migrated at ${setting.MIGRATION_RELATIONSHIP_TABLE_ID_AT.toISOString()}, skipping (use --force to re-run).`,
-      );
+    const appliedAt = setting?.MIGRATION_RELATIONSHIP_TABLE_ID_AT;
+    if (appliedAt && !FORCE) {
+      logger.skipped(appliedAt);
       return;
     }
 
-    const result = await backfillRelationshipTableId(FieldModel, TableModel);
-    console.info('---');
-    console.info(
-      `Done. Updated: ${result.updated}, Skipped: ${result.skipped}`,
+    logger.running();
+    const result = await backfillRelationshipTableId(
+      FieldModel,
+      TableModel,
+      logger,
     );
+    logger.done(`${result.updated} atualizados, ${result.skipped} pulados`);
 
     await SettingMarker.findOneAndUpdate(
       {},
       { $set: { MIGRATION_RELATIONSHIP_TABLE_ID_AT: new Date() } },
       { upsert: true, setDefaultsOnInsert: true },
     );
-    console.info('Marker MIGRATION_RELATIONSHIP_TABLE_ID_AT recorded.');
   } finally {
     await conn.close();
   }
 }
 
 migrate().catch((error: unknown): void => {
-  console.error('Migration failed:', error);
+  new TaskLogger(TITLE).failed(error);
   process.exit(1);
 });

@@ -15,11 +15,14 @@
 import { config } from 'dotenv';
 import mongoose from 'mongoose';
 
-config({ path: '.env' });
+import { TaskLogger } from '../shared/task-logger';
+
+config({ path: '.env', quiet: true });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const DB_DATABASE = process.env.DB_DATABASE || 'lowcodejs';
 const FORCE = process.argv.includes('--force');
+const TITLE = 'Visibilidade dos menus';
 
 type SettingMarkerDoc = {
   MIGRATION_MENU_VISIBILITY_AT?: Date | null;
@@ -31,29 +34,23 @@ async function backfillMenuVisibility(
   const menus = db.collection('menus');
   const total = await menus.countDocuments();
 
-  if (total === 0) {
-    console.info('No menu documents found. Nothing to backfill.');
-    return { updated: 0, total: 0 };
-  }
+  if (total === 0) return { updated: 0, total: 0 };
 
   const result = await menus.updateMany(
     { $or: [{ visibility: { $exists: false } }, { visibility: null }] },
     { $set: { visibility: { kind: 'PUBLIC', group: null } } },
   );
 
-  console.info(`Backfilled ${result.modifiedCount} menu document(s).`);
   return { updated: result.modifiedCount, total };
 }
 
 async function migrate(): Promise<void> {
+  const logger = new TaskLogger(TITLE);
+
   if (!DATABASE_URL) {
-    console.error('DATABASE_URL is required');
+    logger.failed('DATABASE_URL não configurada');
     process.exit(1);
   }
-
-  console.info(`Database: ${DB_DATABASE}`);
-  if (FORCE) console.info('Force: true (bypassing marker)');
-  console.info('---');
 
   const conn = mongoose.createConnection(DATABASE_URL, { dbName: DB_DATABASE });
   await conn.asPromise();
@@ -72,29 +69,27 @@ async function migrate(): Promise<void> {
   const setting = await SettingMarker.findOne({}).lean();
 
   try {
-    if (setting?.MIGRATION_MENU_VISIBILITY_AT && !FORCE) {
-      console.info(
-        `Already migrated at ${setting.MIGRATION_MENU_VISIBILITY_AT.toISOString()}, skipping (use --force to re-run).`,
-      );
+    const appliedAt = setting?.MIGRATION_MENU_VISIBILITY_AT;
+    if (appliedAt && !FORCE) {
+      logger.skipped(appliedAt);
       return;
     }
 
+    logger.running();
     const result = await backfillMenuVisibility(db);
-    console.info('---');
-    console.info(`Done. Updated: ${result.updated}, Total: ${result.total}`);
+    logger.done(`${result.updated} de ${result.total} menus atualizados`);
 
     await SettingMarker.findOneAndUpdate(
       {},
       { $set: { MIGRATION_MENU_VISIBILITY_AT: new Date() } },
       { upsert: true, setDefaultsOnInsert: true },
     );
-    console.info('Marker MIGRATION_MENU_VISIBILITY_AT recorded.');
   } finally {
     await conn.close();
   }
 }
 
 migrate().catch((error: unknown): void => {
-  console.error('Menu visibility migration failed:', error);
+  new TaskLogger(TITLE).failed(error);
   process.exit(1);
 });

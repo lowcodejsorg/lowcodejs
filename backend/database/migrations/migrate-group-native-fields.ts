@@ -22,20 +22,23 @@ import { config } from 'dotenv';
 import mongoose from 'mongoose';
 
 import { FIELD_GROUP_NATIVE_LIST } from '../../application/core/entity.core';
+import { TaskLogger } from '../shared/task-logger';
 
-config({ path: '.env' });
+config({ path: '.env', quiet: true });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const DB_DATABASE = process.env.DB_DATABASE || 'lowcodejs';
 const FORCE = process.argv.includes('--force');
-
-const NATIVE_SLUGS = FIELD_GROUP_NATIVE_LIST.map((f) => f.slug);
+const TITLE = 'Campos nativos dos grupos';
 
 type SettingMarkerDoc = {
   MIGRATION_GROUP_NATIVE_FIELDS_AT?: Date | null;
 };
 
-async function backfillNativeFields(db: mongoose.mongo.Db): Promise<{
+async function backfillNativeFields(
+  db: mongoose.mongo.Db,
+  logger: TaskLogger,
+): Promise<{
   tablesProcessed: number;
   groupsUpdated: number;
   fieldsCreated: number;
@@ -48,17 +51,15 @@ async function backfillNativeFields(db: mongoose.mongo.Db): Promise<{
     .toArray();
 
   if (tables.length === 0) {
-    console.info('No tables with groups found. Nothing to migrate.');
     return { tablesProcessed: 0, groupsUpdated: 0, fieldsCreated: 0 };
   }
-
-  console.info(`Found ${tables.length} table(s) with groups.`);
 
   let groupsUpdated = 0;
   let fieldsCreated = 0;
 
   for (const table of tables) {
-    const groups = Array.isArray(table.groups) ? table.groups : [];
+    let groups = [];
+    if (Array.isArray(table.groups)) groups = table.groups;
     let tableChanged = false;
 
     for (let groupIdx = 0; groupIdx < groups.length; groupIdx++) {
@@ -66,15 +67,14 @@ async function backfillNativeFields(db: mongoose.mongo.Db): Promise<{
       if (!group || typeof group !== 'object') continue;
 
       const groupSlug = group.slug;
-      const fieldIds = Array.isArray(group.fields) ? group.fields : [];
+      let fieldIds = [];
+      if (Array.isArray(group.fields)) fieldIds = group.fields;
 
       const existingFields = await fieldsCol
         .find({ _id: { $in: fieldIds } })
         .project({ slug: 1 })
         .toArray();
-      const existingSlugs = new Set(
-        existingFields.map((f) => f.slug as string),
-      );
+      const existingSlugs = new Set(existingFields.map((f) => f.slug));
 
       const missingNatives = FIELD_GROUP_NATIVE_LIST.filter(
         (n) => !existingSlugs.has(n.slug),
@@ -103,8 +103,9 @@ async function backfillNativeFields(db: mongoose.mongo.Db): Promise<{
       groupsUpdated++;
       fieldsCreated += newIds.length;
 
-      console.info(
-        `  [ok] ${table.slug} → group "${groupSlug}" — added ${newIds.length} native(s): ${missingNatives.map((n) => n.slug).join(', ')}`,
+      const added = missingNatives.map((n) => n.slug).join(', ');
+      logger.item(
+        `${table.slug} → grupo "${groupSlug}" — +${newIds.length} nativos (${added})`,
       );
     }
 
@@ -121,15 +122,12 @@ async function backfillNativeFields(db: mongoose.mongo.Db): Promise<{
 }
 
 async function migrate(): Promise<void> {
+  const logger = new TaskLogger(TITLE);
+
   if (!DATABASE_URL) {
-    console.error('DATABASE_URL is required');
+    logger.failed('DATABASE_URL não configurada');
     process.exit(1);
   }
-
-  console.info(`DB: ${DB_DATABASE}`);
-  console.info(`Native slugs to ensure: ${NATIVE_SLUGS.join(', ')}`);
-  if (FORCE) console.info('Force: true (bypassing marker)');
-  console.info('---');
 
   const conn = mongoose.createConnection(DATABASE_URL, {
     dbName: DB_DATABASE,
@@ -152,17 +150,16 @@ async function migrate(): Promise<void> {
   const setting = await SettingMarker.findOne({}).lean();
 
   try {
-    if (setting?.MIGRATION_GROUP_NATIVE_FIELDS_AT && !FORCE) {
-      console.info(
-        `Already migrated at ${setting.MIGRATION_GROUP_NATIVE_FIELDS_AT.toISOString()}, skipping (use --force to re-run).`,
-      );
+    const appliedAt = setting?.MIGRATION_GROUP_NATIVE_FIELDS_AT;
+    if (appliedAt && !FORCE) {
+      logger.skipped(appliedAt);
       return;
     }
 
-    const result = await backfillNativeFields(db);
-    console.info('---');
-    console.info(
-      `Done. Tables processed: ${result.tablesProcessed}, Groups updated: ${result.groupsUpdated}, Fields created: ${result.fieldsCreated}`,
+    logger.running();
+    const result = await backfillNativeFields(db, logger);
+    logger.done(
+      `${result.tablesProcessed} tabelas, ${result.groupsUpdated} grupos, ${result.fieldsCreated} campos criados`,
     );
 
     await SettingMarker.findOneAndUpdate(
@@ -170,13 +167,12 @@ async function migrate(): Promise<void> {
       { $set: { MIGRATION_GROUP_NATIVE_FIELDS_AT: new Date() } },
       { upsert: true, setDefaultsOnInsert: true },
     );
-    console.info('Marker MIGRATION_GROUP_NATIVE_FIELDS_AT recorded.');
   } finally {
     await conn.close();
   }
 }
 
 migrate().catch((error: unknown): void => {
-  console.error('Migration failed:', error);
+  new TaskLogger(TITLE).failed(error);
   process.exit(1);
 });

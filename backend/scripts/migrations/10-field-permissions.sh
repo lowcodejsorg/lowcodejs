@@ -19,7 +19,6 @@ runas() {
   fi
 }
 
-echo "🔓 Verificando backfill de permissoes de campo..."
 if [ -f "$MIGRATION_DIR/migrate-field-permissions.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-field-permissions.ts"
 else

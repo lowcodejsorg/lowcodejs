@@ -20,7 +20,6 @@ runas() {
   fi
 }
 
-echo "🔗 Verificando backfill de sharedRowSlug das rows..."
 if [ -f "$MIGRATION_DIR/migrate-backfill-row-slugs.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-backfill-row-slugs.ts"
 else

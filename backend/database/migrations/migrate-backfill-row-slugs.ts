@@ -40,13 +40,15 @@ import mongoose from 'mongoose';
 
 import { E_FIELD_TYPE } from '../../application/core/entity.core';
 import { FieldSlug } from '../../application/core/field-slug.core';
+import { TaskLogger } from '../shared/task-logger';
 
-config({ path: '.env' });
+config({ path: '.env', quiet: true });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const DB_DATABASE = process.env.DB_DATABASE ?? 'lowcodejs';
 const DB_DATA_DATABASE = process.env.DB_DATA_DATABASE ?? 'lowcodejs_data';
 const FORCE = process.argv.includes('--force');
+const TITLE = 'Slugs amigáveis das rows';
 
 type SettingMarkerDoc = {
   MIGRATION_ROW_SLUG_BACKFILL_AT?: Date | null;
@@ -77,7 +79,8 @@ async function resolveSlugFieldKey(
     return { fieldSlug, assigned: false };
   }
 
-  const fieldIds = Array.isArray(table.fields) ? table.fields : [];
+  let fieldIds = [];
+  if (Array.isArray(table.fields)) fieldIds = table.fields;
   if (fieldIds.length === 0) return null;
 
   const fields = await fieldsCol.find({ _id: { $in: fieldIds } }).toArray();
@@ -150,15 +153,12 @@ async function backfillCollection(
 }
 
 async function migrate(): Promise<void> {
+  const logger = new TaskLogger(TITLE);
+
   if (!DATABASE_URL) {
-    console.error('DATABASE_URL is required');
+    logger.failed('DATABASE_URL não configurada');
     process.exit(1);
   }
-
-  console.info(`System DB: ${DB_DATABASE}`);
-  console.info(`Data DB: ${DB_DATA_DATABASE}`);
-  if (FORCE) console.info('Force: true (bypassing marker)');
-  console.info('---');
 
   const systemConn = mongoose.createConnection(DATABASE_URL, {
     dbName: DB_DATABASE,
@@ -195,11 +195,11 @@ async function migrate(): Promise<void> {
       setting?.MIGRATION_ROW_SLUG_BACKFILL_UNIVERSAL_AT;
 
     if (alreadyDone && !FORCE) {
-      console.info(
-        `Already backfilled at ${setting?.MIGRATION_ROW_SLUG_BACKFILL_AT?.toISOString()}, skipping (use --force to re-run).`,
-      );
+      logger.skipped(setting?.MIGRATION_ROW_SLUG_BACKFILL_AT ?? undefined);
       return;
     }
+
+    logger.running();
 
     const tablesCol = systemDb.collection('tables');
     const fieldsCol = systemDb.collection('fields');
@@ -207,10 +207,6 @@ async function migrate(): Promise<void> {
     // Varre TODAS as tabelas: as que já têm rowSlugFieldId usam o campo atual; as
     // antigas (sem rowSlugFieldId) ganham o primeiro TEXT_SHORT ativo via fallback.
     const tables = await tablesCol.find({}).toArray();
-
-    if (tables.length === 0) {
-      console.info('No tables found. Nothing to backfill.');
-    }
 
     const stats: MigrationStats = {
       tablesProcessed: 0,
@@ -229,7 +225,7 @@ async function migrate(): Promise<void> {
       // fallback para o primeiro TEXT_SHORT ativo em tabelas sem rowSlugFieldId.
       const resolved = await resolveSlugFieldKey(tablesCol, fieldsCol, table);
       if (!resolved) {
-        console.info(`  [skip] ${slug} — sem campo TEXT_SHORT`);
+        logger.item(`${slug} — sem campo TEXT_SHORT, pulada`);
         continue;
       }
 
@@ -245,15 +241,12 @@ async function migrate(): Promise<void> {
       stats.rowsUpdated += rowsUpdated;
 
       let tag = '';
-      if (resolved.assigned) tag = ' (rowSlugFieldId atribuído)';
-      console.info(
-        `  [ok] ${slug} — sharedRowSlug gerado em ${rowsUpdated} row(s)${tag}`,
-      );
+      if (resolved.assigned) tag = ' (campo de slug atribuído)';
+      logger.item(`${slug} — slug gerado em ${rowsUpdated} rows${tag}`);
     }
 
-    console.info('---');
-    console.info(
-      `Done. Tables: ${stats.tablesProcessed}, rows backfilled: ${stats.rowsUpdated}, fields assigned: ${stats.fieldsAssigned}`,
+    logger.done(
+      `${stats.tablesProcessed} tabelas, ${stats.rowsUpdated} rows, ${stats.fieldsAssigned} campos atribuídos`,
     );
 
     const now = new Date();
@@ -268,9 +261,6 @@ async function migrate(): Promise<void> {
       },
       { upsert: true, setDefaultsOnInsert: true },
     );
-    console.info(
-      'Markers MIGRATION_ROW_SLUG_BACKFILL_AT + _FALLBACK_AT + _UNIVERSAL_AT recorded.',
-    );
   } finally {
     await systemConn.close();
     await dataConn.close();
@@ -278,6 +268,6 @@ async function migrate(): Promise<void> {
 }
 
 migrate().catch((error: unknown): void => {
-  console.error('Backfill failed:', error);
+  new TaskLogger(TITLE).failed(error);
   process.exit(1);
 });

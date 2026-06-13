@@ -7,6 +7,8 @@ import {
 import { Permission } from '@application/model/permission.model';
 import { UserGroup } from '@application/model/user-group.model';
 
+import { TaskLogger } from '../shared/task-logger';
+
 type GroupMetadata = {
   name: string;
   slug: ValueOf<typeof E_ROLE>;
@@ -166,5 +168,5 @@ export default async function Seed(): Promise<void> {
 
   // @ts-expect-error encompasses/permissions guardam ObjectId[] no schema
   await UserGroup.bulkWrite([...encompassesOps, ...capabilityOps]);
-  console.info('🌱 \x1b[32m user groups \x1b[0m');
+  new TaskLogger('Grupos de usuários').ok();
 }

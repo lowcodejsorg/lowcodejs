@@ -24,11 +24,14 @@
 import { config } from 'dotenv';
 import mongoose from 'mongoose';
 
-config({ path: '.env' });
+import { TaskLogger } from '../shared/task-logger';
+
+config({ path: '.env', quiet: true });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const DB_DATABASE = process.env.DB_DATABASE || 'lowcodejs';
 const FORCE = process.argv.includes('--force');
+const TITLE = 'Permissões de tabela';
 
 type SettingMarkerDoc = {
   MIGRATION_TABLE_PERMISSIONS_AT?: Date | null;
@@ -108,22 +111,20 @@ function buildMembers(
 
 async function backfillTablePermissions(
   db: mongoose.mongo.Db,
+  logger: TaskLogger,
 ): Promise<{ updated: number; total: number }> {
   const tables = db.collection('tables');
   const total = await tables.countDocuments();
 
-  if (total === 0) {
-    console.info('No table documents found. Nothing to backfill.');
-    return { updated: 0, total: 0 };
-  }
+  if (total === 0) return { updated: 0, total: 0 };
 
   const groups = db.collection('user-groups');
   const registered = await groups.findOne({ slug: 'REGISTERED' });
   const registeredId = registered?._id ?? null;
 
   if (!registeredId) {
-    console.warn(
-      'Registered group not found. Logged-user actions will fall back to NOBODY.',
+    logger.item(
+      'grupo Registered não encontrado — ações de usuário logado caem para NOBODY',
     );
   }
 
@@ -143,19 +144,16 @@ async function backfillTablePermissions(
     updated += 1;
   }
 
-  console.info(`Backfilled ${updated} table document(s).`);
   return { updated, total };
 }
 
 async function migrate(): Promise<void> {
+  const logger = new TaskLogger(TITLE);
+
   if (!DATABASE_URL) {
-    console.error('DATABASE_URL is required');
+    logger.failed('DATABASE_URL não configurada');
     process.exit(1);
   }
-
-  console.info(`Database: ${DB_DATABASE}`);
-  if (FORCE) console.info('Force: true (bypassing marker)');
-  console.info('---');
 
   const conn = mongoose.createConnection(DATABASE_URL, { dbName: DB_DATABASE });
   await conn.asPromise();
@@ -174,29 +172,27 @@ async function migrate(): Promise<void> {
   const setting = await SettingMarker.findOne({}).lean();
 
   try {
-    if (setting?.MIGRATION_TABLE_PERMISSIONS_AT && !FORCE) {
-      console.info(
-        `Already migrated at ${setting.MIGRATION_TABLE_PERMISSIONS_AT.toISOString()}, skipping (use --force to re-run).`,
-      );
+    const appliedAt = setting?.MIGRATION_TABLE_PERMISSIONS_AT;
+    if (appliedAt && !FORCE) {
+      logger.skipped(appliedAt);
       return;
     }
 
-    const result = await backfillTablePermissions(db);
-    console.info('---');
-    console.info(`Done. Updated: ${result.updated}, Total: ${result.total}`);
+    logger.running();
+    const result = await backfillTablePermissions(db, logger);
+    logger.done(`${result.updated} de ${result.total} tabelas atualizadas`);
 
     await SettingMarker.findOneAndUpdate(
       {},
       { $set: { MIGRATION_TABLE_PERMISSIONS_AT: new Date() } },
       { upsert: true, setDefaultsOnInsert: true },
     );
-    console.info('Marker MIGRATION_TABLE_PERMISSIONS_AT recorded.');
   } finally {
     await conn.close();
   }
 }
 
 migrate().catch((error: unknown): void => {
-  console.error('Table permissions migration failed:', error);
+  new TaskLogger(TITLE).failed(error);
   process.exit(1);
 });

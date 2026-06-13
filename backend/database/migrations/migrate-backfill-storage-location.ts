@@ -23,11 +23,14 @@
 import { config } from 'dotenv';
 import mongoose from 'mongoose';
 
-config({ path: '.env' });
+import { TaskLogger } from '../shared/task-logger';
+
+config({ path: '.env', quiet: true });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const DB_DATABASE = process.env.DB_DATABASE || 'lowcodejs';
 const FORCE = process.argv.includes('--force');
+const TITLE = 'Local dos arquivos (storage)';
 
 type SettingMarkerDoc = {
   STORAGE_DRIVER?: 'local' | 's3' | null;
@@ -41,12 +44,7 @@ async function backfillStorageLocation(
   const collection = db.collection('storage');
   const total = await collection.countDocuments();
 
-  if (total === 0) {
-    console.info('No storage documents found. Nothing to backfill.');
-    return { updated: 0, total: 0 };
-  }
-
-  console.info(`Found ${total} storage document(s).`);
+  if (total === 0) return { updated: 0, total: 0 };
 
   const result = await collection.updateMany(
     {
@@ -63,22 +61,16 @@ async function backfillStorageLocation(
     },
   );
 
-  console.info(
-    `Backfilled ${result.modifiedCount} document(s) with location='${driver}' and migration_status='idle'.`,
-  );
-
   return { updated: result.modifiedCount, total };
 }
 
 async function migrate(): Promise<void> {
+  const logger = new TaskLogger(TITLE);
+
   if (!DATABASE_URL) {
-    console.error('DATABASE_URL is required');
+    logger.failed('DATABASE_URL não configurada');
     process.exit(1);
   }
-
-  console.info(`Database: ${DB_DATABASE}`);
-  if (FORCE) console.info('Force: true (bypassing marker)');
-  console.info('---');
 
   const conn = mongoose.createConnection(DATABASE_URL, {
     dbName: DB_DATABASE,
@@ -101,32 +93,31 @@ async function migrate(): Promise<void> {
 
   const setting = await SettingMarker.findOne({}).lean();
   const driver: 'local' | 's3' = setting?.STORAGE_DRIVER ?? 'local';
-  console.info(`Active driver (read from Setting): ${driver}`);
 
   try {
-    if (setting?.MIGRATION_STORAGE_LOCATION_AT && !FORCE) {
-      console.info(
-        `Already backfilled at ${setting.MIGRATION_STORAGE_LOCATION_AT.toISOString()}, skipping (use --force to re-run).`,
-      );
+    const appliedAt = setting?.MIGRATION_STORAGE_LOCATION_AT;
+    if (appliedAt && !FORCE) {
+      logger.skipped(appliedAt);
       return;
     }
 
+    logger.running();
     const result = await backfillStorageLocation(db, driver);
-    console.info('---');
-    console.info(`Done. Updated: ${result.updated}, Total: ${result.total}`);
+    logger.done(
+      `${result.updated} de ${result.total} arquivos marcados (driver ${driver})`,
+    );
 
     await SettingMarker.findOneAndUpdate(
       {},
       { $set: { MIGRATION_STORAGE_LOCATION_AT: new Date() } },
       { upsert: true, setDefaultsOnInsert: true },
     );
-    console.info('Marker MIGRATION_STORAGE_LOCATION_AT recorded.');
   } finally {
     await conn.close();
   }
 }
 
 migrate().catch((error: unknown): void => {
-  console.error('Backfill failed:', error);
+  new TaskLogger(TITLE).failed(error);
   process.exit(1);
 });

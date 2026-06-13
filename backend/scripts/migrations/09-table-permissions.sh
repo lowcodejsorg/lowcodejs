@@ -19,7 +19,6 @@ runas() {
   fi
 }
 
-echo "🔐 Verificando backfill de permissoes da tabela..."
 if [ -f "$MIGRATION_DIR/migrate-table-permissions.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-table-permissions.ts"
 else

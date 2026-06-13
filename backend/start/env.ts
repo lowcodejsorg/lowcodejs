@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 import { z } from 'zod';
 
 const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
-config({ path: envFile });
+config({ path: envFile, quiet: true });
 
 const EnvSchema = z.object({
   DATABASE_URL: z.string().trim(),

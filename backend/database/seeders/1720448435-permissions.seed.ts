@@ -7,6 +7,8 @@ import {
 } from '@application/core/entity.core';
 import { Permission } from '@application/model/permission.model';
 
+import { TaskLogger } from '../shared/task-logger';
+
 export type PayloadPermissionSeeder = Merge<
   Pick<IPermission, 'name' | 'description'>,
   {
@@ -121,5 +123,5 @@ export default async function Seed(): Promise<void> {
       },
     })),
   );
-  console.info('🌱 \x1b[32m permissions \x1b[0m');
+  new TaskLogger('Permissões').ok();
 }

@@ -20,7 +20,6 @@ runas() {
   fi
 }
 
-echo "🧩 Verificando rename slot → slots em extensões..."
 if [ -f "$MIGRATION_DIR/migrate-extension-slots.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-extension-slots.ts"
 else

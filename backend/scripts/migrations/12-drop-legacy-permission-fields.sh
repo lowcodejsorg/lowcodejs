@@ -20,7 +20,6 @@ runas() {
   fi
 }
 
-echo "🧹 Removendo campos legados de permissao..."
 if [ -f "$MIGRATION_DIR/migrate-drop-legacy-permission-fields.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-drop-legacy-permission-fields.ts"
 else

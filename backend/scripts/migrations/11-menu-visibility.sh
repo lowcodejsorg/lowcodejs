@@ -19,7 +19,6 @@ runas() {
   fi
 }
 
-echo "📑 Verificando backfill de visibilidade de menu..."
 if [ -f "$MIGRATION_DIR/migrate-menu-visibility.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-menu-visibility.ts"
 else

@@ -20,7 +20,6 @@ runas() {
   fi
 }
 
-echo "🧩 Verificando nativos dos grupos de campos..."
 if [ -f "$MIGRATION_DIR/migrate-group-native-fields.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-group-native-fields.ts"
 else
