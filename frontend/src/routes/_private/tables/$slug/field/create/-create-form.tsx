@@ -69,9 +69,6 @@ export const FieldCreateSchema = z.object({
   category: z.array(z.custom<TreeNode>()).default([]),
   multiple: z.boolean().default(false),
   showInFilter: z.boolean().default(true),
-  showInForm: z.boolean().default(true),
-  showInDetail: z.boolean().default(true),
-  showInList: z.boolean().default(false),
   permissions: z
     .object({
       list: FieldPermissionBindingSchema,
@@ -113,9 +110,6 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   category: [],
   multiple: false,
   showInFilter: true,
-  showInForm: true,
-  showInDetail: true,
-  showInList: false,
   permissions: {
     list: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
     form: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
@@ -125,40 +119,6 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   widthInForm: 50,
   widthInList: 10,
 };
-
-// Toggles de exibição do grupo (formulário/detalhes) isolados em um componente
-// próprio para reduzir a profundidade de inferência de tipos no form principal.
-const FieldGroupDisplayToggles = withForm({
-  defaultValues: fieldCreateFormDefaultValues,
-  props: {
-    isPending: false,
-  },
-  render: function Render({ form, isPending }) {
-    return (
-      <>
-        {/* @ts-expect-error TanStack Form type depth issue with nested configuration */}
-        <form.AppField name="showInForm">
-          {(field) => (
-            <field.FieldBooleanSwitch
-              label="Exibir no formulário"
-              description="Exibir este grupo no formulário de adicionar/editar registro?"
-              disabled={isPending}
-            />
-          )}
-        </form.AppField>
-        <form.AppField name="showInDetail">
-          {(field) => (
-            <field.FieldBooleanSwitch
-              label="Exibir nos detalhes"
-              description="Exibir este grupo na página de detalhes do registro?"
-              disabled={isPending}
-            />
-          )}
-        </form.AppField>
-      </>
-    );
-  },
-});
 
 export const CreateFieldFormFields = withForm({
   defaultValues: fieldCreateFormDefaultValues,
@@ -224,6 +184,7 @@ export const CreateFieldFormFields = withForm({
     useEffect(() => {
       if (slugManuallyEdited.current) return;
       form.setFieldValue('slug', normalizeFieldSlug(fieldName));
+      // @ts-expect-error TanStack Form type depth issue with nested configuration
     }, [fieldName, form]);
 
     const showMultiple =
@@ -735,16 +696,6 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Exibição do grupo de campos: formulário e/ou detalhes.
-            Extraído em componente próprio para não estourar a profundidade
-            de tipos do TanStack Form neste render. */}
-        {isFieldGroup && (
-          <FieldGroupDisplayToggles
-            form={form}
-            isPending={isPending}
-          />
-        )}
-
         {/* Campo Obrigatoriedade */}
         {showRequired && (
           <form.AppField name="required">
@@ -788,18 +739,6 @@ export const CreateFieldFormFields = withForm({
             )}
           </form.AppField>
         </div>
-
-        {/* Campo Listagem - Desabilitado por enquanto a solicitação para desabilitar
-        foi solicitada em 21/03/2026 pois não fazia mais sentido para o que temos hoje, e será analisado se vai continuar ou não. */}
-        {/* <form.AppField name="showInList">
-          {(field) => (
-            <field.FieldBooleanSwitch
-              label="Formato de listagem"
-              description="Exibir no formato de listagem?"
-              disabled={isPending}
-            />
-          )}
-        </form.AppField> */}
       </section>
     );
   },

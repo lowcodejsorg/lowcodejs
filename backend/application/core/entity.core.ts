@@ -91,6 +91,15 @@ export const E_ROLE = {
   REGISTERED: 'REGISTERED',
 } as const;
 
+// Slugs dos grupos do sistema. Grupos com esses slugs nao podem ser
+// editados nem removidos (protecao unica reutilizada pelos use-cases).
+export const SYSTEM_GROUP_SLUGS: ReadonlySet<string> = new Set<string>([
+  E_ROLE.MASTER,
+  E_ROLE.ADMINISTRATOR,
+  E_ROLE.MANAGER,
+  E_ROLE.REGISTERED,
+]);
+
 export const E_MENU_ITEM_TYPE = {
   TABLE: 'TABLE',
   PAGE: 'PAGE',
@@ -115,19 +124,6 @@ export const E_TABLE_STYLE = {
   FORUM: 'FORUM',
   CALENDAR: 'CALENDAR',
   GANTT: 'GANTT',
-} as const;
-
-export const E_TABLE_VISIBILITY = {
-  PUBLIC: 'PUBLIC',
-  RESTRICTED: 'RESTRICTED',
-  OPEN: 'OPEN',
-  FORM: 'FORM',
-  PRIVATE: 'PRIVATE',
-} as const;
-
-export const E_TABLE_COLLABORATION = {
-  OPEN: 'OPEN',
-  RESTRICTED: 'RESTRICTED',
 } as const;
 
 export const E_JWT_TYPE = {
@@ -361,14 +357,9 @@ export type ITable = Merge<
     fields: IField[];
     type: ValueOf<typeof E_TABLE_TYPE>;
     style: ValueOf<typeof E_TABLE_STYLE>;
-    // Modelo legado de acesso (mantido durante a transicao; o novo modelo usa
-    // `permissions` por acao + `members`). Removidos em cleanup futuro.
-    visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
-    collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
-    administrators: IUser[];
     owner: IUser;
-    // Novo modelo: cada acao aponta para um binding (Grupo|Public|Nobody).
-    // null em tabelas legadas ainda nao migradas.
+    // Cada acao aponta para um binding (Grupo|Public|Nobody). null apenas em
+    // documentos ainda nao backfillados (migration 09).
     permissions: ITablePermissions | null;
     // Convidados da tabela com seu perfil (owner/admin/editor/contributor/viewer).
     members: ITableMember[];
@@ -431,8 +422,7 @@ export type IFieldConfigurationGroup = {
 };
 
 // Visibilidade do campo por contexto: cada contexto aponta para um binding
-// (Grupo|Public|Nobody). Nobody = oculto. Substitui os booleans showIn* (que
-// continuam preenchidos durante a transicao).
+// (Grupo|Public|Nobody). Nobody = oculto.
 export type IFieldPermissions = {
   list: IPermissionBinding;
   form: IPermissionBinding;
@@ -448,12 +438,10 @@ export type IField = Merge<
     required: boolean;
     multiple: boolean;
     format: ValueOf<typeof E_FIELD_FORMAT> | null;
+    // Exibe o campo na barra de filtros (config de UX, nao e permissao).
     showInFilter: boolean;
-    showInForm: boolean;
-    showInDetail: boolean;
-    showInList: boolean;
-    // null/ausente em campos legados ainda nao migrados (cai no comportamento
-    // showIn*).
+    // Visibilidade por contexto (list/form/detail). null apenas em documentos
+    // ainda nao backfillados (migration 10).
     permissions?: IFieldPermissions | null;
     widthInForm: number | null;
     widthInList: number | null;
@@ -480,9 +468,6 @@ export type FieldCreatePayload = Pick<
   | 'multiple'
   | 'format'
   | 'showInFilter'
-  | 'showInForm'
-  | 'showInDetail'
-  | 'showInList'
   | 'permissions'
   | 'widthInForm'
   | 'widthInList'
@@ -824,11 +809,43 @@ export const TABLE_PERMISSION_ACTIONS = [
   E_TABLE_PERMISSION.VIEW_ROW,
 ] as const;
 
-// Mapa acao -> binding. Parcial: tabelas legadas (ainda nao migradas) podem nao
-// ter o mapa, e o enforcement cai no modelo antigo de visibilidade.
+// Mapa acao -> binding. Parcial: documentos ainda nao backfillados (migration
+// 09) podem nao ter o mapa.
 export type ITablePermissions = Partial<
   Record<ValueOf<typeof E_TABLE_PERMISSION>, IPermissionBinding>
 >;
+
+// Permissoes padrao de uma tabela nova (equivalente ao preset RESTRICTED:
+// usuarios logados — grupo Registered — podem ver a tabela e as rows; demais
+// acoes ficam restritas ao dono e convidados). Espelha o backfill da migration
+// 09 para que nenhuma tabela nasca com `permissions: null`.
+export function buildDefaultTablePermissions(
+  registeredGroupId: string | null,
+): ITablePermissions {
+  function nobody(): IPermissionBinding {
+    return { kind: E_PERMISSION_TARGET.NOBODY, group: null };
+  }
+
+  function loggedView(): IPermissionBinding {
+    if (registeredGroupId) {
+      return { kind: E_PERMISSION_TARGET.GROUP, group: registeredGroupId };
+    }
+    return nobody();
+  }
+
+  return {
+    [E_TABLE_PERMISSION.VIEW_TABLE]: loggedView(),
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: nobody(),
+    [E_TABLE_PERMISSION.CREATE_FIELD]: nobody(),
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: nobody(),
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: nobody(),
+    [E_TABLE_PERMISSION.VIEW_FIELD]: nobody(),
+    [E_TABLE_PERMISSION.CREATE_ROW]: nobody(),
+    [E_TABLE_PERMISSION.UPDATE_ROW]: nobody(),
+    [E_TABLE_PERMISSION.REMOVE_ROW]: nobody(),
+    [E_TABLE_PERMISSION.VIEW_ROW]: loggedView(),
+  };
+}
 
 // Perfis fixos de convidados da tabela (colaboracao).
 export const E_TABLE_PROFILE = {
@@ -853,8 +870,11 @@ export const E_PROFILE_ACCESS = {
 } as const;
 
 // Matriz fixa de perfis x acoes, conforme a especificacao (aba 060226-Oficial).
-// Observacao: na spec os perfis editor/viewer sao identicos e View field aparece
-// como "nao" para editor/contributor/viewer — mantido fiel ao documento.
+// Observacao: View field aparece como "nao" para editor/contributor/viewer —
+// mantido fiel ao documento (controla a tela de gestao de campos, nao o valor da
+// row). VIEWER e read-only por decisao de produto: a planilha listava viewer
+// escrevendo rows (CREATE/UPDATE/REMOVE), tratado como engano e corrigido para
+// DENY — viewer so ve (VIEW_TABLE/VIEW_ROW).
 export const TABLE_PROFILE_MATRIX: Record<
   ValueOf<typeof E_TABLE_PROFILE>,
   Record<ValueOf<typeof E_TABLE_PERMISSION>, ValueOf<typeof E_PROFILE_ACCESS>>
@@ -924,12 +944,32 @@ export const TABLE_PROFILE_MATRIX: Record<
     [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.DENY,
     [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.DENY,
     [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.DENY,
-    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
-    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.ALLOW,
-    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.DENY,
     [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
   },
 };
+
+// Binding de visibilidade de um campo: visivel = PUBLIC, oculto = NOBODY.
+function fieldVisibilityBinding(visible: boolean): IPermissionBinding {
+  if (visible) return { kind: E_PERMISSION_TARGET.PUBLIC, group: null };
+  return { kind: E_PERMISSION_TARGET.NOBODY, group: null };
+}
+
+// Monta o mapa de permissoes de campo por contexto a partir de flags booleanas
+// (compat com a configuracao antiga list/form/detail = visivel/oculto).
+export function buildFieldPermissions(
+  list: boolean,
+  form: boolean,
+  detail: boolean,
+): IFieldPermissions {
+  return {
+    list: fieldVisibilityBinding(list),
+    form: fieldVisibilityBinding(form),
+    detail: fieldVisibilityBinding(detail),
+  };
+}
 
 export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
   {
@@ -941,10 +981,8 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -963,10 +1001,8 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: true,
     showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    permissions: buildFieldPermissions(true, false, true),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -985,10 +1021,8 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
-    showInList: true,
     showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    permissions: buildFieldPermissions(true, false, true),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -1007,10 +1041,8 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -1029,10 +1061,8 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -1054,10 +1084,8 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -1076,10 +1104,8 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: true,
     showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    permissions: buildFieldPermissions(true, false, true),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -1098,10 +1124,8 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
-    showInList: true,
     showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    permissions: buildFieldPermissions(true, false, true),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -1120,10 +1144,8 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -1142,10 +1164,8 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,

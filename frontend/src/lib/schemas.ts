@@ -5,9 +5,7 @@ import {
   E_FIELD_TYPE,
   E_MENU_ITEM_TYPE,
   E_PERMISSION_TARGET,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
   E_USER_STATUS,
   PASSWORD_REGEX,
   TABLE_NAME_REGEX,
@@ -290,22 +288,6 @@ export const TableStyleSchema = z
   ])
   .default(E_TABLE_STYLE.LIST);
 
-export const TableVisibilitySchema = z
-  .enum([
-    E_TABLE_VISIBILITY.PUBLIC,
-    E_TABLE_VISIBILITY.RESTRICTED,
-    E_TABLE_VISIBILITY.OPEN,
-    E_TABLE_VISIBILITY.FORM,
-    E_TABLE_VISIBILITY.PRIVATE,
-  ])
-  .default(E_TABLE_VISIBILITY.RESTRICTED);
-
-export const TableCollaborationSchema = z
-  .enum([E_TABLE_COLLABORATION.OPEN, E_TABLE_COLLABORATION.RESTRICTED])
-  .default(E_TABLE_COLLABORATION.OPEN);
-
-export const TableAdministratorsSchema = z.array(z.string()).default([]);
-
 export const TableFieldOrderListSchema = z.array(z.string().trim()).default([]);
 
 export const TableFieldOrderFormSchema = z.array(z.string().trim()).default([]);
@@ -331,9 +313,6 @@ export const TableCreateBodySchema = z.object({
   owner: z.string().trim().optional(),
   logo: z.string().trim().nullable().optional(),
   style: TableStyleSchema.optional(),
-  visibility: TableVisibilitySchema.optional(),
-  collaboration: TableCollaborationSchema.optional(),
-  administrators: TableAdministratorsSchema.optional(),
   fieldOrderList: TableFieldOrderListSchema.optional(),
   fieldOrderForm: TableFieldOrderFormSchema.optional(),
   fieldOrderFilter: TableFieldOrderFilterSchema.optional(),
@@ -365,9 +344,6 @@ export const TableUpdateBodySchema = z.object({
   description: z.string().trim().nullable(),
   logo: z.string().trim().nullable(),
   style: TableStyleSchema,
-  visibility: TableVisibilitySchema,
-  collaboration: TableCollaborationSchema,
-  administrators: TableAdministratorsSchema,
   fieldOrderList: TableFieldOrderListSchema,
   fieldOrderForm: TableFieldOrderFormSchema,
   fieldOrderFilter: TableFieldOrderFilterSchema,
@@ -441,9 +417,6 @@ export const FieldBaseSchema = z.object({
     .nullable()
     .default(null),
   showInFilter: z.boolean().default(false),
-  showInForm: z.boolean().default(false),
-  showInDetail: z.boolean().default(false),
-  showInList: z.boolean().default(false),
   widthInForm: z.number().nullable().default(50),
   widthInList: z.number().nullable().default(10),
   tip: z.string().nullable().default(null),

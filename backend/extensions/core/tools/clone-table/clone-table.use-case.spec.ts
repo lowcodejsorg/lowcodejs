@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { buildFieldPermissions } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
@@ -35,8 +36,6 @@ describe('Clone Table Use Case', () => {
       slug: 'tabela-original',
       type: 'TABLE',
       owner: 'owner-id',
-      visibility: 'RESTRICTED',
-      collaboration: 'RESTRICTED',
       style: 'LIST',
       fieldOrderList: [],
       fieldOrderForm: [],
@@ -64,9 +63,7 @@ describe('Clone Table Use Case', () => {
       required: false,
       multiple: false,
       format: null,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       defaultValue: null,
       locked: false,
@@ -84,8 +81,6 @@ describe('Clone Table Use Case', () => {
       slug: 'tabela-alvo',
       type: 'TABLE',
       owner: 'owner-id',
-      visibility: 'RESTRICTED',
-      collaboration: 'RESTRICTED',
       style: 'LIST',
       fields: [targetField._id],
     });
@@ -98,9 +93,7 @@ describe('Clone Table Use Case', () => {
       required: false,
       multiple: false,
       format: null,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       defaultValue: null,
       locked: false,
@@ -128,8 +121,6 @@ describe('Clone Table Use Case', () => {
       slug: 'tabela-fonte',
       type: 'TABLE',
       owner: 'owner-id',
-      visibility: 'RESTRICTED',
-      collaboration: 'RESTRICTED',
       style: 'LIST',
       fields: [relationshipField._id],
     });
@@ -181,8 +172,6 @@ describe('Clone Table Use Case', () => {
       slug: 'tabela-original',
       type: 'TABLE',
       owner: 'owner-id',
-      visibility: 'RESTRICTED',
-      collaboration: 'RESTRICTED',
       style: 'LIST',
       fieldOrderList: [],
       fieldOrderForm: [],
@@ -207,8 +196,6 @@ describe('Clone Table Use Case', () => {
       slug: 'tabela-com-dados',
       type: 'TABLE',
       owner: 'owner-id',
-      visibility: 'RESTRICTED',
-      collaboration: 'RESTRICTED',
       style: 'LIST',
     });
 
@@ -217,8 +204,6 @@ describe('Clone Table Use Case', () => {
       slug: 'tabela-sem-dados',
       type: 'TABLE',
       owner: 'owner-id',
-      visibility: 'RESTRICTED',
-      collaboration: 'RESTRICTED',
       style: 'LIST',
     });
 
@@ -266,9 +251,7 @@ describe('Clone Table Use Case', () => {
       required: false,
       multiple: false,
       format: null,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       defaultValue: null,
       locked: false,
@@ -286,8 +269,6 @@ describe('Clone Table Use Case', () => {
       slug: 'tabela-a',
       type: 'TABLE',
       owner: 'owner-id',
-      visibility: 'RESTRICTED',
-      collaboration: 'RESTRICTED',
       style: 'LIST',
       fields: [targetField._id],
     });
@@ -300,9 +281,7 @@ describe('Clone Table Use Case', () => {
       required: false,
       multiple: false,
       format: null,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       defaultValue: null,
       locked: false,
@@ -330,8 +309,6 @@ describe('Clone Table Use Case', () => {
       slug: 'tabela-ac',
       type: 'TABLE',
       owner: 'owner-id',
-      visibility: 'RESTRICTED',
-      collaboration: 'RESTRICTED',
       style: 'LIST',
       fields: [relationshipField._id],
     });
@@ -422,8 +399,6 @@ describe('Clone Table Use Case', () => {
       slug: 'tabela-original',
       type: 'TABLE',
       owner: 'old-owner-id',
-      visibility: 'RESTRICTED',
-      collaboration: 'RESTRICTED',
       style: 'LIST',
       fieldOrderList: [],
       fieldOrderForm: [],

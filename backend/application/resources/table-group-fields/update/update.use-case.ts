@@ -3,7 +3,11 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IField as Entity, IField } from '@application/core/entity.core';
+import {
+  buildFieldPermissions,
+  type IField as Entity,
+  type IField,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
@@ -91,9 +95,7 @@ export default class GroupFieldUpdateUseCase {
         const updatedField = await this.fieldRepository.update({
           _id: field._id,
           showInFilter: payload.showInFilter,
-          showInForm: payload.showInForm,
-          showInDetail: payload.showInDetail,
-          showInList: payload.showInList,
+          permissions: payload.permissions,
           widthInForm: payload.widthInForm,
           widthInList: payload.widthInList,
           widthInDetail: payload.widthInDetail,
@@ -125,7 +127,6 @@ export default class GroupFieldUpdateUseCase {
           _schema: parentSchema,
           groups: updatedGroups,
           owner: table.owner._id,
-          administrators: table.administrators.flatMap((a) => a._id),
         });
 
         return right(updatedField);
@@ -203,9 +204,7 @@ export default class GroupFieldUpdateUseCase {
         ...(payload.trashed && {
           trashed: payload.trashed,
           required: false,
-          showInList: false,
-          showInForm: false,
-          showInDetail: false,
+          permissions: buildFieldPermissions(false, false, false),
           showInFilter: false,
         }),
         ...(payload.trashedAt && { trashedAt: payload.trashedAt }),
@@ -238,7 +237,6 @@ export default class GroupFieldUpdateUseCase {
         _schema: parentSchema,
         groups: updatedGroups,
         owner: table.owner._id,
-        administrators: table.administrators.flatMap((a) => a._id),
       });
 
       await this.modelBuilder.build({

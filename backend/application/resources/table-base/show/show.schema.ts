@@ -83,18 +83,6 @@ export const TableShowSchema: FastifySchema = {
                 enum: ['email', 'phone', 'url', 'color', 'password'],
                 description: 'Validação de formato do campo',
               },
-              showInList: {
-                type: 'boolean',
-                description: 'Exibir nas listagens',
-              },
-              showInForm: {
-                type: 'boolean',
-                description: 'Exibir na visualização em formulário',
-              },
-              showInDetail: {
-                type: 'boolean',
-                description: 'Exibir na visualização de detalhes',
-              },
               showInFilter: {
                 type: 'boolean',
                 description: 'Permitir filtragem',
@@ -281,27 +269,6 @@ export const TableShowSchema: FastifySchema = {
           enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
           description: 'Estilo de exibição',
         },
-        visibility: {
-          type: 'string',
-          enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-          description: 'Configuração de visibilidade',
-        },
-        collaboration: {
-          type: 'string',
-          enum: ['OPEN', 'RESTRICTED'],
-          description: 'Configuração de colaboração',
-        },
-        administrators: {
-          type: 'array',
-          description: 'Usuários administradores (populado)',
-          items: {
-            type: 'object',
-            properties: {
-              _id: { type: 'string', description: 'ID do usuário' },
-              name: { type: 'string', description: 'Nome do usuário' },
-            },
-          },
-        },
         owner: {
           type: 'object',
           description: 'Proprietário da tabela (populado)',
@@ -436,9 +403,6 @@ export const TableShowSchema: FastifySchema = {
                     required: { type: 'boolean' },
                     multiple: { type: 'boolean' },
                     format: { type: 'string', nullable: true },
-                    showInList: { type: 'boolean' },
-                    showInForm: { type: 'boolean' },
-                    showInDetail: { type: 'boolean' },
                     showInFilter: { type: 'boolean' },
                     widthInForm: { type: 'number', nullable: true },
                     widthInList: { type: 'number', nullable: true },

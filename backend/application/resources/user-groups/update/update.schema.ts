@@ -113,7 +113,12 @@ export const UserGroupUpdateSchema: FastifySchema = {
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS'],
+          enum: [
+            'INVALID_PAYLOAD_FORMAT',
+            'INVALID_PARAMETERS',
+            'GROUP_SELF_REFERENCE',
+            'GROUP_CYCLE_DETECTED',
+          ],
         },
         errors: {
           type: 'object',

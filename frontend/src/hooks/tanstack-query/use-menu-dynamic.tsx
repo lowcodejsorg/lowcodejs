@@ -18,7 +18,7 @@ import { useMenuReadList } from './use-menu-read-list';
 
 import { E_EXTENSION_TYPE, E_MENU_ITEM_TYPE, E_ROLE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
-import { getStaticMenusByRole } from '@/lib/menu/menu';
+import { getStaticMenusByCapabilities } from '@/lib/menu/menu';
 import type { MenuGroupItem, MenuItem, MenuRoute } from '@/lib/menu/menu-route';
 import { resolveUserGroupIds, userSatisfiesBinding } from '@/lib/permission';
 import { useAuthStore } from '@/stores/authentication';
@@ -248,7 +248,7 @@ function injectToolsIntoMenu(
 /**
  * Hook para obter menus dinâmicos combinados com menus estáticos
  */
-export function useMenuDynamic(role: string): {
+export function useMenuDynamic(): {
   menu: Array<MenuGroupItem>;
   isLoading: boolean;
 } {
@@ -292,10 +292,10 @@ export function useMenuDynamic(role: string): {
     return convertToMenuRoute(dynamicMenuTree);
   }, [dynamicMenuTree]);
 
-  // 4. Obter menus estáticos baseados no role (before e after)
+  // 4. Obter menus estáticos baseados nas capacidades do usuário (before e after)
   const { before: staticMenusBefore, after: staticMenusAfter } = useMemo(() => {
-    return getStaticMenusByRole(role);
-  }, [role]);
+    return getStaticMenusByCapabilities(user?.capabilities);
+  }, [user?.capabilities]);
 
   // 5. Buscar extensões ativas e construir items de tools
   const { data: activeExtensions } = useExtensionsActiveList();

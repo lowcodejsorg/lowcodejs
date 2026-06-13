@@ -26,8 +26,11 @@ visualizacao (show) e edicao (edit).
 - **Permissoes (novo modelo)**: `permissions` (binding Grupo/Publico/Ninguem por
   acao), `members` (convidados com perfil owner/admin/editor/contributor/viewer
   — `E_TABLE_PROFILE`), `owner` (troca de dono)
-- **Legados (mantidos para compat/fallback)**: `visibility`, `collaboration`,
-  `administrators`
+- **Preset de colaboracao**: Select (Privada/Restrita/Aberta/Publica/Pesquisa)
+  que preenche os 10 bindings de uma vez via `applyCollaborationPreset`
+  (`@/lib/table-permission-presets`). "Usuario logado" mapeia para o grupo
+  Registered; "visitante" para Public; "dono e convidados" para Nobody. Edicao
+  manual posterior reflete "Personalizado" (`detectCollaborationPreset`)
 - `layoutFields`: title, description, cover, category, startDate, endDate,
   color, participants, reminder
 

@@ -61,6 +61,12 @@ export const ProfileShowSchema: FastifySchema = {
             updatedAt: { type: 'string', format: 'date-time' },
           },
         },
+        capabilities: {
+          type: 'array',
+          description:
+            'Capacidades de área resolvidas pelo fecho de grupos (slugs de permissão); usado pelo frontend para liberar a navegação por capability',
+          items: { type: 'string' },
+        },
         groups: {
           type: 'array',
           description: 'Grupos adicionais do usuário (multi-grupo)',

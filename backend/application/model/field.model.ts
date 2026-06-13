@@ -186,23 +186,12 @@ export const Schema = new mongoose.Schema(
       enum: Object.values(E_FIELD_FORMAT),
       default: null,
     },
+    // Exibe o campo na barra de filtros (config de UX, nao e permissao).
     showInFilter: {
       type: Boolean,
       default: false,
     },
-    showInForm: {
-      type: Boolean,
-      default: false,
-    },
-    showInDetail: {
-      type: Boolean,
-      default: false,
-    },
-    showInList: {
-      type: Boolean,
-      default: false,
-    },
-    // Novo modelo de visibilidade por contexto. null em campos legados.
+    // Visibilidade por contexto (list/form/detail) → binding por grupo.
     permissions: {
       type: FieldPermissions,
       default: null,

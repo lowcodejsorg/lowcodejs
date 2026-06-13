@@ -9,6 +9,7 @@ import {
   TEXT_LONG_FORMAT_OPTIONS,
 } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
+import { isFieldShownInContext } from '@/lib/permission';
 
 interface FieldViewProps {
   data: IField;
@@ -102,16 +103,16 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
             {data.required ? 'Obrigatório' : 'Opcional'}
           </Badge>
           {data.multiple && <Badge variant="outline">Múltiplos valores</Badge>}
-          {data.showInList && (
+          {isFieldShownInContext(data, 'list') && (
             <Badge variant="outline">Exibir em listagem</Badge>
           )}
           {data.showInFilter && (
             <Badge variant="outline">Permitir filtro</Badge>
           )}
-          {data.showInForm && (
+          {isFieldShownInContext(data, 'form') && (
             <Badge variant="outline">Exibir em formulários</Badge>
           )}
-          {data.showInDetail && (
+          {isFieldShownInContext(data, 'detail') && (
             <Badge variant="outline">Exibir em detalhes</Badge>
           )}
         </div>

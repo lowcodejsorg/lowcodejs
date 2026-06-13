@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  E_TABLE_COLLABORATION,
+  buildFieldPermissions,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
@@ -29,8 +28,6 @@ const baseStructure = {
   slug: 'clientes',
   description: null,
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
   fields: [
     {
       name: 'Nome',
@@ -40,9 +37,7 @@ const baseStructure = {
       multiple: false,
       format: 'ALPHA_NUMERIC',
       showInFilter: true,
-      showInForm: true,
-      showInDetail: true,
-      showInList: true,
+      permissions: buildFieldPermissions(true, true, true),
       widthInForm: null,
       widthInList: null,
       widthInDetail: null,
@@ -221,10 +216,7 @@ describe('Import Table Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -248,10 +240,7 @@ describe('Import Table Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -280,10 +269,7 @@ describe('Import Table Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -459,10 +445,7 @@ describe('Import Table Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -488,9 +471,7 @@ describe('Import Table Use Case', () => {
       multiple: false,
       format: 'ALPHA_NUMERIC',
       showInFilter: true,
-      showInForm: true,
-      showInDetail: true,
-      showInList: true,
+      permissions: buildFieldPermissions(true, true, true),
       widthInForm: null,
       widthInList: null,
       widthInDetail: null,
@@ -508,9 +489,7 @@ describe('Import Table Use Case', () => {
       multiple: true,
       format: null,
       showInFilter: false,
-      showInForm: true,
-      showInDetail: true,
-      showInList: true,
+      permissions: buildFieldPermissions(true, true, true),
       widthInForm: null,
       widthInList: null,
       widthInDetail: null,
@@ -629,9 +608,7 @@ describe('Import Table Use Case', () => {
       multiple: true,
       format: null,
       showInFilter: false,
-      showInForm: true,
-      showInDetail: true,
-      showInList: true,
+      permissions: buildFieldPermissions(true, true, true),
       widthInForm: null,
       widthInList: null,
       widthInDetail: null,
@@ -757,10 +734,7 @@ describe('Import Table Use Case', () => {
         { ...baseStructure.fields[0], name: 'Nome', slug: 'nome' },
       ] as unknown as string[],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: ['nome'],
       fieldOrderForm: ['nome'],
     });

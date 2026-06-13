@@ -14,8 +14,8 @@ NAO neste diretorio.
 | `user.model.ts` | users | name, email, password, status, groups | group -> UserGroup (legado), groups -> [UserGroup] |
 | `user-group.model.ts` | user-groups | name, slug, description, encompasses | permissions -> [Permission], encompasses -> [UserGroup] (fecho transitivo) |
 | `permission.model.ts` | permissions | name, slug, description | - |
-| `table.model.ts` | tables | name, slug, _schema, type, style, permissions (mapa acao→binding), members, methods, groups, order, layoutFields, visibility/collaboration/administrators (legados) | fields -> [Field], logo -> Storage, owner -> User, members[].user -> User |
-| `field.model.ts` | fields | name, slug, type, required, multiple, format, permissions ({list,form,detail}), widthIn*, locked, native, defaultValue, showIn* (legados) | relationship.table -> Table, relationship.field -> Field, group -> FieldGroup |
+| `table.model.ts` | tables | name, slug, _schema, type, style, permissions (mapa acao→binding), members, methods, groups, order, layoutFields | fields -> [Field], logo -> Storage, owner -> User, members[].user -> User |
+| `field.model.ts` | fields | name, slug, type, required, multiple, format, permissions ({list,form,detail}), showInFilter, widthIn*, locked, native, defaultValue | relationship.table -> Table, relationship.field -> Field, group -> FieldGroup |
 | `storage.model.ts` | storage | filename, mimetype, size, originalName | Virtual: url (SERVER_URL/storage/filename) |
 | `validation-token.model.ts` | validation-tokens | code, status | user -> User |
 | `menu.model.ts` | menus | name, slug, type, url, html, order, visibility (binding {kind,group}; null = legado/visivel) | table -> Table (nullable), parent -> Menu (self-ref), owner -> User |
@@ -52,12 +52,17 @@ O RBAC foi reescrito. Os campos abaixo materializam o novo modelo; ver
   `kind ∈ PUBLIC|NOBODY|GROUP`), `members[]` (`{ user, profile }`,
   `profile ∈ owner|admin|editor|contributor|viewer`), `owner`.
 - **field**: `permissions: { list, form, detail }` — binding por contexto.
+  Ausencia de binding num contexto = campo visivel. `field.showInFilter` e um
+  campo separado (nao e permissao): controla apenas a sidebar de filtros.
 - **menu**: `visibility` — binding por opcao de menu.
 
-### Campos legados (deprecated, mantidos para compat/fallback)
+### Modelo legado removido
 
-`table.visibility`, `table.collaboration`, `table.administrators[]`,
-`field.showInList/showInForm/showInFilter/showInDetail`. O enforcement so cai
-no modelo legado quando o campo novo correspondente esta ausente (ex:
-`table.permissions == null`). As migrations 09/10/11 (idempotentes) fazem o
-backfill no `docker-entrypoint.sh`.
+Os campos `table.visibility/collaboration/administrators[]` e
+`field.showInList/showInForm/showInDetail` foram **removidos** do schema, dos
+tipos e dos enums (incluindo `E_TABLE_VISIBILITY`/`E_TABLE_COLLABORATION`). Nao
+ha fallback: o enforcement le somente o modelo novo. Tabelas novas ja nascem com
+`permissions` preenchido (preset `RESTRICTED`). As migrations 09/10/11 fazem o
+backfill e a migration 12 (`drop-legacy-permission-fields`) faz o `$unset`
+permanente dos campos legados — todas rodam automaticamente no boot.
+`field.showInFilter` e preservado.

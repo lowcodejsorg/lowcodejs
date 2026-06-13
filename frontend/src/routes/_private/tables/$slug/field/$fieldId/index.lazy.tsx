@@ -32,6 +32,7 @@ import { E_FIELD_TYPE, E_PERMISSION_TARGET } from '@/lib/constant';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
+import { isFieldShownInContext } from '@/lib/permission';
 import { QueryClient as queryClient } from '@/lib/query-client';
 
 // Deriva o binding de visibilidade a partir do boolean showIn* legado (usado
@@ -354,13 +355,10 @@ function FieldUpdateContent({
       category: data.category ?? [],
       multiple: data.multiple,
       showInFilter: data.showInFilter,
-      showInForm: data.showInForm,
-      showInDetail: data.showInDetail,
-      showInList: data.showInList,
       permissions: data.permissions ?? {
-        list: bindingFromBool(data.showInList),
-        form: bindingFromBool(data.showInForm),
-        detail: bindingFromBool(data.showInDetail),
+        list: bindingFromBool(isFieldShownInContext(data, 'list')),
+        form: bindingFromBool(isFieldShownInContext(data, 'form')),
+        detail: bindingFromBool(isFieldShownInContext(data, 'detail')),
       },
       required: data.required,
       trashed: Boolean((data as IField & { trashed?: boolean }).trashed),
@@ -387,9 +385,6 @@ function FieldUpdateContent({
         required: value.trashed ? false : value.required,
         multiple: value.multiple,
         showInFilter: value.showInFilter,
-        showInForm: value.showInForm,
-        showInDetail: value.showInDetail,
-        showInList: value.showInList,
         permissions: value.permissions,
         widthInForm: value.widthInForm,
         widthInList: value.widthInList,

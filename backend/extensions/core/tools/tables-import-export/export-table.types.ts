@@ -1,4 +1,5 @@
 import type { Either } from '@application/core/either.core';
+import type { IFieldPermissions } from '@application/core/entity.core';
 import type HTTPException from '@application/core/exception.core';
 
 import type { ExportTablePayload } from './export-table.validator';
@@ -16,9 +17,7 @@ export type ExportedField = {
   multiple: boolean;
   format: string | null;
   showInFilter: boolean;
-  showInForm: boolean;
-  showInDetail: boolean;
-  showInList: boolean;
+  permissions?: IFieldPermissions | null;
   widthInForm: number | null;
   widthInList: number | null;
   widthInDetail: number | null;
@@ -45,8 +44,6 @@ export type ExportedStructure = {
   slug: string;
   description: string | null;
   style: string;
-  visibility: string;
-  collaboration: string;
   fields: ExportedField[];
   groups: ExportedGroup[];
   fieldOrderList: string[];

@@ -109,7 +109,7 @@ backend/
 ### Middleware
 - `authentication.middleware.ts` - Extrai JWT de cookie/header, popula `request.user`
 - `permission.middleware.ts` - `PermissionMiddleware(capability)`: exige uma capacidade de area (`E_AREA_CAPABILITY`) resolvida pelo fecho de grupos. Substitui o RoleMiddleware nas areas; MASTER bypassa
-- `table-access.middleware.ts` - Verifica acesso a tabela: bindings por acao (`table.permissions`) + perfil de membro (`table.members`) + dono, com fallback ao modelo legado (visibilidade/administrators)
+- `table-access.middleware.ts` - Verifica acesso a tabela: bindings por acao (`table.permissions`) + perfil de membro (`table.members`) + dono
 
 ### Model (`*.model.ts`)
 - Mongoose schemas com timestamps
@@ -157,8 +157,6 @@ Codigo de usuario (beforeSave, afterSave, onLoad) roda em Node VM isolada com ti
 | `E_FIELD_FORMAT` | ALPHA_NUMERIC, INTEGER, DECIMAL, URL, EMAIL, PASSWORD, PHONE, CNPJ, CPF, RICH_TEXT, PLAIN_TEXT + date formats |
 | `E_TABLE_TYPE` | TABLE, FIELD_GROUP |
 | `E_TABLE_STYLE` | LIST, GALLERY, DOCUMENT, CARD, MOSAIC, KANBAN, FORUM, CALENDAR, GANTT |
-| `E_TABLE_VISIBILITY` | PUBLIC, RESTRICTED, OPEN, FORM, PRIVATE |
-| `E_TABLE_COLLABORATION` | OPEN, RESTRICTED |
 | `E_TABLE_PERMISSION` | CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW (12 total) |
 | `E_AREA_CAPABILITY` | MANAGE_USERS, MANAGE_MENU, MANAGE_USER_GROUPS, MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS |
 | `E_PERMISSION_TARGET` | PUBLIC, NOBODY, GROUP (binding `{ kind, group }`) |
@@ -203,8 +201,7 @@ visitante; GROUP libera se o grupo estiver no fecho do usuario). Reusado em:
   remove os valores de campos ocultos das respostas de row (`paginated`=list,
   `show`=detail) e descarta escritas em campos ocultos (`create`/`update`/
   `bulk-update`=form). Campos nativos e usuarios privilegiados (MASTER/ADMIN/dono)
-  nunca sao filtrados. Fallback ao boolean `showIn*` quando `field.permissions`
-  e null.
+  nunca sao filtrados. Ausencia de binding para um contexto = campo visivel.
 - `menu.visibility` → binding.
 
 ### Convidados da tabela (membros)
@@ -212,24 +209,23 @@ visitante; GROUP libera se o grupo estiver no fecho do usuario). Reusado em:
 `table.members[]` (`{ user, profile }`) com perfis fixos `E_TABLE_PROFILE`
 (owner/admin/editor/contributor/viewer) avaliados pela matriz
 `TABLE_PROFILE_MATRIX`. `contributor` edita/remove **apenas as suas** rows (OWN).
-`owner` tem acesso total e pode "trocar dono". Substituem `administrators[]`.
+`owner` tem acesso total e pode "trocar dono".
 
-### Fallback legado (importante)
+### Modelo novo unico (sem fallback legado)
 
-Os campos antigos `visibility`/`collaboration`/`administrators` (tabela),
-`showInList`/`showInForm`/`showInDetail` (campo) foram **mantidos e estao
-deprecated**. O enforcement cai para o modelo legado quando
-`table.permissions == null` (tabela ainda nao migrada). As migrations
-idempotentes (09 table-permissions, 10 field-permissions, 11 menu-visibility)
-fazem o backfill e rodam no `docker-entrypoint.sh`.
+Os campos antigos `visibility`/`collaboration`/`administrators` (tabela) e
+`showInList`/`showInForm`/`showInDetail` (campo) foram **removidos** do schema,
+dos tipos e dos enums. Nao ha mais fallback: o enforcement le **somente**
+`table.permissions`/`table.members`/`table.owner` e `field.permissions`. Tabelas
+novas ja nascem no modelo novo (preset `RESTRICTED` via
+`buildDefaultTablePermissions`, dono como membro `OWNER`) — nunca com
+`permissions: null`.
 
-Visibilidade de tabela (modelo **legado/fallback**, para nao-owners de tabelas
-ainda nao migradas):
-- **PUBLIC**: GET view liberado para visitantes
-- **FORM**: POST create liberado para visitantes
-- **OPEN**: VIEW + CREATE_ROW
-- **RESTRICTED**: VIEW only
-- **PRIVATE**: bloqueado
+As migrations idempotentes rodam automaticamente no boot: backfill (09
+table-permissions, 10 field-permissions, 11 menu-visibility) e em seguida 12
+`drop-legacy-permission-fields`, que `$unset` permanente dos campos legados.
+`field.showInFilter` e **mantido** (nao e permissao — controla apenas a sidebar
+de filtros).
 
 ### JWT
 

@@ -74,9 +74,6 @@ export const FieldUpdateSchema = z.object({
   category: z.array(z.custom<ICategory>()).default([]),
   multiple: z.boolean().default(false),
   showInFilter: z.boolean().default(false),
-  showInForm: z.boolean().default(false),
-  showInDetail: z.boolean().default(false),
-  showInList: z.boolean().default(false),
   permissions: z
     .object({
       list: FieldPermissionBindingSchema,
@@ -119,9 +116,6 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   category: [],
   multiple: false,
   showInFilter: false,
-  showInForm: false,
-  showInDetail: false,
-  showInList: false,
   permissions: {
     list: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
     form: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
@@ -709,30 +703,6 @@ export const UpdateFieldFormFields = withForm({
             )}
           </form.AppField>
         </div>
-
-        {/* Exibição do grupo de campos: formulário e/ou detalhes */}
-        {isFieldGroup && (
-          <>
-            <form.AppField name="showInForm">
-              {(field) => (
-                <field.FieldBooleanSwitch
-                  label="Exibir no formulário"
-                  description="Exibir este grupo no formulário de adicionar/editar registro?"
-                  disabled={isDisabled}
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="showInDetail">
-              {(field) => (
-                <field.FieldBooleanSwitch
-                  label="Exibir nos detalhes"
-                  description="Exibir este grupo na página de detalhes do registro?"
-                  disabled={isDisabled}
-                />
-              )}
-            </form.AppField>
-          </>
-        )}
 
         {/* Campo Obrigatoriedade */}
         {showRequired && (

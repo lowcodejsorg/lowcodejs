@@ -2,14 +2,20 @@ import { FileTextIcon } from 'lucide-react';
 import React from 'react';
 import { z } from 'zod';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import {
   E_FIELD_TYPE,
   E_PERMISSION_TARGET,
-  E_TABLE_COLLABORATION,
   E_TABLE_PROFILE,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
   PERMISSION_LABEL_MAPPER,
   TABLE_NAME_REGEX,
   TABLE_PERMISSION_ACTIONS,
@@ -20,6 +26,13 @@ import type {
   IPermissionBinding,
   ITable,
 } from '@/lib/interfaces';
+import {
+  COLLABORATION_PRESET_LABEL,
+  COLLABORATION_PRESET_OPTIONS,
+  E_COLLABORATION_PRESET,
+  applyCollaborationPreset,
+  detectCollaborationPreset,
+} from '@/lib/table-permission-presets';
 import { getAllowedTableStyles } from '@/lib/table-style';
 
 const PermissionBindingSchema = z.object({
@@ -82,20 +95,8 @@ export const TableUpdateSchema = z.object({
     E_TABLE_STYLE.CALENDAR,
     E_TABLE_STYLE.GANTT,
   ]),
-  visibility: z.enum([
-    E_TABLE_VISIBILITY.PUBLIC,
-    E_TABLE_VISIBILITY.RESTRICTED,
-    E_TABLE_VISIBILITY.OPEN,
-    E_TABLE_VISIBILITY.FORM,
-    E_TABLE_VISIBILITY.PRIVATE,
-  ]),
-  collaboration: z.enum([
-    E_TABLE_COLLABORATION.OPEN,
-    E_TABLE_COLLABORATION.RESTRICTED,
-  ]),
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
-  administrators: z.array(z.string()).default([]),
   permissions: z.record(z.string(), PermissionBindingSchema).default({}),
   members: z.array(TableMemberSchema).default([]),
   owner: z.string().default(''),
@@ -121,11 +122,8 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   slug: '',
   description: '',
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
   logo: null,
   logoFile: [],
-  administrators: [],
   permissions: buildDefaultPermissions(),
   members: [],
   owner: '',
@@ -153,6 +151,26 @@ export const UpdateTableFormFields = withForm({
   },
   render: function Render({ form, isPending, mode, tableData }) {
     const isDisabled = mode === 'show' || isPending;
+
+    // Grupo Registered: alvo dos presets que liberam "usuário logado".
+    const { data: groups } = useGroupReadList();
+    const registeredGroupId = React.useMemo(() => {
+      const match = (groups ?? []).find(
+        (group) => group.slug?.toUpperCase() === 'REGISTERED',
+      );
+      return match?._id ?? null;
+    }, [groups]);
+
+    function applyPreset(value: string): void {
+      const preset = COLLABORATION_PRESET_OPTIONS.find(
+        (item) => item === value,
+      );
+      if (!preset) return;
+      form.setFieldValue(
+        'permissions',
+        applyCollaborationPreset(preset, registeredGroupId),
+      );
+    }
 
     const orderOptions = React.useMemo(() => {
       const fields = tableData?.fields?.filter((f) => !f.trashed) ?? [];
@@ -394,6 +412,50 @@ export const UpdateTableFormFields = withForm({
           <p className="text-sm font-medium text-muted-foreground">
             Permissões da tabela
           </p>
+
+          {/* Preset de colaboração: preenche os 10 bindings de uma vez. */}
+          <form.Subscribe selector={(state) => state.values.permissions}>
+            {(permissions) => (
+              <div className="space-y-1.5">
+                <p className="text-xs text-muted-foreground">
+                  Modelo de colaboração
+                </p>
+                <Select
+                  value={detectCollaborationPreset(
+                    permissions,
+                    registeredGroupId,
+                  )}
+                  onValueChange={applyPreset}
+                  disabled={isDisabled}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Personalizado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COLLABORATION_PRESET_OPTIONS.map((preset) => (
+                      <SelectItem
+                        key={preset}
+                        value={preset}
+                      >
+                        {COLLABORATION_PRESET_LABEL[preset]}
+                      </SelectItem>
+                    ))}
+                    <SelectItem
+                      value={E_COLLABORATION_PRESET.CUSTOM}
+                      disabled
+                    >
+                      {
+                        COLLABORATION_PRESET_LABEL[
+                          E_COLLABORATION_PRESET.CUSTOM
+                        ]
+                      }
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </form.Subscribe>
+
           {TABLE_PERMISSION_ACTIONS.map((action) => (
             <form.AppField
               key={action}

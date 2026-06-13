@@ -12,6 +12,10 @@ servidor subir; no segundo boot em diante sao no-op com 1 query.
 | `migrate-group-native-fields.ts` | (idempotente por presenca dos campos nativos) | Garante que cada `Field` de tipo `FIELD_GROUP` tenha os campos nativos esperados em sua subtabela. |
 | `migrate-backfill-storage-location.ts` | `MIGRATION_STORAGE_LOCATION_AT` | Popula o campo `location` em docs `Storage` existentes (necessario apos a feature `storage-migration`). |
 | `migrate-backfill-row-slugs.ts` | `MIGRATION_ROW_SLUG_BACKFILL_AT` + `MIGRATION_ROW_SLUG_BACKFILL_FALLBACK_AT` | Gera `sharedRowSlug` em rows antigas, habilitando a URL amigavel (`/tables/:slug/:rowSlug`). Tabelas SEM `rowSlugFieldId` recebem fallback: pega o primeiro campo TEXT_SHORT ativo, seta `table.rowSlugFieldId` nele e faz o backfill. Vale para qualquer estilo de tabela (todo registro e uma row). Re-rodar com `--force` apos ativar o campo de slug numa tabela ja populada. |
+| `migrate-table-permissions.ts` | `MIGRATION_TABLE_PERMISSIONS_AT` | Backfill do mapa `permissions` (10 acoes) + `members` (owner→OWNER, administrators→ADMIN) a partir dos campos legados `visibility`/`owner`/`administrators`. Acesso raw a `tables`. |
+| `migrate-field-permissions.ts` | `MIGRATION_FIELD_PERMISSIONS_AT` | Backfill de `permissions.{list,form,detail}` a partir dos booleans legados `showInList/showInForm/showInDetail` (true→PUBLIC, false→NOBODY). Nao toca em `showInFilter`. |
+| `migrate-menu-visibility.ts` | `MIGRATION_MENU_VISIBILITY_AT` | Define `visibility=PUBLIC` (binding visivel) nos menus sem o campo. |
+| `migrate-drop-legacy-permission-fields.ts` | `MIGRATION_DROP_LEGACY_PERMISSION_FIELDS_AT` | `$unset` **permanente** dos campos legados (`visibility`/`collaboration`/`administrators` das tabelas; `showInList`/`showInForm`/`showInDetail` dos campos — **nao** `showInFilter`). Roda depois dos backfills 09/10/11. Como o dual-write dos legados foi removido, o drop e coerente e definitivo. Acesso raw (independente do schema Mongoose). |
 
 ## Comandos
 

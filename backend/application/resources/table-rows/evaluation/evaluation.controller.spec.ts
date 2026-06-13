@@ -2,11 +2,10 @@ import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import { Evaluation } from '@application/model/evaluation.model';
 import { Field } from '@application/model/field.model';
@@ -47,11 +46,9 @@ describe('E2E Table Row Evaluation Controller', () => {
         dropdown: [],
         defaultValue: null,
         showInFilter: false,
-        showInForm: true,
-        showInDetail: true,
+        permissions: buildFieldPermissions(true, true, true),
         format: null,
         group: null,
-        showInList: true,
         multiple: false,
         required: false,
         relationship: null,
@@ -67,12 +64,9 @@ describe('E2E Table Row Evaluation Controller', () => {
 
       const tablePayload: TableCreatePayload = {
         owner: user._id,
-        administrators: [],
-        collaboration: E_TABLE_COLLABORATION.OPEN,
         fieldOrderForm: [],
         fieldOrderList: [],
         style: E_TABLE_STYLE.LIST,
-        visibility: E_TABLE_VISIBILITY.PUBLIC,
         name: 'Products',
         slug: 'products',
         fields: [evaluationField._id.toString()],

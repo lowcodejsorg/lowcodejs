@@ -7,7 +7,7 @@ Atualiza um campo existente de uma tabela, incluindo nome, tipo, visibilidade e 
 
 ## Fluxo
 1. Middleware: AuthenticationMiddleware (required), TableAccessMiddleware (UPDATE_FIELD)
-2. Validator: TableFieldUpdateBodyValidator - campos: name (string, trim), type (E_FIELD_TYPE enum), trashed (boolean default false), trashedAt (string nullable, transformado em Date) + TableFieldBaseSchema (inclui `permissions` { list, form, detail } e os legados showIn*). TableFieldUpdateParamsValidator - campos: slug (string, trim), _id (string, trim)
+2. Validator: TableFieldUpdateBodyValidator - campos: name (string, trim), type (E_FIELD_TYPE enum), trashed (boolean default false), trashedAt (string nullable, transformado em Date) + TableFieldBaseSchema (inclui `permissions` { list, form, detail } e `showInFilter`). TableFieldUpdateParamsValidator - campos: slug (string, trim), _id (string, trim)
 3. UseCase:
    - Busca tabela por slug exato
    - Busca campo por _id exato

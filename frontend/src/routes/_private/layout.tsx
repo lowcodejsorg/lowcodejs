@@ -14,7 +14,6 @@ import {
   setupStatusOptions,
 } from '@/hooks/tanstack-query/_query-options';
 import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';
-import { E_ROLE } from '@/lib/constant';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private')({
@@ -65,9 +64,8 @@ export const Route = createFileRoute('/_private')({
 function PrivateLayout(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = Boolean(user);
-  const role = user?.group?.slug?.toUpperCase() ?? E_ROLE.REGISTERED;
 
-  const { menu } = useMenuDynamic(role);
+  const { menu } = useMenuDynamic();
 
   const routesWithoutSearchInput: Array<string | RegExp> = [
     '/',

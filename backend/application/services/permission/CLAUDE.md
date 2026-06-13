@@ -1,8 +1,10 @@
 # Permission Service
 
-Servico de logica de permissoes e controle de acesso a tabelas. Avalia o novo
-modelo (bindings por acao + perfis de membro) com fallback ao modelo legado
-(visibilidade + administrators) para tabelas ainda nao migradas.
+Servico de logica de permissoes e controle de acesso a tabelas. Avalia
+exclusivamente o modelo novo: bindings por acao (`table.permissions`) + perfis
+de membro (`table.members`) + `table.owner`. Nao ha fallback legado — os campos
+`visibility`/`collaboration`/`administrators` foram removidos e o servico nao tem
+mais `checkLegacyAccess`/regras de visibilidade.
 
 ## Arquivos
 
@@ -17,7 +19,7 @@ modelo (bindings por acao + perfis de membro) com fallback ao modelo legado
 |--------|---------|-----------|
 | `checkUserHasPermission(user, permission)` | `void` | Verifica se as capacidades do **fecho de grupos** do usuario contem a permissao; lanca Forbidden se nao |
 | `checkUserIsActive(user)` | `void` | Verifica se usuario esta ativo; lanca Forbidden se inativo |
-| `isPublicAccess(input)` | `boolean` | Acao publica quando o binding aponta para PUBLIC (novo modelo) ou, no legado, PUBLIC+GET view / FORM+POST CREATE_ROW |
+| `isPublicAccess(input)` | `boolean` | Acao publica quando o binding da acao aponta para PUBLIC |
 | `checkTableAccess(input)` | `AccessCheckResult` | Verificacao completa de acesso a tabela |
 
 ## Tipos
@@ -30,9 +32,8 @@ modelo (bindings por acao + perfis de membro) com fallback ao modelo legado
 1. MASTER - acesso total (sem verificacao adicional)
 2. ADMINISTRATOR - acesso total (verifica apenas se esta ativo)
 3. CREATE_TABLE - apenas verifica capacidade no fecho de grupos
-4. Dono da tabela (`table.owner` legado **ou** membro com perfil OWNER) - acesso total
-5. Tabela **nao migrada** (`table.permissions == null`) - cai no caminho legado (`checkLegacyAccess`)
-6. Tabela migrada - avalia, nesta ordem:
+4. Dono da tabela (`table.owner` **ou** membro com perfil OWNER) - acesso total
+5. Avalia, nesta ordem:
    - perfil de membro via `TABLE_PROFILE_MATRIX[profile][acao]` → ALLOW libera, OWN libera apenas as proprias rows (`ownership.ownOnly`), DENY segue
    - binding da acao (`bindingAllows`): PUBLIC libera todos; GROUP libera se o grupo estiver no fecho do usuario; NOBODY nega
 
@@ -42,21 +43,9 @@ Perfis fixos (`E_TABLE_PROFILE`): owner, admin, editor, contributor, viewer.
 `contributor` recebe OWN em update/remove de row (apenas as suas). Matriz
 definida em `entity.core.ts`.
 
-## Regras de Visibilidade (modelo legado/fallback)
-
-Aplicadas apenas em `checkLegacyAccess` quando a tabela nao tem `permissions`.
-
-| Visibilidade | Restricao |
-|-------------|-----------|
-| PRIVATE | Bloqueia todos (exceto owner/admin) |
-| RESTRICTED | Bloqueia CREATE_ROW |
-| FORM | Bloqueia VIEW (apenas owner/admin pode visualizar) |
-| OPEN / PUBLIC | Sem restricao adicional |
-
 ## Comportamentos Unicos
 
 - Nao possui implementacao in-memory (apenas contract + implementacao)
 - Resolucao de grupos/capacidades delegada ao `GroupResolverContractService`
   (fecho transitivo de `encompasses[]`), nao queries diretas ao UserModel
-- Metodo privado `checkVisibilityRules` aplica restricoes do modelo legado
 - `bindingAllows` avalia o binding `{ kind, group }` por acao

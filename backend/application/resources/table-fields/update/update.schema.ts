@@ -83,21 +83,6 @@ export const TableFieldUpdateSchema: FastifySchema = {
         default: false,
         description: 'Permitir filtrar por este campo',
       },
-      showInForm: {
-        type: 'boolean',
-        default: false,
-        description: 'Exibir o campo nos formulários de criação/edição',
-      },
-      showInDetail: {
-        type: 'boolean',
-        default: false,
-        description: 'Exibir o campo nas páginas de detalhe',
-      },
-      showInList: {
-        type: 'boolean',
-        default: false,
-        description: 'Exibir o campo nas visualizações de lista/grade/kanban',
-      },
       permissions: {
         type: 'object',
         nullable: true,
@@ -334,18 +319,6 @@ export const TableFieldUpdateSchema: FastifySchema = {
         showInFilter: {
           type: 'boolean',
           description: 'Permitir filtrar por este campo',
-        },
-        showInForm: {
-          type: 'boolean',
-          description: 'Exibir o campo nos formulários de criação/edição',
-        },
-        showInDetail: {
-          type: 'boolean',
-          description: 'Exibir o campo nas páginas de detalhe',
-        },
-        showInList: {
-          type: 'boolean',
-          description: 'Exibir o campo nas visualizações de lista/grade/kanban',
         },
         widthInForm: {
           type: 'number',

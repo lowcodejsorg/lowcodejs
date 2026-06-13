@@ -1,5 +1,4 @@
 export { FilteredTableComboboxField } from './filtered-table-combobox-field';
-export { TableCollaborationSelectField } from './table-collaboration-select-field';
 export { TableComboboxField } from './table-combobox-field';
 export { TableFieldCategoryDefaultValue } from './table-field-category-default-value';
 export { TableFieldCategoryTree } from './table-field-category-tree';
@@ -16,4 +15,3 @@ export { TableFieldTypeSelect } from './table-field-type-select';
 export { TableLayoutFieldSelect } from './table-layout-field-select';
 export { TableOrderSelectField } from './table-order-select-field';
 export { TableStyleSelectField } from './table-style-select-field';
-export { TableVisibilitySelectField } from './table-visibility-select-field';

@@ -52,7 +52,30 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
+import type { FieldContext } from '@/lib/permission';
+import { isFieldShownInContext } from '@/lib/permission';
 import { cn } from '@/lib/utils';
+
+// Chave do toggle -> contexto do binding. `showInFilter` não é permissão.
+const FIELD_CONTEXT_BY_VISIBILITY_KEY: Partial<
+  Record<VisibilityKey, FieldContext>
+> = {
+  showInList: 'list',
+  showInForm: 'form',
+  showInDetail: 'detail',
+};
+
+// Valor atual de visibilidade do campo para uma chave do toggle: `showInFilter`
+// é booleano; list/form/detail derivam do binding (não NOBODY = visível).
+function fieldVisibilityValue(
+  field: IField,
+  visibilityKey: VisibilityKey,
+): boolean {
+  if (visibilityKey === 'showInFilter') return field.showInFilter;
+  const context = FIELD_CONTEXT_BY_VISIBILITY_KEY[visibilityKey];
+  if (!context) return false;
+  return isFieldShownInContext(field, context);
+}
 
 // Campos internos de sistema que nunca devem ser gerenciaveis na UI.
 // Filtra por slug (estavel) alem do type, cobrindo dados legados onde o type difere.
@@ -114,7 +137,7 @@ function SortableManagementItem({
     opacity: opacityValue,
   };
 
-  const isVisible = field[visibilityKey];
+  const isVisible = fieldVisibilityValue(field, visibilityKey);
   let currentWidth: number | null = null;
   if (widthKey) {
     currentWidth = field[widthKey] ?? 50;
@@ -508,8 +531,12 @@ function FieldManagementList({
   const [fields, setFields] = useState<Array<IField>>(sortedActiveFields);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const visibleFields = fields.filter((f) => f[visibilityKey]);
-  const hiddenFields = fields.filter((f) => !f[visibilityKey]);
+  const visibleFields = fields.filter((f) =>
+    fieldVisibilityValue(f, visibilityKey),
+  );
+  const hiddenFields = fields.filter(
+    (f) => !fieldVisibilityValue(f, visibilityKey),
+  );
 
   let widthKey: 'widthInForm' | 'widthInList' | 'widthInDetail' | undefined;
   if (visibilityKey === 'showInForm') {
@@ -536,7 +563,12 @@ function FieldManagementList({
     if (!activeField || !overField) return;
 
     // Bloqueia mover entre as secoes (visivel/oculto); olho faz essa troca.
-    if (activeField[visibilityKey] !== overField[visibilityKey]) return;
+    if (
+      fieldVisibilityValue(activeField, visibilityKey) !==
+      fieldVisibilityValue(overField, visibilityKey)
+    ) {
+      return;
+    }
 
     setFields((items) => {
       const oldIndex = items.findIndex((item) => item._id === active.id);
@@ -553,7 +585,7 @@ function FieldManagementList({
   }
 
   function handleToggleVisibility(field: IField): void {
-    const currentValue = field[visibilityKey];
+    const currentValue = fieldVisibilityValue(field, visibilityKey);
     onToggleVisibility(field, visibilityKey, !currentValue);
   }
 

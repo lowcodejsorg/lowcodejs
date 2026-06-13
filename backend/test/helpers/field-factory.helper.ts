@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 
 import {
+  buildFieldPermissions,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
   type ICategory,
@@ -19,9 +20,7 @@ const FIELD_BASE: Omit<IField, '_id'> = {
   multiple: false,
   format: null,
   showInFilter: false,
-  showInForm: true,
-  showInDetail: true,
-  showInList: true,
+  permissions: buildFieldPermissions(true, true, true),
   widthInForm: 50,
   widthInList: 10,
   widthInDetail: 50,

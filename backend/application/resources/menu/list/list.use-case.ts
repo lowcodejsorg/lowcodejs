@@ -6,13 +6,22 @@ import { left, right } from '@application/core/either.core';
 import type {
   IMenu as Entity,
   IPermissionBinding,
+  ITable,
   IUser,
+  ValueOf,
 } from '@application/core/entity.core';
-import { E_PERMISSION_TARGET, E_ROLE } from '@application/core/entity.core';
+import {
+  E_MENU_ITEM_TYPE,
+  E_PERMISSION_TARGET,
+  E_ROLE,
+  E_TABLE_PERMISSION,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { GroupResolverContractService } from '@application/services/group-resolver/group-resolver-contract.service';
+import { PermissionContractService } from '@application/services/permission/permission-contract.service';
 
 type Response = Either<HTTPException, Entity[]>;
 
@@ -21,11 +30,24 @@ type Payload = {
   role?: string;
 };
 
+// Permissao de tabela exigida por tipo de menu que aponta para tabela:
+// uma opcao "tabela" (lista) usa o VIEW da tabela; um "formulario" usa o
+// CREATE_ROW (quem pode submeter o formulario ve a opcao).
+const TABLE_LINKED_PERMISSION: Record<
+  string,
+  ValueOf<typeof E_TABLE_PERMISSION>
+> = {
+  [E_MENU_ITEM_TYPE.TABLE]: E_TABLE_PERMISSION.VIEW_TABLE,
+  [E_MENU_ITEM_TYPE.FORM]: E_TABLE_PERMISSION.CREATE_ROW,
+};
+
 @Service()
 export default class MenuListUseCase {
   constructor(
     private readonly menuRepository: MenuContractRepository,
     private readonly userRepository: UserContractRepository,
+    private readonly tableRepository: TableContractRepository,
+    private readonly permissionService: PermissionContractService,
     private readonly groupResolver: GroupResolverContractService,
   ) {}
 
@@ -66,6 +88,60 @@ export default class MenuListUseCase {
     return true;
   }
 
+  // Menu do tipo TABLE/FORM só aparece se o usuário tem a permissão da tabela
+  // vinculada (lista usa VIEW; formulário usa CREATE_ROW). Tabela inexistente
+  // ou na lixeira oculta a opção. Reaproveita o enforcement do PermissionService.
+  private async canAccessLinkedTable(
+    menu: Entity,
+    tablesById: Map<string, ITable>,
+    payload: Payload,
+    user: IUser | null,
+  ): Promise<boolean> {
+    const requiredPermission = TABLE_LINKED_PERMISSION[menu.type];
+    if (!requiredPermission) return true;
+    if (!menu.table) return true;
+
+    const table = tablesById.get(String(menu.table));
+    if (!table) return false;
+
+    try {
+      await this.permissionService.checkTableAccess({
+        table,
+        userId: payload.actorUserId,
+        userRole: payload.role,
+        user,
+        requiredPermission,
+        httpMethod: 'GET',
+      });
+      return true;
+    } catch {
+      // Qualquer negativa de acesso (Forbidden/Unauthorized) oculta a opção.
+      return false;
+    }
+  }
+
+  private async loadLinkedTables(
+    menus: Entity[],
+  ): Promise<Map<string, ITable>> {
+    const tableIds = new Set<string>();
+    for (const menu of menus) {
+      if (!TABLE_LINKED_PERMISSION[menu.type]) continue;
+      if (!menu.table) continue;
+      tableIds.add(String(menu.table));
+    }
+
+    const tablesById = new Map<string, ITable>();
+    if (tableIds.size === 0) return tablesById;
+
+    const tables = await this.tableRepository.findMany({
+      _ids: Array.from(tableIds),
+      trashed: false,
+    });
+    for (const table of tables) tablesById.set(String(table._id), table);
+
+    return tablesById;
+  }
+
   async execute(payload: Payload = {}): Promise<Response> {
     try {
       const menus = await this.menuRepository.findMany({
@@ -90,9 +166,34 @@ export default class MenuListUseCase {
       const byId = new Map<string, Entity>();
       for (const menu of menus) byId.set(String(menu._id), menu);
 
-      const visible = menus.filter((menu) =>
-        this.isVisible(menu, byId, userGroupIds),
-      );
+      const tablesById = await this.loadLinkedTables(menus);
+
+      // Cache por tabela: uma mesma tabela referenciada por vários menus é
+      // avaliada uma única vez.
+      const tableAccessCache = new Map<string, boolean>();
+      const visible: Entity[] = [];
+
+      for (const menu of menus) {
+        if (!this.isVisible(menu, byId, userGroupIds)) continue;
+
+        const requiredPermission = TABLE_LINKED_PERMISSION[menu.type];
+        if (requiredPermission && menu.table) {
+          const cacheKey = `${String(menu.table)}:${requiredPermission}`;
+          let canAccess = tableAccessCache.get(cacheKey);
+          if (canAccess === undefined) {
+            canAccess = await this.canAccessLinkedTable(
+              menu,
+              tablesById,
+              payload,
+              user,
+            );
+            tableAccessCache.set(cacheKey, canAccess);
+          }
+          if (!canAccess) continue;
+        }
+
+        visible.push(menu);
+      }
 
       return right(visible);
     } catch (error) {

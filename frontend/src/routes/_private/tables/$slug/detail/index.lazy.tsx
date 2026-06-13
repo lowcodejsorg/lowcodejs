@@ -134,13 +134,8 @@ function TableUpdateContent({
       slug: data.slug,
       description: data.description ?? '',
       style: data.style,
-      visibility: data.visibility,
-      collaboration: data.collaboration,
       logo: data.logo?._id ?? null,
       logoFile: [] as Array<File>,
-      administrators: data.administrators.map((admin) =>
-        typeof admin === 'string' ? admin : admin._id,
-      ),
       // Garante as 10 chaves (default Ninguém) e sobrepõe com o que a tabela tem.
       permissions: {
         ...buildDefaultPermissions(),
@@ -186,14 +181,11 @@ function TableUpdateContent({
         name: value.name || data.name,
         description: value.description || null,
         logo: value.logo || data.logo?._id || null,
-        visibility: value.visibility,
         style: value.style,
-        collaboration: value.collaboration,
         fieldOrderList: data.fieldOrderList,
         fieldOrderForm: data.fieldOrderForm,
         fieldOrderFilter: data.fieldOrderFilter,
         fieldOrderDetail: data.fieldOrderDetail,
-        administrators: value.administrators,
         permissions: value.permissions,
         members: value.members,
         owner: value.owner || undefined,

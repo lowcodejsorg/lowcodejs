@@ -2,11 +2,9 @@ import z from 'zod';
 
 import {
   E_PERMISSION_TARGET,
-  E_TABLE_COLLABORATION,
   E_TABLE_PERMISSION,
   E_TABLE_PROFILE,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 
 // Binding de uma acao: a quem ela esta liberada (Grupo|Public|Nobody).
@@ -71,22 +69,6 @@ export const TableStyleSchema = z
     E_TABLE_STYLE.GANTT,
   ])
   .default(E_TABLE_STYLE.LIST);
-
-export const TableVisibilitySchema = z
-  .enum([
-    E_TABLE_VISIBILITY.PUBLIC,
-    E_TABLE_VISIBILITY.RESTRICTED,
-    E_TABLE_VISIBILITY.OPEN,
-    E_TABLE_VISIBILITY.FORM,
-    E_TABLE_VISIBILITY.PRIVATE,
-  ])
-  .default(E_TABLE_VISIBILITY.PUBLIC);
-
-export const TableCollaborationSchema = z
-  .enum([E_TABLE_COLLABORATION.OPEN, E_TABLE_COLLABORATION.RESTRICTED])
-  .default(E_TABLE_COLLABORATION.OPEN);
-
-export const TableAdministratorsSchema = z.array(z.string()).default([]);
 
 export const TableFieldOrderListSchema = z.array(z.string().trim()).default([]);
 

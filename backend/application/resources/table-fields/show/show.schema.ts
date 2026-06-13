@@ -55,18 +55,6 @@ export const TableFieldShowSchema: FastifySchema = {
           type: 'boolean',
           description: 'Campo permite múltiplos valores',
         },
-        showInList: {
-          type: 'boolean',
-          description: 'Exibir campo na visualização de listagem',
-        },
-        showInForm: {
-          type: 'boolean',
-          description: 'Exibir campo na visualização de formulário',
-        },
-        showInDetail: {
-          type: 'boolean',
-          description: 'Exibir campo na visualização de detalhe',
-        },
         showInFilter: {
           type: 'boolean',
           description: 'Permitir filtrar por este campo',

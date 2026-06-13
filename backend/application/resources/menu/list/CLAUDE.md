@@ -29,6 +29,12 @@ feita no use-case via filtragem por visibilidade (ver Regras de Negocio).
   transitivo); binding ausente (menu legado) = visivel
 - Ancestor-aware: "pai oculto esconde a subarvore" — um menu so e visivel se ele
   proprio e todos os seus ancestrais forem visiveis
+- Permissao da tabela vinculada: menu do tipo TABLE so aparece se o usuario tem
+  VIEW_TABLE da tabela; menu do tipo FORM exige CREATE_ROW. A checagem reaproveita
+  `PermissionService.checkTableAccess` (perfil de membro + binding por acao +
+  dono). Tabela inexistente ou na lixeira oculta a opcao. Tabelas vinculadas sao
+  carregadas em batch (`findMany({ _ids })`) e o acesso e cacheado por
+  `tabela:acao`
 - MASTER e ADMINISTRATOR fazem bypass do filtro (enxergam todos os menus)
 - Espelha o `isMenuVisible` do frontend
 

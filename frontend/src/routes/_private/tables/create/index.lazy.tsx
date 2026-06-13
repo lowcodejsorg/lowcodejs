@@ -83,7 +83,6 @@ function RouteComponentContent(): React.JSX.Element {
         slug: value.slug.trim() || undefined,
         logo: value.logo,
         style: value.style,
-        visibility: value.visibility,
       });
     },
   });

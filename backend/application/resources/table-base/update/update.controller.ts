@@ -43,6 +43,8 @@ export default class {
     const result = await this.useCase.execute({
       routeSlug: params.slug,
       ...payload,
+      actorRole: request.user?.role,
+      actorIsOwner: request.ownership?.isOwner ?? false,
     });
 
     if (result.isLeft()) {

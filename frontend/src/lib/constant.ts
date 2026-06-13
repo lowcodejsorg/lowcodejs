@@ -99,19 +99,6 @@ export const E_TABLE_STYLE = {
   GANTT: 'GANTT',
 } as const;
 
-export const E_TABLE_VISIBILITY = {
-  PUBLIC: 'PUBLIC',
-  RESTRICTED: 'RESTRICTED',
-  OPEN: 'OPEN',
-  FORM: 'FORM',
-  PRIVATE: 'PRIVATE',
-} as const;
-
-export const E_TABLE_COLLABORATION = {
-  OPEN: 'OPEN',
-  RESTRICTED: 'RESTRICTED',
-} as const;
-
 export const E_EXTENSION_TYPE = {
   PLUGIN: 'PLUGIN',
   MODULE: 'MODULE',
@@ -309,19 +296,6 @@ export const MENU_ITEM_TYPE_OPTIONS = [
   { label: 'Link Externo', value: E_MENU_ITEM_TYPE.EXTERNAL },
   { label: 'Separador', value: E_MENU_ITEM_TYPE.SEPARATOR },
   { label: 'Módulo de Extensão', value: E_MENU_ITEM_TYPE.EXTENSION_MODULE },
-] as const;
-
-export const TABLE_COLLABORATION_OPTIONS = [
-  { label: 'Restrita', value: E_TABLE_COLLABORATION.RESTRICTED },
-  { label: 'Aberta', value: E_TABLE_COLLABORATION.OPEN },
-] as const;
-
-export const TABLE_VISIBILITY_OPTIONS = [
-  { label: 'Privada', value: E_TABLE_VISIBILITY.PRIVATE },
-  { label: 'Restrita', value: E_TABLE_VISIBILITY.RESTRICTED },
-  { label: 'Aberta', value: E_TABLE_VISIBILITY.OPEN },
-  { label: 'Pública', value: E_TABLE_VISIBILITY.PUBLIC },
-  { label: 'Formulário online', value: E_TABLE_VISIBILITY.FORM },
 ] as const;
 
 export const TABLE_STYLE_OPTIONS = [

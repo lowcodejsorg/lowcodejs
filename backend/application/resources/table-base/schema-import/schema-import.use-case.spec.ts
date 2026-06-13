@@ -1,17 +1,19 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
 import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
 import SchemaImportUseCase from './schema-import.use-case';
 
 let fieldInMemoryRepository: FieldInMemoryRepository;
 let tableInMemoryRepository: TableInMemoryRepository;
+let userGroupInMemoryRepository: UserGroupInMemoryRepository;
 let schemaBuilder: InMemorySchemaBuilder;
 let sut: SchemaImportUseCase;
 
@@ -40,11 +42,13 @@ describe('Schema Import Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    userGroupInMemoryRepository = new UserGroupInMemoryRepository();
     schemaBuilder = new InMemorySchemaBuilder();
 
     sut = new SchemaImportUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      userGroupInMemoryRepository,
       schemaBuilder,
     );
   });
@@ -104,10 +108,7 @@ describe('Schema Import Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'other-owner',
-      administrators: [],
       style: 'LIST' as never,
-      visibility: 'RESTRICTED' as never,
-      collaboration: 'RESTRICTED' as never,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -136,10 +137,8 @@ describe('Schema Import Use Case', () => {
       required: false,
       multiple: false,
       format: null,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
       showInFilter: false,
+      permissions: buildFieldPermissions(true, true, true),
       widthInForm: 50,
       widthInList: 10,
       widthInDetail: 50,
@@ -170,9 +169,6 @@ describe('Schema Import Use Case', () => {
       ],
       type: 'TABLE' as never,
       style: 'LIST' as never,
-      visibility: 'RESTRICTED' as never,
-      collaboration: 'RESTRICTED' as never,
-      administrators: [],
       owner: { _id: 'other-owner' } as never,
       fieldOrderList: [],
       fieldOrderForm: [],
@@ -270,10 +266,9 @@ describe('Schema Import Use Case', () => {
     expect(fim?.format).toBe('dd/MM/yyyy');
   });
 
-  it('deve aceitar visibility e style customizados', async () => {
+  it('deve aceitar style customizado', async () => {
     const yaml = `tables:
   - name: PublicTable
-    visibility: PUBLIC
     style: GALLERY
     fields:
       - name: Titulo
@@ -286,7 +281,6 @@ describe('Schema Import Use Case', () => {
     const table = tableInMemoryRepository.items.find(
       (t) => t.slug === 'publictable',
     );
-    expect(table?.visibility).toBe(E_TABLE_VISIBILITY.PUBLIC);
     expect(table?.style).toBe('GALLERY');
   });
 

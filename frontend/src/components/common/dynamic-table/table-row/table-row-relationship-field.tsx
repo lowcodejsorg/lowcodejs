@@ -56,6 +56,7 @@ import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow, ITable, SearchableOption } from '@/lib/interfaces';
+import { isFieldShownInContext } from '@/lib/permission';
 import { resolveRelationshipLabel } from '@/lib/relationship-label';
 import {
   buildCreateRowDefaultValues,
@@ -80,7 +81,7 @@ interface RelatedRowCreateDialogProps {
 function getFormFields(table: ITable): Array<IField> {
   const order = table.fieldOrderForm;
   return table.fields
-    .filter((field) => !field.trashed && field.showInForm)
+    .filter((field) => !field.trashed && isFieldShownInContext(field, 'form'))
     .sort((a, b) => {
       const rawA = order.indexOf(a._id);
       const rawB = order.indexOf(b._id);

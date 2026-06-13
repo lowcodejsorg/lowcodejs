@@ -49,6 +49,7 @@ import {
   parseOrderValue,
 } from '@/lib/kanban-helpers';
 import type { FieldMap } from '@/lib/kanban-types';
+import { buildFieldPermissions } from '@/lib/permission';
 import {
   buildDefaultValues,
   buildPayload,
@@ -446,9 +447,7 @@ export function TableKanbanView({
       multiple: false,
       format: E_FIELD_FORMAT.DD_MM_YYYY,
       showInFilter: true,
-      showInForm: true,
-      showInDetail: true,
-      showInList: true,
+      permissions: buildFieldPermissions(true, true, true),
       defaultValue: null,
       locked: true,
       relationship: null,
@@ -598,9 +597,7 @@ export function TableKanbanView({
           multiple: false,
           format: E_FIELD_FORMAT.INTEGER,
           showInFilter: false,
-          showInForm: false,
-          showInDetail: false,
-          showInList: false,
+          permissions: buildFieldPermissions(false, false, false),
           defaultValue: null,
           locked: true,
           relationship: null,

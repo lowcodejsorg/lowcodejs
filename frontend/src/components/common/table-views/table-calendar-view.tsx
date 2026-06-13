@@ -29,6 +29,7 @@ import type {
 } from '@/lib/calendar-helpers';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
+import { isFieldShownInContext } from '@/lib/permission';
 import { QueryClient } from '@/lib/query-client';
 import { mountRowValue } from '@/lib/table';
 
@@ -99,7 +100,7 @@ export function TableCalendarView({
         !field.trashed &&
         !field.native &&
         !baseFieldIds.has(field._id) &&
-        field.showInForm !== false &&
+        isFieldShownInContext(field, 'form') &&
         field.type !== E_FIELD_TYPE.REACTION &&
         field.type !== E_FIELD_TYPE.EVALUATION,
     );

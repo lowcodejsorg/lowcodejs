@@ -38,12 +38,6 @@ export const TableCreateSchema: FastifySchema = {
         default: 'LIST',
         description: 'Estilo de exibição da tabela',
       },
-      visibility: {
-        type: 'string',
-        enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-        default: 'RESTRICTED',
-        description: 'Nível de visibilidade da tabela',
-      },
     },
     additionalProperties: false,
   },
@@ -101,18 +95,6 @@ export const TableCreateSchema: FastifySchema = {
                 type: 'string',
                 nullable: true,
                 description: 'Validação de formato do campo',
-              },
-              showInList: {
-                type: 'boolean',
-                description: 'Exibir nas listagens',
-              },
-              showInForm: {
-                type: 'boolean',
-                description: 'Exibir na visualização em formulário',
-              },
-              showInDetail: {
-                type: 'boolean',
-                description: 'Exibir na visualização de detalhes',
               },
               showInFilter: {
                 type: 'boolean',
@@ -217,27 +199,6 @@ export const TableCreateSchema: FastifySchema = {
           ],
           description: 'Estilo de exibição da tabela',
         },
-        visibility: {
-          type: 'string',
-          enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-          description: 'Nível de visibilidade da tabela',
-        },
-        collaboration: {
-          type: 'string',
-          enum: ['OPEN', 'RESTRICTED'],
-          description: 'Configuração de colaboração',
-        },
-        administrators: {
-          type: 'array',
-          description: 'Usuários administradores (populado)',
-          items: {
-            type: 'object',
-            properties: {
-              _id: { type: 'string', description: 'ID do usuário' },
-              name: { type: 'string', description: 'Nome do usuário' },
-            },
-          },
-        },
         owner: {
           type: 'object',
           description: 'Proprietário da tabela (populado)',
@@ -309,9 +270,6 @@ export const TableCreateSchema: FastifySchema = {
                     required: { type: 'boolean' },
                     multiple: { type: 'boolean' },
                     format: { type: 'string', nullable: true },
-                    showInList: { type: 'boolean' },
-                    showInForm: { type: 'boolean' },
-                    showInDetail: { type: 'boolean' },
                     showInFilter: { type: 'boolean' },
                     widthInForm: { type: 'number', nullable: true },
                     widthInList: { type: 'number', nullable: true },

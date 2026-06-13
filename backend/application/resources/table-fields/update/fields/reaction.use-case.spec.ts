@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
   type IField,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
@@ -25,9 +24,7 @@ let sut: TableFieldUpdateUseCase;
 const FIELD_DEFAULTS = {
   slug: 'curtidas',
   type: E_FIELD_TYPE.REACTION,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
+  permissions: buildFieldPermissions(true, true, true),
   showInFilter: false,
   locked: false,
   allowCreateRelationshipRecords: false,
@@ -63,10 +60,7 @@ async function createFieldAndTable(
     _schema: {},
     fields: [field._id],
     owner: 'owner-id',
-    administrators: [],
     style: E_TABLE_STYLE.LIST,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-    collaboration: E_TABLE_COLLABORATION.RESTRICTED,
     fieldOrderList: [],
     fieldOrderForm: [],
   });
@@ -98,9 +92,7 @@ function buildUpdatePayload(
     trashedAt: null,
     locked: false,
     allowCreateRelationshipRecords: false,
-    showInList: field.showInList,
-    showInForm: field.showInForm,
-    showInDetail: field.showInDetail,
+    permissions: field.permissions,
     showInFilter: field.showInFilter,
     widthInForm: field.widthInForm,
     widthInList: field.widthInList,
@@ -127,7 +119,7 @@ describe('Table Field Update - REACTION', () => {
     );
   });
 
-  it('deve mudar visibilidade showInList e showInForm', async () => {
+  it('deve mudar visibilidade de lista e formulario', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
@@ -135,16 +127,14 @@ describe('Table Field Update - REACTION', () => {
 
     const result = await sut.execute(
       buildUpdatePayload(field, {
-        showInList: false,
-        showInForm: false,
-        showInDetail: true,
+        permissions: buildFieldPermissions(false, false, true),
       }),
     );
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(false);
-    expect(result.value.showInForm).toBe(false);
-    expect(result.value.showInDetail).toBe(true);
+    expect(result.value.permissions?.list.kind).toBe('NOBODY');
+    expect(result.value.permissions?.form.kind).toBe('NOBODY');
+    expect(result.value.permissions?.detail.kind).toBe('PUBLIC');
   });
 });

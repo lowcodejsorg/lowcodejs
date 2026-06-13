@@ -12,14 +12,6 @@ import type {
 } from './field-visibility-contract.service';
 import { FieldVisibilityContractService } from './field-visibility-contract.service';
 
-// Contexto -> boolean legado correspondente (fallback para campos ainda nao
-// migrados, sem o mapa `permissions`).
-const LEGACY_FLAG_BY_CONTEXT = {
-  list: 'showInList',
-  form: 'showInForm',
-  detail: 'showInDetail',
-} as const;
-
 @Service()
 export default class FieldVisibilityService implements FieldVisibilityContractService {
   constructor(
@@ -33,7 +25,7 @@ export default class FieldVisibilityService implements FieldVisibilityContractSe
     if (this.isPrivileged(input)) return hidden;
 
     // Campos nativos (_id, creator, createdAt, trashed...) nunca sao ocultados:
-    // sao estruturais e a migracao tambem os preenche a partir dos showIn*.
+    // sao estruturais.
     const candidates: IField[] = [];
     for (const field of input.fields) {
       if (!field.native) candidates.push(field);
@@ -109,10 +101,9 @@ export default class FieldVisibilityService implements FieldVisibilityContractSe
   ): boolean {
     const binding = field.permissions?.[context];
 
-    // Campo legado (sem o novo modelo): cai no boolean showIn*.
-    if (!binding) {
-      return Boolean(field[LEGACY_FLAG_BY_CONTEXT[context]]);
-    }
+    // Sem binding: campo visivel (convencao do modelo novo, espelha o
+    // userSatisfiesBinding do frontend).
+    if (!binding) return true;
 
     if (binding.kind === E_PERMISSION_TARGET.PUBLIC) return true;
     if (binding.kind === E_PERMISSION_TARGET.NOBODY) return false;

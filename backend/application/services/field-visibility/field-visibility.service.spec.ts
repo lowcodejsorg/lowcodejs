@@ -22,9 +22,6 @@ function makeField(overrides: Partial<IField>): IField {
     multiple: false,
     format: null,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
-    showInList: false,
     permissions: null,
     widthInForm: 50,
     widthInList: 10,
@@ -138,16 +135,12 @@ describe('Field Visibility Service', () => {
     expect(hiddenForOutsider.has('salario')).toBe(true);
   });
 
-  it('campo legado (sem permissions) cai no boolean showIn*', async () => {
-    const fields = [
-      makeField({ slug: 'visivel', showInList: true, permissions: null }),
-      makeField({ slug: 'oculto', showInList: false, permissions: null }),
-    ];
+  it('campo sem binding (permissions null) permanece visível', async () => {
+    const fields = [makeField({ slug: 'visivel', permissions: null })];
 
     const hidden = await sut.hiddenSlugs({ fields, context: 'list' });
 
     expect(hidden.has('visivel')).toBe(false);
-    expect(hidden.has('oculto')).toBe(true);
   });
 
   it('campo nativo nunca é ocultado, mesmo com binding NOBODY', async () => {

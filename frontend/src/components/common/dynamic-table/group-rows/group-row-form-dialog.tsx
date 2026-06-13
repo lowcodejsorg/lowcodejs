@@ -26,6 +26,7 @@ import { useUpdateGroupRow } from '@/hooks/tanstack-query/use-group-row-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow } from '@/lib/interfaces';
+import { isFieldShownInContext } from '@/lib/permission';
 import { buildFieldValidator } from '@/lib/table';
 
 interface GroupRowFormDialogProps {
@@ -72,7 +73,7 @@ function GroupRowFormDialogContent({
   const isUploading = useIsUploading();
 
   const visibleFields = React.useMemo(
-    () => groupFields.filter((f) => f.showInForm),
+    () => groupFields.filter((f) => isFieldShownInContext(f, 'form')),
     [groupFields],
   );
 

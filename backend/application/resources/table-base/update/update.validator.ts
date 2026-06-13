@@ -3,8 +3,6 @@ import z from 'zod';
 
 import {
   GroupConfigurationSchema,
-  TableAdministratorsSchema,
-  TableCollaborationSchema,
   TableFieldOrderDetailSchema,
   TableFieldOrderFilterSchema,
   TableFieldOrderFormSchema,
@@ -15,7 +13,6 @@ import {
   TableOrderSchema,
   TablePermissionsSchema,
   TableStyleSchema,
-  TableVisibilitySchema,
 } from '../table-base.schema';
 
 export const TableUpdateBodyValidator = z
@@ -33,9 +30,6 @@ export const TableUpdateBodyValidator = z
     description: z.string().trim().nullable(),
     logo: z.string().trim().nullable(),
     style: TableStyleSchema,
-    visibility: TableVisibilitySchema,
-    collaboration: TableCollaborationSchema,
-    administrators: TableAdministratorsSchema,
     fieldOrderList: TableFieldOrderListSchema,
     fieldOrderForm: TableFieldOrderFormSchema,
     fieldOrderFilter: TableFieldOrderFilterSchema,
@@ -45,8 +39,7 @@ export const TableUpdateBodyValidator = z
     layoutFields: TableLayoutFieldsSchema.optional(),
     groups: z.array(GroupConfigurationSchema).optional(),
     rowSlugFieldId: z.string().trim().nullable().optional(),
-    // Novo modelo de permissoes (Grupo|Public|Nobody por acao) + convidados +
-    // troca de dono. Opcionais: tabelas legadas continuam enviando visibility.
+    // Permissoes (Grupo|Public|Nobody por acao) + convidados + troca de dono.
     permissions: TablePermissionsSchema.optional(),
     members: TableMembersSchema.optional(),
     owner: z.string().trim().min(1).optional(),

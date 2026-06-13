@@ -15,7 +15,6 @@ export const Route = createFileRoute('/_private/tables/')({
       location.searchStr.includes('order-name') ||
       location.searchStr.includes('order-link') ||
       location.searchStr.includes('order-created-at') ||
-      location.searchStr.includes('order-visibility') ||
       location.searchStr.includes('order-owner');
 
     let customPerPage: number | undefined;
@@ -72,12 +71,10 @@ export const Route = createFileRoute('/_private/tables/')({
         z.enum(['true', 'false']).transform((v) => v === 'true'),
       )
       .optional(),
-    visibility: z.string().optional(),
     owner: z.string().optional(),
     'order-name': z.enum(['asc', 'desc']).optional(),
     'order-link': z.enum(['asc', 'desc']).optional(),
     'order-created-at': z.enum(['asc', 'desc']).optional(),
-    'order-visibility': z.enum(['asc', 'desc']).optional(),
     'order-owner': z.enum(['asc', 'desc']).optional(),
   }),
   search: {
@@ -89,12 +86,10 @@ export const Route = createFileRoute('/_private/tables/')({
     search: search.search,
     name: search.name,
     trashed: search.trashed,
-    visibility: search.visibility,
     owner: search.owner,
     'order-name': search['order-name'],
     'order-link': search['order-link'],
     'order-created-at': search['order-created-at'],
-    'order-visibility': search['order-visibility'],
     'order-owner': search['order-owner'],
   }),
   loader: ({ context, deps }) => {

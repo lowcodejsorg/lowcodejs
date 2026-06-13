@@ -9,8 +9,8 @@ Logica central compartilhada por toda a aplicacao.
 Enums, tipos e interfaces do dominio. Fonte unica de verdade para:
 
 - Enums: `E_ROLE`, `E_FIELD_TYPE`, `E_FIELD_FORMAT`, `E_TABLE_TYPE`,
-  `E_TABLE_STYLE`, `E_TABLE_VISIBILITY`, `E_TABLE_COLLABORATION`,
-  `E_TABLE_PERMISSION`, `E_JWT_TYPE`, `E_USER_STATUS`, `E_SCHEMA_TYPE`,
+  `E_TABLE_STYLE`, `E_TABLE_PERMISSION`, `E_PERMISSION_TARGET`,
+  `E_TABLE_PROFILE`, `E_JWT_TYPE`, `E_USER_STATUS`, `E_SCHEMA_TYPE`,
   `E_CHAT_EVENT`
 - Interfaces: `IUser`, `ITable`, `IField`, `IRow`, `IGroup`, `IPermission`,
   `IStorage`, `IMenu`, `ISetting`, `IValidationToken`, `IReaction`,

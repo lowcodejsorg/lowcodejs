@@ -27,7 +27,7 @@ import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { API } from '@/lib/api';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE, E_TABLE_PROFILE } from '@/lib/constant';
 import {
   normalizeGroupFieldValue,
   normalizeId,
@@ -43,6 +43,7 @@ import type {
   IRow,
   IStorage,
   ITable,
+  ITableMember,
   Paginated,
 } from '@/lib/interfaces';
 import { getFieldBySlug, getFirstFieldByType } from '@/lib/kanban-helpers';
@@ -351,13 +352,16 @@ export function TableForumView({
     if (!currentUserId) return false;
     const ownerId = normalizeId(table.owner);
     if (ownerId && ownerId === currentUserId) return true;
-    const adminIds = Array.isArray(table.administrators)
-      ? table.administrators
-          .map((admin) => normalizeId(admin))
-          .filter((id): id is string => Boolean(id))
-      : [];
+    const adminIds = table.members
+      .filter(
+        (member: ITableMember) =>
+          member.profile === E_TABLE_PROFILE.OWNER ||
+          member.profile === E_TABLE_PROFILE.ADMIN,
+      )
+      .map((member: ITableMember) => member.user);
+    if (ownerId) adminIds.push(ownerId);
     return adminIds.includes(currentUserId);
-  }, [currentUserId, table.administrators, table.owner]);
+  }, [currentUserId, table.members, table.owner]);
 
   React.useEffect(() => {
     if (rowsState.length === 0) {

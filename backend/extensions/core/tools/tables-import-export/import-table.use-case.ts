@@ -4,11 +4,13 @@ import slugify from 'slugify';
 
 import { left, right } from '@application/core/either.core';
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
   E_MENU_ITEM_TYPE,
   FIELD_GROUP_NATIVE_LIST,
   FIELD_NATIVE_LIST,
   type IField,
+  type IFieldPermissions,
   type IGroupConfiguration,
   type ILayoutFields,
   type ITable,
@@ -47,9 +49,7 @@ type ExportedField = {
   multiple: boolean;
   format: string | null;
   showInFilter: boolean;
-  showInForm: boolean;
-  showInDetail: boolean;
-  showInList: boolean;
+  permissions?: IFieldPermissions | null;
   widthInForm: number | null;
   widthInList: number | null;
   widthInDetail: number | null;
@@ -76,8 +76,6 @@ type ExportedStructure = {
   slug: string;
   description: string | null;
   style: string;
-  visibility: string;
-  collaboration: string;
   fields: ExportedField[];
   groups: ExportedGroup[];
   fieldOrderList: string[];
@@ -839,9 +837,7 @@ export default class ImportTableUseCase {
           multiple: false,
           format: null,
           showInFilter: false,
-          showInForm: true,
-          showInDetail: true,
-          showInList: true,
+          permissions: buildFieldPermissions(true, true, true),
           widthInForm: null,
           widthInList: null,
           widthInDetail: null,
@@ -1137,9 +1133,7 @@ export default class ImportTableUseCase {
         required: false,
         multiple: false,
         format: null,
-        showInList: true,
-        showInForm: true,
-        showInDetail: true,
+        permissions: buildFieldPermissions(true, true, true),
         showInFilter: false,
         widthInForm: null,
         widthInList: null,
@@ -1208,10 +1202,8 @@ export default class ImportTableUseCase {
       logo: null,
       fields: fieldsIds,
       style: structure.style as TableCreatePayload['style'],
-      visibility: structure.visibility as TableCreatePayload['visibility'],
-      collaboration:
-        structure.collaboration as TableCreatePayload['collaboration'],
-      administrators: [],
+      permissions: null,
+      members: [],
       owner: ownerId,
       fieldOrderList: resolveOrder(structure.fieldOrderList),
       fieldOrderForm: resolveOrder(structure.fieldOrderForm),
@@ -1277,9 +1269,8 @@ export default class ImportTableUseCase {
       required: exported.required,
       multiple: exported.multiple,
       format: exported.format as IField['format'],
-      showInList: exported.showInList,
-      showInForm: exported.showInForm,
-      showInDetail: exported.showInDetail,
+      permissions:
+        exported.permissions ?? buildFieldPermissions(true, true, true),
       showInFilter: exported.showInFilter,
       widthInForm: exported.widthInForm,
       widthInList: exported.widthInList,

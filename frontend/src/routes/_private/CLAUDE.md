@@ -10,7 +10,7 @@ rotas filhas herdam a protecao de autenticacao definida no `beforeLoad`.
 - Se falhar, limpa o store e redireciona para `/` (login)
 - Excecao: rotas de visualizacao publica de tabela (`/tables/:slug` e
   `/tables/:slug/row/:id`) sao liberadas mesmo sem autenticacao -- o backend
-  controla por `visibility`
+  controla pelos bindings de `table.permissions` (acao com binding PUBLIC)
 
 ## Componente (PrivateLayout)
 

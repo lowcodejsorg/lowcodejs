@@ -33,8 +33,8 @@ Formulario para criacao de novo campo em uma tabela.
 - `category`: array de TreeNode (para tipo CATEGORY)
 - `permissions`: visibilidade por contexto `{ list, form, detail }`, cada um um
   binding (Grupo/Publico/Ninguem) — novo modelo
-- Flags `multiple`, `required` e os legados `showInFilter`, `showInForm`,
-  `showInDetail`, `showInList` (mantidos para compat/fallback)
+- Flags `multiple`, `required` e `showInFilter` (controla apenas a sidebar de
+  filtros — nao e permissao)
 - `widthInForm`, `widthInList`: numeros para largura
 
 ## Fluxo

@@ -1,19 +1,16 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import {
-  E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
-  E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
-} from '@application/core/entity.core';
+import { E_FIELD_TYPE, E_TABLE_STYLE } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
 import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
 import TableCreateUseCase from './create.use-case';
 
 let fieldInMemoryRepository: FieldInMemoryRepository;
 let tableInMemoryRepository: TableInMemoryRepository;
+let userGroupInMemoryRepository: UserGroupInMemoryRepository;
 let schemaBuilder: InMemorySchemaBuilder;
 let sut: TableCreateUseCase;
 
@@ -21,11 +18,13 @@ describe('Table Create Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    userGroupInMemoryRepository = new UserGroupInMemoryRepository();
     schemaBuilder = new InMemorySchemaBuilder();
 
     sut = new TableCreateUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      userGroupInMemoryRepository,
       schemaBuilder,
     );
   });
@@ -113,10 +112,7 @@ describe('Table Create Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });

@@ -66,10 +66,8 @@ export const FieldFormatSchema = z
   .enum(E_FIELD_FORMAT)
   .nullable()
   .default(null);
+// Exibe o campo na barra de filtros (config de UX, nao e permissao).
 export const FieldShowInFilterSchema = z.boolean().default(false);
-export const FieldShowInFormSchema = z.boolean().default(false);
-export const FieldShowInDetailSchema = z.boolean().default(false);
-export const FieldShowInListSchema = z.boolean().default(false);
 export const FieldWidthInFormSchema = z.number().min(0).nullable().default(50);
 export const FieldWidthInListSchema = z.number().min(0).nullable().default(10);
 export const FieldWidthInDetailSchema = z
@@ -190,9 +188,6 @@ export const TableFieldBaseSchema = z.object({
   multiple: FieldMultipleSchema,
   format: FieldFormatSchema,
   showInFilter: FieldShowInFilterSchema,
-  showInForm: FieldShowInFormSchema,
-  showInDetail: FieldShowInDetailSchema,
-  showInList: FieldShowInListSchema,
   permissions: FieldPermissionsSchema,
   widthInForm: FieldWidthInFormSchema,
   widthInList: FieldWidthInListSchema,

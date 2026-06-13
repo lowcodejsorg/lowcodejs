@@ -29,8 +29,6 @@ const FIELDS: CsvField[] = [
   { label: 'Slug', value: 'slug' },
   { label: 'Tipo', value: 'type' },
   { label: 'Estilo', value: 'style' },
-  { label: 'Visibilidade', value: 'visibility' },
-  { label: 'Colaboração', value: 'collaboration' },
   { label: 'Proprietário', value: 'owner' },
   { label: 'Lixeira', value: 'trashed' },
   { label: 'Criado em', value: 'createdAt' },
@@ -50,8 +48,6 @@ function toCsvRow(table: ITable): Record<string, unknown> {
     slug: table.slug ?? '',
     type: table.type ?? '',
     style: table.style ?? '',
-    visibility: table.visibility ?? '',
-    collaboration: table.collaboration ?? '',
     owner: ownerName(table.owner),
     trashed: table.trashed ? 'true' : 'false',
     createdAt: table.createdAt ? new Date(table.createdAt).toISOString() : '',
@@ -72,15 +68,12 @@ export default class TableExportCsvUseCase {
       if (payload['order-link']) sort.slug = payload['order-link'];
       if (payload['order-created-at'])
         sort.createdAt = payload['order-created-at'];
-      if (payload['order-visibility'])
-        sort.visibility = payload['order-visibility'];
       if (payload['order-owner']) sort['owner.name'] = payload['order-owner'];
 
       const filter: TableQueryPayload = {
         search: payload.search ?? payload.name,
         type: E_TABLE_TYPE.TABLE,
         trashed,
-        visibility: payload.visibility,
       };
       if (payload.owner) filter.owner = [payload.owner];
 

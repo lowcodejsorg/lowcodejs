@@ -154,6 +154,74 @@ export async function createAuthenticatedUser(
   };
 }
 
+interface GroupUserOptions {
+  groupSlug: string;
+  groupName: string;
+  permissionSlugs: string[];
+  email?: string;
+  password?: string;
+  name?: string;
+}
+
+// Cria um usuario autenticado num grupo nao-MASTER com um conjunto explicito de
+// permissoes. Usado pelos testes de NEGACAO (403): o slug do grupo deriva o
+// `role` no JWT (jwt.util: group.slug.toUpperCase()), e `permissionSlugs` define
+// as capacidades no fecho. Permissoes sao upsertadas por slug para nao duplicar.
+export async function createAuthenticatedUserInGroup(
+  options: GroupUserOptions,
+): Promise<AuthenticatedUser> {
+  const password = options.password ?? 'password123';
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const permissionIds: string[] = [];
+  for (const slug of options.permissionSlugs) {
+    let permission = await Permission.findOne({ slug });
+    if (!permission) {
+      permission = await Permission.create({
+        name: slug,
+        slug,
+        description: slug,
+      });
+    }
+    permissionIds.push(permission._id.toString());
+  }
+
+  const group = await UserGroup.create({
+    name: options.groupName,
+    slug: options.groupSlug,
+    permissions: permissionIds,
+  });
+
+  const user = await User.create({
+    name: options.name ?? 'Restricted User',
+    email: options.email ?? `restricted-${Date.now()}@example.com`,
+    password: hashedPassword,
+    status: E_USER_STATUS.ACTIVE,
+    group: group._id,
+    groups: [group._id],
+  });
+
+  const response = await supertest(kernel.server)
+    .post('/authentication/sign-in')
+    .send({ email: user.email, password });
+
+  const cookies = normalizeSetCookie(response.headers['set-cookie']);
+
+  return {
+    user: { _id: user._id.toString(), email: user.email, name: user.name },
+    cookies,
+    permissions: permissionIds,
+  };
+}
+
+function normalizeSetCookie(
+  setCookie: string | string[] | undefined,
+): string[] {
+  if (Array.isArray(setCookie)) return setCookie;
+  if (setCookie) return [setCookie];
+  return [];
+}
+
 export async function cleanDatabase(): Promise<void> {
   await User.deleteMany({});
   await UserGroup.deleteMany({});

@@ -8,6 +8,31 @@ import type {
 
 export type FieldContext = 'list' | 'form' | 'detail';
 
+// Binding de visibilidade de campo a partir de uma flag (visível = PUBLIC,
+// oculto = NOBODY). Espelha o helper do backend.
+function fieldVisibilityBinding(visible: boolean): IPermissionBinding {
+  if (visible) return { kind: E_PERMISSION_TARGET.PUBLIC, group: null };
+  return { kind: E_PERMISSION_TARGET.NOBODY, group: null };
+}
+
+// Monta o mapa de permissões de campo por contexto (list/form/detail) a partir
+// de flags booleanas. Útil ao criar campos programaticamente no client.
+export function buildFieldPermissions(
+  list: boolean,
+  form: boolean,
+  detail: boolean,
+): {
+  list: IPermissionBinding;
+  form: IPermissionBinding;
+  detail: IPermissionBinding;
+} {
+  return {
+    list: fieldVisibilityBinding(list),
+    form: fieldVisibilityBinding(form),
+    detail: fieldVisibilityBinding(detail),
+  };
+}
+
 /**
  * Fecho transitivo dos grupos que o usuário satisfaz: grupo principal + grupos
  * adicionais + todos os englobados (`encompasses`). Espelha o resolver do
@@ -63,19 +88,26 @@ export function userSatisfiesBinding(
   return false;
 }
 
-// Fallback legado para campos ainda não migrados (binding ausente): usa o
-// boolean showIn* do contexto.
-function legacyFieldVisible(field: IField, context: FieldContext): boolean {
-  if (context === 'list') return field.showInList;
-  if (context === 'form') return field.showInForm;
-  return field.showInDetail;
+/**
+ * Presença de layout do campo num contexto, independente do usuário: o campo faz
+ * parte da lista/formulário/detalhe quando o binding NÃO é NOBODY (oculto para
+ * todos). Substitui os antigos booleans showInList/showInForm/showInDetail no
+ * código de renderização/layout. Sem binding = presente.
+ */
+export function isFieldShownInContext(
+  field: IField,
+  context: FieldContext,
+): boolean {
+  const binding = field.permissions?.[context];
+  if (!binding) return true;
+  return binding.kind !== E_PERMISSION_TARGET.NOBODY;
 }
 
 /**
  * Visibilidade de um campo num contexto (lista/formulário/detalhe) considerando
  * o binding por grupo. NOBODY = oculto para todos. PUBLIC = todos. GROUP =
  * membros do grupo; MASTER/ADMINISTRATOR (isPrivileged) também enxergam.
- * Sem binding, cai no comportamento legado showIn*.
+ * Sem binding (campo ainda não backfillado) = visível.
  */
 export function isFieldVisibleInContext(
   field: IField,
@@ -84,7 +116,7 @@ export function isFieldVisibleInContext(
   isPrivileged: boolean,
 ): boolean {
   const binding = field.permissions?.[context];
-  if (!binding) return legacyFieldVisible(field, context);
+  if (!binding) return true;
 
   if (binding.kind === E_PERMISSION_TARGET.NOBODY) return false;
   if (binding.kind === E_PERMISSION_TARGET.PUBLIC) return true;

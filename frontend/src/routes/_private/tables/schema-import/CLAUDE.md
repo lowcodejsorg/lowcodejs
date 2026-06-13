@@ -41,5 +41,4 @@ Editor YAML para criar várias tabelas de uma só vez. O usuário descreve um ar
 - Permissão: backend exige autenticação + `CREATE_TABLE`. Sem gating de UI; a
   rota assume usuário autorizado vindo de `/tables/new`
 - `-schema-reference.tsx` mantém a documentação dos tipos/formatos sincronizada
-  com os enums da plataforma (`E_FIELD_TYPE`, `E_TABLE_STYLE`,
-  `E_TABLE_VISIBILITY`)
+  com os enums da plataforma (`E_FIELD_TYPE`, `E_TABLE_STYLE`)

@@ -1,7 +1,6 @@
 /**
  * Campos de configuracao de tabela
  */
-export { TableCollaborationSelectField } from '@/components/common/dynamic-table/table-config/table-collaboration-select-field';
 export { TableComboboxField } from '@/components/common/dynamic-table/table-config/table-combobox-field';
 export { TableFieldCategoryDefaultValue } from '@/components/common/dynamic-table/table-config/table-field-category-default-value';
 export { TableFieldCategoryTree } from '@/components/common/dynamic-table/table-config/table-field-category-tree';
@@ -18,4 +17,3 @@ export { TableFieldTypeSelect } from '@/components/common/dynamic-table/table-co
 export { TableLayoutFieldSelect } from '@/components/common/dynamic-table/table-config/table-layout-field-select';
 export { TableOrderSelectField } from '@/components/common/dynamic-table/table-config/table-order-select-field';
 export { TableStyleSelectField } from '@/components/common/dynamic-table/table-config/table-style-select-field';
-export { TableVisibilitySelectField } from '@/components/common/dynamic-table/table-config/table-visibility-select-field';

@@ -4,7 +4,7 @@ export const TableUpdateSchema: FastifySchema = {
   tags: ['Tabelas'],
   summary: 'Atualizar tabela',
   description:
-    'Atualiza uma tabela existente: nome, estilo, visibilidade, colaboração, administradores, ordenação de campos e layout. Renomear o slug propaga para a coleção dinâmica e campos de relacionamento.',
+    'Atualiza uma tabela existente: nome, estilo, permissões (binding por ação), convidados, dono, ordenação de campos e layout. Renomear o slug propaga para a coleção dinâmica e campos de relacionamento.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -56,24 +56,6 @@ export const TableUpdateSchema: FastifySchema = {
         ],
         default: 'LIST',
         description: 'Estilo de exibição',
-      },
-      visibility: {
-        type: 'string',
-        enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-        default: 'PUBLIC',
-        description: 'Configuração de visibilidade',
-      },
-      collaboration: {
-        type: 'string',
-        enum: ['OPEN', 'RESTRICTED'],
-        default: 'OPEN',
-        description: 'Configuração de colaboração',
-      },
-      administrators: {
-        type: 'array',
-        items: { type: 'string' },
-        default: [],
-        description: 'Lista de IDs dos usuários administradores',
       },
       fieldOrderList: {
         type: 'array',
@@ -236,18 +218,6 @@ export const TableUpdateSchema: FastifySchema = {
                 nullable: true,
                 description: 'Validação de formato do campo',
               },
-              showInList: {
-                type: 'boolean',
-                description: 'Exibir nas listagens',
-              },
-              showInForm: {
-                type: 'boolean',
-                description: 'Exibir na visualização em formulário',
-              },
-              showInDetail: {
-                type: 'boolean',
-                description: 'Exibir na visualização de detalhes',
-              },
               showInFilter: {
                 type: 'boolean',
                 description: 'Permitir filtragem',
@@ -351,27 +321,6 @@ export const TableUpdateSchema: FastifySchema = {
             'GANTT',
           ],
           description: 'Estilo de exibição',
-        },
-        visibility: {
-          type: 'string',
-          enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-          description: 'Configuração de visibilidade',
-        },
-        collaboration: {
-          type: 'string',
-          enum: ['OPEN', 'RESTRICTED'],
-          description: 'Configuração de colaboração',
-        },
-        administrators: {
-          type: 'array',
-          description: 'Usuários administradores (populado)',
-          items: {
-            type: 'object',
-            properties: {
-              _id: { type: 'string', description: 'ID do usuário' },
-              name: { type: 'string', description: 'Nome do usuário' },
-            },
-          },
         },
         owner: {
           type: 'object',
@@ -488,9 +437,6 @@ export const TableUpdateSchema: FastifySchema = {
                     required: { type: 'boolean' },
                     multiple: { type: 'boolean' },
                     format: { type: 'string', nullable: true },
-                    showInList: { type: 'boolean' },
-                    showInForm: { type: 'boolean' },
-                    showInDetail: { type: 'boolean' },
                     showInFilter: { type: 'boolean' },
                     widthInForm: { type: 'number', nullable: true },
                     widthInList: { type: 'number', nullable: true },
@@ -593,22 +539,6 @@ export const TableUpdateSchema: FastifySchema = {
         },
       },
     },
-    400: {
-      description: 'Requisição inválida - Administradores inativos',
-      type: 'object',
-      properties: {
-        message: { type: 'string' },
-        code: { type: 'number', enum: [400] },
-        cause: {
-          type: 'string',
-          enum: ['INACTIVE_ADMINISTRATORS'],
-        },
-        errors: {
-          type: 'object',
-          additionalProperties: { type: 'string' },
-        },
-      },
-    },
     401: {
       description: 'Não autenticado - Autenticação necessária',
       type: 'object',
@@ -639,6 +569,7 @@ export const TableUpdateSchema: FastifySchema = {
             'PERMISSIONS_NOT_FOUND',
             'INSUFFICIENT_PERMISSIONS',
             'OWNER_OR_ADMIN_REQUIRED',
+            'OWNER_CHANGE_FORBIDDEN',
             'TABLE_PRIVATE',
           ],
         },

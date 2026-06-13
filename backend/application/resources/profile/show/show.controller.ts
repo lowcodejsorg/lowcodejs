@@ -45,6 +45,11 @@ export default class {
       });
     }
 
-    return response.status(200).send(toUserResponse(result.value));
+    const { capabilities, ...user } = result.value;
+
+    return response.status(200).send({
+      ...toUserResponse(user),
+      capabilities,
+    });
   }
 }

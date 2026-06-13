@@ -23,12 +23,10 @@ Select/Combobox + FieldError. As opcoes geralmente vem de constantes em
 | `table-field-relationship-order-select.tsx` | `TableFieldRelationshipOrderSelect` | Select de ordenacao (asc/desc) para relacionamento.                                                             |
 | `table-combobox-field.tsx`                  | `TableComboboxField`                | Combobox de tabela com tratamento de "nenhuma tabela" (Alert). Usa `useTablesReadPaginated`.                    |
 | `filtered-table-combobox-field.tsx`         | `FilteredTableComboboxField`        | Combobox de tabela filtrada por `allowedTableIds`. Busca tabelas via API com IDs filtrados.                     |
-| `table-collaboration-select-field.tsx`      | `TableCollaborationSelectField`     | Select de modo de colaboracao (open/restricted).                                                                |
-| `table-visibility-select-field.tsx`         | `TableVisibilitySelectField`        | Select de visibilidade (public/restricted/open/form/private).                                                   |
 | `table-style-select-field.tsx`              | `TableStyleSelectField`             | Select de estilo de visualizacao. Filtra estilos permitidos via `allowedStyles`.                                |
 | `table-layout-field-select.tsx`             | `TableLayoutFieldSelect`            | Select de campo para layout com opcao "Automatico". Usa `__auto__` como sentinela.                              |
 | `table-order-select-field.tsx`              | `TableOrderSelectField`             | Select generico de ordenacao com opcoes dinamicas.                                                              |
-| `index.ts`                                  | -                                   | Barrel export de todos os 15 componentes                                                                        |
+| `index.ts`                                  | -                                   | Barrel export de todos os componentes                                                                           |
 
 ## Dependencias internas
 

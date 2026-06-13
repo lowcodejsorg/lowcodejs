@@ -49,12 +49,6 @@ export const TablePaginatedSchema: FastifySchema = {
         description: 'Ordenar por data de criação (opcional)',
         examples: ['asc', 'desc'],
       },
-      'order-visibility': {
-        type: 'string',
-        enum: ['asc', 'desc'],
-        description: 'Ordenar por visibilidade (opcional)',
-        examples: ['asc', 'desc'],
-      },
       'order-owner': {
         type: 'string',
         enum: ['asc', 'desc'],
@@ -72,11 +66,6 @@ export const TablePaginatedSchema: FastifySchema = {
         type: 'string',
         description: 'Filtrar por nome exato da tabela (opcional)',
         examples: ['Users', 'Products'],
-      },
-      visibility: {
-        type: 'string',
-        description: 'Filtrar por visibilidade (opcional)',
-        examples: ['PUBLIC', 'PRIVATE', 'RESTRICTED', 'OPEN', 'FORM'],
       },
       owner: {
         type: 'string',
@@ -159,18 +148,6 @@ export const TablePaginatedSchema: FastifySchema = {
                       type: 'string',
                       nullable: true,
                       description: 'Validação de formato do campo',
-                    },
-                    showInList: {
-                      type: 'boolean',
-                      description: 'Exibir nas listagens',
-                    },
-                    showInForm: {
-                      type: 'boolean',
-                      description: 'Exibir na visualização em formulário',
-                    },
-                    showInDetail: {
-                      type: 'boolean',
-                      description: 'Exibir na visualização de detalhes',
                     },
                     showInFilter: {
                       type: 'boolean',
@@ -275,30 +252,6 @@ export const TablePaginatedSchema: FastifySchema = {
                 ],
                 description: 'Estilo de exibição',
               },
-              visibility: {
-                type: 'string',
-                enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-                description: 'Configuração de visibilidade',
-              },
-              collaboration: {
-                type: 'string',
-                enum: ['OPEN', 'RESTRICTED'],
-                description: 'Configuração de colaboração',
-              },
-              administrators: {
-                type: 'array',
-                description: 'Usuários administradores (populado)',
-                items: {
-                  type: 'object',
-                  properties: {
-                    _id: { type: 'string', description: 'ID do usuário' },
-                    name: {
-                      type: 'string',
-                      description: 'Nome do usuário',
-                    },
-                  },
-                },
-              },
               owner: {
                 type: 'object',
                 description: 'Proprietário da tabela (populado)',
@@ -387,9 +340,6 @@ export const TablePaginatedSchema: FastifySchema = {
                           required: { type: 'boolean' },
                           multiple: { type: 'boolean' },
                           format: { type: 'string', nullable: true },
-                          showInList: { type: 'boolean' },
-                          showInForm: { type: 'boolean' },
-                          showInDetail: { type: 'boolean' },
                           showInFilter: { type: 'boolean' },
                           widthInForm: { type: 'number', nullable: true },
                           widthInList: { type: 'number', nullable: true },

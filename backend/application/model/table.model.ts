@@ -2,11 +2,9 @@ import mongoose from 'mongoose';
 
 import {
   E_PERMISSION_TARGET,
-  E_TABLE_COLLABORATION,
   E_TABLE_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   Merge,
   type ITable as Core,
 } from '@application/core/entity.core';
@@ -140,29 +138,12 @@ export const Schema = new mongoose.Schema(
       enum: Object.values(E_TABLE_STYLE),
       default: E_TABLE_STYLE.LIST,
     },
-    visibility: {
-      type: String,
-      enum: Object.values(E_TABLE_VISIBILITY),
-      default: E_TABLE_VISIBILITY.RESTRICTED,
-    },
-    collaboration: {
-      type: String,
-      enum: Object.values(E_TABLE_COLLABORATION),
-      default: E_TABLE_COLLABORATION.RESTRICTED,
-    },
-    administrators: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    // Novo modelo de permissoes por acao. null em tabelas legadas (o enforcement
-    // cai no modelo de visibilidade enquanto nao migradas).
+    // Modelo de permissoes por acao (mapa das 10 acoes → binding).
     permissions: {
       type: TablePermissions,
       default: null,

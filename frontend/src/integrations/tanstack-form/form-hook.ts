@@ -30,7 +30,6 @@ import { FieldCodeEditor, FieldEditor } from './fields/rich';
 
 // Configuracao de tabela
 import {
-  TableCollaborationSelectField,
   TableComboboxField,
   TableFieldCategoryDefaultValue,
   TableFieldCategoryTree,
@@ -47,7 +46,6 @@ import {
   TableLayoutFieldSelect,
   TableOrderSelectField,
   TableStyleSelectField,
-  TableVisibilitySelectField,
 } from './fields/table-config';
 
 // Campos de input de dados de registros
@@ -93,8 +91,6 @@ export const { useAppForm, withForm } = createFormHook({
     FieldTableMultiSelect,
     // Table configuration
     TableComboboxField,
-    TableVisibilitySelectField,
-    TableCollaborationSelectField,
     TableLayoutFieldSelect,
     TableOrderSelectField,
     TableStyleSelectField,

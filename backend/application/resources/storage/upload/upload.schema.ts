@@ -17,16 +17,6 @@ export const StorageUploadSchema: FastifySchema = {
       },
     },
   },
-  body: {
-    type: 'object',
-    properties: {
-      file: {
-        type: 'string',
-        format: 'binary',
-        description: 'Arquivo(s) a enviar',
-      },
-    },
-  },
   response: {
     201: {
       description: 'Arquivos enviados com sucesso',

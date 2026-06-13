@@ -30,8 +30,6 @@ describe('E2E Clone Table Controller', () => {
         slug: 'tabela-original',
         type: 'TABLE',
         owner: user._id,
-        visibility: 'RESTRICTED',
-        collaboration: 'RESTRICTED',
         style: 'LIST',
         fieldOrderList: [],
         fieldOrderForm: [],

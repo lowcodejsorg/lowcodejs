@@ -4,6 +4,7 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
   type IField as Entity,
   type IField,
@@ -89,10 +90,7 @@ export default class TableFieldUpdateUseCase {
         const updatedField = await this.fieldRepository.update({
           _id: field._id,
           showInFilter: payload.showInFilter,
-          showInForm: payload.showInForm,
-          showInDetail: payload.showInDetail,
-          showInList: payload.showInList,
-          // Visibilidade por grupo também é permitida em campos nativos.
+          // Visibilidade por contexto (list/form/detail) por grupo.
           permissions: payload.permissions,
           widthInForm: payload.widthInForm,
           widthInList: payload.widthInList,
@@ -112,7 +110,6 @@ export default class TableFieldUpdateUseCase {
           fields: fields.flatMap((f) => f._id),
           groups,
           owner: table.owner._id,
-          administrators: table.administrators.flatMap((a) => a._id),
         });
 
         return right(updatedField);
@@ -200,10 +197,8 @@ export default class TableFieldUpdateUseCase {
         ...(payload.trashed && {
           trashed: payload.trashed,
           required: false,
-          showInList: false,
-          showInForm: false,
-          showInDetail: false,
           showInFilter: false,
+          permissions: buildFieldPermissions(false, false, false),
         }),
         ...(payload.trashedAt && { trashedAt: payload.trashedAt }),
       });
@@ -250,7 +245,6 @@ export default class TableFieldUpdateUseCase {
         fields: fields.flatMap((f) => f._id),
         groups,
         owner: table.owner._id,
-        administrators: table.administrators.flatMap((a) => a._id),
       });
 
       if (oldSlug !== slug) {

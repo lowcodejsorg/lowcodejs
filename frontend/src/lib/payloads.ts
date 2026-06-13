@@ -7,12 +7,10 @@ import type {
   E_PERMISSION_TARGET,
   E_REACTION_TYPE,
   E_ROLE,
-  E_TABLE_COLLABORATION,
   E_TABLE_PERMISSION,
   E_TABLE_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   E_USER_STATUS,
 } from './constant';
 import type { Merge, ValueOf } from './interfaces';
@@ -132,7 +130,6 @@ export type TableCreatePayload = {
   owner?: string;
   logo?: string | null;
   style?: ValueOf<typeof E_TABLE_STYLE>;
-  visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
 };
 
 export type TableMethodPayload = {
@@ -148,9 +145,6 @@ export type TableUpdatePayload = {
   description?: string | null;
   logo?: string | null;
   style?: ValueOf<typeof E_TABLE_STYLE>;
-  visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
-  collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
-  administrators?: Array<string>;
   permissions?: Partial<
     Record<
       ValueOf<typeof E_TABLE_PERMISSION>,
@@ -192,9 +186,6 @@ export type FieldConfigurationPayload = {
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
   showInFilter?: boolean;
-  showInForm?: boolean;
-  showInDetail?: boolean;
-  showInList?: boolean;
   permissions?: {
     list: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
     form: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
@@ -227,9 +218,6 @@ export type FieldCreatePayload = {
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
   showInFilter?: boolean;
-  showInForm?: boolean;
-  showInDetail?: boolean;
-  showInList?: boolean;
   permissions?: {
     list: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
     form: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
@@ -263,9 +251,6 @@ export type FieldUpdatePayload = {
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
   showInFilter?: boolean;
-  showInForm?: boolean;
-  showInDetail?: boolean;
-  showInList?: boolean;
   permissions?: {
     list: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
     form: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };

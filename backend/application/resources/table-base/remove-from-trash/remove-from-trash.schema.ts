@@ -90,18 +90,6 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                 enum: ['email', 'phone', 'url', 'color', 'password'],
                 description: 'Validação de formato do campo',
               },
-              showInList: {
-                type: 'boolean',
-                description: 'Exibir nas listagens',
-              },
-              showInForm: {
-                type: 'boolean',
-                description: 'Exibir na visualização em formulário',
-              },
-              showInDetail: {
-                type: 'boolean',
-                description: 'Exibir na visualização de detalhes',
-              },
               showInFilter: {
                 type: 'boolean',
                 description: 'Permitir filtragem',
@@ -220,27 +208,6 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
           type: 'string',
           enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
           description: 'Estilo de exibição',
-        },
-        visibility: {
-          type: 'string',
-          enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-          description: 'Configuração de visibilidade',
-        },
-        collaboration: {
-          type: 'string',
-          enum: ['OPEN', 'RESTRICTED'],
-          description: 'Configuração de colaboração',
-        },
-        administrators: {
-          type: 'array',
-          description: 'Usuários administradores (populado)',
-          items: {
-            type: 'object',
-            properties: {
-              _id: { type: 'string', description: 'ID do usuário' },
-              name: { type: 'string', description: 'Nome do usuário' },
-            },
-          },
         },
         owner: {
           type: 'object',

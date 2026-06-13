@@ -62,6 +62,7 @@ import type { CatNode } from '@/lib/document-helpers';
 import { buildLabelMap } from '@/lib/document-helpers';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField } from '@/lib/interfaces';
+import { isFieldShownInContext } from '@/lib/permission';
 import { cn } from '@/lib/utils';
 
 export function DocumentSidebar({
@@ -222,9 +223,9 @@ export function DocumentSidebar({
         required: categoryField.required,
         multiple: categoryField.multiple,
         showInFilter: categoryField.showInFilter,
-        showInForm: categoryField.showInForm,
-        showInDetail: categoryField.showInDetail,
-        showInList: categoryField.showInList,
+        showInForm: isFieldShownInContext(categoryField, 'form'),
+        showInDetail: isFieldShownInContext(categoryField, 'detail'),
+        showInList: isFieldShownInContext(categoryField, 'list'),
         format: categoryField.format,
         defaultValue: categoryField.defaultValue,
         dropdown: categoryField.dropdown,

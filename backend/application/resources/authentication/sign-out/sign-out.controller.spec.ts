@@ -26,7 +26,7 @@ describe('E2E Sign Out Controller', () => {
         .set('Cookie', cookies);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.message).toBe('Successfully signed out');
+      expect(response.body.message).toBe('Logout realizado com sucesso');
 
       const responseCookies = Array.from<string>(
         response.headers['set-cookie'],

@@ -1,11 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
   type IField,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
@@ -26,9 +25,7 @@ let sut: TableFieldUpdateUseCase;
 const FIELD_DEFAULTS = {
   slug: 'data-evento',
   type: E_FIELD_TYPE.DATE,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
+  permissions: buildFieldPermissions(true, true, true),
   showInFilter: false,
   locked: false,
   allowCreateRelationshipRecords: false,
@@ -64,10 +61,7 @@ async function createFieldAndTable(
     _schema: {},
     fields: [field._id],
     owner: 'owner-id',
-    administrators: [],
     style: E_TABLE_STYLE.LIST,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-    collaboration: E_TABLE_COLLABORATION.RESTRICTED,
     fieldOrderList: [],
     fieldOrderForm: [],
   });
@@ -99,9 +93,7 @@ function buildUpdatePayload(
     trashedAt: null,
     locked: false,
     allowCreateRelationshipRecords: false,
-    showInList: field.showInList,
-    showInForm: field.showInForm,
-    showInDetail: field.showInDetail,
+    permissions: field.permissions,
     showInFilter: field.showInFilter,
     widthInForm: field.widthInForm,
     widthInList: field.widthInList,

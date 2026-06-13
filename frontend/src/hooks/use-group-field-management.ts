@@ -12,7 +12,46 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useGroupFieldUpdate } from '@/hooks/tanstack-query/use-group-field-update';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
+import { E_PERMISSION_TARGET } from '@/lib/constant';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
+import type { FieldContext } from '@/lib/permission';
+
+// Chave do toggle -> contexto do binding. `showInFilter` não é permissão.
+const CONTEXT_BY_VISIBILITY_KEY: Partial<Record<VisibilityKey, FieldContext>> =
+  {
+    showInList: 'list',
+    showInForm: 'form',
+    showInDetail: 'detail',
+  };
+
+// Traduz o toggle mostrar/ocultar para o override do payload: `showInFilter`
+// booleano; list/form/detail viram binding PUBLIC/NOBODY em `permissions`.
+function buildVisibilityOverride(
+  field: IField,
+  visibilityKey: VisibilityKey,
+  newValue: boolean,
+): Partial<IField> {
+  if (visibilityKey === 'showInFilter') {
+    return { showInFilter: newValue };
+  }
+
+  const context = CONTEXT_BY_VISIBILITY_KEY[visibilityKey];
+  if (!context) return {};
+
+  const publicBinding = { kind: E_PERMISSION_TARGET.PUBLIC, group: null };
+  const nobodyBinding = { kind: E_PERMISSION_TARGET.NOBODY, group: null };
+
+  const base = field.permissions ?? {
+    list: publicBinding,
+    form: publicBinding,
+    detail: publicBinding,
+  };
+
+  let nextBinding = nobodyBinding;
+  if (newValue) nextBinding = publicBinding;
+
+  return { permissions: { ...base, [context]: nextBinding } };
+}
 
 function buildGroupFieldPayload(
   field: IField,
@@ -49,9 +88,7 @@ function buildGroupFieldPayload(
     required: field.required,
     multiple: field.multiple,
     showInFilter: field.showInFilter,
-    showInForm: field.showInForm,
-    showInDetail: field.showInDetail,
-    showInList: field.showInList,
+    permissions: field.permissions ?? null,
     widthInForm: field.widthInForm ?? 50,
     widthInList: field.widthInList ?? 10,
     widthInDetail: field.widthInDetail ?? 50,
@@ -198,9 +235,12 @@ export function useGroupFieldManagement(
       tableSlug,
       groupSlug,
       fieldId: field._id,
-      data: buildGroupFieldPayload(field, groupSlug, targetGroup?._id, {
-        [visibilityKey]: newValue,
-      }),
+      data: buildGroupFieldPayload(
+        field,
+        groupSlug,
+        targetGroup?._id,
+        buildVisibilityOverride(field, visibilityKey, newValue),
+      ),
     });
   }
 
@@ -245,14 +285,11 @@ export function useGroupFieldManagement(
       name: table.name,
       description: table.description,
       logo: table.logo?._id ?? null,
-      visibility: table.visibility,
       style: table.style,
-      collaboration: table.collaboration,
       fieldOrderList: table.fieldOrderList,
       fieldOrderForm: table.fieldOrderForm,
       fieldOrderFilter: table.fieldOrderFilter,
       fieldOrderDetail: table.fieldOrderDetail,
-      administrators: table.administrators.flatMap((admin) => admin._id),
       groups: updatedGroups,
       fields: table.fields.flatMap((f) => f._id),
       methods: {

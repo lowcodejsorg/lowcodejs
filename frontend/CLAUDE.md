@@ -255,7 +255,11 @@ usuario (incluindo o fecho `encompasses[]`) a cada request.
   controlam tabela (`table.permissions`), visibilidade de campo
   (`field.permissions.{list,form,detail}`) e menu (`menu.visibility`).
 - **Membros da tabela** (`table.members[]` com perfis owner/admin/editor/
-  contributor/viewer) substituem `administrators[]`.
+  contributor/viewer). Nao existe mais `administrators[]`.
+
+O modelo legado (`table.visibility`/`collaboration`/`administrators`,
+`field.showInList/showInForm/showInDetail`) foi removido — nao ha fallback. O
+backend e a fonte de verdade do enforcement.
 
 Implementado em:
 
@@ -264,18 +268,8 @@ Implementado em:
   `canAccessRoute(...)`
 - `lib/menu/menu.ts`: monta os menus before/after a partir das capacidades
 - `hooks/use-table-permission.ts`: verifica permissoes granulares
-  (VIEW/CREATE/UPDATE/REMOVE para TABLE/FIELD/ROW)
-
-Visibilidade de tabela (modelo **legado/fallback**, para visitantes nao
-autenticados em tabelas ainda nao migradas para `table.permissions`):
-
-| Visibilidade | Comportamento                |
-| ------------ | ---------------------------- |
-| PUBLIC       | Visualizacao liberada        |
-| FORM         | Criacao de registro liberada |
-| OPEN         | VIEW + CREATE_ROW            |
-| RESTRICTED   | VIEW only                    |
-| PRIVATE      | Bloqueado                    |
+  (VIEW/CREATE/UPDATE/REMOVE para TABLE/FIELD/ROW) avaliando os bindings de
+  `table.permissions` + perfil de membro + dono (binding-aware)
 
 ## Formularios
 
@@ -301,12 +295,12 @@ impactar bundle inicial.
 
 ## Tipos e Interfaces
 
-| Arquivo             | Conteudo                                                                                                                                                                                                |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `lib/constant.ts`   | Enums: E_FIELD_TYPE (14 tipos), E_FIELD_FORMAT (15 formatos), E_ROLE (4), E_TABLE_TYPE (2), E_TABLE_STYLE (9 visualizacoes), E_TABLE_VISIBILITY (5), E_TABLE_COLLABORATION (2), E_TABLE_PERMISSION (12) |
-| `lib/interfaces.ts` | Tipos: IUser, ITable, IField, IRow, IMenu, IPermission, ISetting, Meta (paginacao), etc.                                                                                                                |
-| `lib/schemas.ts`    | Zod schemas compartilhados entre formularios                                                                                                                                                            |
-| `lib/payloads.ts`   | DTOs tipados para requisicoes API                                                                                                                                                                       |
+| Arquivo             | Conteudo                                                                                                                                                                                                                                                                                |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/constant.ts`   | Enums: E*FIELD_TYPE (14 tipos), E_FIELD_FORMAT (15 formatos), E_ROLE (4), E_TABLE_TYPE (2), E_TABLE_STYLE (9 visualizacoes), E_TABLE_PERMISSION (12), E_PERMISSION_TARGET (PUBLIC/NOBODY/GROUP), E_TABLE_PROFILE (owner/admin/editor/contributor/viewer), E_AREA_CAPABILITY (MANAGE*\*) |
+| `lib/interfaces.ts` | Tipos: IUser, ITable, IField, IRow, IMenu, IPermission, ISetting, Meta (paginacao), etc.                                                                                                                                                                                                |
+| `lib/schemas.ts`    | Zod schemas compartilhados entre formularios                                                                                                                                                                                                                                            |
+| `lib/payloads.ts`   | DTOs tipados para requisicoes API                                                                                                                                                                                                                                                       |
 
 ## Build & Deploy
 

@@ -46,19 +46,15 @@ Verifica acesso a tabela. Faz parsing do request e delega ao
 4. Verificacao completa via `checkTableAccess`, baseada em:
    - Role do usuario (MASTER bypassa tudo, ADMINISTRATOR tem acesso total)
    - Dono da tabela (`table.owner` ou membro com perfil OWNER)
-   - **Novo modelo** (tabela migrada): perfil de membro (`table.members` +
-     `TABLE_PROFILE_MATRIX`) + binding por acao (`table.permissions`,
-     PUBLIC/NOBODY/GROUP)
-   - **Fallback legado** (`table.permissions == null`): administrators +
-     visibilidade (PUBLIC, FORM, OPEN, RESTRICTED, PRIVATE) + capacidade de grupo
+   - Perfil de membro (`table.members` + `TABLE_PROFILE_MATRIX`) + binding por
+     acao (`table.permissions`, PUBLIC/NOBODY/GROUP). Nao ha fallback legado.
 5. Popula `request.ownership` (inclui `ownOnly` quando o perfil so permite as
    proprias rows — ex: contributor)
 
 **Parametro `requiredPermission`:** string do `E_TABLE_PERMISSION`
 
 **Excecoes de acesso para visitantes:**
-- Novo modelo: acao com binding PUBLIC
-- Legado: tabelas PUBLIC (GET view) e FORM (POST create) sem auth
+- Acao com binding PUBLIC
 
 **Uso:**
 ```typescript

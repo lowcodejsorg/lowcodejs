@@ -7,7 +7,6 @@ import {
   E_ROLE,
   E_TABLE_PERMISSION,
   E_TABLE_PROFILE,
-  E_TABLE_VISIBILITY,
   E_USER_STATUS,
   TABLE_PROFILE_MATRIX,
   type ITable,
@@ -22,18 +21,6 @@ import type {
   AccessCheckResult,
 } from './permission-contract.service';
 import { PermissionContractService } from './permission-contract.service';
-
-const VIEW_PERMISSIONS = ['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'];
-
-const OWNER_ONLY_ACTIONS = [
-  E_TABLE_PERMISSION.CREATE_FIELD,
-  E_TABLE_PERMISSION.UPDATE_FIELD,
-  E_TABLE_PERMISSION.REMOVE_FIELD,
-  E_TABLE_PERMISSION.UPDATE_TABLE,
-  E_TABLE_PERMISSION.REMOVE_TABLE,
-  E_TABLE_PERMISSION.UPDATE_ROW,
-  E_TABLE_PERMISSION.REMOVE_ROW,
-].map((p) => p.toString());
 
 @Service()
 export default class PermissionService implements PermissionContractService {
@@ -76,33 +63,12 @@ export default class PermissionService implements PermissionContractService {
   }
 
   isPublicAccess(input: AccessCheckInput): boolean {
-    const { table, requiredPermission, httpMethod } = input;
-    if (!table) return false;
+    const { table, requiredPermission } = input;
+    if (!table?.permissions) return false;
 
-    // Novo modelo: a acao e publica quando seu binding aponta para PUBLIC.
-    if (table.permissions) {
-      const binding = table.permissions[requiredPermission];
-      return binding?.kind === E_PERMISSION_TARGET.PUBLIC;
-    }
-
-    // Modelo legado (tabela ainda nao migrada): visibilidade PUBLIC/FORM.
-    if (
-      table.visibility === E_TABLE_VISIBILITY.PUBLIC &&
-      httpMethod === 'GET' &&
-      VIEW_PERMISSIONS.includes(requiredPermission)
-    ) {
-      return true;
-    }
-
-    if (
-      table.visibility === E_TABLE_VISIBILITY.FORM &&
-      httpMethod === 'POST' &&
-      requiredPermission === 'CREATE_ROW'
-    ) {
-      return true;
-    }
-
-    return false;
+    // A acao e publica quando seu binding aponta para PUBLIC.
+    const binding = table.permissions[requiredPermission];
+    return binding?.kind === E_PERMISSION_TARGET.PUBLIC;
   }
 
   async checkTableAccess(input: AccessCheckInput): Promise<AccessCheckResult> {
@@ -115,8 +81,6 @@ export default class PermissionService implements PermissionContractService {
         '[permission][401]',
         'table:',
         table?.slug,
-        'visibility:',
-        table?.visibility,
         'requiredPermission:',
         requiredPermission,
         'hasUser:',
@@ -167,19 +131,7 @@ export default class PermissionService implements PermissionContractService {
       };
     }
 
-    // Tabela legada (sem o novo mapa de permissoes): aplica o modelo antigo de
-    // administradores + visibilidade, garantindo que nada quebre antes da
-    // migracao.
-    if (!table.permissions) {
-      return this.checkLegacyAccess(
-        table,
-        userId,
-        user ?? null,
-        requiredPermission,
-      );
-    }
-
-    // Novo modelo: exige usuario ativo para qualquer acao alem das publicas.
+    // Exige usuario ativo para qualquer acao alem das publicas.
     await this.checkUserIsActive(user ?? null);
 
     const ownership = {
@@ -211,41 +163,6 @@ export default class PermissionService implements PermissionContractService {
   }
 
   /**
-   * Caminho legado: tabelas ainda nao migradas para o modelo de bindings. Usa
-   * administradores + regras de visibilidade + permissao de grupo.
-   */
-  private async checkLegacyAccess(
-    table: ITable,
-    userId: string,
-    user: IUser | null,
-    requiredPermission: ValueOf<typeof E_TABLE_PERMISSION>,
-  ): Promise<AccessCheckResult> {
-    const isTableAdmin = table.administrators?.some(
-      (a) => a?.toString() === userId,
-    );
-    const ownership = { isOwner: false, isAdministrator: !!isTableAdmin };
-
-    if (isTableAdmin) {
-      await this.checkUserIsActive(user);
-      return { allowed: true, ownership };
-    }
-
-    if (OWNER_ONLY_ACTIONS.includes(requiredPermission)) {
-      throw HTTPException.Forbidden(
-        'Apenas o proprietário ou administradores podem realizar esta ação',
-        'OWNER_OR_ADMIN_REQUIRED',
-      );
-    }
-
-    const visibility = table.visibility || E_TABLE_VISIBILITY.RESTRICTED;
-    this.checkVisibilityRules(visibility, requiredPermission);
-
-    await this.checkUserHasPermission(user, requiredPermission);
-
-    return { allowed: true, ownership };
-  }
-
-  /**
    * Avalia o binding de uma acao: PUBLIC libera todos; GROUP libera se o grupo
    * estiver no fecho do usuario; NOBODY nega.
    */
@@ -266,37 +183,5 @@ export default class PermissionService implements PermissionContractService {
     }
 
     return false;
-  }
-
-  private checkVisibilityRules(
-    visibility: string,
-    requiredPermission: string,
-  ): void {
-    switch (visibility) {
-      case E_TABLE_VISIBILITY.PRIVATE:
-        throw HTTPException.Forbidden('Esta tabela é privada', 'TABLE_PRIVATE');
-
-      case E_TABLE_VISIBILITY.RESTRICTED:
-        if (requiredPermission === 'CREATE_ROW') {
-          throw HTTPException.Forbidden(
-            'Apenas proprietário/administradores podem criar registros em tabelas restritas',
-            'RESTRICTED_CREATE',
-          );
-        }
-        break;
-
-      case E_TABLE_VISIBILITY.FORM:
-        if (VIEW_PERMISSIONS.includes(requiredPermission)) {
-          throw HTTPException.Forbidden(
-            'Apenas proprietário/administradores podem visualizar tabelas de formulário',
-            'FORM_VIEW_RESTRICTED',
-          );
-        }
-        break;
-
-      case E_TABLE_VISIBILITY.OPEN:
-      case E_TABLE_VISIBILITY.PUBLIC:
-        break;
-    }
   }
 }

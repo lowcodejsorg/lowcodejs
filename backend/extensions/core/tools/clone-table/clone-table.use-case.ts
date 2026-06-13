@@ -4,6 +4,7 @@ import slugify from 'slugify';
 
 import { left, right } from '@application/core/either.core';
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
   FIELD_NATIVE_LIST,
   type IField,
@@ -256,9 +257,8 @@ export default class CloneTableUseCase {
       logo: baseTable.logo?._id ?? null,
       fields: [...nativeFieldIds, ...newFieldIds],
       style: baseTable.style,
-      visibility: baseTable.visibility,
-      collaboration: baseTable.collaboration,
-      administrators: baseTable.administrators.flatMap((a) => a._id),
+      permissions: baseTable.permissions,
+      members: baseTable.members,
       owner: ownerId,
       fieldOrderList: orderList,
       fieldOrderForm: orderForm,
@@ -356,9 +356,8 @@ export default class CloneTableUseCase {
         required: field.required,
         multiple: field.multiple,
         format: field.format,
-        showInList: field.showInList,
-        showInForm: field.showInForm,
-        showInDetail: field.showInDetail,
+        permissions:
+          field.permissions ?? buildFieldPermissions(true, true, true),
         showInFilter: field.showInFilter,
         defaultValue: field.defaultValue,
         locked: field.locked,
@@ -784,9 +783,8 @@ export default class CloneTableUseCase {
           required: field.required,
           multiple: field.multiple,
           format: field.format,
-          showInList: field.showInList,
-          showInForm: field.showInForm,
-          showInDetail: field.showInDetail,
+          permissions:
+            field.permissions ?? buildFieldPermissions(true, true, true),
           showInFilter: field.showInFilter,
           defaultValue: field.defaultValue,
           locked: field.locked,

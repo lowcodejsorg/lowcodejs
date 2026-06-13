@@ -30,8 +30,6 @@ export default class TablePaginatedUseCase {
       if (payload['order-link']) sort.slug = payload['order-link'];
       if (payload['order-created-at'])
         sort.createdAt = payload['order-created-at'];
-      if (payload['order-visibility'])
-        sort.visibility = payload['order-visibility'];
       if (payload['order-owner']) sort['owner.name'] = payload['order-owner'];
 
       const tables = await this.tableRepository.findMany({
@@ -41,7 +39,6 @@ export default class TablePaginatedUseCase {
         type: E_TABLE_TYPE.TABLE,
         trashed,
         owner: payload.owner,
-        visibility: payload.visibility,
         sort,
       });
 
@@ -50,7 +47,6 @@ export default class TablePaginatedUseCase {
         type: E_TABLE_TYPE.TABLE,
         trashed,
         owner: payload.owner,
-        visibility: payload.visibility,
       });
 
       const lastPage = Math.ceil(total / payload.perPage);

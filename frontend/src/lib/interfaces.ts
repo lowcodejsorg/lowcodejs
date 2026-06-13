@@ -27,12 +27,10 @@ import type {
   E_REACTION_TYPE,
   E_ROLE,
   E_ROW_STATUS,
-  E_TABLE_COLLABORATION,
   E_TABLE_PERMISSION,
   E_TABLE_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   E_TOKEN_STATUS,
   E_USER_STATUS,
 } from './constant';
@@ -113,6 +111,9 @@ export type IUser = Merge<
     group: IGroup;
     // Grupos adicionais do usuario (multi-grupo).
     groups: Array<IGroup>;
+    // Capacidades de area resolvidas pelo backend (fecho de grupos): slugs de
+    // permissao (MANAGE_*) usados para liberar a navegacao por capability.
+    capabilities?: Array<string>;
     notificationsEnabled: boolean;
   }
 >;
@@ -243,12 +244,10 @@ export type IField = Merge<
     required: boolean;
     multiple: boolean;
     format: ValueOf<typeof E_FIELD_FORMAT> | null;
+    // Exibe o campo na barra de filtros (config de UX, não é permissão).
     showInFilter: boolean;
-    showInForm: boolean;
-    showInDetail: boolean;
-    showInList: boolean;
-    // Visibilidade do campo por contexto (Grupo|Public|Nobody). null em campos
-    // legados ainda não migrados.
+    // Visibilidade do campo por contexto (Grupo|Public|Nobody). null apenas em
+    // documentos ainda não backfillados.
     permissions?: {
       list: IPermissionBinding;
       form: IPermissionBinding;
@@ -342,12 +341,9 @@ export type ITable = Merge<
     fields: Array<IField>;
     type: ValueOf<typeof E_TABLE_TYPE>;
     style: ValueOf<typeof E_TABLE_STYLE>;
-    visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
-    collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
-    administrators: Array<IUser>;
     owner: IUser;
-    // Novo modelo: cada ação aponta para um binding (Grupo|Public|Nobody).
-    // null em tabelas legadas ainda não migradas.
+    // Cada ação aponta para um binding (Grupo|Public|Nobody). null apenas em
+    // documentos ainda não backfillados.
     permissions: ITablePermissions | null;
     // Convidados da tabela e seus perfis.
     members: Array<ITableMember>;

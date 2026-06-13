@@ -28,7 +28,7 @@ import { useChatSidebar } from '@/hooks/use-chat-sidebar';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useToolbarPortal } from '@/hooks/use-toolbar-portal';
-import { E_FIELD_TYPE, E_ROLE, TABLE_VISIBILITY_OPTIONS } from '@/lib/constant';
+import { E_FIELD_TYPE, E_ROLE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
 import { useAuthStore } from '@/stores/authentication';
@@ -72,17 +72,6 @@ function RouteComponent(): React.JSX.Element {
       name: 'Nome',
       type: E_FIELD_TYPE.TEXT_SHORT,
       multiple: false,
-    },
-    {
-      slug: 'visibility',
-      name: 'Visibilidade',
-      type: E_FIELD_TYPE.DROPDOWN,
-      multiple: true,
-      dropdown: TABLE_VISIBILITY_OPTIONS.map((o) => ({
-        id: o.value,
-        label: o.label,
-        color: null,
-      })),
     },
     {
       slug: 'owner',

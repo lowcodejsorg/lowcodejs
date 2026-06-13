@@ -24,6 +24,10 @@ mecanismo de marcadores no documento Setting singleton.
 | 06 | `06-relationship-table-id.sh` | `migrate-relationship-table-id.ts` | Backfilla `relationship.table._id` em Fields `RELATIONSHIP` sem `_id`, tornando refs slug-independentes. Marker `MIGRATION_RELATIONSHIP_TABLE_ID_AT` |
 | 07 | `07-row-status-trashed.sh` | `migrate-row-status-trashed.ts` | Backfilla `status`/`draftAt` e remove o boolean `trashed` das rows e itens de grupo; lixeira passa a ser só `trashedAt`. Marker `MIGRATION_ROW_STATUS_TRASHED_AT` |
 | 08 | `08-backfill-row-slugs.sh` | `migrate-backfill-row-slugs.ts` | Gera `sharedRowSlug` para rows antigas de tabelas com `rowSlugFieldId`, habilitando a URL amigável retroativa. Marker `MIGRATION_ROW_SLUG_BACKFILL_AT` |
+| 09 | `09-table-permissions.sh` | `migrate-table-permissions.ts` | Backfill do mapa `permissions` (10 ações) + `members` a partir de `visibility`/`owner`/`administrators` legados. Marker `MIGRATION_TABLE_PERMISSIONS_AT` |
+| 10 | `10-field-permissions.sh` | `migrate-field-permissions.ts` | Backfill de `permissions.{list,form,detail}` a partir dos booleans legados `showInList/showInForm/showInDetail`. Não toca em `showInFilter`. Marker `MIGRATION_FIELD_PERMISSIONS_AT` |
+| 11 | `11-menu-visibility.sh` | `migrate-menu-visibility.ts` | Define `visibility=PUBLIC` (binding visível) nos menus sem o campo. Marker `MIGRATION_MENU_VISIBILITY_AT` |
+| 12 | `12-drop-legacy-permission-fields.sh` | `migrate-drop-legacy-permission-fields.ts` | `$unset` **permanente** dos campos legados (`visibility`/`collaboration`/`administrators` das tabelas; `showInList`/`showInForm`/`showInDetail` dos campos — **não** `showInFilter`). Roda depois de 09/10/11; como o dual-write foi removido, o drop é definitivo. Marker `MIGRATION_DROP_LEGACY_PERMISSION_FIELDS_AT` |
 
 ## Fluxo
 

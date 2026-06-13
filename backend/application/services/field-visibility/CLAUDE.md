@@ -25,9 +25,9 @@ campo oculto (form).
 ## Logica de `hiddenSlugs`
 
 1. **Privilegiado** (`userRole` MASTER/ADMINISTRATOR, `isOwner` ou `isAdministrator`) → nada oculto.
-2. **Campo nativo** (`field.native`) → nunca oculto (estrutural; a migracao tambem o preenche a partir dos showIn*).
+2. **Campo nativo** (`field.native`) → nunca oculto (estrutural).
 3. Para cada campo nao nativo, avalia `field.permissions[context]`:
-   - sem binding (legado) → cai no boolean `showInList`/`showInForm`/`showInDetail`
+   - sem binding → campo visivel (default)
    - `PUBLIC` → visivel; `NOBODY` → oculto; `GROUP` → visivel se o grupo estiver no fecho do usuario
 4. So resolve o fecho de grupos (`UserContractRepository.findById` + `GroupResolverContractService`) quando ha algum binding `GROUP` no contexto.
 

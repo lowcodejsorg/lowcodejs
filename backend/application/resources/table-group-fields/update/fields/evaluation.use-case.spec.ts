@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
@@ -23,10 +22,7 @@ const TABLE_DEFAULTS = {
   _schema: {},
   fields: [],
   owner: 'owner-id',
-  administrators: [],
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
   fieldOrderList: [],
   fieldOrderForm: [],
 };
@@ -35,9 +31,7 @@ const FIELD_CREATE_PAYLOAD = {
   name: 'Nota',
   slug: 'nota',
   type: E_FIELD_TYPE.EVALUATION,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
+  permissions: buildFieldPermissions(true, true, true),
   showInFilter: false,
   locked: false,
   allowCreateRelationshipRecords: false,
@@ -86,7 +80,7 @@ describe('Group Field Update - EVALUATION', () => {
     );
   });
 
-  it('deve mudar visibilidade showInDetail de true para false', async () => {
+  it('deve mudar visibilidade de detalhe de PUBLIC para NOBODY', async () => {
     const field = await fieldInMemoryRepository.create(FIELD_CREATE_PAYLOAD);
 
     await tableInMemoryRepository.create({
@@ -109,9 +103,7 @@ describe('Group Field Update - EVALUATION', () => {
       name: 'Nota',
       type: E_FIELD_TYPE.EVALUATION,
       required: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: false,
+      permissions: buildFieldPermissions(true, true, false),
       showInFilter: false,
       widthInForm: 50,
       widthInList: 10,
@@ -120,7 +112,7 @@ describe('Group Field Update - EVALUATION', () => {
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInDetail).toBe(false);
+    expect(result.value.permissions?.detail.kind).toBe('NOBODY');
     expect(result.value.type).toBe(E_FIELD_TYPE.EVALUATION);
   });
 });
