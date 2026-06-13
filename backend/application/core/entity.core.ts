@@ -416,6 +416,13 @@ export type IFieldConfigurationRelationship = {
   labelParts?: IRelationshipLabelPart[];
   /** Separador usado entre os `labelParts`. Default: " - ". */
   labelSeparator?: string;
+  /**
+   * Mostra a tabela interna de gestao deste lado na tela de detalhe. Controle
+   * de apresentacao independente de `multiple`. Default true.
+   */
+  visible?: boolean;
+  /** Back-pointer para a RelationshipDefinition que e a fonte de verdade. */
+  relationshipId?: string | null;
 };
 
 export type IFieldConfigurationGroup = {
@@ -460,6 +467,59 @@ export type IField = Merge<
     group: IFieldConfigurationGroup | null;
   }
 >;
+
+// Comportamento ao excluir um registro que participa de um relacionamento.
+// Semantica de delete cascade do relacional (ver spec §9).
+export const E_RELATIONSHIP_ON_DELETE = {
+  CASCADE: 'CASCADE',
+  SET_NULL: 'SET_NULL',
+  RESTRICT: 'RESTRICT',
+} as const;
+
+// Um lado do relacionamento. O campo `RELATIONSHIP` daquele lado e a fonte de
+// "aceita multiplos" (field.multiple) e "obrigatorio" (field.required); aqui
+// guardamos apenas o que e exclusivo do endpoint: visibilidade e rotulo.
+export type IRelationshipEndpoint = {
+  table: Pick<ITable, '_id' | 'slug'>;
+  field: Pick<IField, '_id' | 'slug'>;
+  // Mostra a tabela interna de gestao neste lado (apresentacao/interacao).
+  visible: boolean;
+  // Rotulo exibido na UI deste lado (independente do outro).
+  label: string;
+};
+
+// Fonte de verdade do vinculo entre duas tabelas, independente delas.
+export type IRelationshipDefinition = Merge<
+  Base,
+  {
+    // Rotulo administrativo; default derivado dos dois lados ("A ↔ B").
+    name: string;
+    source: IRelationshipEndpoint;
+    target: IRelationshipEndpoint;
+    onDelete: ValueOf<typeof E_RELATIONSHIP_ON_DELETE>;
+  }
+>;
+
+// Par (sourceId, targetId) na colecao de juncao (pivo). Vale para 1:1, 1:N e N:N.
+export type IRelationshipLink = {
+  _id: string;
+  relationshipId: string;
+  sourceId: string;
+  targetId: string;
+  // Posicao do vinculo na lista do lado multiplo.
+  order: number;
+  // Extensivel (papel, etc.).
+  metadata: Record<string, unknown> | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+};
+
+// Cardinalidade derivada dos dois `field.multiple` (nao persistida).
+export const E_RELATIONSHIP_CARDINALITY = {
+  ONE_TO_ONE: '1:1',
+  ONE_TO_MANY: '1:N',
+  MANY_TO_MANY: 'N:N',
+} as const;
 
 export type FieldCreatePayload = Pick<
   IField,

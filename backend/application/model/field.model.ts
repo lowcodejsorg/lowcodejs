@@ -73,6 +73,17 @@ const Relationship = new mongoose.Schema(
       type: String,
       default: ' - ',
     },
+    // Mostra a tabela interna de gestao deste lado (apresentacao). Default true.
+    visible: {
+      type: Boolean,
+      default: true,
+    },
+    // Back-pointer para a RelationshipDefinition (fonte de verdade do vinculo).
+    relationshipId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'RelationshipDefinition',
+      default: null,
+    },
   },
   {
     _id: false,

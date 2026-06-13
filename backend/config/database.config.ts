@@ -6,6 +6,8 @@ import '@application/model/evaluation.model';
 import '@application/model/field.model';
 import '@application/model/permission.model';
 import '@application/model/reaction.model';
+import '@application/model/relationship-definition.model';
+import '@application/model/relationship-link.model';
 import '@application/model/storage.model';
 import '@application/model/table.model';
 import '@application/model/user-group.model';
