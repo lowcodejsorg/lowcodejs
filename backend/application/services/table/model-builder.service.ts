@@ -96,6 +96,19 @@ export default class MongooseModelBuilder implements ModelBuilderContractService
       index: true,
     };
 
+    // Creator nativo: garante que o dono da row seja sempre persistido, mesmo
+    // quando o _schema nao traz o campo CREATOR explicito. Sem isso o strict
+    // mode do Mongoose descarta `creator` e o enforcement de OWN (contributor
+    // edita apenas as suas rows) nunca casa. Nao sobrescreve definicao vinda do
+    // _schema (campo nativo CREATOR ja traz ref User).
+    if (!schemaDefinition['creator']) {
+      schemaDefinition['creator'] = {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+      };
+    }
+
     const schema = new mongoose.Schema(schemaDefinition, {
       timestamps: true,
       toJSON: { virtuals: true },

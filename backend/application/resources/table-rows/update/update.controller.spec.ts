@@ -8,6 +8,8 @@ import {
   E_TABLE_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
+  FIELD_NATIVE_LIST,
+  type IField,
   type ITableMember,
 } from '@application/core/entity.core';
 import { Field } from '@application/model/field.model';
@@ -33,23 +35,33 @@ async function buildProductsTable(
   ownerId: string,
   members: ITableMember[],
 ): Promise<void> {
-  const field = await Field.create({
-    category: [],
-    dropdown: [],
-    defaultValue: null,
-    showInFilter: false,
-    permissions: buildFieldPermissions(true, true, true),
-    format: null,
-    group: null,
-    multiple: false,
-    required: false,
-    relationship: null,
-    name: 'Name',
-    slug: 'name',
-    type: E_FIELD_TYPE.TEXT_SHORT,
-    widthInForm: null,
-    widthInList: null,
-    widthInDetail: null,
+  // Inclui os campos nativos (FIELD_NATIVE_LIST traz o campo CREATOR) alem do
+  // campo Name, replicando o que `POST /tables` faz. Sem `creator` no _schema o
+  // Mongoose descartaria o dono da row e o enforcement de OWN nunca casaria.
+  const fields = await Field.create([
+    ...FIELD_NATIVE_LIST,
+    {
+      category: [],
+      dropdown: [],
+      defaultValue: null,
+      showInFilter: false,
+      permissions: buildFieldPermissions(true, true, true),
+      format: null,
+      group: null,
+      multiple: false,
+      required: false,
+      relationship: null,
+      name: 'Name',
+      slug: 'name',
+      type: E_FIELD_TYPE.TEXT_SHORT,
+      widthInForm: null,
+      widthInList: null,
+      widthInDetail: null,
+    },
+  ]);
+
+  const schemaFields: IField[] = fields.map((field): IField => {
+    return { ...field.toJSON(), _id: field._id.toString() };
   });
 
   await Table.create({
@@ -60,10 +72,8 @@ async function buildProductsTable(
     style: E_TABLE_STYLE.LIST,
     name: 'Products',
     slug: 'products',
-    fields: [field._id.toString()],
-    _schema: schemaBuilder.build([
-      { ...field.toJSON(), _id: field._id.toString() },
-    ]),
+    fields: fields.map((field): string => field._id.toString()),
+    _schema: schemaBuilder.build(schemaFields),
     description: 'Products table',
     logo: null,
     methods: {
