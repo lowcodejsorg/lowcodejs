@@ -27,7 +27,8 @@ import { cleanDynamicCollections } from '@test/helpers/database.helper';
 const schemaBuilder = new MongooseSchemaBuilder();
 
 // Cria a tabela `products` (campo Name) com dono e membros informados. Usado
-// pelos cenarios de NEGACAO por perfil de membro (viewer/contributor).
+// pelos cenarios de acesso por perfil de membro (viewer libera, contributor
+// apenas a sua).
 async function buildProductsTable(
   ownerId: string,
   members: ITableMember[],
@@ -157,7 +158,7 @@ describe('E2E Table Row Update Controller', () => {
       expect(response.body.name).toBe('Product Updated');
     });
 
-    it('deve negar update de row para membro VIEWER (read-only, 403)', async () => {
+    it('permite update de row para membro VIEWER (planilha literal, 200)', async () => {
       const owner = await createAuthenticatedUser();
       const viewer = await createAuthenticatedUserInGroup({
         groupSlug: 'registered',
@@ -178,14 +179,14 @@ describe('E2E Table Row Update Controller', () => {
         .set('Cookie', owner.cookies)
         .send({ name: 'Product 1' });
 
-      // VIEWER tenta editar → 403 (matriz nega UPDATE_ROW e nao ha binding).
+      // VIEWER edita → 200 (matriz libera UPDATE_ROW para o perfil viewer).
       const response = await supertest(kernel.server)
         .put(`/tables/products/rows/${created.body._id}`)
         .set('Cookie', viewer.cookies)
-        .send({ name: 'Hacked' });
+        .send({ name: 'Product Updated' });
 
-      expect(response.statusCode).toBe(403);
-      expect(response.body.cause).toBe('INSUFFICIENT_PERMISSIONS');
+      expect(response.statusCode).toBe(200);
+      expect(response.body.name).toBe('Product Updated');
     });
 
     it('CONTRIBUTOR edita a própria row, mas não a de outro (apenas a sua)', async () => {

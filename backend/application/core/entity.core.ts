@@ -872,9 +872,8 @@ export const E_PROFILE_ACCESS = {
 // Matriz fixa de perfis x acoes, conforme a especificacao (aba 060226-Oficial).
 // Observacao: View field aparece como "nao" para editor/contributor/viewer —
 // mantido fiel ao documento (controla a tela de gestao de campos, nao o valor da
-// row). VIEWER e read-only por decisao de produto: a planilha listava viewer
-// escrevendo rows (CREATE/UPDATE/REMOVE), tratado como engano e corrigido para
-// DENY — viewer so ve (VIEW_TABLE/VIEW_ROW).
+// row). VIEWER segue a planilha literal: cria/edita/remove rows
+// (CREATE/UPDATE/REMOVE_ROW = ALLOW), ficando funcionalmente igual ao EDITOR.
 export const TABLE_PROFILE_MATRIX: Record<
   ValueOf<typeof E_TABLE_PROFILE>,
   Record<ValueOf<typeof E_TABLE_PERMISSION>, ValueOf<typeof E_PROFILE_ACCESS>>
@@ -944,9 +943,9 @@ export const TABLE_PROFILE_MATRIX: Record<
     [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.DENY,
     [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.DENY,
     [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.DENY,
-    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.DENY,
-    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.DENY,
-    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.ALLOW,
     [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
   },
 };
