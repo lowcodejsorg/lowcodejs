@@ -4,7 +4,7 @@ CRUD e operacoes especiais em registros (rows) de tabelas dinamicas.
 
 ## Entidade
 
-`IRow` - Registro dinamico de tabela. Schema definido em runtime pela tabela pai. Campos nativos: _id, creator, trashed, trashedAt, createdAt, updatedAt.
+`IRow` - Registro dinamico de tabela. Schema definido em runtime pela tabela pai. Campos nativos: _id, creator, trashed, trashedAt, createdAt, updatedAt, updater. Auditoria nativa: `updatedAt` (gerenciado pelo timestamps do Mongoose) e `updater` (ObjectId ref User, preenchido no update com o usuario da alteracao — espelha `creator`).
 
 ## Endpoints
 

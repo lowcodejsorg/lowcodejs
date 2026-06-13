@@ -29,7 +29,7 @@ sao scripts manuais executados via npm script dedicado.
 | `migrate-backfill-row-slugs.ts` | Backfill de `sharedRowSlug` em rows dinamicas sem slug, usando o mesmo algoritmo do create/update; tabelas legadas sem `rowSlugFieldId` ganham fallback (primeiro TEXT_SHORT ativo, persistido na table) |
 | `migrate-backfill-storage-location.ts` | Backfill de `location` e `migration_status` em Storage docs faltantes (driver lido do Setting, nao de env). Marcador `MIGRATION_STORAGE_LOCATION_AT` |
 | `migrate-extension-slots.ts` | Renomeia `slot: string \| null` para `slots: string[]` em todos os docs da collection `extensions` e remove o campo antigo. Marcador `MIGRATION_EXTENSION_SLOTS_AT` |
-| `migrate-group-native-fields.ts` | Garante os 5 campos nativos (`_id, creator, createdAt, trashed, trashedAt`) em cada `Table.groups[*]`, criando os faltantes na collection `fields`. Marcador `MIGRATION_GROUP_NATIVE_FIELDS_AT` |
+| `migrate-group-native-fields.ts` | Garante os campos nativos no nivel raiz da tabela (`FIELD_NATIVE_LIST` + `fieldOrder*`) e em cada `Table.groups[*]` (`FIELD_GROUP_NATIVE_LIST`), criando os faltantes na collection `fields`. Idempotente por slug. Marcador versionado `MIGRATION_NATIVE_FIELDS_AT` (re-roda uma vez em bases que so tinham `MIGRATION_GROUP_NATIVE_FIELDS_AT`, p/ backfill de `updatedAt`/`updater`) |
 | `migrate-relationship-table-id.ts` | Backfill de `relationship.table._id` em Fields RELATIONSHIP (lookup por slug), tornando refs slug-independentes. Marcador `MIGRATION_RELATIONSHIP_TABLE_ID_AT` |
 | `migrate-row-status-trashed.ts` | Introduz `status`/`draftAt` em rows dinamicas (e itens FIELD_GROUP embedded) e remove o boolean `trashed` — trash passa a ser derivado de `trashedAt`. Roda no DB data |
 

@@ -70,6 +70,36 @@ describe('Table Row Update Use Case', () => {
     }
   });
 
+  it('deve preencher updater (auditoria nativa) com o usuario da alteracao', async () => {
+    const table = await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      style: E_TABLE_STYLE.LIST,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+
+    const row = await rowRepository.create({
+      table,
+      data: { nome: 'Original Name', updater: null },
+    });
+
+    const result = await sut.execute({
+      slug: 'clientes',
+      _id: row._id,
+      nome: 'Updated Name',
+      __actorUserId: 'user-123',
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect(result.value).toMatchObject({ updater: 'user-123' });
+    }
+  });
+
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
     const result = await sut.execute({
       slug: 'non-existent',

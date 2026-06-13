@@ -33,6 +33,8 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
     [E_FIELD_TYPE.IDENTIFIER]: E_SCHEMA_TYPE.OBJECT_ID,
     [E_FIELD_TYPE.CREATOR]: E_SCHEMA_TYPE.OBJECT_ID,
     [E_FIELD_TYPE.CREATED_AT]: E_SCHEMA_TYPE.DATE,
+    [E_FIELD_TYPE.UPDATED_AT]: E_SCHEMA_TYPE.DATE,
+    [E_FIELD_TYPE.UPDATER]: E_SCHEMA_TYPE.OBJECT_ID,
     [E_FIELD_TYPE.TRASHED_AT]: E_SCHEMA_TYPE.DATE,
     [E_FIELD_TYPE.STATUS]: E_SCHEMA_TYPE.STRING,
   };
@@ -170,6 +172,21 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
         },
       },
 
+      [E_FIELD_TYPE.UPDATED_AT]: {
+        [field.slug]: {
+          type: FieldTypeMapper[field.type] || 'Date',
+          required: Boolean(field.required || false),
+        },
+      },
+
+      [E_FIELD_TYPE.UPDATER]: {
+        [field.slug]: {
+          type: FieldTypeMapper[field.type] || 'String',
+          required: Boolean(field.required || false),
+          ref: 'User',
+        },
+      },
+
       [E_FIELD_TYPE.STATUS]: {
         [field.slug]: {
           type: FieldTypeMapper[field.type] || 'String',
@@ -216,7 +233,8 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
     for (const field of fields) {
       if (
         field.type === E_FIELD_TYPE.IDENTIFIER ||
-        field.type === E_FIELD_TYPE.CREATED_AT
+        field.type === E_FIELD_TYPE.CREATED_AT ||
+        field.type === E_FIELD_TYPE.UPDATED_AT
       ) {
         continue;
       }

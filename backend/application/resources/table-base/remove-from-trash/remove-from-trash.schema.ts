@@ -71,6 +71,8 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                   'CREATOR',
                   'IDENTIFIER',
                   'CREATED_AT',
+                  'UPDATED_AT',
+                  'UPDATER',
                   'STATUS',
                   'TRASHED_AT',
                 ],

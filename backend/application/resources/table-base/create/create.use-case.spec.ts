@@ -42,9 +42,9 @@ describe('Table Create Use Case', () => {
     expect(result.value.name).toBe('Clientes');
     expect(result.value.slug).toBe('clientes');
 
-    // Deve criar 5 campos nativos + 1 campo "Nome" padrão
+    // Deve criar 7 campos nativos + 1 campo "Nome" padrão
     const fields = result.value.fields;
-    expect(fields).toHaveLength(6);
+    expect(fields).toHaveLength(8);
 
     const idField = fields.find((f) => f.slug === '_id');
     expect(idField).toBeDefined();
@@ -66,6 +66,20 @@ describe('Table Create Use Case', () => {
     expect(createdAtField.type).toBe(E_FIELD_TYPE.CREATED_AT);
     expect(createdAtField.native).toBe(true);
     expect(createdAtField.locked).toBe(true);
+
+    const updatedAtField = fields.find((f) => f.slug === 'updatedAt');
+    expect(updatedAtField).toBeDefined();
+    if (!updatedAtField) throw new Error('Expected updatedAtField');
+    expect(updatedAtField.type).toBe(E_FIELD_TYPE.UPDATED_AT);
+    expect(updatedAtField.native).toBe(true);
+    expect(updatedAtField.locked).toBe(true);
+
+    const updaterField = fields.find((f) => f.slug === 'updater');
+    expect(updaterField).toBeDefined();
+    if (!updaterField) throw new Error('Expected updaterField');
+    expect(updaterField.type).toBe(E_FIELD_TYPE.UPDATER);
+    expect(updaterField.native).toBe(true);
+    expect(updaterField.locked).toBe(true);
 
     const statusField = fields.find((f) => f.slug === 'status');
     expect(statusField).toBeDefined();

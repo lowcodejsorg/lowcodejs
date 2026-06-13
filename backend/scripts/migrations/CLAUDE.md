@@ -17,7 +17,7 @@ mecanismo de marcadores no documento Setting singleton.
 | Ordem | Script | Migration TS | O que faz |
 | ----- | ------ | ------------ | --------- |
 | 01 | `01-dual-connection.sh` | `migrate-dual-connection.ts` | Copia collections dinâmicas do DB system (`DB_DATABASE`) para o DB data (`DB_DATA_DATABASE`), habilitando o split em 2 conexões. Marker `MIGRATION_DUAL_CONNECTION_AT` |
-| 02 | `02-group-native-fields.sh` | `migrate-group-native-fields.ts` | Garante os 5 campos nativos (`_id`, `creator`, `createdAt`, `trashed`, `trashedAt`) em cada subtabela `FIELD_GROUP`. Verifica presença antes de inserir |
+| 02 | `02-group-native-fields.sh` | `migrate-group-native-fields.ts` | Garante os campos nativos no nivel raiz da tabela (`FIELD_NATIVE_LIST` + `fieldOrder*`) e em cada subtabela `FIELD_GROUP` (`FIELD_GROUP_NATIVE_LIST`), incl. auditoria `updatedAt`/`updater`. Idempotente por slug. Marker versionado `MIGRATION_NATIVE_FIELDS_AT` |
 | 03 | `03-backfill-storage-location.sh` | `migrate-backfill-storage-location.ts` | Popularia `location`/`migration_status` em docs Storage. **Atualmente desativado** (corpo comentado no `.sh`); o backfill roda pela própria feature de storage-migration. Marker `MIGRATION_STORAGE_LOCATION_AT` |
 | 04 | `04-backfill-relationship-create-records.sh` | `migrate-backfill-relationship-create-records.ts` | Backfilla registros de criação em campos de relacionamento existentes |
 | 05 | `05-extension-slots.sh` | `migrate-extension-slots.ts` | Renomeia o campo `slot` → `slots` (array) nos documentos de extensão (após refatoração da API) |

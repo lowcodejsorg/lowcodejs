@@ -71,6 +71,7 @@ function renderCell(
       );
     case E_FIELD_TYPE.DATE:
     case E_FIELD_TYPE.CREATED_AT:
+    case E_FIELD_TYPE.UPDATED_AT:
     case E_FIELD_TYPE.TRASHED_AT:
       return (
         <TableRowDateCell
@@ -124,6 +125,7 @@ function renderCell(
       );
     case E_FIELD_TYPE.USER:
     case E_FIELD_TYPE.CREATOR:
+    case E_FIELD_TYPE.UPDATER:
       return (
         <TableRowUserCell
           row={row}

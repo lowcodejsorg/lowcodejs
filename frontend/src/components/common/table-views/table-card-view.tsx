@@ -145,6 +145,7 @@ function RenderCardCell({
           />
         );
       case E_FIELD_TYPE.CREATOR:
+      case E_FIELD_TYPE.UPDATER:
         return (
           <TableRowUserCell
             field={field}
@@ -152,6 +153,7 @@ function RenderCardCell({
           />
         );
       case E_FIELD_TYPE.CREATED_AT:
+      case E_FIELD_TYPE.UPDATED_AT:
       case E_FIELD_TYPE.TRASHED_AT:
         return (
           <TableRowDateCell
