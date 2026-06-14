@@ -9,7 +9,7 @@ import {
 import React from 'react';
 import { toast } from 'sonner';
 
-import { RelationshipManagementTable } from '@/components/common/dynamic-table/relationship-management/relationship-management-table';
+import { RelationshipRowsInline } from '@/components/common/dynamic-table/relationship-management/relationship-rows-inline';
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
@@ -269,22 +269,29 @@ export function RowDetailView({
   const canRemoveRow = permission.can('REMOVE_ROW');
   const canUpdateRow = permission.can('UPDATE_ROW');
 
-  // Campo RELATIONSHIP materializado (pivô) usa a tabela de gestão editável
-  // (vincular/desvincular/reordenar via /links). Legado sem definition cai no
-  // cell read-only de leitura compatível.
+  // Campo RELATIONSHIP é sempre materializado (pivô) após as migrations §11: usa a
+  // tabela de gestão editável (vincular/desvincular/reordenar via /links). Zero
+  // legado — não há mais fallback read-only embedded. Se faltar relationshipId
+  // (não deveria), mostra empty-state pedindo a migration, nunca a célula legada.
   function renderRelationshipTab(field: IField): React.JSX.Element {
     const relConfig = field.relationship;
-    if (relConfig?.relationshipId && relConfig?.side) {
+    if (!relConfig?.relationshipId || !relConfig?.side) {
       return (
-        <RelationshipManagementTable
-          field={field}
-          record={data}
-          tableSlug={slug}
-          canEdit={canUpdateRow && data.trashedAt == null}
-        />
+        <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+          Relacionamento ainda não materializado. Rode{' '}
+          <code className="text-xs">npm run migrate:relationship</code> no
+          backend.
+        </div>
       );
     }
-    return renderCell(field, data, slug);
+    return (
+      <RelationshipRowsInline
+        field={field}
+        parentTableSlug={slug}
+        rowId={data._id}
+        canEdit={canUpdateRow && data.trashedAt == null}
+      />
+    );
   }
 
   return (
