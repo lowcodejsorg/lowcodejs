@@ -5,6 +5,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
   buildFieldPermissions,
+  E_FIELD_TYPE,
   type IField as Entity,
   type IField,
 } from '@application/core/entity.core';
@@ -55,6 +56,17 @@ export default class GroupFieldUpdateUseCase {
       if (!tableSlug) {
         return left(
           HTTPException.BadRequest('Tabela inválida', 'INVALID_TABLE_SLUG'),
+        );
+      }
+
+      // RELATIONSHIP é sempre top-level (§2): não pode virar campo de grupo.
+      if (payload.type === E_FIELD_TYPE.RELATIONSHIP) {
+        return left(
+          HTTPException.BadRequest(
+            'Este tipo de campo não é permitido dentro de um grupo',
+            'FIELD_TYPE_NOT_ALLOWED_IN_GROUP',
+            { type: 'Tipo de campo não permitido no grupo' },
+          ),
         );
       }
 

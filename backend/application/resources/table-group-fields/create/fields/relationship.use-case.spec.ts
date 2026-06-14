@@ -72,7 +72,10 @@ describe('Group Field Create - RELATIONSHIP', () => {
     });
   });
 
-  it('deve criar campo RELATIONSHIP com configuracao de tabela e campo no grupo', async () => {
+  // RELATIONSHIP é sempre top-level (§2): associação entre tabelas independentes.
+  // Grupo é composição embedded e só aceita campos simples — criar RELATIONSHIP
+  // dentro de grupo é rejeitado com FIELD_TYPE_NOT_ALLOWED_IN_GROUP.
+  it('deve rejeitar criar campo RELATIONSHIP dentro de grupo', async () => {
     const result = await sut.execute({
       ...FIELD_PAYLOAD_BASE,
       slug: 'pedidos',
@@ -87,16 +90,13 @@ describe('Group Field Create - RELATIONSHIP', () => {
       },
     });
 
-    expect(result.isRight()).toBe(true);
-    if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.type).toBe(E_FIELD_TYPE.RELATIONSHIP);
-    expect(result.value.relationship).not.toBeNull();
-    expect(result.value.relationship!.table.slug).toBe('produtos');
-    expect(result.value.relationship!.field.slug).toBe('nome');
-    expect(result.value.slug).toBe('produto');
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('FIELD_TYPE_NOT_ALLOWED_IN_GROUP');
+    expect(result.value.code).toBe(400);
   });
 
-  it('deve criar campo RELATIONSHIP multiple no grupo', async () => {
+  it('deve rejeitar criar campo RELATIONSHIP multiple dentro de grupo', async () => {
     const result = await sut.execute({
       ...FIELD_PAYLOAD_BASE,
       slug: 'pedidos',
@@ -111,13 +111,12 @@ describe('Group Field Create - RELATIONSHIP', () => {
       },
     });
 
-    expect(result.isRight()).toBe(true);
-    if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.type).toBe(E_FIELD_TYPE.RELATIONSHIP);
-    expect(result.value.multiple).toBe(true);
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('FIELD_TYPE_NOT_ALLOWED_IN_GROUP');
   });
 
-  it('deve criar campo RELATIONSHIP required no grupo', async () => {
+  it('deve rejeitar criar campo RELATIONSHIP required dentro de grupo', async () => {
     const result = await sut.execute({
       ...FIELD_PAYLOAD_BASE,
       slug: 'pedidos',
@@ -133,9 +132,8 @@ describe('Group Field Create - RELATIONSHIP', () => {
       },
     });
 
-    expect(result.isRight()).toBe(true);
-    if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.required).toBe(true);
-    expect(result.value.type).toBe(E_FIELD_TYPE.RELATIONSHIP);
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('FIELD_TYPE_NOT_ALLOWED_IN_GROUP');
   });
 });

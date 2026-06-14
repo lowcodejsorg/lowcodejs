@@ -83,7 +83,10 @@ describe('Group Field Update - RELATIONSHIP', () => {
     );
   });
 
-  it('deve mudar tabela destino do relacionamento', async () => {
+  // RELATIONSHIP é sempre top-level (§2): não pode existir nem virar campo de
+  // grupo. Atualizar um campo de grupo para type RELATIONSHIP é rejeitado com
+  // FIELD_TYPE_NOT_ALLOWED_IN_GROUP, antes de qualquer mutação.
+  it('deve rejeitar atualizar campo de grupo para RELATIONSHIP (mudar tabela destino)', async () => {
     const field = await fieldInMemoryRepository.create(FIELD_CREATE_PAYLOAD);
 
     await tableInMemoryRepository.create({
@@ -119,14 +122,13 @@ describe('Group Field Update - RELATIONSHIP', () => {
       },
     });
 
-    expect(result.isRight()).toBe(true);
-    if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.relationship).not.toBeNull();
-    expect(result.value.relationship!.table.slug).toBe('servicos');
-    expect(result.value.relationship!.field.slug).toBe('titulo');
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('FIELD_TYPE_NOT_ALLOWED_IN_GROUP');
+    expect(result.value.code).toBe(400);
   });
 
-  it('deve mudar multiple de false para true', async () => {
+  it('deve rejeitar atualizar campo de grupo para RELATIONSHIP multiple', async () => {
     const field = await fieldInMemoryRepository.create(FIELD_CREATE_PAYLOAD);
 
     await tableInMemoryRepository.create({
@@ -162,9 +164,8 @@ describe('Group Field Update - RELATIONSHIP', () => {
       },
     });
 
-    expect(result.isRight()).toBe(true);
-    if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.multiple).toBe(true);
-    expect(result.value.type).toBe(E_FIELD_TYPE.RELATIONSHIP);
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('FIELD_TYPE_NOT_ALLOWED_IN_GROUP');
   });
 });

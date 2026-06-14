@@ -5,6 +5,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
   E_FIELD_TYPE,
+  E_TABLE_TYPE,
   FIELD_GROUP_NATIVE_LIST,
   type IField as Entity,
   type IGroupConfiguration,
@@ -50,6 +51,26 @@ export default class TableFieldCreateUseCase {
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
+
+      // Sem relacionamento-de-relacionamento (§7): um campo RELATIONSHIP não
+      // pode apontar para uma tabela que é só estrutura de relacionamento/grupo.
+      if (
+        payload.type === E_FIELD_TYPE.RELATIONSHIP &&
+        payload.relationship?.table?.slug
+      ) {
+        const target = await this.tableRepository.findBySlug(
+          payload.relationship.table.slug,
+        );
+        if (target && target.type === E_TABLE_TYPE.FIELD_GROUP) {
+          return left(
+            HTTPException.BadRequest(
+              'Relacionamento não pode apontar para uma tabela de grupo',
+              'RELATIONSHIP_NESTED',
+              { relationship: 'Tabela alvo inválida para relacionamento' },
+            ),
+          );
+        }
+      }
 
       const resolvedSlug = FieldSlug.resolve({
         name: payload.name,
