@@ -6,7 +6,9 @@ import {
   buildFieldPermissions,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RelationshipDefinitionInMemoryRepository from '@application/repositories/relationship-definition/relationship-definition-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import RelationshipMaterializationService from '@application/services/relationship/relationship-materialization.service';
 import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
 import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
@@ -14,6 +16,7 @@ import TableFieldCreateUseCase from '../create.use-case';
 
 let tableRepository: TableInMemoryRepository;
 let fieldRepository: FieldInMemoryRepository;
+let definitionRepository: RelationshipDefinitionInMemoryRepository;
 let schemaBuilder: InMemorySchemaBuilder;
 let modelBuilder: InMemoryModelBuilder;
 let sut: TableFieldCreateUseCase;
@@ -35,10 +38,20 @@ const BASE_PAYLOAD = {
   format: null,
 };
 
+const TABLE_DEFAULTS = {
+  _schema: {},
+  fields: [],
+  owner: 'owner-id',
+  style: E_TABLE_STYLE.LIST,
+  fieldOrderList: [],
+  fieldOrderForm: [],
+};
+
 describe('Table Field Create - RELATIONSHIP', () => {
   beforeEach(async () => {
     tableRepository = new TableInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
+    definitionRepository = new RelationshipDefinitionInMemoryRepository();
     schemaBuilder = new InMemorySchemaBuilder();
     modelBuilder = new InMemoryModelBuilder();
 
@@ -47,21 +60,27 @@ describe('Table Field Create - RELATIONSHIP', () => {
       fieldRepository,
       schemaBuilder,
       modelBuilder,
+      new RelationshipMaterializationService(
+        fieldRepository,
+        tableRepository,
+        definitionRepository,
+        schemaBuilder,
+        modelBuilder,
+      ),
     );
 
     await tableRepository.create({
+      ...TABLE_DEFAULTS,
       name: 'Pedidos',
       slug: 'pedidos',
-      _schema: {},
-      fields: [],
-      owner: 'owner-id',
-      style: E_TABLE_STYLE.LIST,
-      fieldOrderList: [],
-      fieldOrderForm: [],
     });
+    // Tabelas alvo dos relacionamentos (born-pivot exige target existente).
+    for (const slug of ['produtos', 'clientes', 'fornecedores']) {
+      await tableRepository.create({ ...TABLE_DEFAULTS, name: slug, slug });
+    }
   });
 
-  it('deve criar campo RELATIONSHIP com configuracao', async () => {
+  it('deve criar campo RELATIONSHIP e materializar o pivô (definition + espelho)', async () => {
     const result = await sut.execute({
       ...BASE_PAYLOAD,
       slug: 'pedidos',
@@ -77,10 +96,23 @@ describe('Table Field Create - RELATIONSHIP', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value.type).toBe(E_FIELD_TYPE.RELATIONSHIP);
-    expect(result.value.relationship).not.toBeNull();
     expect(result.value.relationship!.table.slug).toBe('produtos');
-    expect(result.value.relationship!.field.slug).toBe('nome');
-    expect(result.value.relationship!.order).toBe('asc');
+
+    // Nasce pivô: relationshipId preenchido e definition criada.
+    expect(result.value.relationship!.relationshipId).toBeTruthy();
+    expect(definitionRepository.items).toHaveLength(1);
+
+    // Campo-espelho criado, apontando de volta para o campo source.
+    const mirror = fieldRepository.items.find(
+      (f) =>
+        f.type === E_FIELD_TYPE.RELATIONSHIP &&
+        f.relationship?.field?._id === result.value._id,
+    );
+    expect(mirror).toBeDefined();
+    expect(mirror!.relationship!.relationshipId).toBe(
+      result.value.relationship!.relationshipId,
+    );
+    expect(mirror!.relationship!.visible).toBe(false);
   });
 
   it('deve criar campo RELATIONSHIP multiple=true', async () => {
@@ -101,6 +133,7 @@ describe('Table Field Create - RELATIONSHIP', () => {
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value.multiple).toBe(true);
     expect(result.value.relationship!.order).toBe('desc');
+    expect(result.value.relationship!.relationshipId).toBeTruthy();
   });
 
   it('deve criar campo RELATIONSHIP required=true', async () => {
@@ -120,5 +153,6 @@ describe('Table Field Create - RELATIONSHIP', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value.required).toBe(true);
+    expect(result.value.relationship!.relationshipId).toBeTruthy();
   });
 });

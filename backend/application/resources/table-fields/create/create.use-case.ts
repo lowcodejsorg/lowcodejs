@@ -5,6 +5,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
   E_FIELD_TYPE,
+  E_RELATIONSHIP_ON_DELETE,
   E_TABLE_TYPE,
   FIELD_GROUP_NATIVE_LIST,
   type IField as Entity,
@@ -14,6 +15,7 @@ import HTTPException from '@application/core/exception.core';
 import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { RelationshipMaterializationContractService } from '@application/services/relationship/relationship-materialization-contract.service';
 import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
 import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
@@ -34,6 +36,7 @@ export default class TableFieldCreateUseCase {
     private readonly fieldRepository: FieldContractRepository,
     private readonly schemaBuilder: SchemaBuilderContractService,
     private readonly modelBuilder: ModelBuilderContractService,
+    private readonly relationshipMaterialization: RelationshipMaterializationContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -169,6 +172,30 @@ export default class TableFieldCreateUseCase {
         },
         groups,
       });
+
+      // Campo RELATIONSHIP nasce pivô: materializa a definition + o campo-espelho
+      // no target e liga os dois lados. Roda depois do update/model da tabela
+      // source para suportar auto-relacionamento (target == source carregado
+      // fresco dentro do service). Default onDelete=SET_NULL (seguro na criação
+      // interativa; a tela de config da Fase 4 deixa o usuário escolher).
+      if (
+        field.type === E_FIELD_TYPE.RELATIONSHIP &&
+        field.relationship?.table
+      ) {
+        const materialized = await this.relationshipMaterialization.materialize(
+          {
+            sourceField: field,
+            sourceTable: table,
+            onDelete: E_RELATIONSHIP_ON_DELETE.SET_NULL,
+            mirrorMultiple: false,
+            mirrorVisible: false,
+          },
+        );
+        if (materialized.isLeft()) return left(materialized.value);
+
+        const refreshed = await this.fieldRepository.findById(field._id);
+        if (refreshed) field = refreshed;
+      }
 
       return right(field);
     } catch (error) {
