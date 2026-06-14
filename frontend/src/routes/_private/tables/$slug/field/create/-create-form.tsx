@@ -6,6 +6,7 @@ import z from 'zod';
 import { TableFieldRelationshipCardinality } from '@/components/common/dynamic-table/table-config/table-field-relationship-cardinality';
 import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import {
   E_FIELD_FORMAT,
@@ -188,6 +189,11 @@ export const CreateFieldFormFields = withForm({
       (state) => state.values.relationship.mirrorMultiple,
     );
 
+    const currentTable = useReadTable({ slug: tableSlug });
+    const relatedTable = useReadTable({ slug: relationshipTableSlug });
+    const tabelaAtual = currentTable.data?.name ?? 'esta tabela';
+    const tabelaRelacionada = relatedTable.data?.name ?? 'a tabela relacionada';
+
     const isTextShort = fieldType === E_FIELD_TYPE.TEXT_SHORT;
     const isTextLong = fieldType === E_FIELD_TYPE.TEXT_LONG;
     const isDropdown = fieldType === E_FIELD_TYPE.DROPDOWN;
@@ -207,12 +213,7 @@ export const CreateFieldFormFields = withForm({
     }, [fieldName, form]);
 
     const showMultiple =
-      isDropdown ||
-      isFile ||
-      isRelationship ||
-      isFieldGroup ||
-      isCategory ||
-      isUser;
+      isDropdown || isFile || isFieldGroup || isCategory || isUser;
     const showRequired = !isReaction && !isEvaluation;
 
     return (
@@ -617,10 +618,21 @@ export const CreateFieldFormFields = withForm({
         {/* Configuração de cardinalidade e vínculo (relacionamento) */}
         {isRelationship && relationshipTableSlug && (
           <>
+            <form.AppField name="multiple">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label={`Um registro de ${tabelaAtual} pode ter vários de ${tabelaRelacionada}?`}
+                  description={`Se ligado, cada registro de ${tabelaAtual} pode se vincular a vários de ${tabelaRelacionada}.`}
+                  disabled={isPending}
+                />
+              )}
+            </form.AppField>
+
             <form.AppField name="relationship.mirrorMultiple">
               {(field) => (
                 <field.FieldBooleanSwitch
-                  label="O outro lado aceita vários registros?"
+                  label={`Um registro de ${tabelaRelacionada} pode ter vários de ${tabelaAtual}?`}
+                  description={`Se ligado, cada registro de ${tabelaRelacionada} pode se vincular a vários de ${tabelaAtual}.`}
                   disabled={isPending}
                 />
               )}
@@ -629,7 +641,8 @@ export const CreateFieldFormFields = withForm({
             <form.AppField name="relationship.sourceVisible">
               {(field) => (
                 <field.FieldBooleanSwitch
-                  label="Gerenciar este vínculo a partir desta tabela"
+                  label={`Gerenciar a relação pela tabela ${tabelaAtual}`}
+                  description={`Mostra a tabela de vínculos ao abrir um registro de ${tabelaAtual}.`}
                   disabled={isPending}
                 />
               )}
@@ -638,7 +651,8 @@ export const CreateFieldFormFields = withForm({
             <form.AppField name="relationship.mirrorVisible">
               {(field) => (
                 <field.FieldBooleanSwitch
-                  label="Gerenciar este vínculo a partir da outra tabela"
+                  label={`Gerenciar a relação pela tabela ${tabelaRelacionada}`}
+                  description={`Mostra a tabela de vínculos ao abrir um registro de ${tabelaRelacionada}.`}
                   disabled={isPending}
                 />
               )}
