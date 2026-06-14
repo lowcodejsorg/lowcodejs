@@ -190,36 +190,8 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
             });
           }
 
-          if (groupField.type === E_FIELD_TYPE.RELATIONSHIP) {
-            const relationshipTableId =
-              groupField?.relationship?.table?._id?.toString();
-            const relationshipTableSlug = groupField?.relationship?.table?.slug;
-
-            let groupRelationshipTable;
-            if (relationshipTableId) {
-              groupRelationshipTable = await Table.findOne({
-                _id: relationshipTableId,
-                trashed: { $ne: true },
-              });
-            } else if (relationshipTableSlug) {
-              groupRelationshipTable = await Table.findOne({
-                slug: relationshipTableSlug,
-                trashed: { $ne: true },
-              });
-            }
-
-            if (groupRelationshipTable && conn) {
-              const relModel = await this.model.build({
-                ...groupRelationshipTable.toJSON({ flattenObjectIds: true }),
-                _id: groupRelationshipTable._id.toString(),
-              });
-
-              populate.push({
-                path: `${field.slug}.${groupField.slug}`,
-                model: relModel,
-              });
-            }
-          }
+          // RELATIONSHIP não existe mais dentro de grupo (§2): é sempre top-level
+          // e resolvido por links (migration 14 promoveu o legado). Sem ramo aqui.
         }
       }
     }
