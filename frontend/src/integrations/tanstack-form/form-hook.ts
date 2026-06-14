@@ -39,6 +39,7 @@ import {
   TableFieldFormatSelect,
   TableFieldRelationshipDefaultValue,
   TableFieldRelationshipFieldSelect,
+  TableFieldRelationshipOnDeleteSelect,
   TableFieldRelationshipOrderSelect,
   TableFieldRelationshipTableSelect,
   TableFieldTypeSelect,
@@ -106,6 +107,7 @@ export const { useAppForm, withForm } = createFormHook({
     TableFieldRelationshipTableSelect,
     TableFieldRelationshipFieldSelect,
     TableFieldRelationshipOrderSelect,
+    TableFieldRelationshipOnDeleteSelect,
     TableFieldCategoryTree,
     // Table row data input
     TableRowTextField,

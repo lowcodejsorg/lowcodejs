@@ -227,6 +227,9 @@ export type IFieldConfigurationRelationship = {
   labelParts?: Array<IRelationshipLabelPart>;
   /** Separador usado entre os `labelParts`. Default: " - ". */
   labelSeparator?: string;
+  visible?: boolean;
+  onDelete?: 'CASCADE' | 'SET_NULL' | 'RESTRICT';
+  mirror?: { multiple: boolean; visible: boolean; label?: string };
 };
 
 export type IFieldConfigurationGroup = {

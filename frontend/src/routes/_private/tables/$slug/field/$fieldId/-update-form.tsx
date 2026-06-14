@@ -2,6 +2,7 @@ import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
+import { TableFieldRelationshipCardinality } from '@/components/common/dynamic-table/table-config/table-field-relationship-cardinality';
 import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import { ExtensionSlot } from '@/components/common/extension-slot';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
@@ -70,6 +71,11 @@ export const FieldUpdateSchema = z.object({
     customLabel: z.boolean().default(false),
     labelParts: z.array(z.custom<IRelationshipLabelPart>()).default([]),
     labelSeparator: z.string().default(' - '),
+    sourceVisible: z.boolean().default(true),
+    mirrorMultiple: z.boolean().default(false),
+    mirrorVisible: z.boolean().default(false),
+    mirrorLabel: z.string().default(''),
+    onDelete: z.string().default('SET_NULL'),
   }),
   category: z.array(z.custom<ICategory>()).default([]),
   multiple: z.boolean().default(false),
@@ -112,6 +118,11 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
     customLabel: false,
     labelParts: [],
     labelSeparator: ' - ',
+    sourceVisible: true,
+    mirrorMultiple: false,
+    mirrorVisible: false,
+    mirrorLabel: '',
+    onDelete: 'SET_NULL',
   },
   category: [],
   multiple: false,
@@ -191,6 +202,14 @@ export const UpdateFieldFormFields = withForm({
     const relationshipLabelSeparator = useStore(
       form.store,
       (state) => state.values.relationship.labelSeparator,
+    );
+    const fieldMultiple = useStore(
+      form.store,
+      (state) => state.values.multiple,
+    );
+    const relationshipMirrorMultiple = useStore(
+      form.store,
+      (state) => state.values.relationship.mirrorMultiple,
     );
     const isTrashed = useStore(form.store, (state) => state.values.trashed);
 
@@ -548,6 +567,52 @@ export const UpdateFieldFormFields = withForm({
               />
             )}
           </form.AppField>
+        )}
+
+        {/* Configuração de cardinalidade e vínculo (relacionamento) */}
+        {isRelationship && relationshipTableSlug && (
+          <>
+            <form.AppField name="relationship.mirrorMultiple">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label="O outro lado aceita vários registros?"
+                  disabled={isDisabled || lockAllControls}
+                />
+              )}
+            </form.AppField>
+
+            <form.AppField name="relationship.sourceVisible">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label="Gerenciar este vínculo a partir desta tabela"
+                  disabled={isDisabled || lockAllControls}
+                />
+              )}
+            </form.AppField>
+
+            <form.AppField name="relationship.mirrorVisible">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label="Gerenciar este vínculo a partir da outra tabela"
+                  disabled={isDisabled || lockAllControls}
+                />
+              )}
+            </form.AppField>
+
+            <form.AppField name="relationship.onDelete">
+              {(field) => (
+                <field.TableFieldRelationshipOnDeleteSelect
+                  label="Comportamento ao excluir"
+                  disabled={isDisabled || lockAllControls}
+                />
+              )}
+            </form.AppField>
+
+            <TableFieldRelationshipCardinality
+              sourceMultiple={fieldMultiple}
+              mirrorMultiple={relationshipMirrorMultiple}
+            />
+          </>
         )}
 
         {/* Personalização do label (relacionamento) */}

@@ -380,6 +380,15 @@ const RelationshipSchema = z.object({
   customLabel: z.boolean().default(false),
   labelParts: z.array(RelationshipLabelPartSchema).default([]),
   labelSeparator: z.string().default(' - '),
+  visible: z.boolean().optional(),
+  onDelete: z.enum(['CASCADE', 'SET_NULL', 'RESTRICT']).optional(),
+  mirror: z
+    .object({
+      multiple: z.boolean().default(false),
+      visible: z.boolean().default(false),
+      label: z.string().trim().optional(),
+    })
+    .optional(),
 });
 
 const DropdownSchema = z.object({

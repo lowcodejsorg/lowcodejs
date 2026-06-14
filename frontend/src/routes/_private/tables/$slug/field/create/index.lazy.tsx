@@ -180,6 +180,16 @@ function RouteComponent(): React.JSX.Element {
                 ? value.relationship.labelParts
                 : [],
               labelSeparator: value.relationship.labelSeparator || ' - ',
+              visible: value.relationship.sourceVisible,
+              onDelete: value.relationship.onDelete as
+                | 'CASCADE'
+                | 'SET_NULL'
+                | 'RESTRICT',
+              mirror: {
+                multiple: value.relationship.mirrorMultiple,
+                visible: value.relationship.mirrorVisible,
+                label: value.relationship.mirrorLabel || undefined,
+              },
             }
           : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],
@@ -220,6 +230,7 @@ function RouteComponent(): React.JSX.Element {
           E_FIELD_TYPE.FIELD_GROUP,
           E_FIELD_TYPE.REACTION,
           E_FIELD_TYPE.EVALUATION,
+          E_FIELD_TYPE.RELATIONSHIP,
         ]
       : [];
 

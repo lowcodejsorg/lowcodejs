@@ -43,6 +43,12 @@ export const E_FIELD_TYPE = {
   STATUS: 'STATUS',
 } as const;
 
+export const E_RELATIONSHIP_ON_DELETE = {
+  CASCADE: 'CASCADE',
+  SET_NULL: 'SET_NULL',
+  RESTRICT: 'RESTRICT',
+} as const;
+
 export const E_ROW_STATUS = {
   DRAFT: 'draft',
   PUBLISHED: 'published',

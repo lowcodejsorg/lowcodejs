@@ -4,7 +4,9 @@ export { TableFieldCategoryDefaultValue } from './table-field-category-default-v
 export { TableFieldCategoryTree } from './table-field-category-tree';
 export { TableFieldDateDefaultValue } from './table-field-date-default-value';
 export { TableFieldDropdownDefaultValue } from './table-field-dropdown-default-value';
+export { TableFieldRelationshipCardinality } from './table-field-relationship-cardinality';
 export { TableFieldRelationshipDefaultValue } from './table-field-relationship-default-value';
+export { TableFieldRelationshipOnDeleteSelect } from './table-field-relationship-on-delete-select';
 export { TableFieldUserDefaultValue } from './table-field-user-default-value';
 export { TableFieldDropdownOptions } from './table-field-dropdown-options';
 export { TableFieldFormatSelect } from './table-field-format-select';

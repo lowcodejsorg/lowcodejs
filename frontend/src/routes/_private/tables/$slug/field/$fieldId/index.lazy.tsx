@@ -351,6 +351,11 @@ function FieldUpdateContent({
         customLabel: data.relationship?.customLabel ?? false,
         labelParts: data.relationship?.labelParts ?? [],
         labelSeparator: data.relationship?.labelSeparator ?? ' - ',
+        sourceVisible: data.relationship?.visible ?? true,
+        mirrorMultiple: data.relationship?.mirror?.multiple ?? false,
+        mirrorVisible: data.relationship?.mirror?.visible ?? false,
+        mirrorLabel: data.relationship?.mirror?.label ?? '',
+        onDelete: data.relationship?.onDelete ?? 'SET_NULL',
       },
       category: data.category ?? [],
       multiple: data.multiple,
@@ -417,6 +422,13 @@ function FieldUpdateContent({
                 ? value.relationship.labelParts
                 : [],
               labelSeparator: value.relationship.labelSeparator || ' - ',
+              visible: value.relationship.sourceVisible,
+              onDelete: value.relationship.onDelete,
+              mirror: {
+                multiple: value.relationship.mirrorMultiple,
+                visible: value.relationship.mirrorVisible,
+                label: value.relationship.mirrorLabel || undefined,
+              },
             }
           : null,
         category: hasCategory ? value.category : [],
