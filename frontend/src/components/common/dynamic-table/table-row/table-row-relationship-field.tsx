@@ -318,7 +318,7 @@ function RelatedRowCreateDialogContent({
   );
 }
 
-function RelatedRowCreateDialog(
+export function RelatedRowCreateDialog(
   props: RelatedRowCreateDialogProps,
 ): React.JSX.Element {
   return (

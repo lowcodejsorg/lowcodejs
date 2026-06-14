@@ -96,6 +96,7 @@ export default class RelationshipMaterializationService implements RelationshipM
         order: 'asc',
         visible: mirrorVisible,
         relationshipId: null,
+        side: 'target',
       },
       dropdown: [],
       allowCustomDropdownOptions: false,
@@ -135,6 +136,7 @@ export default class RelationshipMaterializationService implements RelationshipM
         order: sourceField.relationship?.order ?? 'asc',
         visible: true,
         relationshipId: definition._id,
+        side: 'source',
       },
     });
     await this.fieldRepository.update({
@@ -145,6 +147,7 @@ export default class RelationshipMaterializationService implements RelationshipM
         order: 'asc',
         visible: mirrorVisible,
         relationshipId: definition._id,
+        side: 'target',
       },
     });
 
@@ -212,6 +215,7 @@ export default class RelationshipMaterializationService implements RelationshipM
           order: mirror.relationship?.order ?? 'asc',
           visible: params.mirrorVisible,
           relationshipId: definition._id,
+          side: 'target',
         },
       });
     }

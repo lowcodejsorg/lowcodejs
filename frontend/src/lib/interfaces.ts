@@ -230,6 +230,25 @@ export type IFieldConfigurationRelationship = {
   visible?: boolean;
   onDelete?: 'CASCADE' | 'SET_NULL' | 'RESTRICT';
   mirror?: { multiple: boolean; visible: boolean; label?: string };
+  /** Back-pointer para a RelationshipDefinition (fonte de verdade do vínculo). */
+  relationshipId?: string | null;
+  /**
+   * Lado da definition que este campo representa. A tela de detalhe usa para
+   * chamar os endpoints `/links` com o `side` correto.
+   */
+  side?: 'source' | 'target' | null;
+};
+
+/** Vínculo entre dois registros (pivô) gerido pelos endpoints `/links`. */
+export type IRelationshipLink = {
+  _id: string;
+  relationshipId: string;
+  sourceId: string;
+  targetId: string;
+  order: number;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type IFieldConfigurationGroup = {

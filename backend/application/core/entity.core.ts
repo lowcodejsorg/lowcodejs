@@ -424,6 +424,13 @@ export type IFieldConfigurationRelationship = {
   /** Back-pointer para a RelationshipDefinition que e a fonte de verdade. */
   relationshipId?: string | null;
   /**
+   * Qual lado da `RelationshipDefinition` este campo representa. Persistido para
+   * a tela de detalhe saber qual `side` passar aos endpoints `/links` sem
+   * precisar carregar a definition. `source` = campo declarante; `target` =
+   * campo-espelho.
+   */
+  side?: 'source' | 'target' | null;
+  /**
    * Comportamento ao excluir (§9). Config do lado source na criacao/edicao do
    * campo; a fonte de verdade efetiva e `RelationshipDefinition.onDelete`.
    */

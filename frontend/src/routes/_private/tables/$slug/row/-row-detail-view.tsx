@@ -9,6 +9,7 @@ import {
 import React from 'react';
 import { toast } from 'sonner';
 
+import { RelationshipManagementTable } from '@/components/common/dynamic-table/relationship-management/relationship-management-table';
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
@@ -268,6 +269,24 @@ export function RowDetailView({
   const canRemoveRow = permission.can('REMOVE_ROW');
   const canUpdateRow = permission.can('UPDATE_ROW');
 
+  // Campo RELATIONSHIP materializado (pivô) usa a tabela de gestão editável
+  // (vincular/desvincular/reordenar via /links). Legado sem definition cai no
+  // cell read-only de leitura compatível.
+  function renderRelationshipTab(field: IField): React.JSX.Element {
+    const relConfig = field.relationship;
+    if (relConfig?.relationshipId && relConfig?.side) {
+      return (
+        <RelationshipManagementTable
+          field={field}
+          record={data}
+          tableSlug={slug}
+          canEdit={canUpdateRow && data.trashedAt == null}
+        />
+      );
+    }
+    return renderCell(field, data, slug);
+  }
+
   return (
     <React.Fragment>
       <div className="shrink-0 px-2 pb-2 flex flex-row items-center justify-end gap-1">
@@ -379,7 +398,7 @@ export function RowDetailView({
                     value={field._id}
                     className="pt-2"
                   >
-                    {renderCell(field, data, slug)}
+                    {renderRelationshipTab(field)}
                   </TabsContent>
                 ),
               )}

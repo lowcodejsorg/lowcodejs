@@ -113,6 +113,10 @@ describe('Table Field Create - RELATIONSHIP', () => {
       result.value.relationship!.relationshipId,
     );
     expect(mirror!.relationship!.visible).toBe(false);
+
+    // `side` distingue os dois lados para a tela de detalhe chamar /links.
+    expect(result.value.relationship!.side).toBe('source');
+    expect(mirror!.relationship!.side).toBe('target');
   });
 
   it('deve criar campo RELATIONSHIP multiple=true', async () => {

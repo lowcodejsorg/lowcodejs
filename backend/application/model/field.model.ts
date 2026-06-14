@@ -84,6 +84,13 @@ const Relationship = new mongoose.Schema(
       ref: 'RelationshipDefinition',
       default: null,
     },
+    // Lado da definition que este campo representa ('source' = declarante,
+    // 'target' = espelho). Usado pela tela de detalhe para chamar /links.
+    side: {
+      type: String,
+      enum: ['source', 'target'],
+      default: null,
+    },
   },
   {
     _id: false,
