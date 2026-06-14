@@ -183,9 +183,26 @@ describe('MongooseRelationshipBuilder', () => {
     expect(doc.sets['produtos']).toEqual(['p1', 'p2']);
   });
 
-  it('hydrate nao toca doc quando nao ha links (fallback embedded legado)', async () => {
+  it('hydrate projeta vazio em campo gerido sem links (links sao a fonte de verdade)', async () => {
     const doc = new FakeDoc('ped1');
     await sut.hydrate([sourceField], [doc]);
+
+    // Campo gerido: 0 links => [] (nao cai no embedded legado stale).
+    expect(doc.sets['produtos']).toEqual([]);
+  });
+
+  it('hydrate ignora campo nao-gerido (sem relationshipId): mantem embedded legado', async () => {
+    const legacy: IField = {
+      ...sourceField,
+      relationship: {
+        table: PRODUTO_TABLE,
+        field: { _id: 'field-mirror', slug: 'pedidos' },
+        order: 'asc',
+        relationshipId: null,
+      },
+    };
+    const doc = new FakeDoc('ped1');
+    await sut.hydrate([legacy], [doc]);
 
     expect(doc.sets).toEqual({});
   });

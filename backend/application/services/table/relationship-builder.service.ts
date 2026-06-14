@@ -58,8 +58,10 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
           recordId,
           side,
         );
-        // Sem links: preserva o valor atual (fallback embedded legado).
-        if (ids.length === 0) continue;
+        // Campo gerido (tem relationshipId): os links sao a fonte de verdade —
+        // projeta sempre, inclusive vazio (vinculo removido NAO pode reaparecer
+        // do embedded legado stale). O fallback embedded vale so para campos
+        // nao-geridos, que `managedFields` ja descarta antes deste laco.
         doc.set(field.slug, ids);
       }
     }
