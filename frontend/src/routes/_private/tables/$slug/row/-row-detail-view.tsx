@@ -32,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { useTablePermission } from '@/hooks/use-table-permission';
@@ -228,15 +229,27 @@ export function RowDetailView({
     isFieldVisible,
   ]);
 
+  // Campos simples (sem grupo nem relacionamento) ficam no corpo; grupos e
+  // relacionamentos vão para seções com tabs (§10.2).
   const mainFields = React.useMemo(
     (): Array<IField> =>
-      visibleFields.filter((f) => f.type !== E_FIELD_TYPE.FIELD_GROUP),
+      visibleFields.filter(
+        (f) =>
+          f.type !== E_FIELD_TYPE.FIELD_GROUP &&
+          f.type !== E_FIELD_TYPE.RELATIONSHIP,
+      ),
     [visibleFields],
   );
 
   const groupFields = React.useMemo(
     (): Array<IField> =>
       visibleFields.filter((f) => f.type === E_FIELD_TYPE.FIELD_GROUP),
+    [visibleFields],
+  );
+
+  const relationshipFields = React.useMemo(
+    (): Array<IField> =>
+      visibleFields.filter((f) => f.type === E_FIELD_TYPE.RELATIONSHIP),
     [visibleFields],
   );
 
@@ -341,20 +354,75 @@ export function RowDetailView({
           </div>
         )}
 
+        {relationshipFields.length > 0 && (
+          <div className="flex flex-col gap-2 pt-4 border-t p-4">
+            <p className="text-sm font-semibold text-muted-foreground">
+              Relacionamentos
+            </p>
+            <Tabs defaultValue={relationshipFields[0]._id}>
+              <TabsList className="flex-wrap h-auto">
+                {relationshipFields.map(
+                  (field): React.JSX.Element => (
+                    <TabsTrigger
+                      key={field._id}
+                      value={field._id}
+                    >
+                      {field.name}
+                    </TabsTrigger>
+                  ),
+                )}
+              </TabsList>
+              {relationshipFields.map(
+                (field): React.JSX.Element => (
+                  <TabsContent
+                    key={field._id}
+                    value={field._id}
+                    className="pt-2"
+                  >
+                    {renderCell(field, data, slug)}
+                  </TabsContent>
+                ),
+              )}
+            </Tabs>
+          </div>
+        )}
+
         {groupFields.length > 0 && (
-          <div className="flex flex-col gap-6 pt-4 border-t">
-            {groupFields.map(
-              (field): React.JSX.Element => (
-                <TableRowFieldGroupCell
-                  key={field._id}
-                  row={data}
-                  field={field}
-                  tableSlug={slug}
-                  table={table}
-                  variant="detail"
-                />
-              ),
-            )}
+          <div className="flex flex-col gap-2 pt-4 border-t p-4">
+            <p className="text-sm font-semibold text-muted-foreground">
+              Grupos
+            </p>
+            <Tabs defaultValue={groupFields[0]._id}>
+              <TabsList className="flex-wrap h-auto">
+                {groupFields.map(
+                  (field): React.JSX.Element => (
+                    <TabsTrigger
+                      key={field._id}
+                      value={field._id}
+                    >
+                      {field.name}
+                    </TabsTrigger>
+                  ),
+                )}
+              </TabsList>
+              {groupFields.map(
+                (field): React.JSX.Element => (
+                  <TabsContent
+                    key={field._id}
+                    value={field._id}
+                    className="pt-2"
+                  >
+                    <TableRowFieldGroupCell
+                      row={data}
+                      field={field}
+                      tableSlug={slug}
+                      table={table}
+                      variant="detail"
+                    />
+                  </TabsContent>
+                ),
+              )}
+            </Tabs>
           </div>
         )}
       </section>
