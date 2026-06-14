@@ -288,6 +288,9 @@ export default class TableRowUpdateUseCase {
 
       return right(finalRow);
     } catch (error) {
+      // Violacoes de cardinalidade/vinculo (RELATIONSHIP) chegam como
+      // HTTPException pelo row.repository — preserva code/cause originais.
+      if (error instanceof HTTPException) return left(error);
       console.error('[table-rows > update][error]:', error);
       return left(
         HTTPException.InternalServerError(

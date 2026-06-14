@@ -79,11 +79,15 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
         ],
       },
 
+      // RELATIONSHIP nao usa `required` no schema: os valores sao geridos por
+      // links (extraidos do payload da row antes de persistir), entao o path
+      // embedded fica vazio em rows novas e um `required` quebraria o insert. A
+      // obrigatoriedade por endpoint e enforcada no use-case via RowPayloadValidator.
       [E_FIELD_TYPE.RELATIONSHIP]: {
         [field.slug]: [
           {
             type: FieldTypeMapper[field.type] || 'String',
-            required: Boolean(field.required || false),
+            required: false,
             ref: field?.relationship?.table?._id?.toString() ?? undefined,
           },
         ],

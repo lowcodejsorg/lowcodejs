@@ -20,6 +20,7 @@ import type {
   RelationshipCanLinkParams,
   RelationshipContractService,
   RelationshipLinkParams,
+  RelationshipReplaceParams,
 } from './relationship-contract.service';
 
 // Cardinalidade derivada dos dois `field.multiple` (nao persistida, §5.2).
@@ -163,5 +164,66 @@ export default class RelationshipService implements RelationshipContractService 
       recordId,
     );
     return found.map((link) => link.sourceId);
+  }
+
+  async replaceLinks(
+    params: RelationshipReplaceParams,
+  ): Promise<Either<HTTPException, true>> {
+    const { definition, recordId, side, desiredIds, sourceField, targetField } =
+      params;
+
+    // Conjunto desejado deduplicado, preservando a ordem de entrada.
+    const desired: string[] = [];
+    for (const id of desiredIds) {
+      if (id && !desired.includes(id)) desired.push(id);
+    }
+
+    const existing = await this.resolveLinkedIds(definition, recordId, side);
+    const existingSet = new Set(existing);
+    const desiredSet = new Set(desired);
+
+    // Remove os vinculos que sairam do conjunto desejado.
+    const links = await this.linksOnSide(definition._id, recordId, side);
+    for (const link of links) {
+      let otherId = link.sourceId;
+      if (side === 'source') otherId = link.targetId;
+      if (!desiredSet.has(otherId)) {
+        await this.linkRepository.delete(link._id);
+      }
+    }
+
+    // Adiciona os vinculos novos (na ordem desejada), aplicando canLink.
+    for (const otherId of desired) {
+      if (existingSet.has(otherId)) continue;
+
+      let sourceId = otherId;
+      let targetId = recordId;
+      if (side === 'source') {
+        sourceId = recordId;
+        targetId = otherId;
+      }
+
+      const linked = await this.link({
+        definition,
+        sourceField,
+        targetField,
+        sourceId,
+        targetId,
+      });
+      if (linked.isLeft()) return left(linked.value);
+    }
+
+    return right(true);
+  }
+
+  private async linksOnSide(
+    relationshipId: string,
+    recordId: string,
+    side: RelationshipLinkSide,
+  ): Promise<IRelationshipLink[]> {
+    if (side === 'source') {
+      return this.linkRepository.findBySource(relationshipId, recordId);
+    }
+    return this.linkRepository.findByTarget(relationshipId, recordId);
   }
 }

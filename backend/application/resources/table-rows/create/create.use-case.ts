@@ -209,6 +209,9 @@ export default class TableRowCreateUseCase {
 
       return right(row);
     } catch (error) {
+      // Violacoes de cardinalidade/vinculo (RELATIONSHIP) chegam como
+      // HTTPException pelo row.repository — preserva code/cause originais.
+      if (error instanceof HTTPException) return left(error);
       console.error('[table-rows > create][error]:', error);
       return left(
         HTTPException.InternalServerError(
