@@ -13,6 +13,7 @@ import { Storage } from '@application/model/storage.model';
 import { Table } from '@application/model/table.model';
 import { User } from '@application/model/user.model';
 
+import { FieldGroupBuilderContractService } from './field-group-builder-contract.service';
 import { ModelBuilderContractService } from './model-builder-contract.service';
 import { PopulateBuilderContractService } from './populate-builder-contract.service';
 
@@ -26,7 +27,10 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
    */
   private static readonly MAX_RELATIONSHIP_DEPTH = 5;
 
-  constructor(private readonly model: ModelBuilderContractService) {}
+  constructor(
+    private readonly model: ModelBuilderContractService,
+    private readonly fieldGroup: FieldGroupBuilderContractService,
+  ) {}
 
   getRelationships(fields: IField[] = []): IField[] {
     const types = [
@@ -151,49 +155,7 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
     }
 
     if (groups) {
-      for (const field of fields ?? []) {
-        if (field.type !== E_FIELD_TYPE.FIELD_GROUP) continue;
-
-        const groupSlug = field?.group?.slug;
-        const group = groups.find((g) => g.slug === groupSlug);
-        if (!group) continue;
-
-        for (const groupField of group.fields || []) {
-          if (groupField.type === E_FIELD_TYPE.USER) {
-            populate.push({
-              path: `${field.slug}.${groupField.slug}`,
-              model: User,
-              select: 'name email _id',
-            });
-          }
-
-          if (groupField.type === E_FIELD_TYPE.CREATOR) {
-            populate.push({
-              path: `${field.slug}.${groupField.slug}`,
-              model: User,
-              select: 'name email _id',
-            });
-          }
-
-          if (groupField.type === E_FIELD_TYPE.UPDATER) {
-            populate.push({
-              path: `${field.slug}.${groupField.slug}`,
-              model: User,
-              select: 'name email _id',
-            });
-          }
-
-          if (groupField.type === E_FIELD_TYPE.FILE) {
-            populate.push({
-              path: `${field.slug}.${groupField.slug}`,
-              model: Storage,
-            });
-          }
-
-          // RELATIONSHIP não existe mais dentro de grupo (§2): é sempre top-level
-          // e resolvido por links (migration 14 promoveu o legado). Sem ramo aqui.
-        }
-      }
+      populate.push(...this.fieldGroup.buildPopulate(fields ?? [], groups));
     }
 
     return [...populate];

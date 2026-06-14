@@ -1,7 +1,7 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import type {
-  IEmbeddedSchema,
   IField,
   IGroupConfiguration,
   ITableSchema,
@@ -9,10 +9,20 @@ import type {
 } from '@application/core/entity.core';
 import { E_FIELD_TYPE, E_SCHEMA_TYPE } from '@application/core/entity.core';
 
+import { FieldGroupBuilderContractService } from './field-group-builder-contract.service';
+import MongooseFieldGroupBuilder from './field-group-builder.service';
 import { SchemaBuilderContractService } from './schema-builder-contract.service';
 
 @Service()
 export default class MongooseSchemaBuilder implements SchemaBuilderContractService {
+  // Seam puro/stateless da fatia FIELD_GROUP. Em producao o DI injeta o impl
+  // registrado; o default mantem a construcao manual (e2e specs) funcionando sem
+  // wiring extra. Como o seam nao tem estado nem dependencias, ambos sao
+  // equivalentes em comportamento.
+  constructor(
+    private readonly fieldGroup: FieldGroupBuilderContractService = new MongooseFieldGroupBuilder(),
+  ) {}
+
   private static readonly FieldTypeMapper: Record<
     keyof typeof E_FIELD_TYPE,
     ValueOf<typeof E_SCHEMA_TYPE>
@@ -93,19 +103,10 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
         ],
       },
 
-      [E_FIELD_TYPE.FIELD_GROUP]: ((): Record<string, IEmbeddedSchema[]> => {
-        const groupSlug = field?.group?.slug;
-        const group = groups?.find((g) => g.slug === groupSlug);
-        return {
-          [field.slug]: [
-            {
-              type: 'Embedded' as const,
-              schema: group?._schema || {},
-              required: Boolean(field.required || false),
-            },
-          ],
-        };
-      })(),
+      [E_FIELD_TYPE.FIELD_GROUP]: this.fieldGroup.buildEmbeddedSchema(
+        field,
+        groups,
+      ),
 
       [E_FIELD_TYPE.DATE]: {
         [field.slug]: {
