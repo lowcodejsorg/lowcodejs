@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { E_TABLE_STYLE } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RelationshipDefinitionInMemoryRepository from '@application/repositories/relationship-definition/relationship-definition-in-memory.repository';
+import RelationshipLinkInMemoryRepository from '@application/repositories/relationship-link/relationship-link-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import RelationshipDeletionService from '@application/services/relationship/relationship-deletion.service';
+import RelationshipService from '@application/services/relationship/relationship.service';
 
 import TableDeleteUseCase from './delete.use-case';
 
@@ -14,9 +19,20 @@ describe('Table Delete Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    const linkRepository = new RelationshipLinkInMemoryRepository();
+    const definitionRepository = new RelationshipDefinitionInMemoryRepository();
+    const relationshipDeletion = new RelationshipDeletionService(
+      new RelationshipService(linkRepository),
+      definitionRepository,
+      linkRepository,
+      fieldInMemoryRepository,
+      tableInMemoryRepository,
+      new RowInMemoryRepository(),
+    );
     sut = new TableDeleteUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      relationshipDeletion,
     );
   });
 

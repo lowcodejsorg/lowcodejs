@@ -7,6 +7,7 @@ import HTTPException from '@application/core/exception.core';
 import { resolveCreatorId } from '@application/core/row-ownership.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { RelationshipDeletionContractService } from '@application/services/relationship/relationship-deletion-contract.service';
 
 import type { TableRowDeletePayload } from './delete.validator';
 
@@ -22,6 +23,7 @@ export default class TableRowDeleteUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
+    private readonly relationshipDeletion: RelationshipDeletionContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -57,6 +59,14 @@ export default class TableRowDeleteUseCase {
           );
         }
       }
+
+      // onDelete (§9): RESTRICT bloqueia; SET_NULL/CASCADE removem links e
+      // registros filhos antes de remover o proprio registro.
+      const onDelete = await this.relationshipDeletion.applyOnDelete(
+        table,
+        payload._id,
+      );
+      if (onDelete.isLeft()) return left(onDelete.value);
 
       const deleted = await this.rowRepository.deleteOne(table, payload._id);
 
