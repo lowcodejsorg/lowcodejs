@@ -124,7 +124,6 @@ function buildMirrorFieldDoc(params: {
     defaultValue: null,
     locked: false,
     native: false,
-    visible: false,
     allowCustomDropdownOptions: false,
     allowCreateRelationshipRecords: false,
     relationship: {
@@ -326,7 +325,6 @@ async function migrateField(
       $set: {
         'relationship.relationshipId': definitionId,
         'relationship.visible': true,
-        visible: true,
       },
     },
   );

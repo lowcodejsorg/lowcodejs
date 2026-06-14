@@ -36,14 +36,10 @@ type SettingMarkerDoc = {
 
 async function backfillFlags(
   systemDb: mongoose.mongo.Db,
-): Promise<{ visibleTop: number; visibleRel: number }> {
+): Promise<{ visibleRel: number }> {
   const fieldsCol = systemDb.collection('fields');
 
-  const visibleTop = await fieldsCol.updateMany(
-    { type: 'RELATIONSHIP', visible: { $exists: false } },
-    { $set: { visible: true } },
-  );
-
+  // `visible` vive em `relationship.visible` (sub-schema), não no nível do campo.
   const visibleRel = await fieldsCol.updateMany(
     {
       type: 'RELATIONSHIP',
@@ -53,10 +49,7 @@ async function backfillFlags(
     { $set: { 'relationship.visible': true } },
   );
 
-  return {
-    visibleTop: visibleTop.modifiedCount ?? 0,
-    visibleRel: visibleRel.modifiedCount ?? 0,
-  };
+  return { visibleRel: visibleRel.modifiedCount ?? 0 };
 }
 
 async function migrate(): Promise<void> {
@@ -93,9 +86,7 @@ async function migrate(): Promise<void> {
 
     logger.running();
     const result = await backfillFlags(systemDb);
-    logger.done(
-      `${result.visibleTop} visible top-level, ${result.visibleRel} relationship.visible`,
-    );
+    logger.done(`${result.visibleRel} relationship.visible preenchidos`);
 
     await SettingMarker.findOneAndUpdate(
       {},
