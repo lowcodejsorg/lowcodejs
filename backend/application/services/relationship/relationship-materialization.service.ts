@@ -21,6 +21,7 @@ import type {
   RelationshipMaterializationContractService,
   RelationshipMaterializeParams,
   RelationshipMaterializeResult,
+  RelationshipSyncConfigParams,
 } from './relationship-materialization-contract.service';
 
 @Service()
@@ -42,7 +43,9 @@ export default class RelationshipMaterializationService implements RelationshipM
       onDelete,
       mirrorMultiple,
       mirrorVisible,
+      mirrorLabel,
     } = params;
+    const mirrorName = mirrorLabel ?? sourceTable.name;
 
     const ref = sourceField.relationship?.table;
     if (!ref) {
@@ -72,7 +75,7 @@ export default class RelationshipMaterializationService implements RelationshipM
 
     // 1. Campo-espelho no target (lado oposto).
     const mirror = await this.fieldRepository.create({
-      name: sourceTable.name,
+      name: mirrorName,
       slug: mirrorSlug,
       type: E_FIELD_TYPE.RELATIONSHIP,
       required: false,
@@ -114,7 +117,7 @@ export default class RelationshipMaterializationService implements RelationshipM
         table: { _id: targetTable._id, slug: targetTable.slug },
         field: { _id: mirror._id, slug: mirror.slug },
         visible: mirrorVisible,
-        label: sourceTable.name,
+        label: mirrorName,
       },
       onDelete,
     });
@@ -152,6 +155,68 @@ export default class RelationshipMaterializationService implements RelationshipM
       definitionId: definition._id,
       mirrorFieldId: mirror._id,
     });
+  }
+
+  async syncConfig(
+    params: RelationshipSyncConfigParams,
+  ): Promise<Either<HTTPException, true>> {
+    const relationshipId = params.sourceField.relationship?.relationshipId;
+    if (!relationshipId) {
+      return left(
+        HTTPException.BadRequest(
+          'Campo de relacionamento ainda não materializado',
+          'RELATIONSHIP_NOT_MATERIALIZED',
+        ),
+      );
+    }
+
+    const definition = await this.definitionRepository.findById(relationshipId);
+    if (!definition) {
+      return left(
+        HTTPException.NotFound(
+          'Definição de relacionamento não encontrada',
+          'RELATIONSHIP_DEFINITION_NOT_FOUND',
+        ),
+      );
+    }
+
+    const mirrorLabel = params.mirrorLabel ?? definition.target.label;
+
+    await this.definitionRepository.update({
+      _id: definition._id,
+      onDelete: params.onDelete,
+      source: {
+        ...definition.source,
+        visible: params.sourceVisible,
+        label: params.sourceLabel,
+      },
+      target: {
+        ...definition.target,
+        visible: params.mirrorVisible,
+        label: mirrorLabel,
+      },
+    });
+
+    // Atualiza o campo-espelho: multiple (cardinalidade) + visibilidade.
+    const mirror = await this.fieldRepository.findById(
+      definition.target.field._id,
+    );
+    if (mirror) {
+      await this.fieldRepository.update({
+        _id: mirror._id,
+        multiple: params.mirrorMultiple,
+        relationship: {
+          ...mirror.relationship,
+          table: mirror.relationship?.table ?? definition.source.table,
+          field: mirror.relationship?.field ?? definition.source.field,
+          order: mirror.relationship?.order ?? 'asc',
+          visible: params.mirrorVisible,
+          relationshipId: definition._id,
+        },
+      });
+    }
+
+    return right(true);
   }
 
   private async loadTargetTable(

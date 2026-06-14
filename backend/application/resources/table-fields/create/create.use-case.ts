@@ -176,19 +176,21 @@ export default class TableFieldCreateUseCase {
       // Campo RELATIONSHIP nasce pivô: materializa a definition + o campo-espelho
       // no target e liga os dois lados. Roda depois do update/model da tabela
       // source para suportar auto-relacionamento (target == source carregado
-      // fresco dentro do service). Default onDelete=SET_NULL (seguro na criação
-      // interativa; a tela de config da Fase 4 deixa o usuário escolher).
+      // fresco dentro do service). Config (onDelete/mirror) vem do payload; sem
+      // ela, default seguro onDelete=SET_NULL e espelho single/invisível (1:N).
       if (
         field.type === E_FIELD_TYPE.RELATIONSHIP &&
         field.relationship?.table
       ) {
+        const config = field.relationship;
         const materialized = await this.relationshipMaterialization.materialize(
           {
             sourceField: field,
             sourceTable: table,
-            onDelete: E_RELATIONSHIP_ON_DELETE.SET_NULL,
-            mirrorMultiple: false,
-            mirrorVisible: false,
+            onDelete: config.onDelete ?? E_RELATIONSHIP_ON_DELETE.SET_NULL,
+            mirrorMultiple: Boolean(config.mirror?.multiple),
+            mirrorVisible: Boolean(config.mirror?.visible),
+            mirrorLabel: config.mirror?.label,
           },
         );
         if (materialized.isLeft()) return left(materialized.value);

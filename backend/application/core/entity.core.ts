@@ -423,6 +423,20 @@ export type IFieldConfigurationRelationship = {
   visible?: boolean;
   /** Back-pointer para a RelationshipDefinition que e a fonte de verdade. */
   relationshipId?: string | null;
+  /**
+   * Comportamento ao excluir (§9). Config do lado source na criacao/edicao do
+   * campo; a fonte de verdade efetiva e `RelationshipDefinition.onDelete`.
+   */
+  onDelete?: ValueOf<typeof E_RELATIONSHIP_ON_DELETE>;
+  /**
+   * Config do lado espelho (target) coletada na tela do campo source.
+   * `multiple` deriva a cardinalidade; `visible`/`label` controlam o endpoint.
+   */
+  mirror?: {
+    multiple: boolean;
+    visible: boolean;
+    label?: string;
+  };
 };
 
 export type IFieldConfigurationGroup = {

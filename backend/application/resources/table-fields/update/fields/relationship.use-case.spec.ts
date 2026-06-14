@@ -8,8 +8,10 @@ import {
 } from '@application/core/entity.core';
 import type { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RelationshipDefinitionInMemoryRepository from '@application/repositories/relationship-definition/relationship-definition-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import RelationshipMaterializationService from '@application/services/relationship/relationship-materialization.service';
 import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
 import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
@@ -72,6 +74,20 @@ async function createFieldAndTable(
 
   table.fields = [field];
 
+  // Tabelas alvo dos relacionamentos (born-pivot/sync exige target existente).
+  for (const slug of ['produtos', 'clientes']) {
+    await tableRepo.create({
+      name: slug,
+      slug,
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      style: E_TABLE_STYLE.LIST,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+  }
+
   return { field, table };
 }
 
@@ -121,6 +137,13 @@ describe('Table Field Update - RELATIONSHIP', () => {
       rowInMemoryRepository,
       schemaBuilder,
       modelBuilder,
+      new RelationshipMaterializationService(
+        fieldInMemoryRepository,
+        tableInMemoryRepository,
+        new RelationshipDefinitionInMemoryRepository(),
+        schemaBuilder,
+        modelBuilder,
+      ),
     );
   });
 

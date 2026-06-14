@@ -165,6 +165,41 @@ describe('RelationshipMaterializationService', () => {
     expect(result.value.cause).toBe('RELATIONSHIP_TARGET_NOT_FOUND');
   });
 
+  it('syncConfig atualiza onDelete e cardinalidade do espelho', async () => {
+    const source = await createSourceField(true);
+    const materialized = await sut.materialize({
+      sourceField: source,
+      sourceTable: pedidos,
+      onDelete: E_RELATIONSHIP_ON_DELETE.SET_NULL,
+      mirrorMultiple: false,
+      mirrorVisible: false,
+    });
+    if (!materialized.isRight()) throw new Error('Expected right');
+
+    // Recarrega o source já com relationshipId.
+    const linked = await fieldRepository.findById(source._id);
+
+    const synced = await sut.syncConfig({
+      sourceField: linked!,
+      onDelete: E_RELATIONSHIP_ON_DELETE.CASCADE,
+      sourceVisible: true,
+      sourceLabel: 'Produtos',
+      mirrorMultiple: true,
+      mirrorVisible: true,
+    });
+
+    expect(synced.isRight()).toBe(true);
+    const definition = definitionRepository.items[0];
+    expect(definition.onDelete).toBe(E_RELATIONSHIP_ON_DELETE.CASCADE);
+    expect(definition.target.visible).toBe(true);
+
+    const mirror = await fieldRepository.findById(
+      materialized.value.mirrorFieldId,
+    );
+    expect(mirror!.multiple).toBe(true);
+    expect(mirror!.relationship!.visible).toBe(true);
+  });
+
   it('auto-relacionamento: target == source materializa na mesma tabela', async () => {
     const selfField = await fieldRepository.create({
       name: 'Pai',

@@ -3,6 +3,7 @@ import z from 'zod';
 import {
   E_FIELD_FORMAT,
   E_PERMISSION_TARGET,
+  E_RELATIONSHIP_ON_DELETE,
 } from '@application/core/entity.core';
 
 // Binding de visibilidade do campo num contexto (Grupo|Public|Nobody).
@@ -49,6 +50,16 @@ const Relationship = z.object({
   customLabel: z.boolean().optional(),
   labelParts: z.array(RelationshipLabelPart).optional(),
   labelSeparator: z.string().optional(),
+  // Config por lado (pivô): onDelete + visibilidade do source + lado espelho.
+  visible: z.boolean().optional(),
+  onDelete: z.enum(E_RELATIONSHIP_ON_DELETE).optional(),
+  mirror: z
+    .object({
+      multiple: z.boolean().default(false),
+      visible: z.boolean().default(false),
+      label: z.string().trim().optional(),
+    })
+    .optional(),
 });
 
 const Dropdown = z.object({

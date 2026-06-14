@@ -6,6 +6,7 @@ import { left, right } from '@application/core/either.core';
 import {
   buildFieldPermissions,
   E_FIELD_TYPE,
+  E_RELATIONSHIP_ON_DELETE,
   E_TABLE_TYPE,
   type IField as Entity,
   type IField,
@@ -16,6 +17,7 @@ import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { RelationshipMaterializationContractService } from '@application/services/relationship/relationship-materialization-contract.service';
 import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
 import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 import { deleteCascadeDropdownConfigsForField } from '@extensions/forms/plugins/cascade-dropdown/cascade-dropdown-config.model';
@@ -53,6 +55,7 @@ export default class TableFieldUpdateUseCase {
     private readonly rowRepository: RowContractRepository,
     private readonly schemaBuilder: SchemaBuilderContractService,
     private readonly modelBuilder: ModelBuilderContractService,
+    private readonly relationshipMaterialization: RelationshipMaterializationContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -284,6 +287,45 @@ export default class TableFieldUpdateUseCase {
           fieldId: field._id,
           fieldSlug: field.slug,
         });
+      }
+
+      // Config de relacionamento (pivô): se ainda não materializado, materializa
+      // (born-pivot tardio); senão, sincroniza onDelete/visibilidade/cardinalidade
+      // do espelho na RelationshipDefinition.
+      if (
+        updatedField.type === E_FIELD_TYPE.RELATIONSHIP &&
+        updatedField.relationship?.table &&
+        !payload.trashed
+      ) {
+        const config = updatedField.relationship;
+        const onDelete = config.onDelete ?? E_RELATIONSHIP_ON_DELETE.SET_NULL;
+
+        if (!config.relationshipId) {
+          const materialized =
+            await this.relationshipMaterialization.materialize({
+              sourceField: updatedField,
+              sourceTable: table,
+              onDelete,
+              mirrorMultiple: Boolean(config.mirror?.multiple),
+              mirrorVisible: Boolean(config.mirror?.visible),
+              mirrorLabel: config.mirror?.label,
+            });
+          if (materialized.isLeft()) return left(materialized.value);
+        } else {
+          const synced = await this.relationshipMaterialization.syncConfig({
+            sourceField: updatedField,
+            onDelete,
+            sourceVisible: config.visible ?? true,
+            sourceLabel: updatedField.name,
+            mirrorMultiple: Boolean(config.mirror?.multiple),
+            mirrorVisible: Boolean(config.mirror?.visible),
+            mirrorLabel: config.mirror?.label,
+          });
+          if (synced.isLeft()) return left(synced.value);
+        }
+
+        const refreshed = await this.fieldRepository.findById(updatedField._id);
+        if (refreshed) updatedField = refreshed;
       }
 
       return right(updatedField);
