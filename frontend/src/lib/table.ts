@@ -137,7 +137,10 @@ type UpdateRowDefaultValue =
   | Array<Record<string, RowFieldValue>>;
 
 // Valor de UM campo individual (inclui FIELD_GROUP)
-type FieldValue = RowFieldValue | Array<Record<string, RowFieldValue>> | null;
+export type FieldValue =
+  | RowFieldValue
+  | Array<Record<string, RowFieldValue>>
+  | null;
 
 function toArray<T>(value: unknown): Array<T> {
   if (Array.isArray(value)) return value as Array<T>;
@@ -400,19 +403,24 @@ export function mountRowValue(value: FieldValue, field: IField): RowPayload {
 
 export function buildFieldValidator(
   field: IField,
-  value: null | undefined | string | { storages: Array<IStorage> },
+  value: FieldValue | undefined,
 ): string | undefined {
   const isRequired = field.required;
   const isMultiple = field.multiple;
 
-  const isStorage =
-    field.type === E_FIELD_TYPE.FILE &&
-    !!value &&
-    typeof value === 'object' &&
-    'storages' in value;
-
   const arrayInvalidValue = Array.isArray(value) && value.length === 0;
-  const storageInvalidValue = isStorage && value.storages.length === 0;
+
+  let storageInvalidValue = false;
+  if (
+    field.type === E_FIELD_TYPE.FILE &&
+    value !== null &&
+    value !== undefined &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    'storages' in value
+  ) {
+    storageInvalidValue = value.storages.length === 0;
+  }
 
   const invalidValue: boolean =
     value === null ||
