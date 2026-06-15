@@ -4,7 +4,9 @@ import { useEffect } from 'react';
 import z from 'zod';
 
 import { TableFieldRelationshipCardinality } from '@/components/common/dynamic-table/table-config/table-field-relationship-cardinality';
+import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import { ExtensionSlot } from '@/components/common/extension-slot';
+import { Switch } from '@/components/ui/switch';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import {
@@ -96,6 +98,7 @@ export const FieldUpdateSchema = z.object({
     mirrorVisible: z.boolean().default(false),
     mirrorLabel: z.string().default(''),
     onDelete: z.string().default('SET_NULL'),
+    formMode: z.enum(['select', 'manage']).default('select'),
   }),
   category: z.array(z.custom<ICategory>()).default([]),
   multiple: z.boolean().default(false),
@@ -143,6 +146,7 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
     mirrorVisible: false,
     mirrorLabel: '',
     onDelete: 'SET_NULL',
+    formMode: 'select',
   },
   category: [],
   multiple: false,
@@ -218,6 +222,22 @@ export const UpdateFieldFormFields = withForm({
     const relationshipMirrorMultiple = useStore(
       form.store,
       (state) => state.values.relationship.mirrorMultiple,
+    );
+    const relationshipFormMode = useStore(
+      form.store,
+      (state) => state.values.relationship.formMode,
+    );
+    const relationshipCustomLabel = useStore(
+      form.store,
+      (state) => state.values.relationship.customLabel,
+    );
+    const relationshipLabelParts = useStore(
+      form.store,
+      (state) => state.values.relationship.labelParts,
+    );
+    const relationshipLabelSeparator = useStore(
+      form.store,
+      (state) => state.values.relationship.labelSeparator,
     );
     const isTrashed = useStore(form.store, (state) => state.values.trashed);
 
@@ -559,6 +579,31 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
+        {/* Modo de vínculo no formulário (relacionamento) */}
+        {isRelationship && relationshipTableSlug && (
+          <div className="flex items-center justify-between gap-4 rounded-md border p-3">
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium">
+                Gerenciar registros internamente
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Ligado: tabelas internas (lado A/B), cards e Sheet para
+                criar/editar registros. Desligado: vínculo simples por
+                multi-select (selecionar/criar e vincular).
+              </p>
+            </div>
+            <Switch
+              checked={relationshipFormMode === 'manage'}
+              disabled={isDisabled || lockAllControls}
+              onCheckedChange={(checked: boolean): void => {
+                let nextMode: 'select' | 'manage' = 'select';
+                if (checked) nextMode = 'manage';
+                form.setFieldValue('relationship.formMode', nextMode);
+              }}
+            />
+          </div>
+        )}
+
         {/* Configuração de cardinalidade e vínculo (relacionamento) */}
         {isRelationship && relationshipTableSlug && (
           <>
@@ -582,25 +627,29 @@ export const UpdateFieldFormFields = withForm({
               )}
             </form.AppField>
 
-            <form.AppField name="relationship.sourceVisible">
-              {(field) => (
-                <field.FieldBooleanSwitch
-                  label={`Gerenciar a relação pela tabela ${tabelaAtual}`}
-                  description={`Mostra a tabela de vínculos ao abrir um registro de ${tabelaAtual}.`}
-                  disabled={isDisabled || lockAllControls}
-                />
-              )}
-            </form.AppField>
+            {relationshipFormMode === 'manage' && (
+              <>
+                <form.AppField name="relationship.sourceVisible">
+                  {(field) => (
+                    <field.FieldBooleanSwitch
+                      label={`Gerenciar a relação pela tabela ${tabelaAtual}`}
+                      description={`Mostra a tabela de vínculos ao abrir um registro de ${tabelaAtual}.`}
+                      disabled={isDisabled || lockAllControls}
+                    />
+                  )}
+                </form.AppField>
 
-            <form.AppField name="relationship.mirrorVisible">
-              {(field) => (
-                <field.FieldBooleanSwitch
-                  label={`Gerenciar a relação pela tabela ${tabelaRelacionada}`}
-                  description={`Mostra a tabela de vínculos ao abrir um registro de ${tabelaRelacionada}.`}
-                  disabled={isDisabled || lockAllControls}
-                />
-              )}
-            </form.AppField>
+                <form.AppField name="relationship.mirrorVisible">
+                  {(field) => (
+                    <field.FieldBooleanSwitch
+                      label={`Gerenciar a relação pela tabela ${tabelaRelacionada}`}
+                      description={`Mostra a tabela de vínculos ao abrir um registro de ${tabelaRelacionada}.`}
+                      disabled={isDisabled || lockAllControls}
+                    />
+                  )}
+                </form.AppField>
+              </>
+            )}
 
             <form.AppField name="relationship.onDelete">
               {(field) => (
@@ -615,6 +664,50 @@ export const UpdateFieldFormFields = withForm({
               sourceMultiple={fieldMultiple}
               mirrorMultiple={relationshipMirrorMultiple}
             />
+
+            {relationshipFormMode === 'select' && (
+              <>
+                <form.AppField name="relationship.fieldId">
+                  {(field) => (
+                    <field.TableFieldRelationshipFieldSelect
+                      label="Rótulo"
+                      placeholder="Selecione o campo de exibição"
+                      disabled={isDisabled || lockAllControls}
+                      tableSlug={relationshipTableSlug}
+                      onFieldChange={(slug) => {
+                        form.setFieldValue('relationship.fieldSlug', slug);
+                      }}
+                    />
+                  )}
+                </form.AppField>
+
+                <form.AppField name="relationship.customLabel">
+                  {(field) => (
+                    <field.FieldBooleanSwitch
+                      label="Personalizar exibição das opções"
+                      description="Por padrão a opção exibe apenas o campo principal. Ative para compor o label com um ou mais campos (inclusive de tabelas relacionadas) e escolher o separador."
+                      disabled={isDisabled || lockAllControls}
+                    />
+                  )}
+                </form.AppField>
+
+                {relationshipCustomLabel && (
+                  <TableFieldRelationshipLabelComposer
+                    rootTableSlug={relationshipTableSlug}
+                    parts={relationshipLabelParts}
+                    separator={relationshipLabelSeparator}
+                    disabled={isDisabled || lockAllControls}
+                    onChange={(parts, separator) => {
+                      form.setFieldValue('relationship.labelParts', parts);
+                      form.setFieldValue(
+                        'relationship.labelSeparator',
+                        separator,
+                      );
+                    }}
+                  />
+                )}
+              </>
+            )}
           </>
         )}
 
