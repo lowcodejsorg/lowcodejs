@@ -93,15 +93,15 @@ function getFormFields(table: ITable): Array<IField> {
     });
 }
 
-type AppFormInstance = ReturnType<typeof useAppForm>;
-
 function RelatedRowFormFields({
   form,
   fields,
   disabled,
   tableSlug,
 }: {
-  form: AppFormInstance;
+  // Seam do form.AppField: a instancia tipada de useAppForm nao casa com a
+  // assinatura generica unknown — mesmo padrao de RowFormFields no create-form.
+  form: any;
   fields: Array<IField>;
   disabled: boolean;
   tableSlug: string;
@@ -131,11 +131,8 @@ function RelatedRowFormFields({
             <form.AppField
               name={rowField.slug}
               validators={{
-                onChange: ({
-                  value,
-                }: {
-                  value: Parameters<typeof buildFieldValidator>[1];
-                }) => buildFieldValidator(rowField, value),
+                onChange: ({ value }: { value: any }) =>
+                  buildFieldValidator(rowField, value),
               }}
             >
               {(formRowField) => {
