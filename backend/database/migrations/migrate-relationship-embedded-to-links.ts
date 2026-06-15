@@ -263,10 +263,14 @@ async function migrateField(
   const mirrorSlug = `${sourceTable.slug}__rel_${field.slug}`;
 
   // 1. Campo-espelho no target.
-  const mirrorLabelField = await resolveSourceLabelField(systemDb, sourceTable, {
-    _id: field._id,
-    slug: field.slug,
-  });
+  const mirrorLabelField = await resolveSourceLabelField(
+    systemDb,
+    sourceTable,
+    {
+      _id: field._id,
+      slug: field.slug,
+    },
+  );
   const mirrorDoc = buildMirrorFieldDoc({
     _id: mirrorFieldId,
     name: sourceTable.name ?? sourceTable.slug,
