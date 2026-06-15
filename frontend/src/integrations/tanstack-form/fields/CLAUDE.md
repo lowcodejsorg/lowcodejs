@@ -45,7 +45,6 @@ registro no `createFormHook`.
 | `TableFieldDropdownOptions`         | Opcoes de dropdown                |
 | `TableFieldDropdownDefaultValue`    | Valor padrao de dropdown          |
 | `TableFieldRelationshipTableSelect` | Select de tabela relacionada      |
-| `TableFieldRelationshipFieldSelect` | Select de campo relacionado       |
 | `TableFieldRelationshipOrderSelect` | Select de ordem de relacionamento |
 | `TableFieldCategoryTree`            | Arvore de categorias              |
 

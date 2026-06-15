@@ -19,7 +19,6 @@ Select/Combobox + FieldError. As opcoes geralmente vem de constantes em
 | `table-field-dropdown-default-value.tsx`    | `TableFieldDropdownDefaultValue`    | Select para valor padrao de dropdown. Usa `__none__` como sentinela para "sem valor".                           |
 | `table-field-category-tree.tsx`             | `TableFieldCategoryTree`            | Editor de arvore de categorias usando `TreeEditor`.                                                             |
 | `table-field-relationship-table-select.tsx` | `TableFieldRelationshipTableSelect` | Combobox para selecionar tabela de relacionamento. Usa `TableCombobox` com `excludeSlug`.                       |
-| `table-field-relationship-field-select.tsx` | `TableFieldRelationshipFieldSelect` | Combobox para selecionar campo de relacionamento. Usa `FieldCombobox` com `tableSlug`.                          |
 | `table-field-relationship-order-select.tsx` | `TableFieldRelationshipOrderSelect` | Select de ordenacao (asc/desc) para relacionamento.                                                             |
 | `table-combobox-field.tsx`                  | `TableComboboxField`                | Combobox de tabela com tratamento de "nenhuma tabela" (Alert). Usa `useTablesReadPaginated`.                    |
 | `filtered-table-combobox-field.tsx`         | `FilteredTableComboboxField`        | Combobox de tabela filtrada por `allowedTableIds`. Busca tabelas via API com IDs filtrados.                     |
