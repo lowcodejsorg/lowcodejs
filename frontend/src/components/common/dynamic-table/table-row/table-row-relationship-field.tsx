@@ -1,6 +1,6 @@
 import { useStore } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
-import { PlusIcon } from 'lucide-react';
+import { PlusIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -11,19 +11,15 @@ import {
   UploadingProvider,
   useIsUploading,
 } from '@/components/common/file-upload/uploading-context';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Combobox,
-  ComboboxChip,
-  ComboboxChips,
-  ComboboxChipsInput,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-  ComboboxValue,
-  useComboboxAnchor,
 } from '@/components/ui/combobox';
 import {
   Dialog,
@@ -675,7 +671,6 @@ function DefaultRelationshipField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const anchorRef = useComboboxAnchor();
 
   const [searchQuery, setSearchQuery] = React.useState('');
   const [debouncedQuery, setDebouncedQuery] = React.useState('');
@@ -900,6 +895,31 @@ function DefaultRelationshipField({
   const singleInputValue = searchQuery;
 
   if (isMultiple) {
+    // Modo select múltiplo: chips dos vinculados (remover no X) + combobox para
+    // vincular existente ou criar inline (append). Os ids vão no payload e viram
+    // links no backend (persist/dual-write).
+    const selectedOptions = formField.state.value ?? [];
+
+    const removeOption = (id: string): void => {
+      formField.handleChange(
+        selectedOptions.filter((option) => option.value !== id),
+      );
+    };
+
+    const appendRow = (row: IRow | Array<IRow> | null): void => {
+      if (row === null || Array.isArray(row)) return;
+      const picked = row;
+      setSelectedCache((prev) => {
+        const next = new Map(prev);
+        next.set(picked._id, picked);
+        return next;
+      });
+      const option = { value: picked._id, label: getRowLabel(picked) };
+      setSearchQuery('');
+      if (selectedOptions.some((item) => item.value === option.value)) return;
+      formField.handleChange([...selectedOptions, option]);
+    };
+
     return (
       <React.Fragment>
         <Field
@@ -911,50 +931,47 @@ function DefaultRelationshipField({
             field={field}
             htmlFor={formField.name}
           />
+
+          {selectedItems.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {selectedItems.map((row) => (
+                <Badge
+                  key={row._id}
+                  variant="secondary"
+                  className="max-w-full gap-1 pr-1"
+                >
+                  <span className="truncate">{getRowLabel(row)}</span>
+                  {!disabled && (
+                    <button
+                      type="button"
+                      className="shrink-0 rounded-sm text-muted-foreground hover:text-foreground"
+                      aria-label="Remover vínculo"
+                      onClick={(): void => removeOption(row._id)}
+                    >
+                      <XIcon className="size-3.5" />
+                    </button>
+                  )}
+                </Badge>
+              ))}
+            </div>
+          )}
+
           <div className="relative">
             <Combobox
               data-test-id="table-row-relationship"
               items={items}
-              multiple
-              value={selectedItems}
-              onValueChange={handleValueChange}
+              value={null}
+              onValueChange={appendRow}
               inputValue={searchQuery}
               onInputValueChange={setSearchQuery}
               itemToStringLabel={(row: IRow) => getRowLabel(row)}
               disabled={disabled}
             >
-              <ComboboxChips
-                ref={anchorRef}
+              <ComboboxInput
+                placeholder={`Adicionar ${field.name.toLowerCase()}`}
                 className={cn(isInvalid && 'border-destructive')}
-              >
-                <ComboboxValue>
-                  {(values: Array<IRow>): React.ReactNode => {
-                    let chipsPlaceholder = `Selecione ${field.name.toLowerCase()}`;
-                    if (values.length > 0) {
-                      chipsPlaceholder = '';
-                    }
-                    return (
-                      <React.Fragment>
-                        {values.slice(0, 2).map((row) => (
-                          <ComboboxChip
-                            key={row._id}
-                            aria-label={getRowLabel(row)}
-                          >
-                            {getRowLabel(row)}
-                          </ComboboxChip>
-                        ))}
-                        {values.length > 2 && (
-                          <span className="text-muted-foreground text-xs">
-                            +{values.length - 2}
-                          </span>
-                        )}
-                        <ComboboxChipsInput placeholder={chipsPlaceholder} />
-                      </React.Fragment>
-                    );
-                  }}
-                </ComboboxValue>
-              </ComboboxChips>
-              <ComboboxContent anchor={anchorRef}>
+              />
+              <ComboboxContent>
                 <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
                 {isLoading && (
                   <div className="flex items-center justify-center p-3">
