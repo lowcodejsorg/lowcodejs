@@ -167,9 +167,8 @@ export function RelationshipRowsDataTable({
       data-slot="relationship-rows-data-table"
       className="space-y-2"
     >
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium ml-2">{field.name}</span>
-        {canEdit && (
+      {canEdit && (
+        <div className="flex items-center justify-end">
           <Button
             type="button"
             variant="outline"
@@ -180,8 +179,8 @@ export function RelationshipRowsDataTable({
             <PlusIcon className="size-4" />
             <span>Adicionar item</span>
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {linksQuery.isLoading && (
         <div className="flex items-center justify-center py-4">
