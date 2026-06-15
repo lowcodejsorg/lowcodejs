@@ -679,9 +679,12 @@ Reuso: o padrão repetidor do grupo de campos (`dynamic-table/group-rows/`) para
 caso múltiplo, mas escrevendo links (não subdocumento embedded); o caso single
 reusa o picker atual. A validação `required` é por lado (reusa `field.required`,
 §10.1): quando o campo daquele lado é `required`, o form exige ≥1 vínculo naquele
-lado, enforçado no use-case de criar/atualizar row da tabela daquele lado. Mesmo
-componente no detalhe (§10.2) e no form, alternado por `field.multiple`: caminho
-único de código.
+lado. Esse enforcement é **no frontend** (gating por contagem de links, antes do
+Salvar), não no use-case de row: os links nascem **após** o row existir, então no
+create do backend ainda não há vínculo para validar. Por isso o
+`RowPayloadValidator` **ignora** campos `RELATIONSHIP` no payload do row (eles são
+geridos via links). Mesmo componente no detalhe (§10.2) e no form, alternado por
+`field.multiple`: caminho único de código.
 
 ---
 

@@ -88,64 +88,7 @@ describe('Group Row Update - RELATIONSHIP', () => {
     expect(result.value.produtos).toEqual([VALID_OBJECT_ID_2]);
   });
 
-  it('deve rejeitar quando valor nao e array', async () => {
-    const field = makeRelationshipField(RELATIONSHIP_CONFIG, {
-      slug: 'produtos',
-    });
-    const table = await makeTableWithGroup(
-      tableRepository,
-      'itens',
-      [field],
-      [],
-      { slug: 'pedidos' },
-    );
-
-    const { row, itemId } = await createRowWithGroupItem(table, 'itens', {
-      produtos: [VALID_OBJECT_ID],
-    });
-
-    const result = await sut.execute({
-      slug: 'pedidos',
-      rowId: row._id,
-      groupSlug: 'itens',
-      itemId,
-      produtos: VALID_OBJECT_ID,
-    });
-
-    expect(result.isLeft()).toBe(true);
-    if (!result.isLeft()) throw new Error('Expected left');
-    expect(result.value.cause).toBe('INVALID_PAYLOAD_FORMAT');
-  });
-
-  it('deve rejeitar quando itens nao sao ObjectIds validos', async () => {
-    const field = makeRelationshipField(RELATIONSHIP_CONFIG, {
-      slug: 'produtos',
-    });
-    const table = await makeTableWithGroup(
-      tableRepository,
-      'itens',
-      [field],
-      [],
-      { slug: 'pedidos' },
-    );
-
-    const { row, itemId } = await createRowWithGroupItem(table, 'itens', {
-      produtos: [VALID_OBJECT_ID],
-    });
-
-    const result = await sut.execute({
-      slug: 'pedidos',
-      rowId: row._id,
-      groupSlug: 'itens',
-      itemId,
-      produtos: ['not-a-valid-id', 'also-invalid'],
-    });
-
-    expect(result.isLeft()).toBe(true);
-    if (!result.isLeft()) throw new Error('Expected left');
-    expect(result.value.cause).toBe('INVALID_PAYLOAD_FORMAT');
-  });
-
+  // RELATIONSHIP não é mais validado no payload do row (gerido via links).
   it('deve permitir update parcial sem campo obrigatorio (skipMissing)', async () => {
     const produtosField = makeRelationshipField(RELATIONSHIP_CONFIG, {
       slug: 'produtos',

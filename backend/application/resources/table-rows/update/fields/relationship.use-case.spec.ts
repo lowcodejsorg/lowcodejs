@@ -72,30 +72,7 @@ describe('Table Row Update - RELATIONSHIP', () => {
     expect(result.value.produtos).toEqual([VALID_OBJECT_ID_2]);
   });
 
-  it('deve rejeitar quando itens nao sao ObjectIds validos', async () => {
-    const field = makeRelationshipField(RELATIONSHIP_CONFIG, {
-      slug: 'produtos',
-    });
-    const table = await makeTable(tableRepository, [field], {
-      slug: 'pedidos',
-    });
-
-    const row = await rowRepository.create({
-      table,
-      data: { produtos: [VALID_OBJECT_ID] },
-    });
-
-    const result = await sut.execute({
-      slug: 'pedidos',
-      _id: row._id,
-      produtos: ['not-a-valid-id', 'also-invalid'],
-    });
-
-    expect(result.isLeft()).toBe(true);
-    if (!result.isLeft()) throw new Error('Expected left');
-    expect(result.value.cause).toBe('INVALID_PAYLOAD_FORMAT');
-  });
-
+  // RELATIONSHIP não é mais validado no payload do row (gerido via links).
   it('deve pular validacao de campo omitido (skipMissing)', async () => {
     const field = makeRelationshipField(RELATIONSHIP_CONFIG, {
       slug: 'produtos',

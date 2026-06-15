@@ -202,10 +202,13 @@ export class RowPayloadValidator {
     const errors: Record<string, string> = {};
 
     for (const field of fields) {
-      // Skip system-managed fields
+      // Skip system-managed fields. RELATIONSHIP não faz parte do payload do row:
+      // os vínculos são geridos via links (RelationshipBuilder.extract/persist),
+      // criados após o row existir; o required do lado é barrado no frontend.
       if (
         field.type === E_FIELD_TYPE.REACTION ||
-        field.type === E_FIELD_TYPE.EVALUATION
+        field.type === E_FIELD_TYPE.EVALUATION ||
+        field.type === E_FIELD_TYPE.RELATIONSHIP
       ) {
         continue;
       }
