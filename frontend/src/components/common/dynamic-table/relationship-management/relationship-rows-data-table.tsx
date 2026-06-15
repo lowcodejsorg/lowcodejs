@@ -115,6 +115,7 @@ export function RelationshipRowsDataTable({
         !f.trashed &&
         !f.native &&
         f.type !== E_FIELD_TYPE.FIELD_GROUP &&
+        f.type !== E_FIELD_TYPE.RELATIONSHIP &&
         f.type !== E_FIELD_TYPE.STATUS &&
         f.type !== E_FIELD_TYPE.TRASHED_AT &&
         isFieldVisible(f, 'list'),
