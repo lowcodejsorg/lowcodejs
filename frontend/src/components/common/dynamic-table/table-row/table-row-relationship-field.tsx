@@ -47,7 +47,7 @@ import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-import { useAppForm, withForm } from '@/integrations/tanstack-form/form-hook';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import {
   omitHiddenConditionalValues,
   resolveConditionalVisibility,
@@ -63,7 +63,6 @@ import {
   buildFieldValidator,
   buildRowPayload,
 } from '@/lib/table';
-import type { CreateRowDefaultValue } from '@/lib/table';
 import { cn } from '@/lib/utils';
 
 interface TableRowRelationshipFieldProps {
@@ -93,125 +92,6 @@ function getFormFields(table: ITable): Array<IField> {
       return sortA - sortB;
     });
 }
-
-// Sub-form de criar registro relacionado. Usa withForm para receber a instancia
-// de useAppForm tipada (sem any), conforme docs do TanStack Form (composition).
-// defaultValues so serve para type-check do form pai (Record de valores de row).
-const relatedRowFormDefaultValues: CreateRowDefaultValue = {};
-
-const RelatedRowFormFields = withForm({
-  defaultValues: relatedRowFormDefaultValues,
-  props: {
-    fields: new Array<IField>(),
-    disabled: false,
-    tableSlug: '',
-  },
-  render: function Render({
-    form,
-    fields,
-    disabled,
-    tableSlug,
-  }): React.JSX.Element {
-    return (
-      <section className="flex flex-wrap gap-4 p-1">
-        {fields.map((rowField) => {
-          if (rowField.native) return null;
-
-          // Sub-form de criar registro relacionado não exibe RELATIONSHIP
-          // (sem relacionamento-de-relacionamento), nem REACTION/EVALUATION/grupo.
-          if (
-            rowField.type === E_FIELD_TYPE.REACTION ||
-            rowField.type === E_FIELD_TYPE.EVALUATION ||
-            rowField.type === E_FIELD_TYPE.FIELD_GROUP ||
-            rowField.type === E_FIELD_TYPE.RELATIONSHIP
-          ) {
-            return null;
-          }
-
-          return (
-            <div
-              key={rowField._id}
-              className="min-w-[200px]"
-              style={{ width: `calc(${rowField.widthInForm ?? 50}% - 1rem)` }}
-            >
-              <form.AppField
-                name={rowField.slug}
-                validators={{
-                  onChange: ({ value }) => buildFieldValidator(rowField, value),
-                }}
-              >
-                {(formRowField) => {
-                  switch (rowField.type) {
-                    case E_FIELD_TYPE.TEXT_SHORT:
-                      return (
-                        <formRowField.TableRowTextField
-                          field={rowField}
-                          disabled={disabled}
-                        />
-                      );
-                    case E_FIELD_TYPE.TEXT_LONG:
-                      if (rowField.format === E_FIELD_FORMAT.RICH_TEXT) {
-                        return (
-                          <formRowField.TableRowRichTextField
-                            field={rowField}
-                            disabled={disabled}
-                          />
-                        );
-                      }
-                      return (
-                        <formRowField.TableRowTextareaField
-                          field={rowField}
-                          disabled={disabled}
-                        />
-                      );
-                    case E_FIELD_TYPE.DROPDOWN:
-                      return (
-                        <formRowField.TableRowDropdownField
-                          field={rowField}
-                          disabled={disabled}
-                          tableSlug={tableSlug}
-                        />
-                      );
-                    case E_FIELD_TYPE.DATE:
-                      return (
-                        <formRowField.TableRowDateField
-                          field={rowField}
-                          disabled={disabled}
-                        />
-                      );
-                    case E_FIELD_TYPE.FILE:
-                      return (
-                        <formRowField.TableRowFileField
-                          field={rowField}
-                          disabled={disabled}
-                        />
-                      );
-                    case E_FIELD_TYPE.CATEGORY:
-                      return (
-                        <formRowField.TableRowCategoryField
-                          field={rowField}
-                          disabled={disabled}
-                        />
-                      );
-                    case E_FIELD_TYPE.USER:
-                      return (
-                        <formRowField.TableRowUserField
-                          field={rowField}
-                          disabled={disabled}
-                        />
-                      );
-                    default:
-                      return null;
-                  }
-                }}
-              </form.AppField>
-            </div>
-          );
-        })}
-      </section>
-    );
-  },
-});
 
 function RelatedRowCreateDialogContent({
   table,
@@ -286,12 +166,109 @@ function RelatedRowCreateDialogContent({
         )}
 
         {conditionalConfig.status !== 'pending' && (
-          <RelatedRowFormFields
-            form={form}
-            fields={conditionalVisibility.visibleFields}
-            disabled={create.status === 'pending'}
-            tableSlug={table.slug}
-          />
+          // Campos renderizados inline: o form concreto (useAppForm) deixa o
+          // form.AppField inferir tipos (sem any) sem precisar de withForm — que
+          // num field component registrado reabriria o ciclo com o form-hook.
+          <section className="flex flex-wrap gap-4 p-1">
+            {conditionalVisibility.visibleFields.map((rowField) => {
+              if (rowField.native) return null;
+
+              // Sub-form não exibe RELATIONSHIP (sem relacionamento-de-
+              // relacionamento), nem REACTION/EVALUATION/grupo.
+              if (
+                rowField.type === E_FIELD_TYPE.REACTION ||
+                rowField.type === E_FIELD_TYPE.EVALUATION ||
+                rowField.type === E_FIELD_TYPE.FIELD_GROUP ||
+                rowField.type === E_FIELD_TYPE.RELATIONSHIP
+              ) {
+                return null;
+              }
+
+              return (
+                <div
+                  key={rowField._id}
+                  className="min-w-[200px]"
+                  style={{
+                    width: `calc(${rowField.widthInForm ?? 50}% - 1rem)`,
+                  }}
+                >
+                  <form.AppField
+                    name={rowField.slug}
+                    validators={{
+                      onChange: ({ value }) =>
+                        buildFieldValidator(rowField, value),
+                    }}
+                  >
+                    {(formRowField) => {
+                      const disabled = create.status === 'pending';
+                      switch (rowField.type) {
+                        case E_FIELD_TYPE.TEXT_SHORT:
+                          return (
+                            <formRowField.TableRowTextField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        case E_FIELD_TYPE.TEXT_LONG:
+                          if (rowField.format === E_FIELD_FORMAT.RICH_TEXT) {
+                            return (
+                              <formRowField.TableRowRichTextField
+                                field={rowField}
+                                disabled={disabled}
+                              />
+                            );
+                          }
+                          return (
+                            <formRowField.TableRowTextareaField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        case E_FIELD_TYPE.DROPDOWN:
+                          return (
+                            <formRowField.TableRowDropdownField
+                              field={rowField}
+                              disabled={disabled}
+                              tableSlug={table.slug}
+                            />
+                          );
+                        case E_FIELD_TYPE.DATE:
+                          return (
+                            <formRowField.TableRowDateField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        case E_FIELD_TYPE.FILE:
+                          return (
+                            <formRowField.TableRowFileField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        case E_FIELD_TYPE.CATEGORY:
+                          return (
+                            <formRowField.TableRowCategoryField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        case E_FIELD_TYPE.USER:
+                          return (
+                            <formRowField.TableRowUserField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        default:
+                          return null;
+                      }
+                    }}
+                  </form.AppField>
+                </div>
+              );
+            })}
+          </section>
         )}
       </form>
       <SheetFooter>
