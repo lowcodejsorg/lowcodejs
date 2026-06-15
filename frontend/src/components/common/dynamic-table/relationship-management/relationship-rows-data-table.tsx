@@ -108,12 +108,6 @@ export function RelationshipRowsDataTable({
     });
   }, [links, side, rowMap]);
 
-  const linkedIds = React.useMemo((): Set<string> => {
-    const set = new Set<string>();
-    for (const link of links) set.add(otherIdOf(link, side));
-    return set;
-  }, [links, side]);
-
   const columnFields = React.useMemo((): Array<IField> => {
     const fields = relatedTable.data?.fields ?? [];
     return fields.filter(
@@ -312,7 +306,6 @@ export function RelationshipRowsDataTable({
           relationshipId={relationshipId}
           side={side}
           recordId={recordId}
-          linkedIds={linkedIds}
           editRow={editRow}
           onChanged={invalidate}
         />

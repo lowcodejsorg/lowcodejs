@@ -22,29 +22,19 @@ import { GripVerticalIcon, PlusIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
-import { RelatedRowCreateDialog } from '@/components/common/dynamic-table/table-row/table-row-relationship-field';
 import {
   UploadingProvider,
   useIsUploading,
 } from '@/components/common/file-upload/uploading-context';
 import { Button } from '@/components/ui/button';
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from '@/components/ui/combobox';
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useRelationshipLinkCreate } from '@/hooks/tanstack-query/use-relationship-link-create';
 import { useRelationshipLinkDelete } from '@/hooks/tanstack-query/use-relationship-link-delete';
 import { useRelationshipLinksList } from '@/hooks/tanstack-query/use-relationship-links-list';
 import { useRelationshipLinksReorder } from '@/hooks/tanstack-query/use-relationship-links-reorder';
-import { useRelationshipRowsReadPaginatedInfinite } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated-infinite';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useAutoSave } from '@/hooks/use-auto-save';
@@ -53,8 +43,8 @@ import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRelationshipLink, IRow, ITable } from '@/lib/interfaces';
 import { isFieldShownInContext } from '@/lib/permission';
-import { resolveRelationshipLabel } from '@/lib/relationship-label';
 import {
+  buildCreateRowDefaultValues,
   buildFieldValidator,
   buildRowPayload,
   buildUpdateRowDefaultValues,
@@ -81,7 +71,9 @@ export function isSingleLocked(
 }
 
 // Campos editáveis da tabela relacionada exibidos em cada card, na ordem do
-// formulário. Exclui nativos e tipos não renderáveis no sub-form inline.
+// formulário. Só campos simples — exclui nativos, FIELD_GROUP e RELATIONSHIP:
+// o vínculo com o registro atual é automático pelo _id, então não faz sentido
+// pedir para selecionar a tabela atual de novo nem aninhar outros vínculos.
 export function getRelatedFormFields(table: ITable): Array<IField> {
   const order = table.fieldOrderForm;
   return table.fields
@@ -90,6 +82,7 @@ export function getRelatedFormFields(table: ITable): Array<IField> {
         !field.trashed &&
         !field.native &&
         field.type !== E_FIELD_TYPE.FIELD_GROUP &&
+        field.type !== E_FIELD_TYPE.RELATIONSHIP &&
         field.type !== E_FIELD_TYPE.REACTION &&
         field.type !== E_FIELD_TYPE.EVALUATION &&
         field.type !== E_FIELD_TYPE.IDENTIFIER &&
@@ -106,6 +99,22 @@ export function getRelatedFormFields(table: ITable): Array<IField> {
       if (rawB === -1) sortB = Infinity;
       return sortA - sortB;
     });
+}
+
+// Todos os campos obrigatórios preenchidos — gate do auto-save do card novo
+// (create valida tudo). Mesma semântica do group-rows-inline.
+function allRequiredFilled(
+  payload: Record<string, unknown>,
+  fields: Array<IField>,
+): boolean {
+  for (const field of fields) {
+    if (!field.required) continue;
+    const value = payload[field.slug];
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string' && value.length === 0) return false;
+    if (Array.isArray(value) && value.length === 0) return false;
+  }
+  return true;
 }
 
 interface RelationshipRowsInlineProps {
@@ -140,16 +149,14 @@ export function RelationshipRowsInline(
 
   const queryClient = useQueryClient();
   const [page, setPage] = React.useState<number>(1);
-  const [search, setSearch] = React.useState<string>('');
-  const [pickerValue, setPickerValue] = React.useState<IRow | null>(null);
-  const [isCreateOpen, setIsCreateOpen] = React.useState<boolean>(false);
-  const [ensuring, setEnsuring] = React.useState<boolean>(false);
+  const [adding, setAdding] = React.useState<boolean>(false);
+  const [drafts, setDrafts] = React.useState<Array<string>>([]);
+  const tempKeyRef = React.useRef<number>(0);
   const [orderedLinks, setOrderedLinks] = React.useState<
     Array<IRelationshipLink>
   >([]);
 
   const relatedTable = useReadTable({ slug: otherTableSlug });
-  const relatedFields = relatedTable.data?.fields;
 
   const relatedFormFields = React.useMemo((): Array<IField> => {
     if (!relatedTable.data) return [];
@@ -192,19 +199,6 @@ export function RelationshipRowsInline(
     });
   }, [queryClient, parentTableSlug]);
 
-  const createLink = useRelationshipLinkCreate({
-    tableSlug: parentTableSlug,
-    relationshipId,
-    side,
-    recordId,
-    onSuccess(): void {
-      invalidateRows();
-    },
-    onError(): void {
-      toast.error('Não foi possível vincular o registro');
-    },
-  });
-
   const deleteLink = useRelationshipLinkDelete({
     tableSlug: parentTableSlug,
     relationshipId,
@@ -228,59 +222,27 @@ export function RelationshipRowsInline(
     },
   });
 
-  const linkedIds = React.useMemo((): Set<string> => {
-    const set = new Set<string>();
-    for (const link of links) set.add(otherIdOf(link, side));
-    return set;
-  }, [links, side]);
-
-  const pickerQuery = useRelationshipRowsReadPaginatedInfinite({
-    tableSlug: otherTableSlug,
-    fieldSlug: field.slug,
-    search,
-  });
-
-  const pickerItems = React.useMemo((): Array<IRow> => {
-    const rows = pickerQuery.data?.pages.flatMap((p) => p.data) ?? [];
-    return rows.filter((row) => !linkedIds.has(String(row._id)));
-  }, [pickerQuery.data?.pages, linkedIds]);
-
   const ensureParent = React.useCallback(async (): Promise<boolean> => {
     if (recordId) return true;
     if (!onEnsureParentRow) return false;
-    setEnsuring(true);
-    try {
-      const ensured = await onEnsureParentRow();
-      if (!ensured) return false;
-      onChildAdded?.();
-      return true;
-    } finally {
-      setEnsuring(false);
-    }
+    const ensured = await onEnsureParentRow();
+    if (!ensured) return false;
+    onChildAdded?.();
+    return true;
   }, [recordId, onEnsureParentRow, onChildAdded]);
-
-  function handlePick(row: IRow | null): void {
-    setPickerValue(null);
-    setSearch('');
-    if (!row) return;
-    onChildAdded?.();
-    createLink.mutate({ otherId: String(row._id) });
-  }
-
-  function handleCreated(row: IRow): void {
-    setIsCreateOpen(false);
-    onChildAdded?.();
-    createLink.mutate({ otherId: String(row._id) });
-  }
-
-  async function handleOpenCreate(): Promise<void> {
-    const ok = await ensureParent();
-    if (!ok) return;
-    setIsCreateOpen(true);
-  }
 
   function handleRemove(linkId: string): void {
     deleteLink.mutate({ linkId });
+  }
+
+  function handleDraftRemove(key: string): void {
+    setDrafts((prev) => prev.filter((k) => k !== key));
+  }
+
+  function handleDraftCreated(key: string): void {
+    setDrafts((prev) => prev.filter((k) => k !== key));
+    onChildAdded?.();
+    invalidateRows();
   }
 
   function handleDragEnd(event: DragEndEvent): void {
@@ -298,6 +260,28 @@ export function RelationshipRowsInline(
     });
   }
 
+  const cardCount = orderedLinks.length + drafts.length;
+  const singleLocked = isSingleLocked(isMultiple, cardCount);
+
+  const handleAdd = React.useCallback(async (): Promise<void> => {
+    if (
+      adding ||
+      isSingleLocked(isMultiple, orderedLinks.length + drafts.length)
+    ) {
+      return;
+    }
+    setAdding(true);
+    try {
+      const ok = await ensureParent();
+      if (!ok) return;
+      tempKeyRef.current += 1;
+      const key = `draft-${tempKeyRef.current.toString()}`;
+      setDrafts((prev) => [...prev, key]);
+    } finally {
+      setAdding(false);
+    }
+  }, [adding, isMultiple, orderedLinks.length, drafts.length, ensureParent]);
+
   if (!relationshipId) {
     return (
       <div
@@ -312,8 +296,7 @@ export function RelationshipRowsInline(
     );
   }
 
-  // Form público anônimo: sem registro pai e sem como criar rascunho. Não há
-  // como gerenciar vínculos antes de o registro existir.
+  // Form público anônimo: sem registro pai e sem como criar rascunho.
   if (!recordId && !onEnsureParentRow) {
     return (
       <div
@@ -322,19 +305,16 @@ export function RelationshipRowsInline(
       >
         <span className="text-sm font-medium ml-2">{field.name}</span>
         <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-          Salve o registro para vincular {field.name.toLowerCase()}.
+          Salve o registro para adicionar {field.name.toLowerCase()}.
         </p>
       </div>
     );
   }
 
-  const singleLocked = isSingleLocked(isMultiple, orderedLinks.length);
-  const showPicker = canEdit && !singleLocked && Boolean(recordId);
-  const showEnsureButton =
-    canEdit && !singleLocked && !recordId && Boolean(onEnsureParentRow);
   // Reordenar só com página única: a ordem é o índice absoluto.
   const singlePage = !meta || meta.lastPage <= 1;
   const canReorder = isMultiple && canEdit && singlePage;
+  const showAdd = canEdit && !singleLocked;
 
   return (
     <div
@@ -344,18 +324,18 @@ export function RelationshipRowsInline(
     >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium ml-2">{field.name}</span>
-        {showEnsureButton && (
+        {showAdd && (
           <Button
             type="button"
             variant="outline"
             size="sm"
-            disabled={ensuring}
+            disabled={adding}
             onClick={(): void => {
-              void ensureParent();
+              void handleAdd();
             }}
           >
-            {ensuring && <Spinner />}
-            {!ensuring && <PlusIcon className="size-4" />}
+            {adding && <Spinner />}
+            {!adding && <PlusIcon className="size-4" />}
             <span>Adicionar item</span>
           </Button>
         )}
@@ -367,7 +347,7 @@ export function RelationshipRowsInline(
         </div>
       )}
 
-      {!linksQuery.isLoading && orderedLinks.length === 0 && (
+      {!linksQuery.isLoading && cardCount === 0 && (
         <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
           Nenhum item adicionado.
         </p>
@@ -406,6 +386,27 @@ export function RelationshipRowsInline(
         </DndContext>
       )}
 
+      {drafts.length > 0 && (
+        <div className="space-y-3">
+          {drafts.map(
+            (key, index): React.JSX.Element => (
+              <RelationshipDraftCard
+                key={key}
+                index={orderedLinks.length + index}
+                otherTableSlug={otherTableSlug}
+                parentTableSlug={parentTableSlug}
+                relationshipId={relationshipId}
+                side={side}
+                recordId={recordId}
+                fields={relatedFormFields}
+                onCreated={(): void => handleDraftCreated(key)}
+                onCancel={(): void => handleDraftRemove(key)}
+              />
+            ),
+          )}
+        </div>
+      )}
+
       {meta && meta.lastPage > 1 && (
         <div className="flex items-center justify-end gap-2 text-sm">
           <Button
@@ -432,87 +433,10 @@ export function RelationshipRowsInline(
         </div>
       )}
 
-      {showPicker && (
-        <div className="flex flex-col gap-2 border-t pt-3">
-          <Combobox
-            items={pickerItems}
-            value={pickerValue}
-            onValueChange={handlePick}
-            inputValue={search}
-            onInputValueChange={setSearch}
-            itemToStringLabel={(row: IRow): string =>
-              resolveRelationshipLabel(row, relConfig, relatedFields)
-            }
-            disabled={createLink.status === 'pending'}
-          >
-            <ComboboxInput
-              placeholder={`Vincular ${field.name.toLowerCase()}`}
-            />
-            <ComboboxContent>
-              <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
-              {pickerQuery.isLoading && (
-                <div className="flex items-center justify-center p-3">
-                  <Spinner className="opacity-50" />
-                </div>
-              )}
-              {!pickerQuery.isLoading && (
-                <React.Fragment>
-                  <ComboboxList>
-                    {(row: IRow): React.ReactNode => (
-                      <ComboboxItem
-                        key={row._id}
-                        value={row}
-                      >
-                        {resolveRelationshipLabel(
-                          row,
-                          relConfig,
-                          relatedFields,
-                        )}
-                      </ComboboxItem>
-                    )}
-                  </ComboboxList>
-                  <ComboboxLoadMore
-                    hasNextPage={pickerQuery.hasNextPage}
-                    isFetchingNextPage={pickerQuery.isFetchingNextPage}
-                    onLoadMore={(): void => {
-                      void pickerQuery.fetchNextPage();
-                    }}
-                  />
-                </React.Fragment>
-              )}
-            </ComboboxContent>
-          </Combobox>
-
-          {field.allowCreateRelationshipRecords && relatedTable.data && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="self-start"
-              onClick={(): void => {
-                void handleOpenCreate();
-              }}
-            >
-              <PlusIcon className="size-4" />
-              <span>Novo registro</span>
-            </Button>
-          )}
-        </div>
-      )}
-
       {singleLocked && canEdit && (
         <p className="text-xs text-muted-foreground">
-          Este lado aceita apenas um vínculo. Remova o atual para trocar.
+          Este lado aceita apenas um item. Remova o atual para trocar.
         </p>
-      )}
-
-      {relatedTable.data && (
-        <RelatedRowCreateDialog
-          open={isCreateOpen}
-          onOpenChange={setIsCreateOpen}
-          table={relatedTable.data}
-          onCreated={handleCreated}
-        />
       )}
     </div>
   );
@@ -712,6 +636,237 @@ function RelationshipItemCardForm({
   }, [cancelPending, onRemove]);
 
   return (
+    <RelationshipCardShell
+      index={index}
+      status={status}
+      lastSavedAt={lastSavedAt}
+      canEdit={canEdit}
+      isRemoving={isRemoving}
+      onRemove={handleRemove}
+      dragHandle={dragHandle}
+    >
+      <div className="flex flex-wrap gap-4">
+        {fields.map((cardField) => (
+          <div
+            key={cardField._id}
+            className="min-w-[200px]"
+            style={{ width: `calc(${cardField.widthInForm ?? 50}% - 1rem)` }}
+          >
+            <form.AppField
+              name={cardField.slug}
+              validators={{
+                onChange: ({ value }: { value: any }): string | undefined =>
+                  buildFieldValidator(cardField, value),
+              }}
+            >
+              {(formField: any): React.JSX.Element | null =>
+                renderRelationshipCardField(
+                  formField,
+                  cardField,
+                  otherTableSlug,
+                )
+              }
+            </form.AppField>
+          </div>
+        ))}
+      </div>
+    </RelationshipCardShell>
+  );
+}
+
+interface RelationshipDraftCardProps {
+  index: number;
+  otherTableSlug: string;
+  parentTableSlug: string;
+  relationshipId: string;
+  side: 'source' | 'target';
+  recordId: string;
+  fields: Array<IField>;
+  onCreated: () => void;
+  onCancel: () => void;
+}
+
+function RelationshipDraftCard(
+  props: RelationshipDraftCardProps,
+): React.JSX.Element {
+  return (
+    <UploadingProvider>
+      <RelationshipDraftCardContent {...props} />
+    </UploadingProvider>
+  );
+}
+
+function RelationshipDraftCardContent({
+  index,
+  otherTableSlug,
+  parentTableSlug,
+  relationshipId,
+  side,
+  recordId,
+  fields,
+  onCreated,
+  onCancel,
+}: RelationshipDraftCardProps): React.JSX.Element {
+  const isUploading = useIsUploading();
+
+  const defaultValues = React.useMemo((): ReturnType<
+    typeof buildCreateRowDefaultValues
+  > => {
+    return buildCreateRowDefaultValues(fields);
+  }, [fields]);
+
+  const triggerSaveRef = React.useRef<() => void>((): void => {});
+  const createdRef = React.useRef<boolean>(false);
+
+  const form = useAppForm({
+    defaultValues,
+    onSubmit: async (): Promise<void> => {},
+    listeners: {
+      onBlur: (): void => {
+        triggerSaveRef.current();
+      },
+      onChange: (): void => {
+        triggerSaveRef.current();
+      },
+    },
+  });
+
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+
+  const createRow = useCreateTableRow({
+    onError(error: AxiosError | Error): void {
+      handleApiError(error, {
+        context: 'Erro ao criar o registro relacionado',
+      });
+    },
+  });
+
+  const createLink = useRelationshipLinkCreate({
+    tableSlug: parentTableSlug,
+    relationshipId,
+    side,
+    recordId,
+    onError(): void {
+      toast.error('Não foi possível vincular o registro');
+    },
+  });
+
+  const performSave = React.useCallback(async (): Promise<void> => {
+    if (createdRef.current) return;
+    if (createRow.isPending || createLink.isPending) return;
+    if (isUploading) return;
+    const payload = buildRowPayload(form.state.values, fields);
+    if (!allRequiredFilled(payload, fields)) return;
+    createdRef.current = true;
+    try {
+      const created = await createRow.mutateAsync({
+        slug: otherTableSlug,
+        data: payload,
+      });
+      await createLink.mutateAsync({ otherId: String(created._id) });
+      onCreated();
+    } catch {
+      createdRef.current = false;
+    }
+  }, [
+    createRow,
+    createLink,
+    isUploading,
+    form,
+    fields,
+    otherTableSlug,
+    onCreated,
+  ]);
+
+  const canSaveCallback = React.useCallback((): boolean => {
+    if (!isDirty) return false;
+    return allRequiredFilled(
+      buildRowPayload(form.state.values, fields),
+      fields,
+    );
+  }, [isDirty, form, fields]);
+
+  const isDirtyCallback = React.useCallback((): boolean => isDirty, [isDirty]);
+
+  const { status, lastSavedAt, triggerSave, cancelPending } = useAutoSave({
+    onSave: performSave,
+    isDraft: false,
+    canSave: canSaveCallback,
+    isDirty: isDirtyCallback,
+  });
+
+  triggerSaveRef.current = triggerSave;
+
+  const isPending = createRow.isPending || createLink.isPending;
+
+  const handleRemove = React.useCallback((): void => {
+    cancelPending();
+    onCancel();
+  }, [cancelPending, onCancel]);
+
+  return (
+    <RelationshipCardShell
+      index={index}
+      status={status}
+      lastSavedAt={lastSavedAt}
+      canEdit={true}
+      isRemoving={isPending}
+      onRemove={handleRemove}
+      dragHandle={null}
+    >
+      <div className="flex flex-wrap gap-4">
+        {fields.map((cardField) => (
+          <div
+            key={cardField._id}
+            className="min-w-[200px]"
+            style={{ width: `calc(${cardField.widthInForm ?? 50}% - 1rem)` }}
+          >
+            <form.AppField
+              name={cardField.slug}
+              validators={{
+                onChange: ({ value }: { value: any }): string | undefined =>
+                  buildFieldValidator(cardField, value),
+              }}
+            >
+              {(formField: any): React.JSX.Element | null =>
+                renderRelationshipCardField(
+                  formField,
+                  cardField,
+                  otherTableSlug,
+                )
+              }
+            </form.AppField>
+          </div>
+        ))}
+      </div>
+    </RelationshipCardShell>
+  );
+}
+
+interface RelationshipCardShellProps {
+  index: number;
+  status: React.ComponentProps<typeof AutoSaveStatusIndicator>['status'];
+  lastSavedAt: React.ComponentProps<
+    typeof AutoSaveStatusIndicator
+  >['lastSavedAt'];
+  canEdit: boolean;
+  isRemoving: boolean;
+  onRemove: () => void;
+  dragHandle: React.ReactNode;
+  children: React.ReactNode;
+}
+
+function RelationshipCardShell({
+  index,
+  status,
+  lastSavedAt,
+  canEdit,
+  isRemoving,
+  onRemove,
+  dragHandle,
+  children,
+}: RelationshipCardShellProps): React.JSX.Element {
+  return (
     <div className="rounded-md border p-3 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -730,35 +885,14 @@ function RelationshipItemCardForm({
             variant="ghost"
             size="icon-sm"
             disabled={isRemoving}
-            onClick={handleRemove}
+            onClick={onRemove}
           >
             {isRemoving && <Spinner />}
             {!isRemoving && <TrashIcon className="size-3.5" />}
           </Button>
         )}
       </div>
-
-      <div className="flex flex-wrap gap-4">
-        {fields.map((field) => (
-          <div
-            key={field._id}
-            className="min-w-[200px]"
-            style={{ width: `calc(${field.widthInForm ?? 50}% - 1rem)` }}
-          >
-            <form.AppField
-              name={field.slug}
-              validators={{
-                onChange: ({ value }: { value: any }): string | undefined =>
-                  buildFieldValidator(field, value),
-              }}
-            >
-              {(formField: any): React.JSX.Element | null =>
-                renderRelationshipCardField(formField, field, otherTableSlug)
-              }
-            </form.AppField>
-          </div>
-        ))}
-      </div>
+      {children}
     </div>
   );
 }
@@ -811,14 +945,6 @@ export function renderRelationshipCardField(
         <formField.TableRowFileField
           field={field}
           disabled={false}
-        />
-      );
-    case E_FIELD_TYPE.RELATIONSHIP:
-      return (
-        <formField.TableRowRelationshipField
-          field={field}
-          disabled={false}
-          tableSlug={tableSlug}
         />
       );
     case E_FIELD_TYPE.CATEGORY:
