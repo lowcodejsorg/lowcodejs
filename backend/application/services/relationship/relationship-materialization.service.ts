@@ -73,6 +73,13 @@ export default class RelationshipMaterializationService implements RelationshipM
       targetTable,
     );
 
+    // Rótulo do espelho: campo legível da tabela source (não o campo de
+    // relacionamento). Fallback para o próprio campo source.
+    const mirrorLabelField = this.pickLabelField(sourceTable, {
+      _id: sourceField._id,
+      slug: sourceField.slug,
+    });
+
     // 1. Campo-espelho no target (lado oposto).
     const mirror = await this.fieldRepository.create({
       name: mirrorName,
@@ -92,7 +99,7 @@ export default class RelationshipMaterializationService implements RelationshipM
       defaultValue: null,
       relationship: {
         table: { _id: sourceTable._id, slug: sourceTable.slug },
-        field: { _id: sourceField._id, slug: sourceField.slug },
+        field: mirrorLabelField,
         order: 'asc',
         visible: mirrorVisible,
         relationshipId: null,
@@ -129,10 +136,12 @@ export default class RelationshipMaterializationService implements RelationshipM
       relationship: {
         ...sourceField.relationship,
         table: ref,
-        field: sourceField.relationship?.field ?? {
-          _id: mirror._id,
-          slug: mirror.slug,
-        },
+        field:
+          sourceField.relationship?.field ??
+          this.pickLabelField(targetTable, {
+            _id: mirror._id,
+            slug: mirror.slug,
+          }),
         order: sourceField.relationship?.order ?? 'asc',
         visible: true,
         relationshipId: definition._id,
@@ -143,7 +152,7 @@ export default class RelationshipMaterializationService implements RelationshipM
       _id: mirror._id,
       relationship: {
         table: { _id: sourceTable._id, slug: sourceTable.slug },
-        field: { _id: sourceField._id, slug: sourceField.slug },
+        field: mirrorLabelField,
         order: 'asc',
         visible: mirrorVisible,
         relationshipId: definition._id,
@@ -233,6 +242,27 @@ export default class RelationshipMaterializationService implements RelationshipM
     }
     if (slug) return this.tableRepository.findBySlug(slug);
     return null;
+  }
+
+  // Campo da tabela usado como rótulo das opções do outro lado. Sem seletor
+  // manual (removido da UI): rowSlug, senão 1º texto, senão 1º não-nativo, senão
+  // o fallback informado (o próprio campo de relacionamento).
+  private pickLabelField(
+    table: ITable,
+    fallback: { _id: string; slug: string },
+  ): { _id: string; slug: string } {
+    const fields = table.fields ?? [];
+    if (table.rowSlugFieldId) {
+      const slugField = fields.find((f) => f._id === table.rowSlugFieldId);
+      if (slugField) return { _id: slugField._id, slug: slugField.slug };
+    }
+    const textField = fields.find(
+      (f) => !f.native && !f.trashed && f.type === E_FIELD_TYPE.TEXT_SHORT,
+    );
+    if (textField) return { _id: textField._id, slug: textField.slug };
+    const anyField = fields.find((f) => !f.native && !f.trashed);
+    if (anyField) return { _id: anyField._id, slug: anyField.slug };
+    return fallback;
   }
 
   private resolveMirrorSlug(

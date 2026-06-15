@@ -63,6 +63,8 @@ type FieldDoc = {
   slug: string;
   type?: string;
   multiple?: boolean;
+  native?: boolean;
+  trashed?: boolean;
   group?: { slug?: string } | null;
   relationship?: {
     table?: { _id?: ObjectId | null; slug?: string };
@@ -75,12 +77,40 @@ type TableDoc = {
   _id: ObjectId;
   name?: string;
   slug: string;
+  rowSlugFieldId?: ObjectId | null;
   fields?: ObjectId[];
   fieldOrderList?: ObjectId[];
   fieldOrderForm?: ObjectId[];
   fieldOrderFilter?: ObjectId[];
   fieldOrderDetail?: ObjectId[];
 };
+
+// Campo legível da tabela source para rótulo do espelho (sem seletor manual):
+// rowSlug, senão 1º texto, senão 1º não-nativo, senão o fallback informado.
+async function resolveSourceLabelField(
+  systemDb: mongoose.mongo.Db,
+  sourceTable: TableDoc,
+  fallback: { _id: ObjectId; slug: string },
+): Promise<{ _id: ObjectId; slug: string }> {
+  const fieldsCol = systemDb.collection<FieldDoc>('fields');
+  if (sourceTable.rowSlugFieldId) {
+    const slugField = await fieldsCol.findOne({
+      _id: sourceTable.rowSlugFieldId,
+    });
+    if (slugField) return { _id: slugField._id, slug: slugField.slug };
+  }
+  const ids = sourceTable.fields ?? [];
+  const candidates = await fieldsCol.find({ _id: { $in: ids } }).toArray();
+  const textField = candidates.find(
+    (f) => f.native !== true && f.trashed !== true && f.type === 'TEXT_SHORT',
+  );
+  if (textField) return { _id: textField._id, slug: textField.slug };
+  const anyField = candidates.find(
+    (f) => f.native !== true && f.trashed !== true,
+  );
+  if (anyField) return { _id: anyField._id, slug: anyField.slug };
+  return fallback;
+}
 
 function toIdArray(value: unknown): string[] {
   if (value === null || value === undefined) return [];
@@ -103,7 +133,7 @@ function buildMirrorFieldDoc(params: {
   slug: string;
   multiple: boolean;
   sourceTable: TableDoc;
-  sourceField: FieldDoc;
+  labelField: { _id: ObjectId; slug: string };
   relationshipId: ObjectId;
   now: Date;
 }): Record<string, unknown> {
@@ -128,13 +158,14 @@ function buildMirrorFieldDoc(params: {
     allowCreateRelationshipRecords: false,
     relationship: {
       table: { _id: params.sourceTable._id, slug: params.sourceTable.slug },
-      field: { _id: params.sourceField._id, slug: params.sourceField.slug },
+      field: params.labelField,
       order: 'asc',
       customLabel: false,
       labelParts: [],
       labelSeparator: ' - ',
       visible: false,
       relationshipId: params.relationshipId,
+      side: 'target',
     },
     dropdown: [],
     category: [],
@@ -232,13 +263,17 @@ async function migrateField(
   const mirrorSlug = `${sourceTable.slug}__rel_${field.slug}`;
 
   // 1. Campo-espelho no target.
+  const mirrorLabelField = await resolveSourceLabelField(systemDb, sourceTable, {
+    _id: field._id,
+    slug: field.slug,
+  });
   const mirrorDoc = buildMirrorFieldDoc({
     _id: mirrorFieldId,
     name: sourceTable.name ?? sourceTable.slug,
     slug: mirrorSlug,
     multiple: targetMultiple,
     sourceTable,
-    sourceField: field,
+    labelField: mirrorLabelField,
     relationshipId: definitionId,
     now,
   });
@@ -325,6 +360,7 @@ async function migrateField(
       $set: {
         'relationship.relationshipId': definitionId,
         'relationship.visible': true,
+        'relationship.side': 'source',
       },
     },
   );
