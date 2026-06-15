@@ -199,6 +199,11 @@ export const TableFieldShowSchema: FastifySchema = {
               },
             },
             relationshipId: { type: 'string', nullable: true },
+            formMode: {
+              type: 'string',
+              enum: ['select', 'manage'],
+              nullable: true,
+            },
             side: {
               type: 'string',
               enum: ['source', 'target'],

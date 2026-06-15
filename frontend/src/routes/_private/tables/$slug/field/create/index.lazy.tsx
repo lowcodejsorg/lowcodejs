@@ -190,6 +190,7 @@ function RouteComponent(): React.JSX.Element {
                 visible: value.relationship.mirrorVisible,
                 label: value.relationship.mirrorLabel || undefined,
               },
+              formMode: value.relationship.formMode,
             }
           : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],

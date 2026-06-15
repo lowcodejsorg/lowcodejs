@@ -9,6 +9,7 @@ export { TableFieldDropdownDefaultValue } from '@/components/common/dynamic-tabl
 export { TableFieldUserDefaultValue } from '@/components/common/dynamic-table/table-config/table-field-user-default-value';
 export { TableFieldDropdownOptions } from '@/components/common/dynamic-table/table-config/table-field-dropdown-options';
 export { TableFieldFormatSelect } from '@/components/common/dynamic-table/table-config/table-field-format-select';
+export { TableFieldRelationshipFieldSelect } from '@/components/common/dynamic-table/table-config/table-field-relationship-field-select';
 export { TableFieldRelationshipOnDeleteSelect } from '@/components/common/dynamic-table/table-config/table-field-relationship-on-delete-select';
 export { TableFieldRelationshipOrderSelect } from '@/components/common/dynamic-table/table-config/table-field-relationship-order-select';
 export { TableFieldRelationshipTableSelect } from '@/components/common/dynamic-table/table-config/table-field-relationship-table-select';

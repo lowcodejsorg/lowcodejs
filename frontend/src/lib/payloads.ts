@@ -205,6 +205,7 @@ export type FieldConfigurationPayload = {
     visible?: boolean;
     onDelete?: 'CASCADE' | 'SET_NULL' | 'RESTRICT';
     mirror?: { multiple: boolean; visible: boolean; label?: string };
+    formMode?: 'select' | 'manage';
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;
@@ -240,6 +241,7 @@ export type FieldCreatePayload = {
     visible?: boolean;
     onDelete?: 'CASCADE' | 'SET_NULL' | 'RESTRICT';
     mirror?: { multiple: boolean; visible: boolean; label?: string };
+    formMode?: 'select' | 'manage';
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;
@@ -276,6 +278,7 @@ export type FieldUpdatePayload = {
     visible?: boolean;
     onDelete?: 'CASCADE' | 'SET_NULL' | 'RESTRICT';
     mirror?: { multiple: boolean; visible: boolean; label?: string };
+    formMode?: 'select' | 'manage';
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;

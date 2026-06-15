@@ -5,6 +5,7 @@ export { TableFieldCategoryTree } from './table-field-category-tree';
 export { TableFieldDateDefaultValue } from './table-field-date-default-value';
 export { TableFieldDropdownDefaultValue } from './table-field-dropdown-default-value';
 export { TableFieldRelationshipCardinality } from './table-field-relationship-cardinality';
+export { TableFieldRelationshipFieldSelect } from './table-field-relationship-field-select';
 export { TableFieldRelationshipOnDeleteSelect } from './table-field-relationship-on-delete-select';
 export { TableFieldUserDefaultValue } from './table-field-user-default-value';
 export { TableFieldDropdownOptions } from './table-field-dropdown-options';

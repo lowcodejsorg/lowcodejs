@@ -237,6 +237,12 @@ export type IFieldConfigurationRelationship = {
    * chamar os endpoints `/links` com o `side` correto.
    */
   side?: 'source' | 'target' | null;
+  /**
+   * Como o relacionamento aparece no formulário: `select` (multi-select de
+   * vínculo direto) ou `manage` (tabelas internas / cards + Sheet). Ausência =
+   * `select`.
+   */
+  formMode?: 'select' | 'manage';
 };
 
 /** Vínculo entre dois registros (pivô) gerido pelos endpoints `/links`. */
