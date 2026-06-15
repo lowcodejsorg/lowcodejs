@@ -94,6 +94,19 @@ export default class TableFieldUpdateUseCase {
         }
       }
 
+      // RELATIONSHIP é sempre top-level (§2): não pode ser movido para dentro de
+      // um FIELD_GROUP. Rejeita qualquer tentativa de setar `group` num campo
+      // de relacionamento (composição embedded ≠ associação entre tabelas).
+      if (payload.type === E_FIELD_TYPE.RELATIONSHIP && payload.group) {
+        return left(
+          HTTPException.BadRequest(
+            'Relacionamento não pode ficar dentro de um grupo de campos',
+            'RELATIONSHIP_IN_FIELD_GROUP',
+            { group: 'Relacionamento é sempre top-level' },
+          ),
+        );
+      }
+
       const field = await this.fieldRepository.findById(payload._id);
 
       if (!field)

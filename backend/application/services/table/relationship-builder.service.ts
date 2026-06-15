@@ -31,23 +31,39 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
   ) {}
 
   hasManagedRelationships(fields: IField[]): boolean {
-    return this.managedFields(fields).length > 0;
+    return this.relationshipFields(fields).length > 0;
   }
 
   async hydrate(
     fields: IField[],
     docs: RelationshipHydratableDoc[],
   ): Promise<void> {
-    const managed = this.managedFields(fields);
-    if (managed.length === 0 || docs.length === 0) return;
+    const relationshipFields = this.relationshipFields(fields);
+    if (relationshipFields.length === 0 || docs.length === 0) return;
 
-    for (const field of managed) {
+    for (const field of relationshipFields) {
       const relationshipId = field.relationship?.relationshipId;
-      if (!relationshipId) continue;
+
+      // Zero legado: os links sao a UNICA fonte de verdade. Um campo sem
+      // relationshipId nao foi materializado (esperado 0 apos as migrations §11);
+      // nunca servir o array embedded legado — zera o path e loga alto.
+      if (!relationshipId) {
+        for (const doc of docs) doc.set(field.slug, []);
+        console.warn(
+          `[relationship-builder] campo "${field.slug}" sem relationshipId — rode "npm run migrate:relationship"`,
+        );
+        continue;
+      }
 
       const definition =
         await this.definitionRepository.findById(relationshipId);
-      if (!definition) continue;
+      if (!definition) {
+        for (const doc of docs) doc.set(field.slug, []);
+        console.warn(
+          `[relationship-builder] definition ${relationshipId} nao encontrada para o campo "${field.slug}"`,
+        );
+        continue;
+      }
 
       const side = this.sideOf(definition, field);
 
@@ -58,10 +74,7 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
           recordId,
           side,
         );
-        // Campo gerido (tem relationshipId): os links sao a fonte de verdade —
-        // projeta sempre, inclusive vazio (vinculo removido NAO pode reaparecer
-        // do embedded legado stale). O fallback embedded vale so para campos
-        // nao-geridos, que `managedFields` ja descarta antes deste laco.
+        // Projeta sempre, inclusive vazio (vinculo removido NAO pode reaparecer).
         doc.set(field.slug, ids);
       }
     }
@@ -71,11 +84,11 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
     fields: IField[],
     data: Record<string, unknown>,
   ): RelationshipExtractResult {
-    const managed = this.managedFields(fields);
+    const relationshipFields = this.relationshipFields(fields);
     const pending: PendingRelationship[] = [];
     const cleaned: Record<string, unknown> = { ...data };
 
-    for (const field of managed) {
+    for (const field of relationshipFields) {
       if (!(field.slug in cleaned)) continue;
       const ids = this.toIds(cleaned[field.slug]);
       delete cleaned[field.slug];
@@ -92,7 +105,12 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
   ): Promise<void> {
     for (const item of pending) {
       const relationshipId = item.field.relationship?.relationshipId;
-      if (!relationshipId) continue;
+      if (!relationshipId) {
+        console.error(
+          `[relationship-builder] campo "${item.field.slug}" sem relationshipId no persist — vinculos ignorados; rode "npm run migrate:relationship"`,
+        );
+        continue;
+      }
 
       const definition =
         await this.definitionRepository.findById(relationshipId);
@@ -120,12 +138,11 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
 
   // ── helpers ───────────────────────────────────────────────
 
-  private managedFields(fields: IField[]): IField[] {
-    return fields.filter(
-      (field) =>
-        field.type === E_FIELD_TYPE.RELATIONSHIP &&
-        Boolean(field.relationship?.relationshipId),
-    );
+  // Todo campo RELATIONSHIP é gerido por links (zero legado): não filtra mais por
+  // relationshipId — campos sem definition são tratados (zerados/logados) acima,
+  // nunca caem em leitura/escrita embedded.
+  private relationshipFields(fields: IField[]): IField[] {
+    return fields.filter((field) => field.type === E_FIELD_TYPE.RELATIONSHIP);
   }
 
   private sideOf(

@@ -631,3 +631,26 @@ Comandos:
 Marcadores persistidos no Setting:
 - `MIGRATION_DUAL_CONNECTION_AT` — timestamp da copia bem-sucedida
 - `MIGRATION_DUAL_CONNECTION_DROPPED_AT` — timestamp do drop bem-sucedido
+
+### Migrations de relacionamento (cardinalidade)
+
+No boot Docker, `docker-entry-point.sh` loopa `scripts/migrations/*.sh` em ordem
+alfabetica; as de relacionamento sao 14→15→16 (lift-out-of-groups →
+embedded-to-links → backfill-endpoint-flags), idempotentes via marker no Setting.
+Em **dev local** (`npm run dev`, sem Docker) elas nao rodam — use os npm scripts:
+
+- `npm run migrate:relationship` — roda as 3 em ordem (14→15→16)
+- `npm run migrate:relationship-lift-out-of-groups` / `-embedded-to-links` /
+  `-endpoint-flags` — avulsas (mesma ordem se rodadas a mao)
+- Cada uma aceita `-- --force` p/ reexecutar ignorando o marker
+
+Pos-migracao **todo** campo `RELATIONSHIP` fica top-level e materializado
+(`relationship.relationshipId` + campo-espelho); o passo 16 falha alto (nao grava
+marker) se sobrar campo sem `relationshipId`. Os links sao a unica fonte de
+verdade — nao ha fallback embedded.
+
+**Remodel manual (one-off, fora do boot):**
+`npm run migrate:fieldgroup-to-relationship -- --table=<slug> --group=<id|slug> --i-have-backup`
+converte um `FIELD_GROUP` usado como falso-relacionamento (subdoc embedded) numa
+tabela independente + `RelationshipDefinition` + links. Destrutivo, exige backup,
+nao idempotente-por-marker (depende de decisao humana por tabela).

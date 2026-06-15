@@ -147,6 +147,49 @@ describe('Table Field Update Use Case', () => {
     expect(result.value.message).toBe('Tabela não encontrada');
   });
 
+  it('deve rejeitar RELATIONSHIP dentro de grupo (RELATIONSHIP_IN_FIELD_GROUP)', async () => {
+    await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      style: E_TABLE_STYLE.LIST,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+
+    const result = await sut.execute({
+      slug: 'clientes',
+      _id: 'field-id',
+      name: 'Pedidos',
+      type: E_FIELD_TYPE.RELATIONSHIP,
+      permissions: buildFieldPermissions(true, true, true),
+      showInFilter: false,
+      locked: false,
+      allowCreateRelationshipRecords: false,
+      required: false,
+      dropdown: [],
+      category: [],
+      defaultValue: null,
+      format: null,
+      group: 'algum-grupo',
+      multiple: true,
+      relationship: null,
+      trashed: false,
+      trashedAt: null,
+      widthInForm: null,
+      widthInList: null,
+      widthInDetail: null,
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(400);
+    expect(result.value.cause).toBe('RELATIONSHIP_IN_FIELD_GROUP');
+  });
+
   it('deve retornar erro FIELD_NOT_FOUND quando campo nao existir', async () => {
     await tableInMemoryRepository.create({
       name: 'Clientes',

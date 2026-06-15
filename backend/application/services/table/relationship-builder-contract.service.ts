@@ -23,8 +23,9 @@ export type RelationshipExtractResult = {
 
 export abstract class RelationshipBuilderContractService {
   // Read-compat: hidrata `doc[field.slug]` com os ids vindos dos links, para que
-  // o populate padrao resolva como antes. So atua em campos com `relationshipId`
-  // (pivo); campos legados (sem definition) ficam intocados (embedded).
+  // o populate padrao resolva como antes. Atua em TODO campo RELATIONSHIP (links
+  // sao a unica fonte de verdade); campo sem `relationshipId` tem o path zerado e
+  // logado — nunca serve o array embedded legado (zero legado).
   abstract hydrate(
     fields: IField[],
     docs: RelationshipHydratableDoc[],

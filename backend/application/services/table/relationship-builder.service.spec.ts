@@ -191,7 +191,7 @@ describe('MongooseRelationshipBuilder', () => {
     expect(doc.sets['produtos']).toEqual([]);
   });
 
-  it('hydrate ignora campo nao-gerido (sem relationshipId): mantem embedded legado', async () => {
+  it('hydrate zera campo RELATIONSHIP sem relationshipId (zero legado, nunca serve embedded)', async () => {
     const legacy: IField = {
       ...sourceField,
       relationship: {
@@ -204,10 +204,11 @@ describe('MongooseRelationshipBuilder', () => {
     const doc = new FakeDoc('ped1');
     await sut.hydrate([legacy], [doc]);
 
-    expect(doc.sets).toEqual({});
+    // Sem relationshipId: zera o path (não cai no array embedded legado).
+    expect(doc.sets['produtos']).toEqual([]);
   });
 
-  it('hasManagedRelationships ignora campos sem relationshipId', () => {
+  it('hasManagedRelationships é true para qualquer campo RELATIONSHIP (links são a única fonte)', () => {
     const legacy: IField = {
       ...sourceField,
       relationship: {
@@ -217,7 +218,7 @@ describe('MongooseRelationshipBuilder', () => {
         relationshipId: null,
       },
     };
-    expect(sut.hasManagedRelationships([legacy])).toBe(false);
+    expect(sut.hasManagedRelationships([legacy])).toBe(true);
     expect(sut.hasManagedRelationships([sourceField])).toBe(true);
   });
 });
