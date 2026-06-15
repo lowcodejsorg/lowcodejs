@@ -91,6 +91,14 @@ const Relationship = new mongoose.Schema(
       enum: ['source', 'target'],
       default: null,
     },
+    // Como o relacionamento aparece no formulário: 'select' (multi-select de
+    // vínculo direto, padrão histórico) ou 'manage' (tabelas internas / cards +
+    // Sheet). Ausência = 'select'.
+    formMode: {
+      type: String,
+      enum: ['select', 'manage'],
+      default: 'select',
+    },
   },
   {
     _id: false,

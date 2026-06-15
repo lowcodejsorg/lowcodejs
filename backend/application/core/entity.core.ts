@@ -431,6 +431,12 @@ export type IFieldConfigurationRelationship = {
    */
   side?: 'source' | 'target' | null;
   /**
+   * Como o relacionamento aparece no formulario: `select` (multi-select de
+   * vinculo direto, padrao historico) ou `manage` (tabelas internas / cards +
+   * Sheet). Ausencia = `select`.
+   */
+  formMode?: 'select' | 'manage';
+  /**
    * Comportamento ao excluir (§9). Config do lado source na criacao/edicao do
    * campo; a fonte de verdade efetiva e `RelationshipDefinition.onDelete`.
    */

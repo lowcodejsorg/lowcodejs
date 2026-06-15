@@ -64,6 +64,8 @@ const Relationship = z.object({
   // Materializados no backend (born-pivot); expostos para a UI saber gerir o vínculo.
   relationshipId: z.string().trim().nullable().optional(),
   side: z.enum(['source', 'target']).nullable().optional(),
+  // Modo no formulário: select (multi-select) | manage (tabelas internas).
+  formMode: z.enum(['select', 'manage']).optional(),
 });
 
 const Dropdown = z.object({

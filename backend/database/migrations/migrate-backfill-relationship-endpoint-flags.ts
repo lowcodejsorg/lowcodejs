@@ -81,9 +81,28 @@ async function backfillSide(systemDb: mongoose.mongo.Db): Promise<number> {
   return updated;
 }
 
+// Assert de fechamento (zero legado): nenhum campo RELATIONSHIP pode sobrar sem
+// `relationshipId` (não materializado) nem com `group` (aninhado em FIELD_GROUP).
+// Enquanto houver pendência, o marker NÃO é gravado — a migration reprocessa no
+// próximo boot e o sinal fica visível para o operador rodar o remodel manual
+// (`migrate:fieldgroup-to-relationship`) ou a `migrate:relationship`.
+async function countUnmaterialized(
+  systemDb: mongoose.mongo.Db,
+): Promise<number> {
+  const fieldsCol = systemDb.collection('fields');
+  return fieldsCol.countDocuments({
+    type: 'RELATIONSHIP',
+    $or: [
+      { 'relationship.relationshipId': null },
+      { 'relationship.relationshipId': { $exists: false } },
+      { group: { $ne: null } },
+    ],
+  });
+}
+
 async function backfillFlags(
   systemDb: mongoose.mongo.Db,
-): Promise<{ visibleRel: number; sideRel: number }> {
+): Promise<{ visibleRel: number; sideRel: number; formModeRel: number }> {
   const fieldsCol = systemDb.collection('fields');
 
   // `visible` vive em `relationship.visible` (sub-schema), não no nível do campo.
@@ -96,9 +115,24 @@ async function backfillFlags(
     { $set: { 'relationship.visible': true } },
   );
 
+  // `formMode` ausente = comportamento histórico (multi-select de vínculo
+  // direto). Backfilla explícito como 'select' para não depender do default.
+  const formModeRel = await fieldsCol.updateMany(
+    {
+      type: 'RELATIONSHIP',
+      relationship: { $ne: null },
+      'relationship.formMode': { $exists: false },
+    },
+    { $set: { 'relationship.formMode': 'select' } },
+  );
+
   const sideRel = await backfillSide(systemDb);
 
-  return { visibleRel: visibleRel.modifiedCount ?? 0, sideRel };
+  return {
+    visibleRel: visibleRel.modifiedCount ?? 0,
+    sideRel,
+    formModeRel: formModeRel.modifiedCount ?? 0,
+  };
 }
 
 async function migrate(): Promise<void> {
@@ -136,8 +170,19 @@ async function migrate(): Promise<void> {
     logger.running();
     const result = await backfillFlags(systemDb);
     logger.done(
-      `${result.visibleRel} relationship.visible e ${result.sideRel} relationship.side preenchidos`,
+      `${result.visibleRel} relationship.visible, ${result.sideRel} relationship.side e ${result.formModeRel} relationship.formMode preenchidos`,
     );
+
+    const unmaterialized = await countUnmaterialized(systemDb);
+    if (unmaterialized > 0) {
+      logger.failed(
+        `${unmaterialized} campo(s) RELATIONSHIP ainda sem relationshipId ou dentro de grupo. ` +
+          `Marker NÃO gravado (reprocessa no próximo boot). Rode "npm run migrate:relationship" ` +
+          `e, para FIELD_GROUP usado como falso-relacionamento, ` +
+          `"npm run migrate:fieldgroup-to-relationship -- --table=<slug> --group=<id|slug> --i-have-backup".`,
+      );
+      return;
+    }
 
     await SettingMarker.findOneAndUpdate(
       {},

@@ -166,6 +166,7 @@ function buildMirrorFieldDoc(params: {
       visible: false,
       relationshipId: params.relationshipId,
       side: 'target',
+      formMode: 'select',
     },
     dropdown: [],
     category: [],
@@ -365,6 +366,7 @@ async function migrateField(
         'relationship.relationshipId': definitionId,
         'relationship.visible': true,
         'relationship.side': 'source',
+        'relationship.formMode': 'select',
       },
     },
   );
