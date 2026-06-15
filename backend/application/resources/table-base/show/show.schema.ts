@@ -168,6 +168,7 @@ export const TableShowSchema: FastifySchema = {
               relationship: {
                 type: 'object',
                 nullable: true,
+                additionalProperties: true,
                 description:
                   'Configuração de relacionamento para campos RELATIONSHIP',
                 properties: {
@@ -198,6 +199,26 @@ export const TableShowSchema: FastifySchema = {
                     },
                   },
                   labelSeparator: { type: 'string' },
+                  visible: { type: 'boolean' },
+                  onDelete: {
+                    type: 'string',
+                    enum: ['CASCADE', 'SET_NULL', 'RESTRICT'],
+                  },
+                  mirror: {
+                    type: 'object',
+                    additionalProperties: true,
+                    properties: {
+                      multiple: { type: 'boolean' },
+                      visible: { type: 'boolean' },
+                      label: { type: 'string' },
+                    },
+                  },
+                  relationshipId: { type: 'string', nullable: true },
+                  side: {
+                    type: 'string',
+                    enum: ['source', 'target'],
+                    nullable: true,
+                  },
                 },
               },
               dropdown: {

@@ -197,7 +197,57 @@ export const TablePaginatedSchema: FastifySchema = {
                     relationship: {
                       type: 'object',
                       nullable: true,
+                      additionalProperties: true,
                       description: 'Configuração de relacionamento',
+                      properties: {
+                        table: {
+                          type: 'object',
+                          properties: {
+                            _id: { type: 'string' },
+                            slug: { type: 'string' },
+                          },
+                        },
+                        field: {
+                          type: 'object',
+                          properties: {
+                            _id: { type: 'string' },
+                            slug: { type: 'string' },
+                          },
+                        },
+                        order: { type: 'string', enum: ['asc', 'desc'] },
+                        customLabel: { type: 'boolean' },
+                        labelParts: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              path: { type: 'string' },
+                              label: { type: 'string' },
+                            },
+                          },
+                        },
+                        labelSeparator: { type: 'string' },
+                        visible: { type: 'boolean' },
+                        onDelete: {
+                          type: 'string',
+                          enum: ['CASCADE', 'SET_NULL', 'RESTRICT'],
+                        },
+                        mirror: {
+                          type: 'object',
+                          additionalProperties: true,
+                          properties: {
+                            multiple: { type: 'boolean' },
+                            visible: { type: 'boolean' },
+                            label: { type: 'string' },
+                          },
+                        },
+                        relationshipId: { type: 'string', nullable: true },
+                        side: {
+                          type: 'string',
+                          enum: ['source', 'target'],
+                          nullable: true,
+                        },
+                      },
                     },
                     dropdown: {
                       type: 'array',

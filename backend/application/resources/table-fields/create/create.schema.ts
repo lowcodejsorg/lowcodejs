@@ -390,6 +390,7 @@ export const TableFieldCreateSchema: FastifySchema = {
         relationship: {
           type: 'object',
           nullable: true,
+          additionalProperties: true,
           description: 'Configuração do relacionamento',
           properties: {
             table: {
@@ -419,6 +420,26 @@ export const TableFieldCreateSchema: FastifySchema = {
               },
             },
             labelSeparator: { type: 'string' },
+            visible: { type: 'boolean' },
+            onDelete: {
+              type: 'string',
+              enum: ['CASCADE', 'SET_NULL', 'RESTRICT'],
+            },
+            mirror: {
+              type: 'object',
+              additionalProperties: true,
+              properties: {
+                multiple: { type: 'boolean' },
+                visible: { type: 'boolean' },
+                label: { type: 'string' },
+              },
+            },
+            relationshipId: { type: 'string', nullable: true },
+            side: {
+              type: 'string',
+              enum: ['source', 'target'],
+              nullable: true,
+            },
           },
         },
         category: {

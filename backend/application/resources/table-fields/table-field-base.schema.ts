@@ -60,6 +60,10 @@ const Relationship = z.object({
       label: z.string().trim().optional(),
     })
     .optional(),
+  // Back-pointer para a RelationshipDefinition (pivô) e lado deste endpoint.
+  // Materializados no backend (born-pivot); expostos para a UI saber gerir o vínculo.
+  relationshipId: z.string().trim().nullable().optional(),
+  side: z.enum(['source', 'target']).nullable().optional(),
 });
 
 const Dropdown = z.object({
