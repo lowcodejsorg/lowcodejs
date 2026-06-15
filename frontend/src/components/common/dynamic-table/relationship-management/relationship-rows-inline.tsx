@@ -763,7 +763,7 @@ function RelationshipItemCardForm({
   );
 }
 
-function renderRelationshipCardField(
+export function renderRelationshipCardField(
   formField: any,
   field: IField,
   tableSlug: string,

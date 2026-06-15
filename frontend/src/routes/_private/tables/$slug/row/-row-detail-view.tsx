@@ -9,7 +9,7 @@ import {
 import React from 'react';
 import { toast } from 'sonner';
 
-import { RelationshipRowsInline } from '@/components/common/dynamic-table/relationship-management/relationship-rows-inline';
+import { RelationshipRowsDataTable } from '@/components/common/dynamic-table/relationship-management/relationship-rows-data-table';
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
@@ -285,10 +285,10 @@ export function RowDetailView({
       );
     }
     return (
-      <RelationshipRowsInline
+      <RelationshipRowsDataTable
         field={field}
+        record={data}
         parentTableSlug={slug}
-        rowId={data._id}
         canEdit={canUpdateRow && data.trashedAt == null}
       />
     );
