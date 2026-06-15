@@ -1,6 +1,6 @@
 import { useStore } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
-import { PlusIcon, XIcon } from 'lucide-react';
+import { PlusIcon } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -11,24 +11,28 @@ import {
   UploadingProvider,
   useIsUploading,
 } from '@/components/common/file-upload/uploading-context';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
 } from '@/components/ui/combobox';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Field, FieldError } from '@/components/ui/field';
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import {
@@ -107,10 +111,13 @@ function RelatedRowFormFields({
       {fields.map((rowField) => {
         if (rowField.native) return null;
 
+        // Sub-form de criar registro relacionado não exibe RELATIONSHIP
+        // (sem relacionamento-de-relacionamento), nem REACTION/EVALUATION/grupo.
         if (
           rowField.type === E_FIELD_TYPE.REACTION ||
           rowField.type === E_FIELD_TYPE.EVALUATION ||
-          rowField.type === E_FIELD_TYPE.FIELD_GROUP
+          rowField.type === E_FIELD_TYPE.FIELD_GROUP ||
+          rowField.type === E_FIELD_TYPE.RELATIONSHIP
         ) {
           return null;
         }
@@ -175,14 +182,6 @@ function RelatedRowFormFields({
                       <formRowField.TableRowFileField
                         field={rowField}
                         disabled={disabled}
-                      />
-                    );
-                  case E_FIELD_TYPE.RELATIONSHIP:
-                    return (
-                      <formRowField.TableRowRelationshipField
-                        field={rowField}
-                        disabled={disabled}
-                        tableSlug={tableSlug}
                       />
                     );
                   case E_FIELD_TYPE.CATEGORY:
@@ -267,11 +266,11 @@ function RelatedRowCreateDialogContent({
 
   return (
     <React.Fragment>
-      <DialogHeader>
-        <DialogTitle>Novo registro em {table.name}</DialogTitle>
-      </DialogHeader>
+      <SheetHeader>
+        <SheetTitle>Novo registro em {table.name}</SheetTitle>
+      </SheetHeader>
       <form
-        className="max-h-[65vh] overflow-auto"
+        className="flex-1 overflow-auto px-4"
         onSubmit={(event) => {
           event.preventDefault();
           form.handleSubmit();
@@ -292,15 +291,7 @@ function RelatedRowCreateDialogContent({
           />
         )}
       </form>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={create.status === 'pending'}
-          onClick={() => onOpenChange(false)}
-        >
-          Cancelar
-        </Button>
+      <SheetFooter>
         <Button
           type="button"
           disabled={create.status === 'pending' || isUploading}
@@ -309,7 +300,15 @@ function RelatedRowCreateDialogContent({
           {create.status === 'pending' && <Spinner />}
           Salvar
         </Button>
-      </DialogFooter>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={create.status === 'pending'}
+          onClick={() => onOpenChange(false)}
+        >
+          Cancelar
+        </Button>
+      </SheetFooter>
     </React.Fragment>
   );
 }
@@ -318,17 +317,20 @@ export function RelatedRowCreateDialog(
   props: RelatedRowCreateDialogProps,
 ): React.JSX.Element {
   return (
-    <Dialog
+    <Sheet
       modal={false}
       open={props.open}
       onOpenChange={props.onOpenChange}
     >
-      <DialogContent className="sm:max-w-3xl">
+      <SheetContent
+        side="right"
+        className="w-full gap-0 p-0 sm:max-w-2xl [&>button]:hidden"
+      >
         <UploadingProvider>
           <RelatedRowCreateDialogContent {...props} />
         </UploadingProvider>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -671,6 +673,7 @@ function DefaultRelationshipField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
+  const anchorRef = useComboboxAnchor();
 
   const [searchQuery, setSearchQuery] = React.useState('');
   const [debouncedQuery, setDebouncedQuery] = React.useState('');
@@ -895,31 +898,9 @@ function DefaultRelationshipField({
   const singleInputValue = searchQuery;
 
   if (isMultiple) {
-    // Modo select múltiplo: chips dos vinculados (remover no X) + combobox para
-    // vincular existente ou criar inline (append). Os ids vão no payload e viram
-    // links no backend (persist/dual-write).
-    const selectedOptions = formField.state.value ?? [];
-
-    const removeOption = (id: string): void => {
-      formField.handleChange(
-        selectedOptions.filter((option) => option.value !== id),
-      );
-    };
-
-    const appendRow = (row: IRow | Array<IRow> | null): void => {
-      if (row === null || Array.isArray(row)) return;
-      const picked = row;
-      setSelectedCache((prev) => {
-        const next = new Map(prev);
-        next.set(picked._id, picked);
-        return next;
-      });
-      const option = { value: picked._id, label: getRowLabel(picked) };
-      setSearchQuery('');
-      if (selectedOptions.some((item) => item.value === option.value)) return;
-      formField.handleChange([...selectedOptions, option]);
-    };
-
+    // Modo select múltiplo: combobox com chips integrados no input (vinculados
+    // viram chips, primeiros 2 + "+N"; digitar busca; criar inline). Os ids vão
+    // no payload e viram links no backend (persist/dual-write).
     return (
       <React.Fragment>
         <Field
@@ -931,47 +912,46 @@ function DefaultRelationshipField({
             field={field}
             htmlFor={formField.name}
           />
-
-          {selectedItems.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {selectedItems.map((row) => (
-                <Badge
-                  key={row._id}
-                  variant="secondary"
-                  className="max-w-full gap-1 pr-1"
-                >
-                  <span className="truncate">{getRowLabel(row)}</span>
-                  {!disabled && (
-                    <button
-                      type="button"
-                      className="shrink-0 rounded-sm text-muted-foreground hover:text-foreground"
-                      aria-label="Remover vínculo"
-                      onClick={(): void => removeOption(row._id)}
-                    >
-                      <XIcon className="size-3.5" />
-                    </button>
-                  )}
-                </Badge>
-              ))}
-            </div>
-          )}
-
           <div className="relative">
             <Combobox
+              multiple
               data-test-id="table-row-relationship"
               items={items}
-              value={null}
-              onValueChange={appendRow}
+              value={selectedItems}
+              onValueChange={handleValueChange}
               inputValue={searchQuery}
               onInputValueChange={setSearchQuery}
               itemToStringLabel={(row: IRow) => getRowLabel(row)}
               disabled={disabled}
             >
-              <ComboboxInput
-                placeholder={`Adicionar ${field.name.toLowerCase()}`}
+              <ComboboxChips
+                ref={anchorRef}
                 className={cn(isInvalid && 'border-destructive')}
-              />
-              <ComboboxContent>
+              >
+                <ComboboxValue>
+                  {(values: Array<IRow>): React.ReactNode => (
+                    <React.Fragment>
+                      {values.slice(0, 2).map((row) => (
+                        <ComboboxChip
+                          key={row._id}
+                          aria-label={getRowLabel(row)}
+                        >
+                          {getRowLabel(row)}
+                        </ComboboxChip>
+                      ))}
+                      {values.length > 2 && (
+                        <span className="text-muted-foreground text-sm">
+                          +{values.length - 2}
+                        </span>
+                      )}
+                    </React.Fragment>
+                  )}
+                </ComboboxValue>
+                <ComboboxChipsInput
+                  placeholder={`Adicionar ${field.name.toLowerCase()}`}
+                />
+              </ComboboxChips>
+              <ComboboxContent anchor={anchorRef}>
                 <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
                 {isLoading && (
                   <div className="flex items-center justify-center p-3">
