@@ -411,8 +411,11 @@ async function migrate(): Promise<void> {
     });
 
     // 3. Persiste campos de C, a tabela C e o campo de relacionamento da origem.
-    await fieldsCol.insertMany(newFieldDocs);
-    await fieldsCol.insertOne(sourceRelDoc);
+    // Handle nao-tipado para os inserts de docs crus (Record dinamico): as
+    // colecoes tipadas acima servem as queries; os docs montados aqui sao crus.
+    const fieldsWriteCol = systemDb.collection('fields');
+    await fieldsWriteCol.insertMany(newFieldDocs);
+    await fieldsWriteCol.insertOne(sourceRelDoc);
 
     const registeredGroup = await systemDb
       .collection('user-groups')
@@ -425,7 +428,7 @@ async function migrate(): Promise<void> {
         mongoose.Types.ObjectId.createFromHexString(String(doc._id)),
     );
 
-    await tablesCol.insertOne({
+    await systemDb.collection('tables').insertOne({
       _id: newTableId,
       name: newTableName,
       slug: newTableSlug,
