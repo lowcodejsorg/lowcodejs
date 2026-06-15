@@ -155,13 +155,21 @@ function AutoSaveRowFormContent({
       });
   }, [table.fields, table.fieldOrderForm, isFieldVisible]);
 
-  // RELATIONSHIP fica fora dos obrigatórios genéricos: seus valores não vivem
-  // mais no form (são gerenciados pelo repetidor via /links). O required do lado
-  // é validado por contagem de vínculos (relationshipLinkCountRef).
+  // Relationship em modo 'manage' fica fora dos obrigatórios genéricos: seus
+  // valores não vivem no form (geridos pelo repetidor via /links); o required é
+  // validado por contagem de vínculos. Em modo 'select' o valor vive no form
+  // (combobox) e segue o caminho de required normal.
   const requiredFields = React.useMemo((): Array<IField> => {
-    return fields.filter(
-      (f) => f.required && !f.native && f.type !== E_FIELD_TYPE.RELATIONSHIP,
-    );
+    return fields.filter((f) => {
+      if (!f.required || f.native) return false;
+      if (
+        f.type === E_FIELD_TYPE.RELATIONSHIP &&
+        f.relationship?.formMode === 'manage'
+      ) {
+        return false;
+      }
+      return true;
+    });
   }, [fields]);
 
   // Grupos de campos exibidos no formulário. Salvos à parte via endpoints
@@ -175,17 +183,20 @@ function AutoSaveRowFormContent({
     );
   }, [table.fields, isFieldVisible]);
 
-  // Campos RELATIONSHIP exibidos no formulário. Persistidos à parte via /links
-  // dentro do repetidor (não no payload do registro principal).
+  // Campos RELATIONSHIP em modo 'manage' (repetidor): persistidos via /links,
+  // fora do payload. Modo 'select' é renderizado por RowFormFields (combobox) e
+  // entra no payload (dual-write). Ausência de formMode = 'select'.
   const formRelationshipFields = React.useMemo((): Array<IField> => {
     return table.fields.filter(
       (f) =>
         f.type === E_FIELD_TYPE.RELATIONSHIP &&
+        f.relationship?.formMode === 'manage' &&
         isFieldVisible(f, 'form') &&
         !f.trashed,
     );
   }, [table.fields, isFieldVisible]);
 
+  // Apenas os slugs de modo 'manage' saem do payload (select fica no dual-write).
   const relationshipSlugs = React.useMemo((): Set<string> => {
     return new Set(formRelationshipFields.map((f) => f.slug));
   }, [formRelationshipFields]);

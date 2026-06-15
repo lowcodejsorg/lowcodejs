@@ -236,13 +236,19 @@ export function RowFormFields({
         // Skip native fields (_id, creator, createdAt)
         if (field.native) return null;
 
-        // Skip non-editable field types. RELATIONSHIP é renderizado pelo
-        // repetidor (RelationshipRowsInline), não como campo do form.
+        // Skip non-editable field types. RELATIONSHIP em modo 'manage' é
+        // renderizado pelo repetidor (RelationshipRowsInline); em modo 'select'
+        // (padrão) cai no switch abaixo como combobox de vínculo direto.
         if (
           field.type === E_FIELD_TYPE.REACTION ||
           field.type === E_FIELD_TYPE.EVALUATION ||
-          field.type === E_FIELD_TYPE.FIELD_GROUP ||
-          field.type === E_FIELD_TYPE.RELATIONSHIP
+          field.type === E_FIELD_TYPE.FIELD_GROUP
+        ) {
+          return null;
+        }
+        if (
+          field.type === E_FIELD_TYPE.RELATIONSHIP &&
+          field.relationship?.formMode === 'manage'
         ) {
           return null;
         }
