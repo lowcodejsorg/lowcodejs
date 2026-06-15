@@ -4,7 +4,6 @@ import { useEffect, useRef } from 'react';
 import z from 'zod';
 
 import { TableFieldRelationshipCardinality } from '@/components/common/dynamic-table/table-config/table-field-relationship-cardinality';
-import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
@@ -19,7 +18,31 @@ import {
   getFieldSlugError,
   normalizeFieldSlug,
 } from '@/lib/field-slug';
-import type { IDropdown, IRelationshipLabelPart } from '@/lib/interfaces';
+import type {
+  IDropdown,
+  IField,
+  IRelationshipLabelPart,
+  ITable,
+} from '@/lib/interfaces';
+
+// Campo da tabela relacionada usado como rótulo das opções. Derivado
+// automaticamente (não há mais seletor manual): rowSlug, senão 1º texto, senão
+// 1º campo não-nativo, senão fallback.
+function pickLabelField(table: ITable): { id: string; slug: string } {
+  const fields = table.fields ?? [];
+  if (table.rowSlugFieldId) {
+    const slugField = fields.find((f) => f._id === table.rowSlugFieldId);
+    if (slugField) return { id: slugField._id, slug: slugField.slug };
+  }
+  const textField = fields.find(
+    (f: IField) =>
+      !f.native && !f.trashed && f.type === E_FIELD_TYPE.TEXT_SHORT,
+  );
+  if (textField) return { id: textField._id, slug: textField.slug };
+  const anyField = fields.find((f: IField) => !f.native && !f.trashed);
+  if (anyField) return { id: anyField._id, slug: anyField.slug };
+  return { id: '', slug: 'nome' };
+}
 
 const FieldPermissionBindingSchema = z.object({
   kind: z.enum([
@@ -168,18 +191,6 @@ export const CreateFieldFormFields = withForm({
       form.store,
       (state) => state.values.relationship.fieldSlug,
     );
-    const relationshipCustomLabel = useStore(
-      form.store,
-      (state) => state.values.relationship.customLabel,
-    );
-    const relationshipLabelParts = useStore(
-      form.store,
-      (state) => state.values.relationship.labelParts,
-    );
-    const relationshipLabelSeparator = useStore(
-      form.store,
-      (state) => state.values.relationship.labelSeparator,
-    );
     const fieldMultiple = useStore(
       form.store,
       (state) => state.values.multiple,
@@ -211,6 +222,17 @@ export const CreateFieldFormFields = withForm({
       form.setFieldValue('slug', normalizeFieldSlug(fieldName));
       // @ts-expect-error TanStack Form type depth issue with nested configuration
     }, [fieldName, form]);
+
+    // Rótulo auto-derivado: ao escolher a tabela alvo, define qual campo dela
+    // vira o rótulo das opções (sem seletor manual). Só preenche se vazio.
+    useEffect(() => {
+      if (!isRelationship) return;
+      if (!relatedTable.data) return;
+      if (relationshipFieldSlug) return;
+      const picked = pickLabelField(relatedTable.data);
+      form.setFieldValue('relationship.fieldId', picked.id);
+      form.setFieldValue('relationship.fieldSlug', picked.slug);
+    }, [isRelationship, relatedTable.data, relationshipFieldSlug, form]);
 
     const showMultiple =
       isDropdown || isFile || isFieldGroup || isCategory || isUser;
@@ -563,34 +585,6 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Campo de Relacionamento (coluna) */}
-        {isRelationship && relationshipTableSlug && (
-          <form.AppField
-            name="relationship.fieldId"
-            validators={{
-              onChange: ({ value }) => {
-                if (!value || value.trim() === '') {
-                  return 'Campo é obrigatório';
-                }
-                return undefined;
-              },
-            }}
-          >
-            {(field) => (
-              <field.TableFieldRelationshipFieldSelect
-                label="Campo de relacionamento"
-                placeholder="Selecione um campo"
-                disabled={isPending}
-                tableSlug={relationshipTableSlug}
-                onFieldChange={(slug) => {
-                  form.setFieldValue('relationship.fieldSlug', slug);
-                }}
-                required
-              />
-            )}
-          </form.AppField>
-        )}
-
         {/* Campo Ordem (Relacionamento) */}
         {isRelationship && (
           <form.AppField
@@ -672,47 +666,6 @@ export const CreateFieldFormFields = withForm({
               mirrorMultiple={relationshipMirrorMultiple}
             />
           </>
-        )}
-
-        {/* Personalização do label (relacionamento) */}
-        {isRelationship && relationshipTableSlug && (
-          <form.AppField name="relationship.customLabel">
-            {(field) => (
-              <field.FieldBooleanSwitch
-                label="Personalizar exibição das opções"
-                description="Por padrão a opção exibe apenas o campo principal. Ative para compor o label com um ou mais campos (inclusive de tabelas relacionadas) e escolher o separador."
-                disabled={isPending}
-              />
-            )}
-          </form.AppField>
-        )}
-
-        {/* Compositor de label (relacionamento) */}
-        {isRelationship && relationshipTableSlug && relationshipCustomLabel && (
-          <TableFieldRelationshipLabelComposer
-            rootTableSlug={relationshipTableSlug}
-            parts={relationshipLabelParts}
-            separator={relationshipLabelSeparator}
-            disabled={isPending}
-            onChange={(parts, separator) => {
-              form.setFieldValue('relationship.labelParts', parts);
-              form.setFieldValue('relationship.labelSeparator', separator);
-            }}
-          />
-        )}
-
-        {/* Campo Valor Padrão (RELATIONSHIP) */}
-        {isRelationship && relationshipTableSlug && relationshipFieldSlug && (
-          <form.AppField name="defaultValue">
-            {(field) => (
-              <field.TableFieldRelationshipDefaultValue
-                label="Valor padrão"
-                disabled={isPending}
-                tableSlug={relationshipTableSlug}
-                fieldSlug={relationshipFieldSlug}
-              />
-            )}
-          </form.AppField>
         )}
 
         {/* Campo Categoria (Tree) */}
