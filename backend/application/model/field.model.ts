@@ -99,6 +99,27 @@ const Relationship = new mongoose.Schema(
       enum: ['select', 'manage'],
       default: 'select',
     },
+    // Comportamento ao excluir (denormalizado; fonte de verdade é
+    // RelationshipDefinition.onDelete). Nullable.
+    onDelete: {
+      type: String,
+      default: null,
+    },
+    // Config denormalizada do lado oposto (espelho). `mirror.multiple` é o
+    // `multiple` do campo do outro endpoint e deriva a cardinalidade/role sem
+    // ida ao DB (RelationshipStorage.roleOfField). Sem isto, o role cai sempre
+    // no fallback legado (pivô). Default null = ausente (dados pré-migration).
+    mirror: {
+      type: new mongoose.Schema(
+        {
+          multiple: { type: Boolean, default: false },
+          visible: { type: Boolean, default: true },
+          label: { type: String, default: null },
+        },
+        { _id: false },
+      ),
+      default: null,
+    },
   },
   {
     _id: false,

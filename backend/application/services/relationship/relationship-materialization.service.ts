@@ -104,6 +104,12 @@ export default class RelationshipMaterializationService implements RelationshipM
         visible: mirrorVisible,
         relationshipId: null,
         side: 'target',
+        // Espelho do lado oposto (source): deriva a cardinalidade/role.
+        mirror: {
+          multiple: Boolean(sourceField.multiple),
+          visible: true,
+          label: sourceField.name,
+        },
       },
       dropdown: [],
       allowCustomDropdownOptions: false,
@@ -146,6 +152,12 @@ export default class RelationshipMaterializationService implements RelationshipM
         visible: true,
         relationshipId: definition._id,
         side: 'source',
+        // Espelho do lado oposto (target): deriva a cardinalidade/role.
+        mirror: {
+          multiple: mirrorMultiple,
+          visible: mirrorVisible,
+          label: mirrorName,
+        },
       },
     });
     await this.fieldRepository.update({
@@ -157,6 +169,12 @@ export default class RelationshipMaterializationService implements RelationshipM
         visible: mirrorVisible,
         relationshipId: definition._id,
         side: 'target',
+        // Espelho do lado oposto (source): deriva a cardinalidade/role.
+        mirror: {
+          multiple: Boolean(sourceField.multiple),
+          visible: true,
+          label: sourceField.name,
+        },
       },
     });
 
@@ -209,7 +227,30 @@ export default class RelationshipMaterializationService implements RelationshipM
       },
     });
 
-    // Atualiza o campo-espelho: multiple (cardinalidade) + visibilidade.
+    // Sincroniza o espelho denormalizado do campo source: deriva do lado oposto
+    // (target), cujo `multiple` acabou de mudar.
+    await this.fieldRepository.update({
+      _id: params.sourceField._id,
+      relationship: {
+        ...params.sourceField.relationship,
+        table:
+          params.sourceField.relationship?.table ?? definition.target.table,
+        field:
+          params.sourceField.relationship?.field ?? definition.target.field,
+        order: params.sourceField.relationship?.order ?? 'asc',
+        visible: params.sourceVisible,
+        relationshipId: definition._id,
+        side: 'source',
+        mirror: {
+          multiple: params.mirrorMultiple,
+          visible: params.mirrorVisible,
+          label: mirrorLabel,
+        },
+      },
+    });
+
+    // Atualiza o campo-espelho: multiple (cardinalidade) + visibilidade +
+    // espelho denormalizado (lado oposto = source).
     const mirror = await this.fieldRepository.findById(
       definition.target.field._id,
     );
@@ -225,6 +266,11 @@ export default class RelationshipMaterializationService implements RelationshipM
           visible: params.mirrorVisible,
           relationshipId: definition._id,
           side: 'target',
+          mirror: {
+            multiple: Boolean(params.sourceField.multiple),
+            visible: params.sourceVisible,
+            label: params.sourceLabel,
+          },
         },
       });
     }
