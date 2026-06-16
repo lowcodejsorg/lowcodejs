@@ -46,6 +46,24 @@ export const RelationshipListBySideSchema: FastifySchema = {
         },
       },
     },
+    400: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [400] },
+        cause: { type: 'string', enum: ['RELATIONSHIP_NOT_PIVOT'] },
+        errors: { type: 'object', additionalProperties: { type: 'string' } },
+      },
+    },
+    404: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [404] },
+        cause: { type: 'string', enum: ['RELATIONSHIP_NOT_FOUND'] },
+        errors: { type: 'object', additionalProperties: { type: 'string' } },
+      },
+    },
     500: {
       type: 'object',
       properties: {

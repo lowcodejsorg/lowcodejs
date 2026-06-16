@@ -84,7 +84,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     return this.populate.build(table.fields, table.groups, getDataConnection());
   }
 
-  private transformRow(doc: unknown): IRow {
+  private transformRow(doc: unknown, fields: IField[] = []): IRow {
     let json: Record<string, unknown>;
 
     if (hasToJSON(doc)) {
@@ -101,6 +101,8 @@ export default class RowMongooseRepository implements RowContractRepository {
     }
 
     json['_id'] = id;
+    // Read-compat: embrulha em array a FK single dos campos OWNS_FK.
+    this.relationship.normalizeReadProjection(fields, json);
     assertIRow(json);
     return json;
   }
@@ -128,7 +130,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     await this.hydrateRelationships(fields, [created]);
     const populated = await created.populate(populate);
 
-    return this.transformRow(populated);
+    return this.transformRow(populated, fields);
   }
 
   async findOne(payload: RowFindOnePayload): Promise<IRow | null> {
@@ -144,7 +146,7 @@ export default class RowMongooseRepository implements RowContractRepository {
       await row.populate(populate);
     }
 
-    return this.transformRow(row);
+    return this.transformRow(row, payload.table.fields ?? []);
   }
 
   async findMany(payload: RowFindManyPayload): Promise<IRow[]> {
@@ -175,7 +177,8 @@ export default class RowMongooseRepository implements RowContractRepository {
     await this.hydrateRelationships(payload.table.fields ?? [], rows);
     await model.populate(rows, populate);
 
-    return rows.map((row) => this.transformRow(row));
+    const fields = payload.table.fields ?? [];
+    return rows.map((row) => this.transformRow(row, fields));
   }
 
   async count(
@@ -214,13 +217,27 @@ export default class RowMongooseRepository implements RowContractRepository {
     await this.hydrateRelationships(fields, [row]);
     await row.populate(populate);
 
-    return this.transformRow(row);
+    return this.transformRow(row, fields);
   }
 
   async deleteOne(table: RowTableContext, _id: string): Promise<boolean> {
     const model = await this.getModel(table);
     const result = await model.findOneAndDelete({ _id });
     return result !== null;
+  }
+
+  async clearFieldValue(
+    table: RowTableContext,
+    fieldSlug: string,
+    value: string,
+  ): Promise<number> {
+    const model = await this.getModel(table);
+    // mongoose converte `value` (string) para ObjectId pelo tipo do path FK.
+    const result = await model.updateMany(
+      { [fieldSlug]: value },
+      { $set: { [fieldSlug]: null } },
+    );
+    return result.modifiedCount;
   }
 
   async listSlugs(
@@ -309,7 +326,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     await this.hydrateRelationships(payload.table.fields ?? [], [row]);
     await row.populate(populate);
 
-    return this.transformRow(row);
+    return this.transformRow(row, payload.table.fields ?? []);
   }
 
   // ── Group rows (subdocumentos) ────────────────────────────
@@ -332,7 +349,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     await this.hydrateRelationships(payload.table.fields ?? [], [row]);
     await row.populate(populate);
 
-    return this.transformRow(row);
+    return this.transformRow(row, payload.table.fields ?? []);
   }
 
   async updateGroupItem(
@@ -361,7 +378,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     await this.hydrateRelationships(payload.table.fields ?? [], [row]);
     await row.populate(populate);
 
-    return this.transformRow(row);
+    return this.transformRow(row, payload.table.fields ?? []);
   }
 
   async deleteGroupItem(
@@ -400,7 +417,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     await this.hydrateRelationships(table.fields ?? [], [row]);
     await row.populate(populate);
 
-    return this.transformRow(row);
+    return this.transformRow(row, table.fields ?? []);
   }
 
   // ── Infrastructure-level ops (table/import/export tools) ──
@@ -454,7 +471,8 @@ export default class RowMongooseRepository implements RowContractRepository {
 
     const docs = await model.find({ $or: orClauses, trashedAt: null }).lean();
 
-    return docs.map((doc) => this.transformRow(doc));
+    const fields = table.fields ?? [];
+    return docs.map((doc) => this.transformRow(doc, fields));
   }
 
   // ── Category cleanup (delete-category) ────────────────────

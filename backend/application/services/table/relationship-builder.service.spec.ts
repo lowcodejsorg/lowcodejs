@@ -63,7 +63,7 @@ describe('MongooseRelationshipBuilder', () => {
     linkRepository = new RelationshipLinkInMemoryRepository();
     definitionRepository = new RelationshipDefinitionInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
-    service = new RelationshipService(linkRepository);
+    service = new RelationshipService(linkRepository, fieldRepository);
     sut = new MongooseRelationshipBuilder(
       service,
       definitionRepository,
@@ -206,6 +206,183 @@ describe('MongooseRelationshipBuilder', () => {
 
     // Sem relationshipId: zera o path (não cai no array embedded legado).
     expect(doc.sets['produtos']).toEqual([]);
+  });
+
+  describe('OWNS_FK (FK single na propria row)', () => {
+    let ownsField: IField;
+
+    beforeEach(async () => {
+      // 1:1 — source dono da FK (multiple=false dos dois lados).
+      ownsField = await fieldRepository.create({
+        ...FIELD_BASE,
+        name: 'Produto',
+        slug: 'produto',
+        type: E_FIELD_TYPE.RELATIONSHIP,
+        multiple: false,
+        relationship: {
+          table: PRODUTO_TABLE,
+          field: { _id: 'field-mirror-owns', slug: 'pedido' },
+          order: 'asc',
+          relationshipId: 'rel-owns',
+          side: 'source',
+          mirror: { multiple: false, visible: true },
+        },
+      });
+    });
+
+    it('extract coage [id] -> id single no payload (sem pending)', () => {
+      const result = sut.extract([ownsField], {
+        nome: 'Pedido',
+        produto: ['p1'],
+      });
+
+      expect(result.data).toEqual({ nome: 'Pedido', produto: 'p1' });
+      expect(result.pending).toHaveLength(0);
+    });
+
+    it('extract coage vazio -> null', () => {
+      const result = sut.extract([ownsField], { produto: [] });
+      expect(result.data).toEqual({ produto: null });
+      expect(result.pending).toHaveLength(0);
+    });
+
+    it('hydrate nao toca o path OWNS_FK (FK ja na row; populate resolve)', async () => {
+      const doc = new FakeDoc('ped1');
+      await sut.hydrate([ownsField], [doc]);
+      expect('produto' in doc.sets).toBe(false);
+    });
+
+    it('normalizeReadProjection embrulha FK single em array', () => {
+      const single = { produto: { _id: 'p1' } };
+      sut.normalizeReadProjection([ownsField], single);
+      expect(single.produto).toEqual([{ _id: 'p1' }]);
+
+      const empty: Record<string, unknown> = { produto: null };
+      sut.normalizeReadProjection([ownsField], empty);
+      expect(empty.produto).toEqual([]);
+
+      const already = { produto: [{ _id: 'p1' }] };
+      sut.normalizeReadProjection([ownsField], already);
+      expect(already.produto).toEqual([{ _id: 'p1' }]);
+    });
+
+    it('normalizeReadProjection nao toca campos REVERSE/PIVOT/legado', () => {
+      const row = { produtos: [{ _id: 'p1' }] };
+      sut.normalizeReadProjection([sourceField], row);
+      expect(row.produtos).toEqual([{ _id: 'p1' }]);
+    });
+
+    it('resolveRelationshipFilter devolve null (FK na propria row; filtra direto)', async () => {
+      const fragment = await sut.resolveRelationshipFilter(ownsField, ['p1']);
+      expect(fragment).toBeNull();
+    });
+  });
+
+  describe('resolveRelationshipFilter (PIVOT via links)', () => {
+    let pivotField: IField;
+
+    beforeEach(async () => {
+      // N:N — os dois lados aceitam multiplos => PIVOT.
+      pivotField = await fieldRepository.create({
+        ...FIELD_BASE,
+        name: 'Tags',
+        slug: 'tags',
+        type: E_FIELD_TYPE.RELATIONSHIP,
+        multiple: true,
+        relationship: {
+          table: PRODUTO_TABLE,
+          field: { _id: 'field-mirror-tags', slug: 'pedidos' },
+          order: 'asc',
+          relationshipId: 'rel-nn',
+          side: 'source',
+          mirror: { multiple: true, visible: true },
+        },
+      });
+
+      // ped1 -> [t1, t2] ; ped2 -> [t1]
+      await linkRepository.create({
+        relationshipId: 'rel-nn',
+        sourceId: 'ped1',
+        targetId: 't1',
+      });
+      await linkRepository.create({
+        relationshipId: 'rel-nn',
+        sourceId: 'ped1',
+        targetId: 't2',
+      });
+      await linkRepository.create({
+        relationshipId: 'rel-nn',
+        sourceId: 'ped2',
+        targetId: 't1',
+      });
+    });
+
+    it('resolve os ids deste lado cujos vinculos tocam os selecionados', async () => {
+      const fragment = await sut.resolveRelationshipFilter(pivotField, ['t1']);
+      expect(fragment).toEqual({ _id: { $in: ['ped1', 'ped2'] } });
+    });
+
+    it('deduplica e segue OR (qualquer um dos selecionados)', async () => {
+      const fragment = await sut.resolveRelationshipFilter(pivotField, [
+        't1',
+        't2',
+      ]);
+      expect(fragment).toEqual({ _id: { $in: ['ped1', 'ped2'] } });
+    });
+
+    it('selecao vazia => match em nada', async () => {
+      const fragment = await sut.resolveRelationshipFilter(pivotField, []);
+      expect(fragment).toEqual({ _id: { $in: [] } });
+    });
+
+    it('sem side (legado) => null (caller filtra direto)', async () => {
+      const legacy: IField = {
+        ...pivotField,
+        relationship: {
+          table: PRODUTO_TABLE,
+          field: { _id: 'field-mirror-tags', slug: 'pedidos' },
+          order: 'asc',
+          relationshipId: 'rel-nn',
+        },
+      };
+      const fragment = await sut.resolveRelationshipFilter(legacy, ['t1']);
+      expect(fragment).toBeNull();
+    });
+  });
+
+  describe('RelationshipService.resolveOwningIds', () => {
+    beforeEach(async () => {
+      await linkRepository.create({
+        relationshipId: 'rel-x',
+        sourceId: 'a1',
+        targetId: 'b1',
+      });
+      await linkRepository.create({
+        relationshipId: 'rel-x',
+        sourceId: 'a2',
+        targetId: 'b1',
+      });
+      await linkRepository.create({
+        relationshipId: 'rel-x',
+        sourceId: 'a1',
+        targetId: 'b2',
+      });
+    });
+
+    it('side source: resolve sources cujos targets caem na selecao', async () => {
+      const ids = await service.resolveOwningIds('rel-x', 'source', ['b1']);
+      expect(ids).toEqual(['a1', 'a2']);
+    });
+
+    it('side target: resolve targets cujos sources caem na selecao', async () => {
+      const ids = await service.resolveOwningIds('rel-x', 'target', ['a1']);
+      expect(ids).toEqual(['b1', 'b2']);
+    });
+
+    it('selecao vazia => vazio', async () => {
+      const ids = await service.resolveOwningIds('rel-x', 'source', []);
+      expect(ids).toEqual([]);
+    });
   });
 
   it('hasManagedRelationships é true para qualquer campo RELATIONSHIP (links são a única fonte)', () => {

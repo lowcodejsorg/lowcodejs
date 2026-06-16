@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import type { IField, IRow } from '@/lib/interfaces';
 import { resolveRelationshipLabel } from '@/lib/relationship-label';
+import { isManagedRelationship } from '@/lib/table';
 
 interface RelationshipItem {
   _id: string;
@@ -23,7 +24,7 @@ export function TableRowRelationshipCell({
   row,
 }: TableRowRelationshipCellProps): React.JSX.Element {
   const relConfig = field.relationship;
-  const isManage = relConfig?.formMode === 'manage';
+  const isManage = isManagedRelationship(field);
   const relatedTable = useReadTable({ slug: relConfig?.table?.slug ?? '' });
 
   const raw = row[field.slug];

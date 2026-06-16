@@ -41,6 +41,7 @@ import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
+import { isManyToManyRelationship } from '@/lib/table';
 
 interface RowDetailViewProps {
   table: ITable;
@@ -230,14 +231,17 @@ export function RowDetailView({
     isFieldVisible,
   ]);
 
-  // Campos simples (sem grupo nem relacionamento) ficam no corpo; grupos e
-  // relacionamentos vão para seções com tabs (§10.2).
+  // Campos simples ficam no corpo. Grupos e relacionamentos N:N vão para seções
+  // com tabs (§10.2). Relacionamentos 1:1/1:N (FK) ficam no corpo como célula
+  // read-only — a edição é pelo formulário (combobox), não pelo repetidor /links.
   const mainFields = React.useMemo(
     (): Array<IField> =>
       visibleFields.filter(
         (f) =>
           f.type !== E_FIELD_TYPE.FIELD_GROUP &&
-          f.type !== E_FIELD_TYPE.RELATIONSHIP,
+          !(
+            f.type === E_FIELD_TYPE.RELATIONSHIP && isManyToManyRelationship(f)
+          ),
       ),
     [visibleFields],
   );
@@ -248,9 +252,14 @@ export function RowDetailView({
     [visibleFields],
   );
 
+  // Só N:N entra nas tabs editáveis (repetidor via /links). 1:1/1:N (FK) já
+  // aparecem como célula read-only no corpo (mainFields).
   const relationshipFields = React.useMemo(
     (): Array<IField> =>
-      visibleFields.filter((f) => f.type === E_FIELD_TYPE.RELATIONSHIP),
+      visibleFields.filter(
+        (f) =>
+          f.type === E_FIELD_TYPE.RELATIONSHIP && isManyToManyRelationship(f),
+      ),
     [visibleFields],
   );
 

@@ -10,6 +10,7 @@ import type {
   RelationshipLinkExistsPayload,
   RelationshipLinkPage,
   RelationshipLinkPaginatePayload,
+  RelationshipLinkSide,
 } from './relationship-link-contract.repository';
 
 @Service()
@@ -70,6 +71,25 @@ export default class RelationshipLinkMongooseRepository implements RelationshipL
     const links = await Model.find({ relationshipId, targetId }).sort({
       order: 'asc',
     });
+    return links.map((link) => this.transform(link));
+  }
+
+  async findManyBySide(
+    relationshipId: string,
+    side: RelationshipLinkSide,
+    recordIds: string[],
+  ): Promise<IRelationshipLink[]> {
+    if (recordIds.length === 0) return [];
+
+    let where: Record<string, unknown> = {
+      relationshipId,
+      sourceId: { $in: recordIds },
+    };
+    if (side === 'target') {
+      where = { relationshipId, targetId: { $in: recordIds } };
+    }
+
+    const links = await Model.find(where).sort({ order: 'asc' });
     return links.map((link) => this.transform(link));
   }
 

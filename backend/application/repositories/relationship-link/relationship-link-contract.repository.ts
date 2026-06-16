@@ -50,6 +50,13 @@ export abstract class RelationshipLinkContractRepository {
     relationshipId: string,
     targetId: string,
   ): Promise<IRelationshipLink[]>;
+  // Vinculos de varios registros de um mesmo lado numa unica query (batch da
+  // pagina) — base da hidratacao N:N sem N+1.
+  abstract findManyBySide(
+    relationshipId: string,
+    side: RelationshipLinkSide,
+    recordIds: string[],
+  ): Promise<IRelationshipLink[]>;
   abstract paginateBySide(
     payload: RelationshipLinkPaginatePayload,
   ): Promise<RelationshipLinkPage>;

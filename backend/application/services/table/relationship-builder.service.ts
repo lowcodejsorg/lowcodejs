@@ -1,15 +1,20 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
+import mongoose from 'mongoose';
 
 import type {
   IField,
   IRelationshipDefinition,
 } from '@application/core/entity.core';
-import { E_FIELD_TYPE } from '@application/core/entity.core';
+import {
+  E_FIELD_TYPE,
+  E_RELATIONSHIP_STORAGE,
+} from '@application/core/entity.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { RelationshipDefinitionContractRepository } from '@application/repositories/relationship-definition/relationship-definition-contract.repository';
 import type { RelationshipLinkSide } from '@application/repositories/relationship-link/relationship-link-contract.repository';
 import { RelationshipContractService } from '@application/services/relationship/relationship-contract.service';
+import { getDataConnection } from '@config/database.config';
 
 import type {
   PendingRelationship,
@@ -17,6 +22,13 @@ import type {
   RelationshipExtractResult,
   RelationshipHydratableDoc,
 } from './relationship-builder-contract.service';
+
+// Endpoint multiples derivados do proprio campo (denormalizado em
+// `field.relationship`), na ordem source/target — alimenta role/owner sem DB.
+type EndpointMultiples = {
+  sourceField: Pick<IField, 'multiple'>;
+  targetField: Pick<IField, 'multiple'>;
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -42,6 +54,13 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
     if (relationshipFields.length === 0 || docs.length === 0) return;
 
     for (const field of relationshipFields) {
+      // OWNS_FK: a FK single ja vive na propria row; o populate nativo resolve.
+      // Nao tocar o path (sobrescrever quebraria o cast single do schema).
+      if (
+        this.relationship.roleOfField(field) === E_RELATIONSHIP_STORAGE.OWNS_FK
+      )
+        continue;
+
       const relationshipId = field.relationship?.relationshipId;
 
       // Zero legado: os links sao a UNICA fonte de verdade. Um campo sem
@@ -67,16 +86,79 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
 
       const side = this.sideOf(definition, field);
 
-      for (const doc of docs) {
-        const recordId = doc._id.toString();
-        const ids = await this.relationship.resolveLinkedIds(
-          definition,
-          recordId,
-          side,
-        );
-        // Projeta sempre, inclusive vazio (vinculo removido NAO pode reaparecer).
-        doc.set(field.slug, ids);
+      // REVERSE: nada e gravado neste lado; resolve por 1 query reversa na
+      // colecao do dono (FK == meuId), agrupada por pagina.
+      if (
+        this.relationship.roleOfField(field) === E_RELATIONSHIP_STORAGE.REVERSE
+      ) {
+        await this.hydrateReverse(field, definition, docs);
+        continue;
       }
+
+      // PIVOT (e fallback legado sem role): 1 query de links para a pagina
+      // inteira (mata o N+1) — agrupada por registro.
+      const recordIds = docs.map((doc) => doc._id.toString());
+      const byRecord = await this.relationship.resolveLinkedIdsBatch(
+        definition,
+        recordIds,
+        side,
+      );
+      for (const doc of docs) {
+        // Projeta sempre, inclusive vazio (vinculo removido NAO pode reaparecer).
+        doc.set(field.slug, byRecord.get(doc._id.toString()) ?? []);
+      }
+    }
+  }
+
+  // REVERSE batched: le a colecao do dono uma vez por pagina e agrupa os filhos
+  // por FK (== id do registro deste lado). Projeta sempre array (read-compat),
+  // inclusive vazio.
+  private async hydrateReverse(
+    field: IField,
+    definition: IRelationshipDefinition,
+    docs: RelationshipHydratableDoc[],
+  ): Promise<void> {
+    const { sourceField, targetField } = this.endpointMultiples(field);
+    const owner = this.relationship.ownerOf(
+      definition,
+      sourceField,
+      targetField,
+    );
+    if (!owner) {
+      for (const doc of docs) doc.set(field.slug, []);
+      return;
+    }
+
+    const db = getDataConnection().db;
+    if (!db) {
+      for (const doc of docs) doc.set(field.slug, []);
+      return;
+    }
+
+    const parentIds = docs.map(
+      (doc) => new mongoose.Types.ObjectId(doc._id.toString()),
+    );
+    const collection = db.collection<Record<string, unknown>>(owner.tableSlug);
+    const children = await collection
+      .find(
+        { [owner.fieldSlug]: { $in: parentIds } },
+        { projection: { _id: 1, [owner.fieldSlug]: 1 } },
+      )
+      .toArray();
+
+    const byParent = new Map<string, string[]>();
+    for (const child of children) {
+      const fk = child[owner.fieldSlug];
+      if (fk === null || fk === undefined) continue;
+      const parentId = String(fk);
+      const childId = String(child['_id']);
+      const current = byParent.get(parentId) ?? [];
+      current.push(childId);
+      byParent.set(parentId, current);
+    }
+
+    for (const doc of docs) {
+      doc.set(field.slug, byParent.get(doc._id.toString()) ?? []);
     }
   }
 
@@ -91,11 +173,117 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
     for (const field of relationshipFields) {
       if (!(field.slug in cleaned)) continue;
       const ids = this.toIds(cleaned[field.slug]);
+
+      // OWNS_FK: a FK single fica no payload da row (escrita nativa no
+      // insert/update) — sem ida ao pivo. `[id] -> id` (ou null se vazio).
+      if (
+        this.relationship.roleOfField(field) === E_RELATIONSHIP_STORAGE.OWNS_FK
+      ) {
+        cleaned[field.slug] = ids[0] ?? null;
+        continue;
+      }
+
+      // REVERSE/PIVOT (e legado): sai do payload e vira pending (persistido por
+      // role depois que a row tem _id).
       delete cleaned[field.slug];
       pending.push({ field, ids });
     }
 
     return { data: cleaned, pending };
+  }
+
+  // Read-compat: o frontend sempre consome `row[slug]` como array. OWNS_FK guarda
+  // FK single (populate nativo retorna objeto unico), entao embrulha em array
+  // ([] quando vazio). REVERSE/PIVOT ja chegam array via hydrate.
+  normalizeReadProjection(
+    fields: IField[],
+    row: Record<string, unknown>,
+  ): void {
+    for (const field of this.relationshipFields(fields)) {
+      if (
+        this.relationship.roleOfField(field) !== E_RELATIONSHIP_STORAGE.OWNS_FK
+      )
+        continue;
+
+      const value = row[field.slug];
+      if (value === null || value === undefined) {
+        row[field.slug] = [];
+        continue;
+      }
+      if (Array.isArray(value)) continue;
+      row[field.slug] = [value];
+    }
+  }
+
+  async resolveRelationshipFilter(
+    field: IField,
+    otherIds: string[],
+  ): Promise<Record<string, unknown> | null> {
+    const role = this.relationship.roleOfField(field);
+
+    // OWNS_FK: a FK vive na propria row; o caller filtra `{[slug]:{$in}}` direto.
+    if (role === E_RELATIONSHIP_STORAGE.OWNS_FK) return null;
+
+    // REVERSE: os filhos guardam a FK; os pais sao os FKs dos filhos selecionados.
+    if (role === E_RELATIONSHIP_STORAGE.REVERSE) {
+      return this.resolveReverseFilter(field, otherIds);
+    }
+
+    // PIVOT (e legado com relationshipId+side): resolve via links na ponta oposta.
+    return this.resolvePivotFilter(field, otherIds);
+  }
+
+  // REVERSE filter: le os filhos selecionados na colecao do dono e devolve seus
+  // FKs (== ids dos pais deste lado) como `{ _id: { $in } }`.
+  private async resolveReverseFilter(
+    field: IField,
+    otherIds: string[],
+  ): Promise<Record<string, unknown> | null> {
+    const config = field.relationship;
+    const ownerTableSlug = config?.table?.slug;
+    const ownerFieldSlug = config?.field?.slug;
+    if (!ownerTableSlug || !ownerFieldSlug) return null;
+    if (otherIds.length === 0) return { _id: { $in: [] } };
+
+    const db = getDataConnection().db;
+    if (!db) return null;
+
+    const childIds = otherIds.map((id) => new mongoose.Types.ObjectId(id));
+    const collection = db.collection<Record<string, unknown>>(ownerTableSlug);
+    const children = await collection
+      .find(
+        { _id: { $in: childIds } },
+        { projection: { _id: 1, [ownerFieldSlug]: 1 } },
+      )
+      .toArray();
+
+    const parentIds: string[] = [];
+    for (const child of children) {
+      const fk = child[ownerFieldSlug];
+      if (fk === null || fk === undefined) continue;
+      const parentId = String(fk);
+      if (!parentIds.includes(parentId)) parentIds.push(parentId);
+    }
+    return { _id: { $in: parentIds } };
+  }
+
+  // PIVOT filter: resolve os ids deste lado cujos vinculos tocam algum dos
+  // selecionados (ponta oposta). Sem relationshipId/side (legado), cai no caller.
+  private async resolvePivotFilter(
+    field: IField,
+    otherIds: string[],
+  ): Promise<Record<string, unknown> | null> {
+    const relationshipId = field.relationship?.relationshipId;
+    const side = field.relationship?.side;
+    if (!relationshipId || !side) return null;
+    if (otherIds.length === 0) return { _id: { $in: [] } };
+
+    const ids = await this.relationship.resolveOwningIds(
+      relationshipId,
+      side,
+      otherIds,
+    );
+    return { _id: { $in: ids } };
   }
 
   async persist(
@@ -116,6 +304,17 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
         await this.definitionRepository.findById(relationshipId);
       if (!definition) continue;
 
+      // REVERSE: editar o lado "1" reatribui a FK dos filhos (rouba/orfana) na
+      // colecao do dono — semantica 1:N/1:1 sem pivo.
+      if (
+        this.relationship.roleOfField(item.field) ===
+        E_RELATIONSHIP_STORAGE.REVERSE
+      ) {
+        await this.persistReverse(item.field, definition, recordId, item.ids);
+        continue;
+      }
+
+      // PIVOT (e fallback legado): reconcilia os links (valida cardinalidade).
       const side = this.sideOf(definition, item.field);
       const { sourceField, targetField } = await this.endpointFields(
         definition,
@@ -134,6 +333,43 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
 
       if (result.isLeft()) throw result.value;
     }
+  }
+
+  // REVERSE write: seta a FK dos filhos atribuidos para `recordId` e orfana
+  // (null) os que apontavam para mim mas sairam do conjunto. Reatribuir "rouba"
+  // o filho do pai anterior (FK single = 1 pai), que e a semantica 1:N correta.
+  private async persistReverse(
+    field: IField,
+    definition: IRelationshipDefinition,
+    recordId: string,
+    ids: string[],
+  ): Promise<void> {
+    const { sourceField, targetField } = this.endpointMultiples(field);
+    const owner = this.relationship.ownerOf(
+      definition,
+      sourceField,
+      targetField,
+    );
+    if (!owner) return;
+
+    const db = getDataConnection().db;
+    if (!db) return;
+
+    const collection = db.collection<Record<string, unknown>>(owner.tableSlug);
+    const recordObjectId = new mongoose.Types.ObjectId(recordId);
+    const assignedIds = ids.map((id) => new mongoose.Types.ObjectId(id));
+
+    if (assignedIds.length > 0) {
+      await collection.updateMany(
+        { _id: { $in: assignedIds } },
+        { $set: { [owner.fieldSlug]: recordObjectId } },
+      );
+    }
+
+    await collection.updateMany(
+      { [owner.fieldSlug]: recordObjectId, _id: { $nin: assignedIds } },
+      { $set: { [owner.fieldSlug]: null } },
+    );
   }
 
   // ── helpers ───────────────────────────────────────────────
@@ -175,6 +411,20 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
       return { sourceField: field, targetField: mirrorField };
     }
     return { sourceField: mirrorField, targetField: field };
+  }
+
+  // Multiples dos dois endpoints na ordem source/target, derivados do proprio
+  // `field.relationship` (this.multiple + mirror.multiple) — sem ida ao DB.
+  // Alimenta `ownerOf` no caminho REVERSE (leitura/escrita).
+  private endpointMultiples(field: IField): EndpointMultiples {
+    const config = field.relationship;
+    const thisField = { multiple: Boolean(field.multiple) };
+    const otherField = { multiple: Boolean(config?.mirror?.multiple) };
+
+    if (config?.side === 'target') {
+      return { sourceField: otherField, targetField: thisField };
+    }
+    return { sourceField: thisField, targetField: otherField };
   }
 
   private toIds(value: unknown): string[] {

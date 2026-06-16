@@ -181,4 +181,17 @@ export abstract class RowContractRepository {
     fieldSlug: string,
     ids: string[],
   ): Promise<number>;
+
+  // ── Relationship FK (cascade/SET_NULL) ────────────────────
+
+  /**
+   * Zera (`null`) o campo `fieldSlug` em todas as rows cujo valor seja `value`.
+   * Usada no SET_NULL de relacionamento FK (1:1/1:N): orfana os filhos que
+   * apontavam para o pai removido. Retorna a quantidade de rows modificadas.
+   */
+  abstract clearFieldValue(
+    table: RowTableContext,
+    fieldSlug: string,
+    value: string,
+  ): Promise<number>;
 }

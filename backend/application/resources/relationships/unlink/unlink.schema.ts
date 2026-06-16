@@ -17,12 +17,24 @@ export const RelationshipUnlinkSchema: FastifySchema = {
   },
   response: {
     204: { type: 'null', description: 'Vínculo removido' },
+    400: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [400] },
+        cause: { type: 'string', enum: ['RELATIONSHIP_NOT_PIVOT'] },
+        errors: { type: 'object', additionalProperties: { type: 'string' } },
+      },
+    },
     404: {
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [404] },
-        cause: { type: 'string', enum: ['RELATIONSHIP_LINK_NOT_FOUND'] },
+        cause: {
+          type: 'string',
+          enum: ['RELATIONSHIP_LINK_NOT_FOUND', 'RELATIONSHIP_NOT_FOUND'],
+        },
         errors: { type: 'object', additionalProperties: { type: 'string' } },
       },
     },

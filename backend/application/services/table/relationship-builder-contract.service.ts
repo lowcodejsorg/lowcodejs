@@ -31,11 +31,28 @@ export abstract class RelationshipBuilderContractService {
     docs: RelationshipHydratableDoc[],
   ): Promise<void>;
 
-  // Separa do payload de escrita os campos RELATIONSHIP geridos por links.
+  // Separa do payload de escrita os campos RELATIONSHIP por role: OWNS_FK fica no
+  // payload como FK single (escrita nativa); REVERSE/PIVOT viram `pending`.
   abstract extract(
     fields: IField[],
     data: Record<string, unknown>,
   ): RelationshipExtractResult;
+
+  // Read-compat: embrulha em array os campos OWNS_FK (FK single -> [obj]/[]) na
+  // projecao final, para a UI continuar consumindo `row[slug]` como lista.
+  abstract normalizeReadProjection(
+    fields: IField[],
+    row: Record<string, unknown>,
+  ): void;
+
+  // Filtro role-aware: traduz `otherIds` (ids selecionados na sidebar) num
+  // fragmento de query por papel. OWNS_FK -> null (caller filtra `{[slug]:{$in}}`
+  // direto, FK na row); REVERSE -> `{ _id: { $in } }` via colecao do dono;
+  // PIVOT/legado -> `{ _id: { $in } }` via links na ponta oposta.
+  abstract resolveRelationshipFilter(
+    field: IField,
+    otherIds: string[],
+  ): Promise<Record<string, unknown> | null>;
 
   // Persiste (reconcilia) os links de um registro. Lanca HTTPException quando a
   // cardinalidade/duplicidade e violada.

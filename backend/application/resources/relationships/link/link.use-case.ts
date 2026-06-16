@@ -48,6 +48,18 @@ export default class RelationshipLinkUseCase {
         );
       }
 
+      // Vínculos só existem em N:N (pivô). 1:1/1:N gerem a FK via atualização do
+      // registro — bloquear aqui evita criar links órfãos que nada lê.
+      const isPivot = await this.relationship.isPivot(definition);
+      if (!isPivot) {
+        return left(
+          HTTPException.BadRequest(
+            'Relacionamentos 1:1 e 1:N são geridos pela atualização do registro, não por vínculos',
+            'RELATIONSHIP_NOT_PIVOT',
+          ),
+        );
+      }
+
       // Vincular pelos dois lados (§5.4): de source fixa sourceId; de target
       // fixa targetId.
       let sourceId = payload.otherId;

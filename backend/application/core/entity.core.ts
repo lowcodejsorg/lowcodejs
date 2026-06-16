@@ -548,6 +548,19 @@ export const E_RELATIONSHIP_CARDINALITY = {
   MANY_TO_MANY: 'N:N',
 } as const;
 
+// Papel de armazenamento de cada lado, derivado da cardinalidade + side (nao
+// persistido). Modelo relacional FK-inline:
+//   - OWNS_FK: grava a FK (single ObjectId) na propria row; populate nativo.
+//             (lado N do 1:N; lado source do 1:1)
+//   - REVERSE: nao grava nada; resolvido por query reversa na colecao do lado
+//             OWNS_FK (`ownerFieldSlug == meuId`). (lado 1 do 1:N; target do 1:1)
+//   - PIVOT: N:N, via colecao de juncao `RelationshipLink`.
+export const E_RELATIONSHIP_STORAGE = {
+  OWNS_FK: 'OWNS_FK',
+  REVERSE: 'REVERSE',
+  PIVOT: 'PIVOT',
+} as const;
+
 export type FieldCreatePayload = Pick<
   IField,
   | 'name'

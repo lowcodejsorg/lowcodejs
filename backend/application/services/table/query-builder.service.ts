@@ -12,6 +12,7 @@ import { E_FIELD_TYPE } from '@application/core/entity.core';
 
 import { FieldGroupBuilderContractService } from './field-group-builder-contract.service';
 import { QueryBuilderContractService } from './query-builder-contract.service';
+import { RelationshipBuilderContractService } from './relationship-builder-contract.service';
 
 export type Query = Record<string, unknown>;
 
@@ -28,7 +29,10 @@ export type QueryOrder = Record<
 
 @Service()
 export default class MongooseQueryBuilder implements QueryBuilderContractService {
-  constructor(private readonly fieldGroup: FieldGroupBuilderContractService) {}
+  constructor(
+    private readonly fieldGroup: FieldGroupBuilderContractService,
+    private readonly relationship: RelationshipBuilderContractService,
+  ) {}
 
   normalize(search: string): string {
     const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -67,6 +71,10 @@ export default class MongooseQueryBuilder implements QueryBuilderContractService
       };
     }
 
+    // Fragmentos de filtro de relacionamento por subquery (REVERSE/PIVOT) — viram
+    // `{ _id: { $in } }` e sao ANDados na query (sem path proprio na row).
+    const relationshipFilters: Query[] = [];
+
     for (const field of fields.filter(
       (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP,
     )) {
@@ -83,9 +91,25 @@ export default class MongooseQueryBuilder implements QueryBuilderContractService
         };
       }
 
+      if (field.type === E_FIELD_TYPE.RELATIONSHIP && payload[slug]) {
+        const ids = String(payload[slug]).split(',');
+        const fragment = await this.relationship.resolveRelationshipFilter(
+          field,
+          ids,
+        );
+
+        // OWNS_FK (fragment null): FK na propria row — filtra direto (mongoose
+        // converte para ObjectId pelo schema). REVERSE/PIVOT: subquery -> _id.
+        if (!fragment) {
+          query[slug] = { $in: ids };
+        }
+        if (fragment) {
+          relationshipFilters.push(fragment);
+        }
+      }
+
       if (
-        (field.type === E_FIELD_TYPE.RELATIONSHIP ||
-          field.type === E_FIELD_TYPE.DROPDOWN ||
+        (field.type === E_FIELD_TYPE.DROPDOWN ||
           field.type === E_FIELD_TYPE.CATEGORY ||
           field.type === E_FIELD_TYPE.USER ||
           field.type === E_FIELD_TYPE.CREATOR ||
@@ -125,6 +149,14 @@ export default class MongooseQueryBuilder implements QueryBuilderContractService
     // Filtros sobre campos dentro de FIELD_GROUP (dot notation, embedded docs)
     // sao montados pelo seam dedicado e mesclados na query principal.
     Object.assign(query, this.fieldGroup.buildFilter(payload, fields, groups));
+
+    // ANDa os filtros REVERSE/PIVOT (cada um e um `{ _id: { $in } }`) preservando
+    // `trashedAt` e os demais predicados ja montados.
+    if (relationshipFilters.length > 0) {
+      query = {
+        $and: [{ ...query }, ...relationshipFilters],
+      };
+    }
 
     if (search) {
       const searchStr = String(search);

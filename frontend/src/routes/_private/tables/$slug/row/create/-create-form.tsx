@@ -1,6 +1,6 @@
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IStorage } from '@/lib/interfaces';
-import { buildFieldValidator } from '@/lib/table';
+import { buildFieldValidator, isManagedRelationship } from '@/lib/table';
 
 type SearchableOption = {
   value: string;
@@ -246,10 +246,8 @@ export function RowFormFields({
         ) {
           return null;
         }
-        if (
-          field.type === E_FIELD_TYPE.RELATIONSHIP &&
-          field.relationship?.formMode === 'manage'
-        ) {
+        // Só N:N 'manage' é renderizado pelo repetidor; 1:1/1:N caem no combobox.
+        if (isManagedRelationship(field)) {
           return null;
         }
 
