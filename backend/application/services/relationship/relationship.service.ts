@@ -9,8 +9,12 @@ import type {
   IRelationshipLink,
   ValueOf,
 } from '@application/core/entity.core';
-import { E_RELATIONSHIP_CARDINALITY } from '@application/core/entity.core';
+import {
+  E_RELATIONSHIP_CARDINALITY,
+  E_RELATIONSHIP_STORAGE,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import {
   RelationshipLinkContractRepository,
   type RelationshipLinkSide,
@@ -20,6 +24,7 @@ import type {
   RelationshipCanLinkParams,
   RelationshipContractService,
   RelationshipLinkParams,
+  RelationshipOwner,
   RelationshipReplaceParams,
 } from './relationship-contract.service';
 
@@ -37,10 +42,94 @@ export class RelationshipCardinality {
   }
 }
 
+// Papel de armazenamento de cada lado, derivado da cardinalidade + side (nao
+// persistido). Caminho unico reusado por schema/escrita/leitura/filtro/cascade.
+export class RelationshipStorage {
+  // OWNS_FK: grava FK single na propria row. REVERSE: nada gravado, resolvido
+  // por query reversa na colecao do dono. PIVOT: N:N via RelationshipLink.
+  static storageRoleOf(
+    side: RelationshipLinkSide,
+    sourceField: Pick<IField, 'multiple'>,
+    targetField: Pick<IField, 'multiple'>,
+  ): ValueOf<typeof E_RELATIONSHIP_STORAGE> {
+    const cardinality = RelationshipCardinality.of(sourceField, targetField);
+
+    if (cardinality === E_RELATIONSHIP_CARDINALITY.MANY_TO_MANY) {
+      return E_RELATIONSHIP_STORAGE.PIVOT;
+    }
+
+    // 1:1 — dono por convencao e o lado source; target e o reverso.
+    if (cardinality === E_RELATIONSHIP_CARDINALITY.ONE_TO_ONE) {
+      if (side === 'source') return E_RELATIONSHIP_STORAGE.OWNS_FK;
+      return E_RELATIONSHIP_STORAGE.REVERSE;
+    }
+
+    // 1:N — o lado nao-multiplo (o "1") guarda a FK; o lado multiplo e reverso.
+    let sideField = sourceField;
+    if (side === 'target') sideField = targetField;
+    if (!sideField.multiple) return E_RELATIONSHIP_STORAGE.OWNS_FK;
+    return E_RELATIONSHIP_STORAGE.REVERSE;
+  }
+
+  // Role derivado direto de um campo RELATIONSHIP, usando o `field.relationship`
+  // (side + mirror.multiple) denormalizado — sem lookup no DB. Retorna null
+  // quando a config esta incompleta (dados legados antes da migration 16); o
+  // caller deve cair no caminho legado (array transiente / links).
+  static roleOfField(
+    field: Pick<IField, 'multiple' | 'relationship'>,
+  ): ValueOf<typeof E_RELATIONSHIP_STORAGE> | null {
+    const config = field.relationship;
+    if (!config) return null;
+    if (!config.side) return null;
+    if (!config.mirror) return null;
+
+    const thisField = { multiple: Boolean(field.multiple) };
+    const otherField = { multiple: Boolean(config.mirror.multiple) };
+
+    let sourceField = thisField;
+    let targetField = otherField;
+    if (config.side === 'target') {
+      sourceField = otherField;
+      targetField = thisField;
+    }
+
+    return this.storageRoleOf(config.side, sourceField, targetField);
+  }
+
+  // Endpoint dono da FK (lado OWNS_FK). null em N:N (sem dono single — pivo).
+  // O lado REVERSE usa `tableSlug` + `fieldSlug` para a query reversa.
+  static ownerOf(
+    definition: IRelationshipDefinition,
+    sourceField: Pick<IField, 'multiple'>,
+    targetField: Pick<IField, 'multiple'>,
+  ): RelationshipOwner | null {
+    const sourceRole = this.storageRoleOf('source', sourceField, targetField);
+
+    if (sourceRole === E_RELATIONSHIP_STORAGE.PIVOT) return null;
+
+    if (sourceRole === E_RELATIONSHIP_STORAGE.OWNS_FK) {
+      return {
+        side: 'source',
+        tableId: definition.source.table._id,
+        tableSlug: definition.source.table.slug,
+        fieldSlug: definition.source.field.slug,
+      };
+    }
+
+    return {
+      side: 'target',
+      tableId: definition.target.table._id,
+      tableSlug: definition.target.table.slug,
+      fieldSlug: definition.target.field.slug,
+    };
+  }
+}
+
 @Service()
 export default class RelationshipService implements RelationshipContractService {
   constructor(
     private readonly linkRepository: RelationshipLinkContractRepository,
+    private readonly fieldRepository: FieldContractRepository,
   ) {}
 
   cardinalityOf(
@@ -48,6 +137,42 @@ export default class RelationshipService implements RelationshipContractService 
     targetField: Pick<IField, 'multiple'>,
   ): ValueOf<typeof E_RELATIONSHIP_CARDINALITY> {
     return RelationshipCardinality.of(sourceField, targetField);
+  }
+
+  async isPivot(definition: IRelationshipDefinition): Promise<boolean> {
+    const sourceField = await this.fieldRepository.findById(
+      definition.source.field._id,
+    );
+    const targetField = await this.fieldRepository.findById(
+      definition.target.field._id,
+    );
+    const cardinality = RelationshipCardinality.of(
+      { multiple: Boolean(sourceField?.multiple) },
+      { multiple: Boolean(targetField?.multiple) },
+    );
+    return cardinality === E_RELATIONSHIP_CARDINALITY.MANY_TO_MANY;
+  }
+
+  storageRoleOf(
+    side: RelationshipLinkSide,
+    sourceField: Pick<IField, 'multiple'>,
+    targetField: Pick<IField, 'multiple'>,
+  ): ValueOf<typeof E_RELATIONSHIP_STORAGE> {
+    return RelationshipStorage.storageRoleOf(side, sourceField, targetField);
+  }
+
+  roleOfField(
+    field: Pick<IField, 'multiple' | 'relationship'>,
+  ): ValueOf<typeof E_RELATIONSHIP_STORAGE> | null {
+    return RelationshipStorage.roleOfField(field);
+  }
+
+  ownerOf(
+    definition: IRelationshipDefinition,
+    sourceField: Pick<IField, 'multiple'>,
+    targetField: Pick<IField, 'multiple'>,
+  ): RelationshipOwner | null {
+    return RelationshipStorage.ownerOf(definition, sourceField, targetField);
   }
 
   async canLink(
@@ -164,6 +289,64 @@ export default class RelationshipService implements RelationshipContractService 
       recordId,
     );
     return found.map((link) => link.sourceId);
+  }
+
+  async resolveLinkedIdsBatch(
+    definition: IRelationshipDefinition,
+    recordIds: string[],
+    side: RelationshipLinkSide,
+  ): Promise<Map<string, string[]>> {
+    const result = new Map<string, string[]>();
+    if (recordIds.length === 0) return result;
+
+    const links = await this.linkRepository.findManyBySide(
+      definition._id,
+      side,
+      recordIds,
+    );
+
+    for (const link of links) {
+      let recordId = link.sourceId;
+      let otherId = link.targetId;
+      if (side === 'target') {
+        recordId = link.targetId;
+        otherId = link.sourceId;
+      }
+
+      const current = result.get(recordId) ?? [];
+      current.push(otherId);
+      result.set(recordId, current);
+    }
+
+    return result;
+  }
+
+  async resolveOwningIds(
+    relationshipId: string,
+    side: RelationshipLinkSide,
+    otherIds: string[],
+  ): Promise<string[]> {
+    if (otherIds.length === 0) return [];
+
+    // Vinculos cuja ponta oposta cai em `otherIds`; deles extraio o meu lado.
+    const links = await this.linkRepository.findManyBySide(
+      relationshipId,
+      this.oppositeSide(side),
+      otherIds,
+    );
+
+    const ids: string[] = [];
+    for (const link of links) {
+      let myId = link.targetId;
+      if (side === 'source') myId = link.sourceId;
+      if (!ids.includes(myId)) ids.push(myId);
+    }
+    return ids;
+  }
+
+  private oppositeSide(side: RelationshipLinkSide): RelationshipLinkSide {
+    if (side === 'source') return 'target';
+    return 'source';
   }
 
   async replaceLinks(

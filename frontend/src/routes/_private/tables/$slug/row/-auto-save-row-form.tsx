@@ -51,6 +51,7 @@ import {
   buildCreateRowDefaultValues,
   buildRowPayload,
   buildUpdateRowDefaultValues,
+  isManagedRelationship,
 } from '@/lib/table';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -162,12 +163,8 @@ function AutoSaveRowFormContent({
   const requiredFields = React.useMemo((): Array<IField> => {
     return fields.filter((f) => {
       if (!f.required || f.native) return false;
-      if (
-        f.type === E_FIELD_TYPE.RELATIONSHIP &&
-        f.relationship?.formMode === 'manage'
-      ) {
-        return false;
-      }
+      // Só N:N 'manage' fica fora (vínculos via /links); 1:1/1:N viram select.
+      if (isManagedRelationship(f)) return false;
       return true;
     });
   }, [fields]);
@@ -189,10 +186,7 @@ function AutoSaveRowFormContent({
   const formRelationshipFields = React.useMemo((): Array<IField> => {
     return table.fields.filter(
       (f) =>
-        f.type === E_FIELD_TYPE.RELATIONSHIP &&
-        f.relationship?.formMode === 'manage' &&
-        isFieldVisible(f, 'form') &&
-        !f.trashed,
+        isManagedRelationship(f) && isFieldVisible(f, 'form') && !f.trashed,
     );
   }, [table.fields, isFieldVisible]);
 

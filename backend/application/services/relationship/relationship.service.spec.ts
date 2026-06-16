@@ -1,13 +1,35 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
+  E_FIELD_TYPE,
   E_RELATIONSHIP_CARDINALITY,
   E_RELATIONSHIP_ON_DELETE,
+  E_RELATIONSHIP_STORAGE,
   type IRelationshipDefinition,
 } from '@application/core/entity.core';
+import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import RelationshipLinkInMemoryRepository from '@application/repositories/relationship-link/relationship-link-in-memory.repository';
 
 import RelationshipService from './relationship.service';
+
+const FIELD_BASE = {
+  permissions: buildFieldPermissions(true, true, true),
+  showInFilter: false,
+  locked: false,
+  native: false,
+  allowCreateRelationshipRecords: false,
+  required: false,
+  category: [],
+  dropdown: [],
+  defaultValue: null,
+  group: null,
+  format: null,
+  relationship: null,
+  widthInForm: 50,
+  widthInList: 10,
+  widthInDetail: null,
+};
 
 function makeDefinition(): IRelationshipDefinition {
   return {
@@ -35,12 +57,14 @@ function makeDefinition(): IRelationshipDefinition {
 
 describe('RelationshipService', () => {
   let links: RelationshipLinkInMemoryRepository;
+  let fields: FieldInMemoryRepository;
   let service: RelationshipService;
   let definition: IRelationshipDefinition;
 
   beforeEach(() => {
     links = new RelationshipLinkInMemoryRepository();
-    service = new RelationshipService(links);
+    fields = new FieldInMemoryRepository();
+    service = new RelationshipService(links, fields);
     definition = makeDefinition();
   });
 
@@ -68,6 +92,106 @@ describe('RelationshipService', () => {
         { multiple: true },
       );
       expect(result).toBe(E_RELATIONSHIP_CARDINALITY.MANY_TO_MANY);
+    });
+  });
+
+  describe('storageRoleOf', () => {
+    it('1:1 — source e dono da FK (OWNS_FK), target e reverso (REVERSE)', () => {
+      expect(
+        service.storageRoleOf(
+          'source',
+          { multiple: false },
+          { multiple: false },
+        ),
+      ).toBe(E_RELATIONSHIP_STORAGE.OWNS_FK);
+      expect(
+        service.storageRoleOf(
+          'target',
+          { multiple: false },
+          { multiple: false },
+        ),
+      ).toBe(E_RELATIONSHIP_STORAGE.REVERSE);
+    });
+
+    it('1:N — o lado nao-multiplo e OWNS_FK; o multiplo e REVERSE', () => {
+      // source multiplo, target nao: target dono.
+      expect(
+        service.storageRoleOf(
+          'target',
+          { multiple: true },
+          { multiple: false },
+        ),
+      ).toBe(E_RELATIONSHIP_STORAGE.OWNS_FK);
+      expect(
+        service.storageRoleOf(
+          'source',
+          { multiple: true },
+          { multiple: false },
+        ),
+      ).toBe(E_RELATIONSHIP_STORAGE.REVERSE);
+      // source nao-multiplo, target multiplo: source dono.
+      expect(
+        service.storageRoleOf(
+          'source',
+          { multiple: false },
+          { multiple: true },
+        ),
+      ).toBe(E_RELATIONSHIP_STORAGE.OWNS_FK);
+      expect(
+        service.storageRoleOf(
+          'target',
+          { multiple: false },
+          { multiple: true },
+        ),
+      ).toBe(E_RELATIONSHIP_STORAGE.REVERSE);
+    });
+
+    it('N:N — ambos os lados sao PIVOT', () => {
+      expect(
+        service.storageRoleOf('source', { multiple: true }, { multiple: true }),
+      ).toBe(E_RELATIONSHIP_STORAGE.PIVOT);
+      expect(
+        service.storageRoleOf('target', { multiple: true }, { multiple: true }),
+      ).toBe(E_RELATIONSHIP_STORAGE.PIVOT);
+    });
+  });
+
+  describe('ownerOf', () => {
+    it('1:1 — dono e o endpoint source', () => {
+      const owner = service.ownerOf(
+        definition,
+        { multiple: false },
+        { multiple: false },
+      );
+      expect(owner).toEqual({
+        side: 'source',
+        tableId: 'table-a',
+        tableSlug: 'table-a',
+        fieldSlug: 'field-a',
+      });
+    });
+
+    it('1:N — dono e o endpoint do lado nao-multiplo', () => {
+      const owner = service.ownerOf(
+        definition,
+        { multiple: true },
+        { multiple: false },
+      );
+      expect(owner).toEqual({
+        side: 'target',
+        tableId: 'table-b',
+        tableSlug: 'table-b',
+        fieldSlug: 'field-b',
+      });
+    });
+
+    it('N:N — sem dono single (pivo)', () => {
+      const owner = service.ownerOf(
+        definition,
+        { multiple: true },
+        { multiple: true },
+      );
+      expect(owner).toBeNull();
     });
   });
 
@@ -220,6 +344,44 @@ describe('RelationshipService', () => {
     it('le pelo lado target retornando os sourceIds', async () => {
       const ids = await service.resolveLinkedIds(definition, 'b', 'target');
       expect(ids).toEqual(['a', 'd']);
+    });
+  });
+
+  describe('isPivot', () => {
+    async function setup(
+      sourceMultiple: boolean,
+      targetMultiple: boolean,
+    ): Promise<IRelationshipDefinition> {
+      const sourceField = await fields.create({
+        ...FIELD_BASE,
+        name: 'A',
+        slug: 'a',
+        type: E_FIELD_TYPE.RELATIONSHIP,
+        multiple: sourceMultiple,
+      });
+      const targetField = await fields.create({
+        ...FIELD_BASE,
+        name: 'B',
+        slug: 'b',
+        type: E_FIELD_TYPE.RELATIONSHIP,
+        multiple: targetMultiple,
+      });
+      const def = makeDefinition();
+      def.source.field._id = sourceField._id;
+      def.target.field._id = targetField._id;
+      return def;
+    }
+
+    it('true em N:N (os dois lados multiplos)', async () => {
+      expect(await service.isPivot(await setup(true, true))).toBe(true);
+    });
+
+    it('false em 1:1', async () => {
+      expect(await service.isPivot(await setup(false, false))).toBe(false);
+    });
+
+    it('false em 1:N', async () => {
+      expect(await service.isPivot(await setup(true, false))).toBe(false);
     });
   });
 });

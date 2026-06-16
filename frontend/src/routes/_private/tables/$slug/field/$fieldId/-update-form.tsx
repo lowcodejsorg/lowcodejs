@@ -241,6 +241,10 @@ export const UpdateFieldFormFields = withForm({
     );
     const isTrashed = useStore(form.store, (state) => state.values.trashed);
 
+    // Modo 'manage' (repetidor via /links) só faz sentido em N:N (os dois lados
+    // múltiplos). 1:1/1:N são geridos via FK no payload da row.
+    const isManyToMany = fieldMultiple && relationshipMirrorMultiple;
+
     const relatedTable = useReadTable({ slug: relationshipTableSlug });
     const tabelaAtual = table?.name ?? 'esta tabela';
     const tabelaRelacionada = relatedTable.data?.name ?? 'a tabela relacionada';
@@ -579,8 +583,8 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Modo de vínculo no formulário (relacionamento) */}
-        {isRelationship && relationshipTableSlug && (
+        {/* Modo de vínculo no formulário (relacionamento) — só N:N */}
+        {isRelationship && relationshipTableSlug && isManyToMany && (
           <div className="flex items-center justify-between gap-4 rounded-md border p-3">
             <div className="space-y-0.5">
               <p className="text-sm font-medium">
@@ -627,7 +631,7 @@ export const UpdateFieldFormFields = withForm({
               )}
             </form.AppField>
 
-            {relationshipFormMode === 'manage' && (
+            {isManyToMany && relationshipFormMode === 'manage' && (
               <>
                 <form.AppField name="relationship.sourceVisible">
                   {(field) => (

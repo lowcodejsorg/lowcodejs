@@ -7,6 +7,7 @@ import type {
   RelationshipLinkExistsPayload,
   RelationshipLinkPage,
   RelationshipLinkPaginatePayload,
+  RelationshipLinkSide,
 } from './relationship-link-contract.repository';
 
 export default class RelationshipLinkInMemoryRepository implements RelationshipLinkContractRepository {
@@ -63,6 +64,23 @@ export default class RelationshipLinkInMemoryRepository implements RelationshipL
         (link) =>
           link.relationshipId === relationshipId && link.targetId === targetId,
       )
+      .sort((a, b) => a.order - b.order);
+  }
+
+  async findManyBySide(
+    relationshipId: string,
+    side: RelationshipLinkSide,
+    recordIds: string[],
+  ): Promise<IRelationshipLink[]> {
+    if (recordIds.length === 0) return [];
+
+    const ids = new Set(recordIds);
+    return this.items
+      .filter((link) => {
+        if (link.relationshipId !== relationshipId) return false;
+        if (side === 'source') return ids.has(link.sourceId);
+        return ids.has(link.targetId);
+      })
       .sort((a, b) => a.order - b.order);
   }
 

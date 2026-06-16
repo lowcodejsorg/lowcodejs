@@ -7,7 +7,12 @@ import type {
   ITableSchema,
   ValueOf,
 } from '@application/core/entity.core';
-import { E_FIELD_TYPE, E_SCHEMA_TYPE } from '@application/core/entity.core';
+import {
+  E_FIELD_TYPE,
+  E_RELATIONSHIP_STORAGE,
+  E_SCHEMA_TYPE,
+} from '@application/core/entity.core';
+import { RelationshipStorage } from '@application/services/relationship/relationship.service';
 
 import { FieldGroupBuilderContractService } from './field-group-builder-contract.service';
 import MongooseFieldGroupBuilder from './field-group-builder.service';
@@ -49,6 +54,36 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
     [E_FIELD_TYPE.STATUS]: E_SCHEMA_TYPE.STRING,
   };
 
+  // Schema do path RELATIONSHIP por role. OWNS_FK grava FK single na propria row
+  // (populate nativo). REVERSE/PIVOT (e fallback legado) declaram array
+  // transiente — vazio em disco, preenchido so pelo hydrate na leitura. O role e
+  // derivado do proprio `field.relationship` (sem lookup no DB).
+  private relationshipSchema(field: IField): ITableSchema {
+    const FieldTypeMapper = MongooseSchemaBuilder.FieldTypeMapper;
+    const ref = field?.relationship?.table?._id?.toString() ?? undefined;
+    const role = RelationshipStorage.roleOfField(field);
+
+    if (role === E_RELATIONSHIP_STORAGE.OWNS_FK) {
+      return {
+        [field.slug]: {
+          type: FieldTypeMapper[field.type] || 'String',
+          required: false,
+          ref,
+        },
+      };
+    }
+
+    return {
+      [field.slug]: [
+        {
+          type: FieldTypeMapper[field.type] || 'String',
+          required: false,
+          ref,
+        },
+      ],
+    };
+  }
+
   private mapperSchema(
     field: IField,
     groups?: IGroupConfiguration[],
@@ -89,19 +124,10 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
         ],
       },
 
-      // RELATIONSHIP nao usa `required` no schema: os valores sao geridos por
-      // links (extraidos do payload da row antes de persistir), entao o path
-      // embedded fica vazio em rows novas e um `required` quebraria o insert. A
-      // obrigatoriedade por endpoint e enforcada no use-case via RowPayloadValidator.
-      [E_FIELD_TYPE.RELATIONSHIP]: {
-        [field.slug]: [
-          {
-            type: FieldTypeMapper[field.type] || 'String',
-            required: false,
-            ref: field?.relationship?.table?._id?.toString() ?? undefined,
-          },
-        ],
-      },
+      // RELATIONSHIP nao usa `required` no schema: a obrigatoriedade por endpoint
+      // e enforcada no use-case via RowPayloadValidator. A forma do path depende
+      // do storage role (FK single para OWNS_FK; array transiente p/ REVERSE/PIVOT).
+      [E_FIELD_TYPE.RELATIONSHIP]: this.relationshipSchema(field),
 
       [E_FIELD_TYPE.FIELD_GROUP]: this.fieldGroup.buildEmbeddedSchema(
         field,

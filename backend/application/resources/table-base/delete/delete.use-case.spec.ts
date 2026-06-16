@@ -22,7 +22,7 @@ describe('Table Delete Use Case', () => {
     const linkRepository = new RelationshipLinkInMemoryRepository();
     const definitionRepository = new RelationshipDefinitionInMemoryRepository();
     const relationshipDeletion = new RelationshipDeletionService(
-      new RelationshipService(linkRepository),
+      new RelationshipService(linkRepository, fieldInMemoryRepository),
       definitionRepository,
       linkRepository,
       fieldInMemoryRepository,

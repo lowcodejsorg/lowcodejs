@@ -453,6 +453,24 @@ export default class RowInMemoryRepository implements RowContractRepository {
     return count;
   }
 
+  async clearFieldValue(
+    table: RowTableContext,
+    fieldSlug: string,
+    value: string,
+  ): Promise<number> {
+    const collection = this.getCollection(table.slug);
+    let count = 0;
+
+    for (const row of collection) {
+      if (Reflect.get(row, fieldSlug) !== value) continue;
+      Reflect.set(row, fieldSlug, null);
+      row.updatedAt = new Date();
+      count++;
+    }
+
+    return count;
+  }
+
   async insertRaw(
     table: RowTableContext,
     row: Record<string, unknown>,

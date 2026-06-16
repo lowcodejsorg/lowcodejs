@@ -11,6 +11,21 @@ import type {
 } from './interfaces';
 import { resolveRelationshipLabel } from './relationship-label';
 
+// N:N (muitos-para-muitos): os dois lados múltiplos. Só N:N usa o pivô/links.
+export function isManyToManyRelationship(field: IField): boolean {
+  if (field.type !== E_FIELD_TYPE.RELATIONSHIP) return false;
+  if (!field.multiple) return false;
+  return Boolean(field.relationship?.mirror?.multiple);
+}
+
+// Relationship gerido pelo repetidor (endpoints /links): só quando formMode é
+// 'manage' E a cardinalidade é N:N. Em 1:1/1:N o backend rejeita os /links
+// (N:N-only), então caem no modo 'select' (FK escrita no payload da row).
+export function isManagedRelationship(field: IField): boolean {
+  if (field.relationship?.formMode !== 'manage') return false;
+  return isManyToManyRelationship(field);
+}
+
 export function getDropdownItem(
   items: Array<IDropdown>,
   id: string,

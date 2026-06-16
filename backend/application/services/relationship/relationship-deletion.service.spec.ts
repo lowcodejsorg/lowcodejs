@@ -110,7 +110,7 @@ describe('RelationshipDeletionService', () => {
     definitionRepository = new RelationshipDefinitionInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
     sut = new RelationshipDeletionService(
-      new RelationshipService(linkRepository),
+      new RelationshipService(linkRepository, fieldRepository),
       definitionRepository,
       linkRepository,
       fieldRepository,
@@ -130,16 +130,12 @@ describe('RelationshipDeletionService', () => {
     });
   });
 
-  it('RESTRICT bloqueia a exclusao quando existe vinculo', async () => {
-    const relationshipId = await setup(
-      E_RELATIONSHIP_ON_DELETE.RESTRICT,
-      true,
-      false,
-    );
-    await linkRepository.create({
-      relationshipId,
-      sourceId: 'ped1',
-      targetId: 'prod1',
+  it('RESTRICT bloqueia a exclusao do pai quando ha filho com FK', async () => {
+    // 1:N — pai pedidos (REVERSE), filho produtos com FK `pedido`.
+    await setup(E_RELATIONSHIP_ON_DELETE.RESTRICT, true, false);
+    await rowRepository.create({
+      table: produtos,
+      data: { nome: 'Cafe', pedido: 'ped1' },
     });
 
     const result = await sut.applyOnDelete(pedidos, 'ped1');
@@ -150,52 +146,51 @@ describe('RelationshipDeletionService', () => {
     expect(result.value.code).toBe(409);
   });
 
-  it('SET_NULL remove apenas os links, sem apagar registros', async () => {
-    const relationshipId = await setup(
-      E_RELATIONSHIP_ON_DELETE.SET_NULL,
-      true,
-      false,
-    );
+  it('RESTRICT bloqueia a exclusao do filho quando a FK esta setada', async () => {
+    await setup(E_RELATIONSHIP_ON_DELETE.RESTRICT, true, false);
     const prod = await rowRepository.create({
       table: produtos,
-      data: { nome: 'Cafe' },
+      data: { nome: 'Cafe', pedido: 'ped1' },
     });
-    await linkRepository.create({
-      relationshipId,
-      sourceId: 'ped1',
-      targetId: prod._id,
+
+    const result = await sut.applyOnDelete(produtos, prod._id);
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('RELATIONSHIP_DELETE_RESTRICT');
+  });
+
+  it('SET_NULL orfana a FK dos filhos, sem apagar registros', async () => {
+    await setup(E_RELATIONSHIP_ON_DELETE.SET_NULL, true, false);
+    const prod = await rowRepository.create({
+      table: produtos,
+      data: { nome: 'Cafe', pedido: 'ped1' },
     });
 
     const result = await sut.applyOnDelete(pedidos, 'ped1');
 
     expect(result.isRight()).toBe(true);
-    expect(await linkRepository.countByRecord(relationshipId, 'ped1')).toBe(0);
     expect(await rowExists(produtos, prod._id)).toBe(true);
+    const child = await rowRepository.findOne({
+      table: produtos,
+      query: { _id: prod._id },
+    });
+    expect(child?.pedido).toBeNull();
   });
 
-  it('CASCADE apagando o pai (lado multiplo) remove os filhos e os links', async () => {
-    const relationshipId = await setup(
-      E_RELATIONSHIP_ON_DELETE.CASCADE,
-      true,
-      false,
-    );
+  it('CASCADE apagando o pai (REVERSE) remove os filhos por FK', async () => {
+    await setup(E_RELATIONSHIP_ON_DELETE.CASCADE, true, false);
     const prod1 = await rowRepository.create({
       table: produtos,
-      data: { nome: 'Cafe' },
+      data: { nome: 'Cafe', pedido: 'ped1' },
     });
     const prod2 = await rowRepository.create({
       table: produtos,
-      data: { nome: 'Leite' },
+      data: { nome: 'Leite', pedido: 'ped1' },
     });
-    await linkRepository.create({
-      relationshipId,
-      sourceId: 'ped1',
-      targetId: prod1._id,
-    });
-    await linkRepository.create({
-      relationshipId,
-      sourceId: 'ped1',
-      targetId: prod2._id,
+    const outro = await rowRepository.create({
+      table: produtos,
+      data: { nome: 'Cha', pedido: 'ped2' },
     });
 
     const result = await sut.applyOnDelete(pedidos, 'ped1');
@@ -203,36 +198,25 @@ describe('RelationshipDeletionService', () => {
     expect(result.isRight()).toBe(true);
     expect(await rowExists(produtos, prod1._id)).toBe(false);
     expect(await rowExists(produtos, prod2._id)).toBe(false);
-    expect(await linkRepository.countByRecord(relationshipId, 'ped1')).toBe(0);
+    // Filho de outro pai nao e tocado.
+    expect(await rowExists(produtos, outro._id)).toBe(true);
   });
 
-  it('CASCADE apagando o filho (lado single) so remove o link, nao sobe', async () => {
-    const relationshipId = await setup(
-      E_RELATIONSHIP_ON_DELETE.CASCADE,
-      true,
-      false,
-    );
+  it('CASCADE apagando o filho (OWNS_FK) nao sobe pro pai', async () => {
+    await setup(E_RELATIONSHIP_ON_DELETE.CASCADE, true, false);
     const ped = await rowRepository.create({
       table: pedidos,
       data: { nome: 'Pedido 1' },
     });
     const prod = await rowRepository.create({
       table: produtos,
-      data: { nome: 'Cafe' },
-    });
-    await linkRepository.create({
-      relationshipId,
-      sourceId: ped._id,
-      targetId: prod._id,
+      data: { nome: 'Cafe', pedido: ped._id },
     });
 
     const result = await sut.applyOnDelete(produtos, prod._id);
 
     expect(result.isRight()).toBe(true);
     expect(await rowExists(pedidos, ped._id)).toBe(true);
-    expect(await linkRepository.countByRecord(relationshipId, prod._id)).toBe(
-      0,
-    );
   });
 
   it('N:N CASCADE remove apenas os links do registro', async () => {
@@ -295,22 +279,23 @@ describe('RelationshipDeletionService', () => {
       table: pedidos,
       data: { nome: 'Filho' },
     });
-    // Vinculo ciclico artificial: pai aponta para filho e filho para pai.
-    await linkRepository.create({
-      relationshipId: definition._id,
-      sourceId: 'pai-1',
-      targetId: filho._id,
+    // Ciclo artificial de FK: pai aponta pro filho e filho aponta pro pai.
+    const pai = await rowRepository.create({
+      table: pedidos,
+      data: { nome: 'Pai', pai: filho._id },
     });
-    await linkRepository.create({
-      relationshipId: definition._id,
-      sourceId: filho._id,
-      targetId: 'pai-1',
+    await rowRepository.update({
+      table: pedidos,
+      _id: filho._id,
+      data: { pai: pai._id },
     });
 
-    const result = await sut.applyOnDelete(pedidos, 'pai-1');
+    const result = await sut.applyOnDelete(pedidos, pai._id);
 
     expect(result.isRight()).toBe(true);
     expect(await rowExists(pedidos, filho._id)).toBe(false);
+    // Guard de visitados impede loop infinito (sem timeout/stack overflow).
+    expect(definition._id).toBeTruthy();
   });
 
   it('cleanupTable remove definitions e links que tocam a tabela', async () => {

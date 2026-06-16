@@ -230,6 +230,9 @@ export const CreateFieldFormFields = withForm({
     const isDropdown = fieldType === E_FIELD_TYPE.DROPDOWN;
     const isDate = fieldType === E_FIELD_TYPE.DATE;
     const isRelationship = fieldType === E_FIELD_TYPE.RELATIONSHIP;
+    // Modo 'manage' (repetidor via /links) só faz sentido em N:N (os dois lados
+    // múltiplos). 1:1/1:N são geridos via FK no payload da row.
+    const isManyToMany = fieldMultiple && relationshipMirrorMultiple;
     const isCategory = fieldType === E_FIELD_TYPE.CATEGORY;
     const isFile = fieldType === E_FIELD_TYPE.FILE;
     const isFieldGroup = fieldType === E_FIELD_TYPE.FIELD_GROUP;
@@ -605,8 +608,8 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Modo de vínculo no formulário (relacionamento) */}
-        {isRelationship && relationshipTableSlug && (
+        {/* Modo de vínculo no formulário (relacionamento) — só N:N */}
+        {isRelationship && relationshipTableSlug && isManyToMany && (
           <div className="flex items-center justify-between gap-4 rounded-md border p-3">
             <div className="space-y-0.5">
               <p className="text-sm font-medium">
@@ -677,7 +680,7 @@ export const CreateFieldFormFields = withForm({
               )}
             </form.AppField>
 
-            {relationshipFormMode === 'manage' && (
+            {isManyToMany && relationshipFormMode === 'manage' && (
               <>
                 <form.AppField name="relationship.sourceVisible">
                   {(field) => (

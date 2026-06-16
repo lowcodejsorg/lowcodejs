@@ -248,6 +248,8 @@ export function RowDetailView({
     [visibleFields],
   );
 
+  // Todos os relacionamentos vão para as tabs de gestão (repetidor). N:N usa o
+  // pivô; 1:1/1:N traduzem a FK em links sintéticos no backend (mesmo widget).
   const relationshipFields = React.useMemo(
     (): Array<IField> =>
       visibleFields.filter((f) => f.type === E_FIELD_TYPE.RELATIONSHIP),

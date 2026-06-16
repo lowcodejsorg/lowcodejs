@@ -8,6 +8,7 @@ import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { RelationshipDefinitionContractRepository } from '@application/repositories/relationship-definition/relationship-definition-contract.repository';
 import { RelationshipContractService } from '@application/services/relationship/relationship-contract.service';
+import { RelationshipBuilderContractService } from '@application/services/table/relationship-builder-contract.service';
 
 import type { RelationshipLinkRequestPayload } from './link.validator';
 
@@ -19,6 +20,7 @@ export default class RelationshipLinkUseCase {
     private readonly definitions: RelationshipDefinitionContractRepository,
     private readonly fields: FieldContractRepository,
     private readonly relationship: RelationshipContractService,
+    private readonly relationshipBuilder: RelationshipBuilderContractService,
   ) {}
 
   async execute(payload: RelationshipLinkRequestPayload): Promise<Response> {
@@ -31,6 +33,18 @@ export default class RelationshipLinkUseCase {
             'RELATIONSHIP_NOT_FOUND',
           ),
         );
+      }
+
+      // 1:1/1:N: vincula escrevendo a FK na row dona; devolve link sintético.
+      const isPivot = await this.relationship.isPivot(definition);
+      if (!isPivot) {
+        const link = await this.relationshipBuilder.linkFk(
+          definition,
+          payload.side,
+          payload.recordId,
+          payload.otherId,
+        );
+        return right(link);
       }
 
       const sourceField = await this.fields.findById(
@@ -48,8 +62,8 @@ export default class RelationshipLinkUseCase {
         );
       }
 
-      // Vincular pelos dois lados (§5.4): de source fixa sourceId; de target
-      // fixa targetId.
+      // N:N (pivô): vincular pelos dois lados (§5.4) — de source fixa sourceId; de
+      // target fixa targetId.
       let sourceId = payload.otherId;
       let targetId = payload.recordId;
       if (payload.side === 'source') {

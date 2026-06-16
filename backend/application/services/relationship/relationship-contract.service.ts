@@ -2,6 +2,7 @@
 import type { Either } from '@application/core/either.core';
 import type {
   E_RELATIONSHIP_CARDINALITY,
+  E_RELATIONSHIP_STORAGE,
   IField,
   IRelationshipDefinition,
   IRelationshipLink,
@@ -22,6 +23,16 @@ export type RelationshipLinkParams = RelationshipCanLinkParams & {
   metadata?: Record<string, unknown> | null;
 };
 
+// Endpoint dono da FK (lado OWNS_FK) resolvido de uma definicao. O lado REVERSE
+// usa `tableSlug` (colecao a consultar) + `fieldSlug` (path da FK) na query
+// reversa; `tableId` alimenta o `ref` do populate nativo no lado OWNS_FK.
+export type RelationshipOwner = {
+  side: RelationshipLinkSide;
+  tableId: string;
+  tableSlug: string;
+  fieldSlug: string;
+};
+
 // Reconcilia os vinculos de um registro (lado `side`) para o conjunto desejado:
 // adiciona os ids novos (via canLink) e remove os ausentes. Usado na escrita de
 // row, onde `row[slug]` carrega o conjunto completo desejado.
@@ -40,6 +51,26 @@ export abstract class RelationshipContractService {
     sourceField: Pick<IField, 'multiple'>,
     targetField: Pick<IField, 'multiple'>,
   ): ValueOf<typeof E_RELATIONSHIP_CARDINALITY>;
+  // True só em N:N (PIVOT). Os endpoints `/links` (link/unlink/list/reorder) são
+  // N:N-only — 1:1/1:N gerem a FK via row create/update, não por vínculos.
+  abstract isPivot(definition: IRelationshipDefinition): Promise<boolean>;
+  // Papel de armazenamento do lado `side` (OWNS_FK / REVERSE / PIVOT).
+  abstract storageRoleOf(
+    side: RelationshipLinkSide,
+    sourceField: Pick<IField, 'multiple'>,
+    targetField: Pick<IField, 'multiple'>,
+  ): ValueOf<typeof E_RELATIONSHIP_STORAGE>;
+  // Role derivado de um campo RELATIONSHIP (via `field.relationship`); null em
+  // dados legados sem side/mirror.
+  abstract roleOfField(
+    field: Pick<IField, 'multiple' | 'relationship'>,
+  ): ValueOf<typeof E_RELATIONSHIP_STORAGE> | null;
+  // Endpoint dono da FK; null em N:N (pivo, sem dono single).
+  abstract ownerOf(
+    definition: IRelationshipDefinition,
+    sourceField: Pick<IField, 'multiple'>,
+    targetField: Pick<IField, 'multiple'>,
+  ): RelationshipOwner | null;
   // Valida regras de cardinalidade/duplicidade/auto-vinculo antes de vincular.
   abstract canLink(
     params: RelationshipCanLinkParams,
@@ -55,6 +86,20 @@ export abstract class RelationshipContractService {
     definition: IRelationshipDefinition,
     recordId: string,
     side: RelationshipLinkSide,
+  ): Promise<string[]>;
+  // Versao em lote: resolve os ids ligados de varios registros numa unica query
+  // (mapa recordId -> ids). Base da hidratacao N:N por pagina (sem N+1).
+  abstract resolveLinkedIdsBatch(
+    definition: IRelationshipDefinition,
+    recordIds: string[],
+    side: RelationshipLinkSide,
+  ): Promise<Map<string, string[]>>;
+  // Filtro PIVOT: ids dos registros do lado `side` cujos vinculos tocam algum dos
+  // `otherIds` (na ponta oposta). Base do filtro N:N (`{ _id: { $in } }`).
+  abstract resolveOwningIds(
+    relationshipId: string,
+    side: RelationshipLinkSide,
+    otherIds: string[],
   ): Promise<string[]>;
   // Reconcilia os vinculos de um registro para o conjunto `desiredIds`.
   abstract replaceLinks(

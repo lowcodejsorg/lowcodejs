@@ -37,7 +37,10 @@ export const RelationshipLinkSchema: FastifySchema = {
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['RELATIONSHIP_SELF_LINK'] },
+        cause: {
+          type: 'string',
+          enum: ['RELATIONSHIP_SELF_LINK', 'RELATIONSHIP_NOT_PIVOT'],
+        },
         errors: { type: 'object', additionalProperties: { type: 'string' } },
       },
     },
