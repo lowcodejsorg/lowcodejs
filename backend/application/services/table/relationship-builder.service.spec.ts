@@ -398,7 +398,11 @@ describe('MongooseRelationshipBuilder', () => {
         slug: 'produtos',
         type: E_FIELD_TYPE.RELATIONSHIP,
         multiple: true,
-        relationship: { table: PRODUTO_TABLE, field: PEDIDO_TABLE, order: 'asc' },
+        relationship: {
+          table: PRODUTO_TABLE,
+          field: PEDIDO_TABLE,
+          order: 'asc',
+        },
       });
       const owner = await fieldRepository.create({
         ...FIELD_BASE,
@@ -407,7 +411,11 @@ describe('MongooseRelationshipBuilder', () => {
         type: E_FIELD_TYPE.RELATIONSHIP,
         multiple: false,
         required: ownerRequired,
-        relationship: { table: PEDIDO_TABLE, field: PRODUTO_TABLE, order: 'asc' },
+        relationship: {
+          table: PEDIDO_TABLE,
+          field: PRODUTO_TABLE,
+          order: 'asc',
+        },
       });
       const definition = await definitionRepository.create({
         name: 'Pedidos ↔ Produtos',
