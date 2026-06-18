@@ -40,7 +40,6 @@ export default class {
       ...params,
       ...(request?.user?.sub && { __actorUserId: request.user.sub }),
       ...(request.ownership?.ownOnly && { __ownOnly: true }),
-      __role: request.user?.role,
       __isOwner: request.ownership?.isOwner,
       __isAdministrator: request.ownership?.isAdministrator,
     });

@@ -3,9 +3,13 @@ import { useMemo } from 'react';
 import { useGroupReadList } from './tanstack-query/use-group-read-list';
 import { useProfileRead } from './tanstack-query/use-profile-read';
 
-import { E_ROLE, E_TABLE_PROFILE } from '@/lib/constant';
+import { E_TABLE_PROFILE } from '@/lib/constant';
 import type { ITable } from '@/lib/interfaces';
-import { resolveUserGroupIds, userSatisfiesBinding } from '@/lib/permission';
+import {
+  isPrivileged,
+  resolveUserGroupIds,
+  userSatisfiesBinding,
+} from '@/lib/permission';
 import { useAuthStore } from '@/stores/authentication';
 
 export type TableAction =
@@ -93,13 +97,15 @@ export function useTablePermission(
     return resolveUserGroupIds(profile.data ?? null, groups.data ?? []);
   }, [profile.data, groups.data]);
 
-  const isMaster = profile.data?.group.slug === E_ROLE.MASTER;
-  const isAdministrator = profile.data?.group.slug === E_ROLE.ADMINISTRATOR;
+  const privileged = useMemo(
+    () => isPrivileged(profile.data ?? null, groups.data ?? []),
+    [profile.data, groups.data],
+  );
 
   const can = useMemo(() => {
     return (action: TableAction): boolean => {
       // Privilegiados têm acesso total no client (backend reconfirma).
-      if (isMaster || isAdministrator || isOwnerOrAdmin) return true;
+      if (privileged || isOwnerOrAdmin) return true;
 
       // Sem o mapa de permissões (tabela ainda não backfillada): só privilegiado.
       if (!table?.permissions) return false;
@@ -110,7 +116,7 @@ export function useTablePermission(
 
       return userSatisfiesBinding(binding, userGroupIds);
     };
-  }, [isMaster, isAdministrator, isOwnerOrAdmin, table, userGroupIds]);
+  }, [privileged, isOwnerOrAdmin, table, userGroupIds]);
 
   return {
     isOwner,
@@ -131,8 +137,13 @@ export function usePermission(): {
 } {
   const profile = useProfileRead();
 
-  const isMaster = profile.data?.group.slug === E_ROLE.MASTER;
-  const isAdministrator = profile.data?.group.slug === E_ROLE.ADMINISTRATOR;
+  // Sem lista completa de grupos aqui: o fast-path do isPrivileged cobre
+  // MASTER/ADMINISTRATOR por grupo principal ou adicional (slug já populado no
+  // perfil).
+  const privileged = useMemo(
+    () => isPrivileged(profile.data ?? null, []),
+    [profile.data],
+  );
 
   const permissions = useMemo(() => {
     if (!profile.data) return [];
@@ -141,16 +152,13 @@ export function usePermission(): {
 
   const can = useMemo(() => {
     return (action: TableAction): boolean => {
-      // MASTER tem acesso total a tudo
-      if (isMaster) return true;
-
-      // ADMINISTRATOR tem acesso total a tabelas
-      if (isAdministrator) return true;
+      // Privilegiado (MASTER/ADMINISTRATOR no fecho) tem acesso total.
+      if (privileged) return true;
 
       const requiredSlug = PERMISSION_SLUG_MAP[action].toLowerCase();
       return permissions.includes(requiredSlug);
     };
-  }, [isMaster, isAdministrator, permissions]);
+  }, [privileged, permissions]);
 
   return {
     can,

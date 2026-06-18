@@ -2,7 +2,7 @@
 import { Service } from 'fastify-decorators';
 
 import type { IField, IUser } from '@application/core/entity.core';
-import { E_PERMISSION_TARGET, E_ROLE } from '@application/core/entity.core';
+import { E_PERMISSION_TARGET } from '@application/core/entity.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { GroupResolverContractService } from '@application/services/group-resolver/group-resolver-contract.service';
 
@@ -22,7 +22,8 @@ export default class FieldVisibilityService implements FieldVisibilityContractSe
   async hiddenSlugs(input: FieldVisibilityInput): Promise<Set<string>> {
     const hidden = new Set<string>();
 
-    if (this.isPrivileged(input)) return hidden;
+    // Dono/admin da tabela (sinais do TableAccessMiddleware): nada oculto.
+    if (input.isOwner || input.isAdministrator) return hidden;
 
     // Campos nativos (_id, creator, createdAt, trashed...) nunca sao ocultados:
     // sao estruturais.
@@ -33,10 +34,20 @@ export default class FieldVisibilityService implements FieldVisibilityContractSe
 
     if (candidates.length === 0) return hidden;
 
+    // Carrega o usuario uma vez: necessario tanto para o privilegio (fecho de
+    // grupos) quanto para os bindings GROUP.
+    let user: IUser | null = null;
+    if (input.userId) {
+      user = await this.userRepository.findById(input.userId);
+    }
+
+    // Privilegiado (MASTER/ADMINISTRATOR no fecho de grupos): nada oculto.
+    if (await this.groupResolver.isPrivileged(user)) return hidden;
+
     // So resolve o fecho de grupos quando algum binding do contexto e GROUP.
     let groupIds = new Set<string>();
     if (this.needsGroupResolution(candidates, input.context)) {
-      groupIds = await this.resolveGroupIds(input.userId);
+      groupIds = await this.groupResolver.resolveUserGroupIds(user);
     }
 
     for (const field of candidates) {
@@ -61,17 +72,6 @@ export default class FieldVisibilityService implements FieldVisibilityContractSe
     return target;
   }
 
-  private isPrivileged(input: FieldVisibilityInput): boolean {
-    if (
-      input.userRole === E_ROLE.MASTER ||
-      input.userRole === E_ROLE.ADMINISTRATOR
-    ) {
-      return true;
-    }
-
-    return Boolean(input.isOwner || input.isAdministrator);
-  }
-
   private needsGroupResolution(
     fields: IField[],
     context: FieldVisibilityContext,
@@ -83,15 +83,6 @@ export default class FieldVisibilityService implements FieldVisibilityContractSe
     }
 
     return false;
-  }
-
-  private async resolveGroupIds(userId?: string | null): Promise<Set<string>> {
-    let user: IUser | null = null;
-    if (userId) {
-      user = await this.userRepository.findById(userId);
-    }
-
-    return this.groupResolver.resolveUserGroupIds(user);
   }
 
   private isFieldVisible(

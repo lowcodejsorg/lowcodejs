@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
-import type { IGroup, IUser } from '@application/core/entity.core';
+import { E_ROLE, type IGroup, type IUser } from '@application/core/entity.core';
 import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 
 import { GroupResolverContractService } from './group-resolver-contract.service';
@@ -26,6 +26,17 @@ export default class GroupResolverService implements GroupResolverContractServic
     }
 
     return capabilities;
+  }
+
+  async isPrivileged(user: IUser | null): Promise<boolean> {
+    const closure = await this.resolveClosure(user);
+    // Compara em maiusculo espelhando `jwt.util` (role = slug.toUpperCase()):
+    // os grupos de sistema do seed usam slug MASTER/ADMINISTRATOR, mas grupos
+    // criados pela UI derivam slug via slugify (minusculo).
+    return closure.some((group) => {
+      const slug = group.slug?.toUpperCase();
+      return slug === E_ROLE.MASTER || slug === E_ROLE.ADMINISTRATOR;
+    });
   }
 
   /**

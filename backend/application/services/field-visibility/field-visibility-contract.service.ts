@@ -12,7 +12,6 @@ export type FieldVisibilityInput = {
   context: FieldVisibilityContext;
   // Visitante => undefined/null.
   userId?: string | null;
-  userRole?: string | null;
   // Sinais de privilegio vindos do TableAccessMiddleware (request.ownership).
   isOwner?: boolean;
   isAdministrator?: boolean;

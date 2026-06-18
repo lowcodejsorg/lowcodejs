@@ -17,7 +17,6 @@ type Response = Either<HTTPException, IRow>;
 
 type Payload = TableRowShowPayload & {
   user?: string;
-  userRole?: string;
   isOwner?: boolean;
   isAdministrator?: boolean;
 };
@@ -59,7 +58,6 @@ export default class TableRowShowUseCase {
         fields: table.fields,
         context: 'detail',
         userId: payload.user,
-        userRole: payload.userRole,
         isOwner: payload.isOwner,
         isAdministrator: payload.isAdministrator,
       });

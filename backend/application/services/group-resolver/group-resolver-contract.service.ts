@@ -18,4 +18,13 @@ export abstract class GroupResolverContractService {
    * permissoes de tabela herdadas do grupo.
    */
   abstract resolveCapabilities(user: IUser | null): Promise<Set<string>>;
+
+  /**
+   * `true` se o usuario e privilegiado: algum grupo do fecho (`{group} ∪ groups`
+   * seguindo `encompasses`) tem slug MASTER ou ADMINISTRATOR. Fonte unica de
+   * verdade para os atalhos de "acesso total" — substitui as comparacoes
+   * espalhadas `role === E_ROLE.MASTER/ADMINISTRATOR`, que enxergavam apenas o
+   * grupo principal (singular) e ignoravam grupos adicionais/englobados.
+   */
+  abstract isPrivileged(user: IUser | null): Promise<boolean>;
 }

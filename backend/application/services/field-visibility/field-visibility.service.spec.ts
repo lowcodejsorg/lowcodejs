@@ -161,7 +161,19 @@ describe('Field Visibility Service', () => {
     expect(hidden.has('_id')).toBe(false);
   });
 
-  it('usuário privilegiado (MASTER) não tem nenhum campo oculto', async () => {
+  it('usuário privilegiado (MASTER pelo fecho de grupos) não tem nenhum campo oculto', async () => {
+    const master = await groupRepository.create({
+      name: 'Master',
+      slug: E_ROLE.MASTER,
+      permissions: [],
+    });
+    const user = await userRepository.create({
+      name: 'Master User',
+      email: 'master@x.com',
+      password: 'x',
+      group: master._id,
+    });
+
     const fields = [
       makeField({
         slug: 'segredo',
@@ -176,7 +188,7 @@ describe('Field Visibility Service', () => {
     const hidden = await sut.hiddenSlugs({
       fields,
       context: 'list',
-      userRole: E_ROLE.MASTER,
+      userId: user._id,
     });
 
     expect(hidden.size).toBe(0);

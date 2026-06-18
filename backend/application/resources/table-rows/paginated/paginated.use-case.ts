@@ -17,7 +17,6 @@ type Response = Either<HTTPException, Paginated<IRow>>;
 
 type Payload = TableRowPaginatedPayload & {
   user?: string;
-  userRole?: string;
   isOwner?: boolean;
   isAdministrator?: boolean;
 };
@@ -76,7 +75,6 @@ export default class TableRowPaginatedUseCase {
         fields: table.fields,
         context: 'list',
         userId: payload.user,
-        userRole: payload.userRole,
         isOwner: payload.isOwner,
         isAdministrator: payload.isAdministrator,
       });

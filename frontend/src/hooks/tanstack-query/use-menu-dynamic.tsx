@@ -16,11 +16,15 @@ import type { IActiveExtension } from './use-extensions-active-list';
 import { useGroupReadList } from './use-group-read-list';
 import { useMenuReadList } from './use-menu-read-list';
 
-import { E_EXTENSION_TYPE, E_MENU_ITEM_TYPE, E_ROLE } from '@/lib/constant';
+import { E_EXTENSION_TYPE, E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
 import { getStaticMenusByCapabilities } from '@/lib/menu/menu';
 import type { MenuGroupItem, MenuItem, MenuRoute } from '@/lib/menu/menu-route';
-import { resolveUserGroupIds, userSatisfiesBinding } from '@/lib/permission';
+import {
+  isPrivileged,
+  resolveUserGroupIds,
+  userSatisfiesBinding,
+} from '@/lib/permission';
 import { useAuthStore } from '@/stores/authentication';
 
 // Mantém o menu (e seus filhos) só se o próprio e todos os ancestrais forem
@@ -270,17 +274,19 @@ export function useMenuDynamic(): {
     [user, groupsData],
   );
 
-  // MASTER e ADMINISTRATOR enxergam todas as opções.
-  const userRole = user?.group?.slug;
-  const isPrivileged =
-    userRole === E_ROLE.MASTER || userRole === E_ROLE.ADMINISTRATOR;
+  // Privilegiado (MASTER/ADMINISTRATOR no fecho de grupos, não apenas no grupo
+  // principal) enxerga todas as opções.
+  const privileged = useMemo(
+    () => isPrivileged(user, groupsData ?? []),
+    [user, groupsData],
+  );
 
   // Filtra menus por visibilidade (respeitando os ancestrais).
   const visibleMenuData = useMemo(() => {
-    if (isPrivileged) return menuData;
+    if (privileged) return menuData;
     const byId = new Map(menuData.map((menu) => [menu._id, menu]));
     return menuData.filter((menu) => isMenuVisible(menu, byId, userGroupIds));
-  }, [menuData, isPrivileged, userGroupIds]);
+  }, [menuData, privileged, userGroupIds]);
 
   // 2. Construir árvore hierárquica
   const dynamicMenuTree = useMemo(() => {

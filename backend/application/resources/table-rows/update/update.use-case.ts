@@ -27,7 +27,6 @@ type Payload = Record<string, unknown> & {
   // Convidado contributor: só pode editar os próprios registros.
   __ownOnly?: boolean;
   // Sinais do solicitante para a visibilidade de campo no formulario.
-  __role?: string;
   __isOwner?: boolean;
   __isAdministrator?: boolean;
 };
@@ -63,12 +62,10 @@ export default class TableRowUpdateUseCase {
         fields: table.fields,
         context: 'form',
         userId: payload.__actorUserId,
-        userRole: payload.__role,
         isOwner: payload.__isOwner,
         isAdministrator: payload.__isAdministrator,
       });
       this.fieldVisibility.project(payload, hidden);
-      delete payload.__role;
       delete payload.__isOwner;
       delete payload.__isAdministrator;
 

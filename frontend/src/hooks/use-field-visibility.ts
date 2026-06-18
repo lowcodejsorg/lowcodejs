@@ -1,10 +1,13 @@
 import { useCallback, useMemo } from 'react';
 
 import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
-import { E_ROLE } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 import type { FieldContext } from '@/lib/permission';
-import { isFieldVisibleInContext, resolveUserGroupIds } from '@/lib/permission';
+import {
+  isFieldVisibleInContext,
+  isPrivileged,
+  resolveUserGroupIds,
+} from '@/lib/permission';
 import { useAuthStore } from '@/stores/authentication';
 
 /**
@@ -24,14 +27,15 @@ export function useFieldVisibility(): {
     [user, groups],
   );
 
-  const userRole = user?.group?.slug;
-  const isPrivileged =
-    userRole === E_ROLE.MASTER || userRole === E_ROLE.ADMINISTRATOR;
+  const privileged = useMemo(
+    () => isPrivileged(user, groups ?? []),
+    [user, groups],
+  );
 
   const isFieldVisible = useCallback(
     (field: IField, context: FieldContext): boolean =>
-      isFieldVisibleInContext(field, context, userGroupIds, isPrivileged),
-    [userGroupIds, isPrivileged],
+      isFieldVisibleInContext(field, context, userGroupIds, privileged),
+    [userGroupIds, privileged],
   );
 
   return { isFieldVisible };

@@ -23,7 +23,6 @@ type Payload = Record<string, unknown> & {
   creator?: string | null;
   // Sinais do solicitante (TableAccessMiddleware) para a visibilidade de campo
   // no formulario. Mongoose strict descarta as chaves __ ao persistir.
-  __role?: string;
   __isOwner?: boolean;
   __isAdministrator?: boolean;
 };
@@ -55,12 +54,10 @@ export default class TableRowCreateUseCase {
         fields: table.fields,
         context: 'form',
         userId: payload.creator,
-        userRole: payload.__role,
         isOwner: payload.__isOwner,
         isAdministrator: payload.__isAdministrator,
       });
       this.fieldVisibility.project(payload, hidden);
-      delete payload.__role;
       delete payload.__isOwner;
       delete payload.__isAdministrator;
 

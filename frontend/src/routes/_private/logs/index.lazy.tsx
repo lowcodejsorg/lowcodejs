@@ -31,12 +31,12 @@ import { useLoggerReadPaginated } from '@/hooks/tanstack-query/use-logger-read-p
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import {
   E_FIELD_TYPE,
-  E_ROLE,
   LOGGER_ACTION_LABEL,
   LOGGER_OBJECT_LABEL,
   MetaDefault,
 } from '@/lib/constant';
 import type { IFilterField, ILogger } from '@/lib/interfaces';
+import { isPrivileged } from '@/lib/permission';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/logs/')({
@@ -47,8 +47,7 @@ function RouteComponent(): React.JSX.Element {
   const navigate = useNavigate({ from: '/logs/' });
   const search = useSearch({ from: ROUTE_ID });
   const auth = useAuthStore();
-  const role = auth.user?.group?.slug?.toUpperCase();
-  const isPrivileged = role === E_ROLE.MASTER || role === E_ROLE.ADMINISTRATOR;
+  const privileged = isPrivileged(auth.user, []);
 
   const filterSidebar = useFilterSidebar();
   const [jsonEntry, setJsonEntry] = React.useState<ILogger | null>(null);
@@ -227,7 +226,7 @@ function RouteComponent(): React.JSX.Element {
           />
         </div>
 
-        {!isPrivileged && (
+        {!privileged && (
           <div className="text-xs text-muted-foreground">
             <UserIcon className="inline size-3 mr-1" />
             Você está visualizando apenas as suas próprias ações.

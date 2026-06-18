@@ -58,14 +58,10 @@ import { useTableRowsExportCsv } from '@/hooks/tanstack-query/use-table-rows-exp
 import { useChatSidebar } from '@/hooks/use-chat-sidebar';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import { useTablePermission } from '@/hooks/use-table-permission';
-import {
-  E_AREA_CAPABILITY,
-  E_ROLE,
-  E_TABLE_STYLE,
-  MetaDefault,
-} from '@/lib/constant';
+import { E_AREA_CAPABILITY, E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import { hasAreaCapability } from '@/lib/menu/menu-access-permissions';
+import { isPrivileged } from '@/lib/permission';
 import { useAuthStore } from '@/stores/authentication';
 
 const rootApi = getRouteApi('__root__');
@@ -213,9 +209,7 @@ function RouteComponent(): React.JSX.Element {
   const selectionResetKey = `${slug}:${search.page}:${search.perPage}:${search.trashed ?? false}:${tableStyle ?? ''}`;
 
   const auth = useAuthStore();
-  const canExportCsv =
-    auth.user?.group?.slug === E_ROLE.MASTER ||
-    auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+  const canExportCsv = isPrivileged(auth.user, []);
   // Chat exige o toggle global E a capacidade MANAGE_CHAT (MASTER/ADMINISTRATOR
   // bypassam a capacidade). Espelha o gate do socket no backend.
   const canUseChat =

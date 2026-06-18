@@ -28,6 +28,7 @@ import { useMenusExportCsv } from '@/hooks/tanstack-query/use-menus-export-csv';
 import { E_FIELD_TYPE, E_ROLE, MetaDefault } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
+import { isPrivileged } from '@/lib/permission';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/menus/')({
@@ -46,9 +47,10 @@ function RouteComponent(): React.JSX.Element {
 
   const { data } = useSuspenseQuery(menuListOptions(search));
 
+  // Empty-trash/hard-delete é MASTER-only (gate intencional). Export/CSV libera
+  // para qualquer privilegiado (MASTER/ADMINISTRATOR pelo fecho de grupos).
   const isMaster = auth.user?.group?.slug === E_ROLE.MASTER;
-  const isAdmin = auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
-  const canExportCsv = isMaster || isAdmin;
+  const canExportCsv = isPrivileged(auth.user, []);
   const isTrashView = search.trashed === true;
 
   const [emptyTrashOpen, setEmptyTrashOpen] = React.useState(false);

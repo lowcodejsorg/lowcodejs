@@ -80,7 +80,23 @@ describe('Page Show Use Case', () => {
       visibility: { kind: E_PERMISSION_TARGET.NOBODY, group: null },
     });
 
-    const result = await sut.execute({ slug: 'secreta', role: E_ROLE.MASTER });
+    const master = await userGroupInMemoryRepository.create({
+      name: 'Master',
+      slug: E_ROLE.MASTER,
+      permissions: [],
+      encompasses: [],
+    });
+    const user = await userInMemoryRepository.create({
+      name: 'Master',
+      email: 'master@x.com',
+      password: 'x',
+      group: master._id,
+    });
+
+    const result = await sut.execute({
+      slug: 'secreta',
+      actorUserId: user._id,
+    });
 
     expect(result.isRight()).toBe(true);
   });

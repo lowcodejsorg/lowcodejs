@@ -58,6 +58,7 @@ import {
 import { formatDate } from '@/lib/format-date';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
+import { isPrivileged } from '@/lib/permission';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -377,9 +378,10 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
   const auth = useAuthStore();
   const search = useSearch({ from: '/_private/users/' });
 
+  // Hard-delete é MASTER-only; trash/restore libera para privilegiados.
   const role = auth.user?.group?.slug;
   const isMaster = role === E_ROLE.MASTER;
-  const canTrash = role === E_ROLE.MASTER || role === E_ROLE.ADMINISTRATOR;
+  const canTrash = isPrivileged(auth.user, []);
   const isTrashView = search.trashed === true;
 
   const [singleTrashUser, setSingleTrashUser] = React.useState<IUser | null>(

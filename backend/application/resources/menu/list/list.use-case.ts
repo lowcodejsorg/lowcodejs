@@ -11,7 +11,6 @@ import type {
 } from '@application/core/entity.core';
 import {
   E_MENU_ITEM_TYPE,
-  E_ROLE,
   E_TABLE_PERMISSION,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
@@ -95,11 +94,18 @@ export default class MenuListUseCase {
     const tablesById = new Map<string, ITable>();
     if (tableIds.size === 0) return tablesById;
 
-    const tables = await this.tableRepository.findMany({
-      _ids: Array.from(tableIds),
-      trashed: false,
-    });
-    for (const table of tables) tablesById.set(String(table._id), table);
+    // Carregar tabelas vinculadas nao pode derrubar o feed da sidebar: uma
+    // referencia/populate quebrada degrada para "sem acesso" (oculta a opcao),
+    // nunca em 500 no login.
+    try {
+      const tables = await this.tableRepository.findMany({
+        _ids: Array.from(tableIds),
+        trashed: false,
+      });
+      for (const table of tables) tablesById.set(String(table._id), table);
+    } catch (error) {
+      console.error('[menu > list][loadLinkedTables][error]:', error);
+    }
 
     return tablesById;
   }
@@ -111,18 +117,17 @@ export default class MenuListUseCase {
         sort: { order: 'asc', name: 'asc' },
       });
 
-      // MASTER/ADMINISTRATOR enxergam todos os menus.
-      if (
-        payload.role === E_ROLE.MASTER ||
-        payload.role === E_ROLE.ADMINISTRATOR
-      ) {
-        return right(menus);
-      }
-
       let user: IUser | null = null;
       if (payload.actorUserId) {
         user = await this.userRepository.findById(payload.actorUserId);
       }
+
+      // Privilegiado (MASTER/ADMINISTRATOR no fecho de grupos — nao apenas no
+      // grupo principal) enxerga todos os menus.
+      if (await this.groupResolver.isPrivileged(user)) {
+        return right(menus);
+      }
+
       const userGroupIds = await this.groupResolver.resolveUserGroupIds(user);
 
       const byId = new Map<string, Entity>();

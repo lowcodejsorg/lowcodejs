@@ -4,7 +4,6 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IMenu, IUser } from '@application/core/entity.core';
-import { E_ROLE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { MenuVisibility } from '@application/core/menu-visibility.core';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
@@ -61,15 +60,15 @@ export default class PageShowUseCase {
 
   // Aplica o mesmo enforcement de visibilidade do feed da sidebar
   // (`menu/list`): binding `visibility` da pagina e de toda a cadeia de
-  // ancestrais. MASTER e ADMINISTRATOR enxergam tudo.
+  // ancestrais. Privilegiado (MASTER/ADMINISTRATOR no fecho de grupos) enxerga
+  // tudo.
   private async canSeePage(menu: IMenu, payload: Payload): Promise<boolean> {
-    if (payload.role === E_ROLE.MASTER || payload.role === E_ROLE.ADMINISTRATOR)
-      return true;
-
     let user: IUser | null = null;
     if (payload.actorUserId) {
       user = await this.userRepository.findById(payload.actorUserId);
     }
+
+    if (await this.groupResolver.isPrivileged(user)) return true;
 
     const userGroupIds = await this.groupResolver.resolveUserGroupIds(user);
 

@@ -29,8 +29,11 @@ mais `checkLegacyAccess`/regras de visibilidade.
 
 ## Logica de checkTableAccess
 
-1. MASTER - acesso total (sem verificacao adicional)
-2. ADMINISTRATOR - acesso total (verifica apenas se esta ativo)
+`userRole` (JWT) é usado **apenas** para distinguir visitante (sem `userId`/
+`userRole` → 401), não para autorizar. O privilégio vem do fecho de grupos.
+
+1. Visitante (sem `userId`/`userRole`) → 401 (a menos que a ação seja PUBLIC, tratada antes pelo `isPublicAccess`)
+2. Privilegiado (`GroupResolverContractService.isPrivileged` — MASTER/ADMINISTRATOR no fecho de grupos) e ativo → acesso total
 3. CREATE_TABLE - apenas verifica capacidade no fecho de grupos
 4. Dono da tabela (`table.owner` **ou** membro com perfil OWNER) - acesso total
 5. Avalia, nesta ordem:

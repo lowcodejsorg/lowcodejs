@@ -40,7 +40,6 @@ export default class {
       ...(request.body as Record<string, any>),
       ...params,
       ...(request?.user?.sub && { creator: request.user.sub }),
-      __role: request.user?.role,
       __isOwner: request.ownership?.isOwner,
       __isAdministrator: request.ownership?.isAdministrator,
     });

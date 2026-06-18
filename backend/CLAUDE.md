@@ -231,8 +231,13 @@ de filtros).
 ### JWT
 
 Payload **inalterado** (`{ sub, email, role, type }`); `role` ainda e derivado
-do grupo de sistema (compat). Os grupos sao resolvidos server-side a cada
-request.
+do grupo **principal** (`user.group`, singular) só para compat. **Não é usado
+para autorizar**: o privilégio (acesso total MASTER/ADMINISTRATOR) é resolvido
+pelo **fecho de grupos** via `GroupResolverContractService.isPrivileged(user)`
+(`{group} ∪ groups` seguindo `encompasses`) — assim um usuário MASTER/ADMIN por
+grupo **adicional** também é reconhecido. Substituiu as comparações espalhadas
+`role === E_ROLE.MASTER/ADMINISTRATOR` (menu/list, pages/show, permission e
+field-visibility services). Os grupos sao resolvidos server-side a cada request.
 
 ## Convencoes de Nomenclatura
 

@@ -78,7 +78,6 @@ export default class BulkUpdateUseCase {
             __actorUserId: payload.__actorUserId,
           }),
           ...(payload.__ownOnly && { __ownOnly: true }),
-          __role: payload.__role,
           __isOwner: payload.__isOwner,
           __isAdministrator: payload.__isAdministrator,
         });

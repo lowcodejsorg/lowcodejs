@@ -20,7 +20,6 @@ export type BulkUpdatePayload = z.infer<typeof BulkUpdateParamsValidator> &
     // Convidado contributor: só atualiza os próprios registros.
     __ownOnly?: boolean;
     // Sinais do solicitante para a visibilidade de campo no formulario.
-    __role?: string;
     __isOwner?: boolean;
     __isAdministrator?: boolean;
   };

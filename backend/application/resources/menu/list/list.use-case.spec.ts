@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { E_PERMISSION_TARGET } from '@application/core/entity.core';
+import { E_PERMISSION_TARGET, E_ROLE } from '@application/core/entity.core';
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
@@ -13,6 +13,7 @@ import MenuListUseCase from './list.use-case';
 let menuInMemoryRepository: MenuInMemoryRepository;
 let userInMemoryRepository: UserInMemoryRepository;
 let tableInMemoryRepository: TableInMemoryRepository;
+let userGroupInMemoryRepository: UserGroupInMemoryRepository;
 let permissionService: PermissionService;
 let groupResolver: GroupResolverService;
 let sut: MenuListUseCase;
@@ -22,7 +23,8 @@ describe('Menu List Use Case', () => {
     menuInMemoryRepository = new MenuInMemoryRepository();
     userInMemoryRepository = new UserInMemoryRepository();
     tableInMemoryRepository = new TableInMemoryRepository();
-    groupResolver = new GroupResolverService(new UserGroupInMemoryRepository());
+    userGroupInMemoryRepository = new UserGroupInMemoryRepository();
+    groupResolver = new GroupResolverService(userGroupInMemoryRepository);
     permissionService = new PermissionService(groupResolver);
     sut = new MenuListUseCase(
       menuInMemoryRepository,
@@ -158,6 +160,42 @@ describe('Menu List Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toHaveLength(1);
     expect(result.value[0].name).toBe('Filiais');
+  });
+
+  it('privilegiado via grupo secundário (groups[]) enxerga menu de visibilidade NOBODY', async () => {
+    // Regressão do bug do novo RBAC: privilégio derivava apenas do grupo
+    // principal (singular). Um usuário MASTER/ADMINISTRATOR por grupo adicional
+    // perdia o bypass — agora o fecho de grupos é a fonte de verdade.
+    const masterGroup = await userGroupInMemoryRepository.create({
+      name: 'Master',
+      slug: E_ROLE.MASTER,
+      permissions: [],
+      encompasses: [],
+    });
+    const user = await userInMemoryRepository.create({
+      name: 'Admin Secundario',
+      email: 'sec@x.com',
+      password: 'x',
+      group: 'group-comum',
+      groups: [masterGroup._id],
+    });
+
+    await menuInMemoryRepository.create({
+      name: 'Oculto',
+      slug: 'oculto',
+      type: 'PAGE',
+      visibility: { kind: E_PERMISSION_TARGET.NOBODY, group: null },
+    });
+
+    const result = await sut.execute({
+      actorUserId: user._id,
+      role: 'REGISTERED',
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value).toHaveLength(1);
+    expect(result.value[0].name).toBe('Oculto');
   });
 
   it('deve retornar erro LIST_MENU_ERROR quando houver falha', async () => {

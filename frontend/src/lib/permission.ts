@@ -1,4 +1,4 @@
-import { E_PERMISSION_TARGET } from '@/lib/constant';
+import { E_PERMISSION_TARGET, E_ROLE } from '@/lib/constant';
 import type {
   IField,
   IGroup,
@@ -71,6 +71,43 @@ export function resolveUserGroupIds(
   return visited;
 }
 
+function isPrivilegedSlug(slug: string | null | undefined): boolean {
+  // Uppercase espelha a derivação de role do backend (slug.toUpperCase()): os
+  // grupos de sistema do seed usam slug MASTER/ADMINISTRATOR.
+  const normalized = slug?.toUpperCase();
+  return normalized === E_ROLE.MASTER || normalized === E_ROLE.ADMINISTRATOR;
+}
+
+/**
+ * Usuário privilegiado (acesso total no client; o backend reconfirma): algum
+ * grupo do fecho (`{group} ∪ groups` seguindo `encompasses`) tem slug MASTER ou
+ * ADMINISTRATOR. Fonte única de verdade no frontend — substitui as checagens
+ * espalhadas por `user.group?.slug`, que enxergavam só o grupo principal e
+ * ignoravam grupos adicionais/englobados. Espelha o `isPrivileged` do backend.
+ */
+export function isPrivileged(
+  user: IUser | null,
+  allGroups: Array<IGroup>,
+): boolean {
+  if (!user) return false;
+
+  // Caminho rápido: os grupos diretos já vêm com slug populado no usuário, então
+  // MASTER/ADMINISTRATOR por grupo principal ou adicional não dependem da lista
+  // completa de grupos ter carregado.
+  if (isPrivilegedSlug(user.group?.slug)) return true;
+  for (const group of user.groups ?? []) {
+    if (isPrivilegedSlug(group?.slug)) return true;
+  }
+
+  // Fecho transitivo: um grupo custom pode englobar MASTER/ADMINISTRATOR.
+  const byId = new Map(allGroups.map((group) => [group._id, group]));
+  for (const id of resolveUserGroupIds(user, allGroups)) {
+    if (isPrivilegedSlug(byId.get(id)?.slug)) return true;
+  }
+
+  return false;
+}
+
 /**
  * Avalia se o usuário (representado pelo fecho de grupos) satisfaz um binding.
  * Binding ausente = comportamento legado (visível). PUBLIC = todos. NOBODY =
@@ -106,20 +143,20 @@ export function isFieldShownInContext(
 /**
  * Visibilidade de um campo num contexto (lista/formulário/detalhe) considerando
  * o binding por grupo. NOBODY = oculto para todos. PUBLIC = todos. GROUP =
- * membros do grupo; MASTER/ADMINISTRATOR (isPrivileged) também enxergam.
+ * membros do grupo; privilegiados (MASTER/ADMINISTRATOR) também enxergam.
  * Sem binding (campo ainda não backfillado) = visível.
  */
 export function isFieldVisibleInContext(
   field: IField,
   context: FieldContext,
   userGroupIds: Set<string>,
-  isPrivileged: boolean,
+  privileged: boolean,
 ): boolean {
   const binding = field.permissions?.[context];
   if (!binding) return true;
 
   if (binding.kind === E_PERMISSION_TARGET.NOBODY) return false;
   if (binding.kind === E_PERMISSION_TARGET.PUBLIC) return true;
-  if (isPrivileged) return true;
+  if (privileged) return true;
   return Boolean(binding.group && userGroupIds.has(binding.group));
 }

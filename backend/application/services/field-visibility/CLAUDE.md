@@ -24,12 +24,12 @@ campo oculto (form).
 
 ## Logica de `hiddenSlugs`
 
-1. **Privilegiado** (`userRole` MASTER/ADMINISTRATOR, `isOwner` ou `isAdministrator`) → nada oculto.
+1. **Dono/admin da tabela** (`isOwner` ou `isAdministrator`, sinais do `TableAccessMiddleware`) → nada oculto.
 2. **Campo nativo** (`field.native`) → nunca oculto (estrutural).
-3. Para cada campo nao nativo, avalia `field.permissions[context]`:
+3. **Privilegiado** (`GroupResolverContractService.isPrivileged` — MASTER/ADMINISTRATOR no **fecho de grupos**, não no `role` do JWT) → nada oculto. O usuário é carregado uma vez (`UserContractRepository.findById`) e reusado para o privilégio e para os bindings GROUP.
+4. Para cada campo nao nativo, avalia `field.permissions[context]`:
    - sem binding → campo visivel (default)
    - `PUBLIC` → visivel; `NOBODY` → oculto; `GROUP` → visivel se o grupo estiver no fecho do usuario
-4. So resolve o fecho de grupos (`UserContractRepository.findById` + `GroupResolverContractService`) quando ha algum binding `GROUP` no contexto.
 
 ## Onde e aplicado (`table-rows`)
 
@@ -40,7 +40,9 @@ campo oculto (form).
 | `create` / `update` | `form` | Descarta do payload escritas em campos ocultos antes de validar/salvar |
 | `bulk-update` | `form` | Reusa o `update` (encaminha os sinais do solicitante) |
 
-Os controllers passam os sinais do solicitante via chaves reservadas `__role`,
-`__isOwner`, `__isAdministrator` (descartadas pelo Mongoose strict, como
+Os controllers passam os sinais do solicitante via chaves reservadas `__isOwner`
+e `__isAdministrator` (descartadas pelo Mongoose strict, como
 `__ownOnly`/`__actorUserId`). Em leitura (`paginated`/`show`) sao parametros
-normais do payload do use-case.
+normais do payload do use-case. O privilégio MASTER/ADMINISTRATOR **não** é mais
+passado pelo controller (era `__role`/`userRole`): o serviço o resolve pelo fecho
+de grupos a partir do `userId`.

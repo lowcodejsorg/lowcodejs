@@ -4,7 +4,6 @@ import { Service } from 'fastify-decorators';
 import {
   E_PERMISSION_TARGET,
   E_PROFILE_ACCESS,
-  E_ROLE,
   E_TABLE_PERMISSION,
   E_TABLE_PROFILE,
   E_USER_STATUS,
@@ -92,13 +91,9 @@ export default class PermissionService implements PermissionContractService {
       );
     }
 
-    // MASTER tem acesso total
-    if (userRole === E_ROLE.MASTER) {
-      return { allowed: true };
-    }
-
-    // ADMINISTRATOR tem acesso total (se ativo)
-    if (userRole === E_ROLE.ADMINISTRATOR) {
+    // Privilegiado (MASTER/ADMINISTRATOR no fecho de grupos, nao apenas no grupo
+    // principal) tem acesso total se ativo.
+    if (await this.groupResolver.isPrivileged(user ?? null)) {
       await this.checkUserIsActive(user ?? null);
       return { allowed: true };
     }
