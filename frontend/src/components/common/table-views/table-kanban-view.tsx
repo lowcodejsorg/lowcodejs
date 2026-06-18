@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouterState } from '@tanstack/react-router';
+import { useStore } from '@tanstack/react-store';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
@@ -548,6 +549,40 @@ export function TableKanbanView({
       createForm.setFieldValue(fields.list.slug, [createColumnId]);
     }
   }, [activeFields, createColumnId, createForm, fields.list, isCreateCardOpen]);
+
+  // Auto-preenche o Título a partir do item escolhido num campo de origem
+  // (Chamado / Caso de Uso / Caso de Teste / qualquer relacionamento). O valor
+  // selecionado guarda { value, label }, onde label é o nome do item.
+  const relationshipFieldSlugs = React.useMemo(
+    () =>
+      createDialogExtraFields
+        .filter((field) => field.type === E_FIELD_TYPE.RELATIONSHIP)
+        .map((field) => field.slug),
+    [createDialogExtraFields],
+  );
+
+  // Nome do primeiro relacionamento selecionado, candidato a semear o título.
+  const relationshipSeedLabel = useStore(createForm.store, (state) => {
+    const values = state.values as Record<string, unknown>;
+    for (const slug of relationshipFieldSlugs) {
+      const value = values[slug];
+      if (Array.isArray(value) && value.length > 0) {
+        const label = (value[0] as { label?: unknown }).label;
+        if (typeof label === 'string' && label.trim()) return label.trim();
+      }
+    }
+    return '';
+  });
+
+  React.useEffect(() => {
+    if (!isCreateCardOpen || !fields.title || !relationshipSeedLabel) return;
+    const titleSlug = fields.title.slug;
+    const values = createForm.store.state.values as Record<string, unknown>;
+    const currentTitle = String(values[titleSlug] ?? '').trim();
+    // Só preenche quando vazio; se já houver texto, não sobrescreve.
+    if (currentTitle) return;
+    createForm.setFieldValue(titleSlug, relationshipSeedLabel);
+  }, [createForm, fields.title, isCreateCardOpen, relationshipSeedLabel]);
 
   const ensureOrderField = React.useCallback(async (): Promise<
     string | null
