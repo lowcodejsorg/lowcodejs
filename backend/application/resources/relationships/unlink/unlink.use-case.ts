@@ -35,9 +35,21 @@ export default class RelationshipUnlinkUseCase {
       // 1:1/1:N: desvincula limpando a FK da row dona (`linkId` == id da row).
       const isPivot = await this.relationship.isPivot(definition);
       if (!isPivot) {
+        // Bloqueia deixar um lado obrigatório sem vínculo (RELATIONSHIP_REQUIRED).
+        const guard = await this.relationshipBuilder.ensureUnlinkKeepsRequired(
+          definition,
+          payload.linkId,
+        );
+        if (guard.isLeft()) return left(guard.value);
         await this.relationshipBuilder.unlinkFk(definition, payload.linkId);
         return right(null);
       }
+
+      const guard = await this.relationship.ensureUnlinkKeepsRequired(
+        definition,
+        payload.linkId,
+      );
+      if (guard.isLeft()) return left(guard.value);
 
       const result = await this.relationship.unlink(payload.linkId);
       if (result.isLeft()) return left(result.value);

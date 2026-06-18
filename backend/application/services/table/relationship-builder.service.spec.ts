@@ -5,6 +5,7 @@ import {
   E_FIELD_TYPE,
   E_RELATIONSHIP_ON_DELETE,
   type IField,
+  type IRelationshipDefinition,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
@@ -382,6 +383,63 @@ describe('MongooseRelationshipBuilder', () => {
     it('selecao vazia => vazio', async () => {
       const ids = await service.resolveOwningIds('rel-x', 'source', []);
       expect(ids).toEqual([]);
+    });
+  });
+
+  describe('ensureUnlinkKeepsRequired (FK)', () => {
+    // 1:N — o dono da FK é o lado não-múltiplo (target/produtos). Tornar o dono
+    // obrigatório barra o unlink antes de tocar o banco (retorno antecipado).
+    async function setupOwnerRequired(
+      ownerRequired: boolean,
+    ): Promise<{ definition: IRelationshipDefinition }> {
+      const source = await fieldRepository.create({
+        ...FIELD_BASE,
+        name: 'Produtos',
+        slug: 'produtos',
+        type: E_FIELD_TYPE.RELATIONSHIP,
+        multiple: true,
+        relationship: { table: PRODUTO_TABLE, field: PEDIDO_TABLE, order: 'asc' },
+      });
+      const owner = await fieldRepository.create({
+        ...FIELD_BASE,
+        name: 'Pedidos',
+        slug: 'pedidos',
+        type: E_FIELD_TYPE.RELATIONSHIP,
+        multiple: false,
+        required: ownerRequired,
+        relationship: { table: PEDIDO_TABLE, field: PRODUTO_TABLE, order: 'asc' },
+      });
+      const definition = await definitionRepository.create({
+        name: 'Pedidos ↔ Produtos',
+        source: {
+          table: PEDIDO_TABLE,
+          field: { _id: source._id, slug: 'produtos' },
+          visible: true,
+          label: 'Produtos',
+        },
+        target: {
+          table: PRODUTO_TABLE,
+          field: { _id: owner._id, slug: 'pedidos' },
+          visible: true,
+          label: 'Pedidos',
+        },
+        onDelete: E_RELATIONSHIP_ON_DELETE.RESTRICT,
+      });
+      return { definition };
+    }
+
+    it('bloqueia quando o dono da FK é obrigatório', async () => {
+      const { definition } = await setupOwnerRequired(true);
+      const result = await sut.ensureUnlinkKeepsRequired(definition, 'row-1');
+      expect(result.isLeft()).toBe(true);
+      if (result.isLeft())
+        expect(result.value.cause).toBe('RELATIONSHIP_REQUIRED');
+    });
+
+    it('permite quando nenhum lado é obrigatório', async () => {
+      const { definition } = await setupOwnerRequired(false);
+      const result = await sut.ensureUnlinkKeepsRequired(definition, 'row-1');
+      expect(result.isRight()).toBe(true);
     });
   });
 

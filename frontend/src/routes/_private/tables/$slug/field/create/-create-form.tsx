@@ -708,6 +708,7 @@ export const CreateFieldFormFields = withForm({
               {(field) => (
                 <field.TableFieldRelationshipOnDeleteSelect
                   label="Comportamento ao excluir"
+                  required
                   disabled={isPending}
                 />
               )}

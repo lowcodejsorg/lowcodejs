@@ -1,9 +1,11 @@
 /* eslint-disable no-unused-vars */
+import type { Either } from '@application/core/either.core';
 import type {
   IField,
   IRelationshipDefinition,
   IRelationshipLink,
 } from '@application/core/entity.core';
+import type HTTPException from '@application/core/exception.core';
 import type { RelationshipLinkSide } from '@application/repositories/relationship-link/relationship-link-contract.repository';
 
 // Documento Mongoose minimo necessario para hidratar o path embedded a partir
@@ -100,4 +102,12 @@ export abstract class RelationshipBuilderContractService {
     definition: IRelationshipDefinition,
     linkId: string,
   ): Promise<void>;
+
+  // Bloqueia o unlink (FK 1:1/1:N) que deixaria um lado `required` sem vinculo:
+  // o dono da FK (linkId) zera para 0; o lado reverso pode perder o último filho
+  // (RELATIONSHIP_REQUIRED, §5.6). O caso N:N vive no RelationshipService.
+  abstract ensureUnlinkKeepsRequired(
+    definition: IRelationshipDefinition,
+    linkId: string,
+  ): Promise<Either<HTTPException, true>>;
 }

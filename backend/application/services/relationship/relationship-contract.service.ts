@@ -81,6 +81,12 @@ export abstract class RelationshipContractService {
   ): Promise<Either<HTTPException, IRelationshipLink>>;
   // Remove um vinculo pelo seu _id.
   abstract unlink(linkId: string): Promise<Either<HTTPException, true>>;
+  // Bloqueia o unlink (N:N) que deixaria um lado `required` sem vinculo
+  // (RELATIONSHIP_REQUIRED, §5.6). O caso FK (1:1/1:N) vive no builder.
+  abstract ensureUnlinkKeepsRequired(
+    definition: IRelationshipDefinition,
+    linkId: string,
+  ): Promise<Either<HTTPException, true>>;
   // Ids dos registros relacionados a `recordId` lendo pelo lado informado.
   abstract resolveLinkedIds(
     definition: IRelationshipDefinition,

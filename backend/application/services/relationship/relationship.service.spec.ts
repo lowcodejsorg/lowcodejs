@@ -317,6 +317,81 @@ describe('RelationshipService', () => {
     });
   });
 
+  describe('ensureUnlinkKeepsRequired (pivot)', () => {
+    async function setupRequired(
+      sourceRequired: boolean,
+      targetRequired: boolean,
+    ): Promise<void> {
+      const sourceField = await fields.create({
+        ...FIELD_BASE,
+        name: 'A',
+        slug: 'a',
+        type: E_FIELD_TYPE.RELATIONSHIP,
+        multiple: true,
+        required: sourceRequired,
+      });
+      const targetField = await fields.create({
+        ...FIELD_BASE,
+        name: 'B',
+        slug: 'b',
+        type: E_FIELD_TYPE.RELATIONSHIP,
+        multiple: true,
+        required: targetRequired,
+      });
+      definition.source.field._id = sourceField._id;
+      definition.target.field._id = targetField._id;
+    }
+
+    it('bloqueia ao remover o último vínculo de um lado obrigatório', async () => {
+      await setupRequired(true, false);
+      const link = await links.create({
+        relationshipId: 'rel-1',
+        sourceId: 'a',
+        targetId: 'b',
+      });
+      const result = await service.ensureUnlinkKeepsRequired(
+        definition,
+        link._id,
+      );
+      expect(result.isLeft()).toBe(true);
+      if (result.isLeft())
+        expect(result.value.cause).toBe('RELATIONSHIP_REQUIRED');
+    });
+
+    it('permite quando o lado obrigatório ainda mantém outro vínculo', async () => {
+      await setupRequired(true, false);
+      const link = await links.create({
+        relationshipId: 'rel-1',
+        sourceId: 'a',
+        targetId: 'b',
+      });
+      await links.create({
+        relationshipId: 'rel-1',
+        sourceId: 'a',
+        targetId: 'c',
+      });
+      const result = await service.ensureUnlinkKeepsRequired(
+        definition,
+        link._id,
+      );
+      expect(result.isRight()).toBe(true);
+    });
+
+    it('permite quando nenhum lado é obrigatório', async () => {
+      await setupRequired(false, false);
+      const link = await links.create({
+        relationshipId: 'rel-1',
+        sourceId: 'a',
+        targetId: 'b',
+      });
+      const result = await service.ensureUnlinkKeepsRequired(
+        definition,
+        link._id,
+      );
+      expect(result.isRight()).toBe(true);
+    });
+  });
+
   describe('resolveLinkedIds', () => {
     beforeEach(async () => {
       await links.create({

@@ -28,6 +28,14 @@ import type {
   RelationshipReplaceParams,
 } from './relationship-contract.service';
 
+// Erro de dominio: desvincular deixaria um lado obrigatorio sem vinculo (§5.6).
+export function buildRelationshipRequiredError(): HTTPException {
+  return HTTPException.BadRequest(
+    'Campo obrigatório: vincule outro registro antes de desvincular',
+    'RELATIONSHIP_REQUIRED',
+  );
+}
+
 // Cardinalidade derivada dos dois `field.multiple` (nao persistida, §5.2).
 export class RelationshipCardinality {
   static of(
@@ -268,6 +276,42 @@ export default class RelationshipService implements RelationshipContractService 
     }
 
     await this.linkRepository.delete(linkId);
+    return right(true);
+  }
+
+  // Bloqueia o unlink (N:N/PIVOT) quando deixaria um lado `required` sem nenhum
+  // vinculo (RELATIONSHIP_REQUIRED, §5.6). Lados nao-obrigatorios passam direto.
+  async ensureUnlinkKeepsRequired(
+    definition: IRelationshipDefinition,
+    linkId: string,
+  ): Promise<Either<HTTPException, true>> {
+    const sourceField = await this.fieldRepository.findById(
+      definition.source.field._id,
+    );
+    const targetField = await this.fieldRepository.findById(
+      definition.target.field._id,
+    );
+    const sourceRequired = Boolean(sourceField?.required);
+    const targetRequired = Boolean(targetField?.required);
+    if (!sourceRequired && !targetRequired) return right(true);
+
+    const link = await this.linkRepository.findById(linkId);
+    if (!link) return right(true);
+
+    if (sourceRequired) {
+      const used = await this.linkRepository.count(definition._id, {
+        sourceId: link.sourceId,
+      });
+      if (used <= 1) return left(buildRelationshipRequiredError());
+    }
+
+    if (targetRequired) {
+      const used = await this.linkRepository.count(definition._id, {
+        targetId: link.targetId,
+      });
+      if (used <= 1) return left(buildRelationshipRequiredError());
+    }
+
     return right(true);
   }
 

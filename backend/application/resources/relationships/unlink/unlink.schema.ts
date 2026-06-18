@@ -22,7 +22,10 @@ export const RelationshipUnlinkSchema: FastifySchema = {
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['RELATIONSHIP_NOT_PIVOT'] },
+        cause: {
+          type: 'string',
+          enum: ['RELATIONSHIP_NOT_PIVOT', 'RELATIONSHIP_REQUIRED'],
+        },
         errors: { type: 'object', additionalProperties: { type: 'string' } },
       },
     },

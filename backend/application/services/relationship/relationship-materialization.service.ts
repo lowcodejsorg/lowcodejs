@@ -104,6 +104,7 @@ export default class RelationshipMaterializationService implements RelationshipM
         visible: mirrorVisible,
         relationshipId: null,
         side: 'target',
+        onDelete,
         // Espelho do lado oposto (source): deriva a cardinalidade/role.
         mirror: {
           multiple: Boolean(sourceField.multiple),
@@ -152,6 +153,7 @@ export default class RelationshipMaterializationService implements RelationshipM
         visible: true,
         relationshipId: definition._id,
         side: 'source',
+        onDelete,
         // Espelho do lado oposto (target): deriva a cardinalidade/role.
         mirror: {
           multiple: mirrorMultiple,
@@ -169,6 +171,7 @@ export default class RelationshipMaterializationService implements RelationshipM
         visible: mirrorVisible,
         relationshipId: definition._id,
         side: 'target',
+        onDelete,
         // Espelho do lado oposto (source): deriva a cardinalidade/role.
         mirror: {
           multiple: Boolean(sourceField.multiple),
@@ -241,6 +244,7 @@ export default class RelationshipMaterializationService implements RelationshipM
         visible: params.sourceVisible,
         relationshipId: definition._id,
         side: 'source',
+        onDelete: params.onDelete,
         mirror: {
           multiple: params.mirrorMultiple,
           visible: params.mirrorVisible,
@@ -266,6 +270,7 @@ export default class RelationshipMaterializationService implements RelationshipM
           visible: params.mirrorVisible,
           relationshipId: definition._id,
           side: 'target',
+          onDelete: params.onDelete,
           mirror: {
             multiple: Boolean(params.sourceField.multiple),
             visible: params.sourceVisible,

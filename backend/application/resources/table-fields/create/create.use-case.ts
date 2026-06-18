@@ -187,7 +187,7 @@ export default class TableFieldCreateUseCase {
           {
             sourceField: field,
             sourceTable: table,
-            onDelete: config.onDelete ?? E_RELATIONSHIP_ON_DELETE.SET_NULL,
+            onDelete: config.onDelete || E_RELATIONSHIP_ON_DELETE.SET_NULL,
             mirrorMultiple: Boolean(config.mirror?.multiple),
             mirrorVisible: Boolean(config.mirror?.visible),
             mirrorLabel: config.mirror?.label,

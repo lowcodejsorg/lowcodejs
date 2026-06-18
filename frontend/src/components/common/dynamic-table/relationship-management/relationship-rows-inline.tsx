@@ -207,8 +207,12 @@ export function RelationshipRowsInline(
     onSuccess(): void {
       invalidateRows();
     },
-    onError(): void {
-      toast.error('Não foi possível desvincular o registro');
+    onError(error): void {
+      // Surfacing da mensagem do backend (ex.: RELATIONSHIP_REQUIRED ao
+      // desvincular o último vínculo de um campo obrigatório).
+      handleApiError(error, {
+        context: 'Não foi possível desvincular o registro',
+      });
     },
   });
 
@@ -232,6 +236,14 @@ export function RelationshipRowsInline(
   }, [recordId, onEnsureParentRow, onChildAdded]);
 
   function handleRemove(linkId: string): void {
+    // Campo obrigatório: não deixar sem nenhum vínculo. O backend também barra
+    // (RELATIONSHIP_REQUIRED); aqui é só o aviso preventivo.
+    if (field.required && orderedLinks.length <= 1) {
+      toast.error('Campo obrigatório', {
+        description: 'Vincule outro registro antes de desvincular este.',
+      });
+      return;
+    }
     deleteLink.mutate({ linkId });
   }
 

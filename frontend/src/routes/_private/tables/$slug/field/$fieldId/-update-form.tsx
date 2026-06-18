@@ -659,6 +659,7 @@ export const UpdateFieldFormFields = withForm({
               {(field) => (
                 <field.TableFieldRelationshipOnDeleteSelect
                   label="Comportamento ao excluir"
+                  required
                   disabled={isDisabled || lockAllControls}
                 />
               )}

@@ -2,6 +2,8 @@
 import { Service } from 'fastify-decorators';
 import mongoose from 'mongoose';
 
+import type { Either } from '@application/core/either.core';
+import { left, right } from '@application/core/either.core';
 import type {
   IField,
   IRelationshipDefinition,
@@ -11,10 +13,12 @@ import {
   E_FIELD_TYPE,
   E_RELATIONSHIP_STORAGE,
 } from '@application/core/entity.core';
+import type HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { RelationshipDefinitionContractRepository } from '@application/repositories/relationship-definition/relationship-definition-contract.repository';
 import type { RelationshipLinkSide } from '@application/repositories/relationship-link/relationship-link-contract.repository';
 import { RelationshipContractService } from '@application/services/relationship/relationship-contract.service';
+import { buildRelationshipRequiredError } from '@application/services/relationship/relationship.service';
 import { getDataConnection } from '@config/database.config';
 
 import type {
@@ -513,6 +517,53 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
       { _id: new mongoose.Types.ObjectId(linkId) },
       { $set: { [owner.fieldSlug]: null } },
     );
+  }
+
+  async ensureUnlinkKeepsRequired(
+    definition: IRelationshipDefinition,
+    linkId: string,
+  ): Promise<Either<HTTPException, true>> {
+    const sourceField = await this.fieldRepository.findById(
+      definition.source.field._id,
+    );
+    const targetField = await this.fieldRepository.findById(
+      definition.target.field._id,
+    );
+    const sourceRequired = Boolean(sourceField?.required);
+    const targetRequired = Boolean(targetField?.required);
+    if (!sourceRequired && !targetRequired) return right(true);
+
+    const owner = this.relationship.ownerOf(
+      definition,
+      { multiple: Boolean(sourceField?.multiple) },
+      { multiple: Boolean(targetField?.multiple) },
+    );
+    if (!owner) return right(true);
+
+    // O dono da FK (linkId) perde o seu único vínculo → 0; se obrigatório, barra.
+    let ownerRequired = sourceRequired;
+    let reverseRequired = targetRequired;
+    if (owner.side === 'target') {
+      ownerRequired = targetRequired;
+      reverseRequired = sourceRequired;
+    }
+    if (ownerRequired) return left(buildRelationshipRequiredError());
+    if (!reverseRequired) return right(true);
+
+    // Lado reverso obrigatório: sobra algum outro filho apontando para ele?
+    const db = getDataConnection().db;
+    if (!db) return right(true);
+    const collection = db.collection<Record<string, unknown>>(owner.tableSlug);
+    const ownerDoc = await collection.findOne({
+      _id: new mongoose.Types.ObjectId(linkId),
+    });
+    const fkValue = ownerDoc?.[owner.fieldSlug];
+    if (!fkValue) return right(true);
+    const siblings = await collection.countDocuments({
+      [owner.fieldSlug]: fkValue,
+    });
+    if (siblings <= 1) return left(buildRelationshipRequiredError());
+    return right(true);
   }
 
   // Monta o link sintético: `_id` = id da row dona da FK (p/ o unlink);

@@ -109,16 +109,22 @@ describe('RelationshipMaterializationService', () => {
     expect(definition.onDelete).toBe(E_RELATIONSHIP_ON_DELETE.SET_NULL);
     expect(result.value.definitionId).toBe(definition._id);
 
-    // Source ligado à definition.
+    // Source ligado à definition; onDelete denormalizado no campo.
     const updatedSource = await fieldRepository.findById(source._id);
     expect(updatedSource!.relationship!.relationshipId).toBe(definition._id);
     expect(updatedSource!.relationship!.visible).toBe(true);
+    expect(updatedSource!.relationship!.onDelete).toBe(
+      E_RELATIONSHIP_ON_DELETE.SET_NULL,
+    );
 
-    // Espelho criado no target, ligado e visible:false.
+    // Espelho criado no target, ligado, visible:false e com onDelete.
     const mirror = await fieldRepository.findById(result.value.mirrorFieldId);
     expect(mirror).not.toBeNull();
     expect(mirror!.relationship!.relationshipId).toBe(definition._id);
     expect(mirror!.relationship!.visible).toBe(false);
+    expect(mirror!.relationship!.onDelete).toBe(
+      E_RELATIONSHIP_ON_DELETE.SET_NULL,
+    );
     expect(mirror!.relationship!.table.slug).toBe('pedidos');
     expect(mirror!.multiple).toBe(false);
   });
@@ -193,11 +199,20 @@ describe('RelationshipMaterializationService', () => {
     expect(definition.onDelete).toBe(E_RELATIONSHIP_ON_DELETE.CASCADE);
     expect(definition.target.visible).toBe(true);
 
+    // onDelete denormalizado é re-sincronizado nos dois campos.
+    const resyncedSource = await fieldRepository.findById(source._id);
+    expect(resyncedSource!.relationship!.onDelete).toBe(
+      E_RELATIONSHIP_ON_DELETE.CASCADE,
+    );
+
     const mirror = await fieldRepository.findById(
       materialized.value.mirrorFieldId,
     );
     expect(mirror!.multiple).toBe(true);
     expect(mirror!.relationship!.visible).toBe(true);
+    expect(mirror!.relationship!.onDelete).toBe(
+      E_RELATIONSHIP_ON_DELETE.CASCADE,
+    );
   });
 
   it('auto-relacionamento: target == source materializa na mesma tabela', async () => {

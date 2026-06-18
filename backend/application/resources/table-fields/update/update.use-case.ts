@@ -311,7 +311,9 @@ export default class TableFieldUpdateUseCase {
         !payload.trashed
       ) {
         const config = updatedField.relationship;
-        const onDelete = config.onDelete ?? E_RELATIONSHIP_ON_DELETE.SET_NULL;
+        // `||` (não `??`) p/ cair no default também em '' (denormalizado legado):
+        // passar '' à definition estoura a validação de enum do Mongoose.
+        const onDelete = config.onDelete || E_RELATIONSHIP_ON_DELETE.SET_NULL;
 
         if (!config.relationshipId) {
           const materialized =

@@ -48,6 +48,12 @@ export function useRelationshipLinkCreate(
           props.recordId,
         ),
       });
+      // Atualiza o detalhe da row (record[field.slug] é projetado na leitura):
+      // sem isto, o vínculo single recém-criado não aparece e o limite de 1
+      // não barra novas adições. Simétrico ao invalidate do delete.
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.rows.all(props.tableSlug),
+      });
       props.onSuccess?.(link, variables);
     },
     onError(error, variables) {
