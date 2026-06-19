@@ -14,6 +14,12 @@ const EnvSchema = z.object({
   COOKIE_SECRET: z.string().trim(),
   COOKIE_DOMAIN: z.string().trim().optional(),
 
+  // Chave simétrica usada pelo módulo Senhas (apps/modules/senhas) para cifrar
+  // os segredos em repouso (AES-256-GCM). Opcional: se ausente, o módulo deriva
+  // a chave do COOKIE_SECRET (conveniente em dev; em produção defina uma chave
+  // dedicada e estável — trocá-la torna os segredos existentes ilegíveis).
+  PASSWORDS_ENCRYPTION_KEY: z.string().trim().optional(),
+
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),
