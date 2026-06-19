@@ -7,6 +7,7 @@ import type { IRow, ITable } from '@application/core/entity.core';
 import { E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldSlug } from '@application/core/field-slug.core';
+import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { resolveCreatorId } from '@application/core/row-ownership.core';
 import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
@@ -42,6 +43,7 @@ export default class TableRowUpdateUseCase {
     private readonly kanbanCommentMentionService: KanbanCommentMentionContractService,
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
     private readonly fieldVisibility: FieldVisibilityContractService,
+    private readonly rowAccessGuard: RowAccessGuardService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -57,11 +59,58 @@ export default class TableRowUpdateUseCase {
       const ownGuard = await this.enforceOwnRow(payload, table);
       if (ownGuard) return left(ownGuard);
 
+      // Carrega currentRow para o guard (necessário para canWrite update e sanitize).
+      const currentRow = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload._id },
+      });
+
+      if (!currentRow) {
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
+      }
+
+      // Verifica permissão de escrita (update) via guard.
+      const actorUserId = typeof payload.__actorUserId === 'string' ? payload.__actorUserId : undefined;
+      const ctx = await this.rowAccessGuard.resolveContext(actorUserId);
+      const tableId = table._id.toString();
+
+      const writeDecision = await this.rowAccessGuard.composeWriteDecision(
+        tableId,
+        currentRow,
+        ctx,
+        table,
+        payload,
+        'update',
+      );
+      if (writeDecision.decision === 'deny') {
+        return left(
+          HTTPException.Forbidden(
+            writeDecision.reason ?? 'Acesso negado',
+            'ROW_WRITE_RESTRICTED',
+          ),
+        );
+      }
+
+      // Sanitiza payload (ex: preservar valor de visibility quando não permitido).
+      const sanitized = await this.rowAccessGuard.composeSanitize(
+        tableId,
+        payload as Record<string, unknown>,
+        ctx,
+        table,
+        'update',
+        currentRow,
+      );
+      for (const key of Object.keys(sanitized)) {
+        (payload as Record<string, unknown>)[key] = sanitized[key];
+      }
+
       // Descarta escritas em campos ocultos no formulario para o solicitante.
       const hidden = await this.fieldVisibility.hiddenSlugs({
         fields: table.fields,
         context: 'form',
-        userId: payload.__actorUserId,
+        userId: actorUserId,
         isOwner: payload.__isOwner,
         isAdministrator: payload.__isAdministrator,
       });
@@ -109,16 +158,8 @@ export default class TableRowUpdateUseCase {
 
       const beforeSaveCode = table.methods?.beforeSave?.code;
       if (beforeSaveCode) {
-        const existing = await this.rowRepository.findOne({
-          table,
-          query: { _id: payload._id },
-        });
-
-        if (!existing) {
-          return left(
-            HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
-          );
-        }
+        // Nota: currentRow já foi carregado acima — reusa para o script.
+        const existing = currentRow;
 
         const fieldDefs = table.fields.map((f) => ({
           slug: f.slug,
@@ -224,10 +265,6 @@ export default class TableRowUpdateUseCase {
         }
       }
 
-      const actorUserId =
-        typeof payload.__actorUserId === 'string'
-          ? payload.__actorUserId
-          : undefined;
       delete payload.__actorUserId;
 
       // Auditoria nativa: registra quem fez a ultima alteracao (UPDATER).
@@ -240,10 +277,7 @@ export default class TableRowUpdateUseCase {
       payload.status = E_ROW_STATUS.PUBLISHED;
       payload.draftAt = null;
 
-      const previousRow = await this.rowRepository.findOne({
-        table,
-        query: { _id: payload._id },
-      });
+      const previousRow = currentRow;
 
       const row = await this.rowRepository.update({
         table,

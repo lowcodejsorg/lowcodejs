@@ -31,6 +31,8 @@ export type RowFindManyPayload = {
   limit: number;
   sortField?: string;
   sortDirection?: 'asc' | 'desc';
+  /** Fragmento extra de query Mongo (e.g. do row-access-guard). Mesclado via $and no filtro final. */
+  guardQuery?: Record<string, unknown>;
 };
 
 export type RowUpdatePayload = {
@@ -62,6 +64,12 @@ export type RowBulkDeletePayload = {
   creatorId?: string;
 };
 
+export type RowUpdateManyPayload = {
+  table: RowTableContext;
+  filter: Record<string, unknown>;
+  update: Record<string, unknown>;
+};
+
 export type RowGroupItemPayload = {
   table: RowTableContext;
   rowId: string;
@@ -82,6 +90,7 @@ export abstract class RowContractRepository {
   abstract count(
     table: RowTableContext,
     rawFilters?: Record<string, unknown>,
+    guardQuery?: Record<string, unknown>,
   ): Promise<number>;
 
   abstract update(payload: RowUpdatePayload): Promise<IRow | null>;
@@ -128,13 +137,20 @@ export abstract class RowContractRepository {
     payload: RowGroupItemPayload & { itemId: string },
   ): Promise<boolean>;
 
-  // ── Atomic update (forum-message) ─────────────────────────
+  // ── Atomic update (forum-message / backfill) ──────────────
 
   abstract findOneAndUpdate(
     table: RowTableContext,
     filter: Record<string, unknown>,
     update: Record<string, unknown>,
   ): Promise<IRow | null>;
+
+  /**
+   * Atualiza TODAS as rows que correspondam ao filtro.
+   * Usado pelo RowAccessGuard para backfill de rows sem o campo de visibilidade.
+   * Idempotente: nenhum efeito se nenhuma row corresponder.
+   */
+  abstract updateMany(payload: RowUpdateManyPayload): Promise<number>;
 
   // ── Infrastructure-level ops (table/import/export tools) ──
 
