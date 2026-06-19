@@ -24,6 +24,7 @@ import type {
   RowGroupItemPayload,
   RowSetFieldPayload,
   RowTableContext,
+  RowUpdateManyPayload,
   RowUpdatePayload,
 } from './row-contract.repository';
 import { RowContractRepository } from './row-contract.repository';
@@ -154,13 +155,25 @@ export default class RowMongooseRepository implements RowContractRepository {
     const populate = await this.getPopulate(payload.table);
 
     const conn = getDataConnection();
-    const query = await this.query.build(
+    const baseQuery = await this.query.build(
       payload.rawFilters ?? {},
       payload.table.fields ?? [],
       payload.table.groups,
       payload.table.slug,
       conn,
     );
+
+    // Mescla fragmento do guardQuery via $and para que o row-access-guard
+    // possa restringir a listagem sem conhecer a query base.
+    const query: Record<string, unknown> =
+      payload.guardQuery && Object.keys(payload.guardQuery).length > 0
+        ? {
+            $and: [
+              baseQuery,
+              payload.guardQuery,
+            ],
+          }
+        : baseQuery;
 
     const sort = this.query.order(
       payload.rawFilters ?? {},
@@ -184,15 +197,20 @@ export default class RowMongooseRepository implements RowContractRepository {
   async count(
     table: RowTableContext,
     rawFilters?: Record<string, unknown>,
+    guardQuery?: Record<string, unknown>,
   ): Promise<number> {
     const model = await this.getModel(table);
-    const query = await this.query.build(
+    const baseQuery = await this.query.build(
       rawFilters ?? {},
       table.fields ?? [],
       table.groups,
       table.slug,
       getDataConnection(),
     );
+    const query: Record<string, unknown> =
+      guardQuery && Object.keys(guardQuery).length > 0
+        ? { $and: [baseQuery, guardQuery] }
+        : baseQuery;
     return model.countDocuments(query);
   }
 
@@ -473,6 +491,14 @@ export default class RowMongooseRepository implements RowContractRepository {
 
     const fields = table.fields ?? [];
     return docs.map((doc) => this.transformRow(doc, fields));
+  }
+
+  // ── updateMany (backfill / guard) ─────────────────────────
+
+  async updateMany(payload: RowUpdateManyPayload): Promise<number> {
+    const model = await this.getModel(payload.table);
+    const result = await model.updateMany(payload.filter, payload.update);
+    return result.modifiedCount;
   }
 
   // ── Category cleanup (delete-category) ────────────────────

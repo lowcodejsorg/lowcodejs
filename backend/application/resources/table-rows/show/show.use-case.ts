@@ -5,6 +5,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
@@ -29,6 +30,7 @@ export default class TableRowShowUseCase {
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly rowContextBuilder: RowContextBuilderContractService,
     private readonly fieldVisibility: FieldVisibilityContractService,
+    private readonly rowAccessGuard: RowAccessGuardService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -47,6 +49,22 @@ export default class TableRowShowUseCase {
       });
 
       if (!row) {
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
+      }
+
+      // Verifica permissão de leitura via guard.
+      // Usa NotFound para não vazar a existência do registro.
+      const ctx = await this.rowAccessGuard.resolveContext(payload.user);
+      const tableId = table._id.toString();
+      const canRead = await this.rowAccessGuard.composeReadDecision(
+        tableId,
+        row,
+        ctx,
+        table,
+      );
+      if (!canRead) {
         return left(
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );

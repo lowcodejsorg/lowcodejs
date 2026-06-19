@@ -11,6 +11,8 @@ import InMemoryScriptExecutionService from '@application/services/script-executi
 import { makeRelationshipField } from '@test/helpers/field-factory.helper';
 import { makeTable } from '@test/helpers/table-factory.helper';
 
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
+
 import TableRowUpdateUseCase from '../update.use-case';
 
 const VALID_OBJECT_ID = '507f1f77bcf86cd799439011';
@@ -45,6 +47,7 @@ describe('Table Row Update - RELATIONSHIP', () => {
       new InMemoryKanbanCommentMentionService(),
       new InMemoryRowMemberNotificationService(),
       new InMemoryFieldVisibilityService(),
+      new InMemoryRowAccessGuardService() as any,
     );
   });
 

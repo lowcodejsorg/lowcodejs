@@ -4,6 +4,7 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
+import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
@@ -22,6 +23,7 @@ export default class BulkTrashUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
+    private readonly rowAccessGuard: RowAccessGuardService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -37,9 +39,43 @@ export default class BulkTrashUseCase {
       let creatorId: string | undefined = undefined;
       if (payload.__ownOnly) creatorId = payload.__actorUserId;
 
+      // Filtra os ids pelo guard — rows negadas são simplesmente ignoradas
+      // (comportamento consistente com __ownOnly que já filtra silenciosamente).
+      const actorUserId = typeof payload.__actorUserId === 'string' ? payload.__actorUserId : undefined;
+      const ctx = await this.rowAccessGuard.resolveContext(actorUserId);
+      const tableId = table._id.toString();
+
+      let allowedIds = payload.ids;
+
+      if (!ctx.isPrivileged) {
+        const guardChecks = await Promise.all(
+          payload.ids.map(async (id) => {
+            const row = await this.rowRepository.findOne({
+              table,
+              query: { _id: id },
+            });
+            if (!row) return null;
+            const dec = await this.rowAccessGuard.composeWriteDecision(
+              tableId,
+              row,
+              ctx,
+              table,
+              null,
+              'delete',
+            );
+            return dec.decision !== 'deny' ? id : null;
+          }),
+        );
+        allowedIds = guardChecks.filter((id): id is string => id !== null);
+      }
+
+      if (allowedIds.length === 0) {
+        return right({ modified: 0 });
+      }
+
       const modified = await this.rowRepository.bulkTrash({
         table,
-        ids: payload.ids,
+        ids: allowedIds,
         ...(creatorId && { creatorId }),
       });
 

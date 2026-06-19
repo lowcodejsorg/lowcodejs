@@ -3,13 +3,8 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import {
-  E_EXTENSION_TYPE,
-  type IExtension,
-  type IExtensionTableScope,
-} from '@application/core/entity.core';
+import { E_EXTENSION_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
@@ -18,23 +13,25 @@ import { RowAccessControlGuard } from '../../../../extensions/core/plugins/row-a
 
 type Input = {
   _id: string;
-  tableScope: IExtensionTableScope;
-  tableSettings?: {
-    tableId: string;
-    settings: Record<string, unknown>;
-  };
+  tableSettings: Record<string, Record<string, unknown>>;
 };
-type Response = Either<HTTPException, IExtension>;
+
+type Output = {
+  applied: number;
+  skipped: number;
+  errors: string[];
+};
+
+type Response = Either<HTTPException, Output>;
 
 @Service()
-export default class ExtensionConfigureTableScopeUseCase {
+export default class BulkConfigureTableSettingsUseCase {
   constructor(
     private readonly extensionRepository: ExtensionContractRepository,
     private readonly tableRepository: TableContractRepository,
-    private readonly rowAccessGuard: RowAccessGuardService,
   ) {}
 
-  async execute({ _id, tableScope, tableSettings }: Input): Promise<Response> {
+  async execute({ _id, tableSettings }: Input): Promise<Response> {
     try {
       const existing = await this.extensionRepository.findById(_id);
 
@@ -50,7 +47,7 @@ export default class ExtensionConfigureTableScopeUseCase {
       if (existing.type !== E_EXTENSION_TYPE.PLUGIN) {
         return left(
           HTTPException.BadRequest(
-            'Escopo por tabela só se aplica a plugins',
+            'Configuração de tabelas só se aplica a plugins',
             'TABLE_SCOPE_NOT_APPLICABLE',
           ),
         );
@@ -59,38 +56,37 @@ export default class ExtensionConfigureTableScopeUseCase {
       // Detecta se o plugin é um row-access-guard pelo manifest placement.
       const manifestSnapshot = existing.manifestSnapshot as Record<string, unknown>;
       const placement = manifestSnapshot?.placement as Record<string, unknown> | undefined;
-      const isRowAccessGuard = placement?.kind === 'row-access-guard';
+      if (placement?.kind !== 'row-access-guard') {
+        return left(
+          HTTPException.BadRequest(
+            'Configuração em lote só é suportada por plugins row-access-guard',
+            'TABLE_SCOPE_NOT_APPLICABLE',
+          ),
+        );
+      }
 
-      // Se houver tableSettings (configuração por tabela do row-access-guard)
-      // persiste e chama onTableBound.
-      if (isRowAccessGuard && tableSettings) {
-        const { tableId, settings } = tableSettings;
+      let applied = 0;
+      let skipped = 0;
+      const errors: string[] = [];
 
-        // Valida os settings com o schema do guard.
-        const parsed = rowAccessSettingsSchema.safeParse(settings);
+      for (const [tableId, rawSettings] of Object.entries(tableSettings)) {
+        // Valida settings com o schema do guard.
+        const parsed = rowAccessSettingsSchema.safeParse(rawSettings);
         if (!parsed.success) {
-          return left(
-            HTTPException.BadRequest(
-              'Configurações inválidas para o guard de acesso a linhas',
-              'INVALID_GUARD_SETTINGS',
-              Object.fromEntries(
-                parsed.error.issues.map((e) => [
-                  e.path.join('.') || 'settings',
-                  e.message,
-                ]),
-              ),
-            ),
-          );
+          const msgs = parsed.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`);
+          errors.push(`tableId=${tableId}: ${msgs.join('; ')}`);
+          skipped++;
+          continue;
         }
 
-        // Persiste as settings da tabela.
+        // Persiste.
         await this.extensionRepository.updateTableSettings({
           _id,
           tableId,
           settings: parsed.data as Record<string, unknown>,
         });
 
-        // Carrega a tabela para onTableBound.
+        // onTableBound.
         const table = await this.tableRepository.findById(tableId);
         if (table) {
           const bindResult = await RowAccessControlGuard.onTableBound(
@@ -98,24 +94,22 @@ export default class ExtensionConfigureTableScopeUseCase {
             parsed.data as Record<string, unknown>,
           );
           if (bindResult.isLeft()) {
-            // Rollback: reverte o tableSettings que acabamos de persistir.
-            // (Na prática: não há rollback do updateTableSettings — logamos e retornamos o erro)
-            return left(bindResult.value);
+            errors.push(`tableId=${tableId}: ${bindResult.value.message}`);
+            skipped++;
+            continue;
           }
         }
+
+        applied++;
       }
 
-      const updated = await this.extensionRepository.updateTableScope({
-        _id,
-        tableScope,
-      });
-      return right(updated);
+      return right({ applied, skipped, errors });
     } catch (error) {
-      console.error('[extensions > configure-table-scope][error]:', error);
+      console.error('[extensions > bulk-configure-table-settings][error]:', error);
       return left(
         HTTPException.InternalServerError(
-          'Erro ao configurar escopo de tabelas',
-          'CONFIGURE_TABLE_SCOPE_ERROR',
+          'Erro ao configurar settings em lote',
+          'BULK_CONFIGURE_TABLE_SETTINGS_ERROR',
         ),
       );
     }

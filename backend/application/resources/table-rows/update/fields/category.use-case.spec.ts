@@ -11,6 +11,8 @@ import InMemoryScriptExecutionService from '@application/services/script-executi
 import { makeCategoryField } from '@test/helpers/field-factory.helper';
 import { makeTable } from '@test/helpers/table-factory.helper';
 
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
+
 import TableRowUpdateUseCase from '../update.use-case';
 
 const CATEGORIES = [
@@ -45,6 +47,7 @@ describe('Table Row Update - CATEGORY', () => {
       new InMemoryKanbanCommentMentionService(),
       new InMemoryRowMemberNotificationService(),
       new InMemoryFieldVisibilityService(),
+      new InMemoryRowAccessGuardService() as any,
     );
   });
 
