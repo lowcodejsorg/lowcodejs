@@ -572,6 +572,8 @@ export type IExtension = Merge<
     manifestSnapshot: Record<string, unknown>;
     requires: IExtensionRequires;
     permissions: IExtensionPermissions;
+    supportsScopeAll: boolean;
+    tableSettings?: Record<string, Record<string, unknown>>;
   }
 >;
 
