@@ -104,6 +104,14 @@ export class RowAccessGuardService {
               unknown
             >) ?? {})
           : {};
+      // Guard sem suporte a scope-all NÃO enforça via binding mode='all'
+      // (ex.: core:row-access auto-ativado no boot com o default 'all' porém
+      // nunca vinculado a uma tabela). Só enforça quando vinculado
+      // explicitamente via tableScope.mode='specific' (feito pelo bulk-configure).
+      const tableScope = (ext as Record<string, unknown>)['tableScope'] as
+        | { mode?: string }
+        | undefined;
+      if (!guard.supportsScopeAll && tableScope?.mode === 'all') continue;
       result.push({ guard, settings });
     }
     return result;
