@@ -34,6 +34,37 @@ async function createUser(
   return { email, password };
 }
 
+/**
+ * Merges multiple Set-Cookie header arrays (one per response) into a single
+ * cookie string usable in a Cookie request header. Later values for the same
+ * cookie name override earlier ones, mimicking browser behaviour.
+ */
+function mergeSetCookies(
+  setCookieArrays: (string | string[] | undefined)[],
+): string {
+  const cookieMap = new Map<string, string>();
+
+  for (const setCookies of setCookieArrays) {
+    if (!setCookies) continue;
+    const headers = Array.isArray(setCookies) ? setCookies : [setCookies];
+    for (const header of headers) {
+      // The first segment of a Set-Cookie header is always "name=value"
+      const firstSegment = header.split(';')[0].trim();
+      const eqIdx = firstSegment.indexOf('=');
+      if (eqIdx === -1) continue;
+      const name = firstSegment.slice(0, eqIdx).trim();
+      const value = firstSegment.slice(eqIdx + 1).trim();
+      if (name) {
+        cookieMap.set(name, value);
+      }
+    }
+  }
+
+  return Array.from(cookieMap.entries())
+    .map(([name, value]) => `${name}=${value}`)
+    .join('; ');
+}
+
 describe('E2E Sign In Controller', () => {
   beforeEach(async () => {
     await kernel.ready();
@@ -79,21 +110,31 @@ describe('E2E Sign In Controller', () => {
     });
 
     it('deve manter duas contas autenticadas simultaneamente', async () => {
-      const agent = supertest.agent(kernel.server);
       const first = await createUser('first@example.com', 'First User');
       const second = await createUser('second@example.com', 'Second User');
 
-      const firstResponse = await agent
+      const firstResponse = await supertest(kernel.server)
         .post('/authentication/sign-in')
         .send(first);
-      const secondResponse = await agent
+      const secondResponse = await supertest(kernel.server)
         .post('/authentication/sign-in')
+        .set(
+          'Cookie',
+          mergeSetCookies([firstResponse.headers['set-cookie']]),
+        )
         .send(second);
 
       expect(firstResponse.statusCode).toBe(200);
       expect(secondResponse.statusCode).toBe(200);
 
-      const accountsResponse = await agent.get('/authentication/accounts');
+      const accumulatedCookies = mergeSetCookies([
+        firstResponse.headers['set-cookie'],
+        secondResponse.headers['set-cookie'],
+      ]);
+
+      const accountsResponse = await supertest(kernel.server)
+        .get('/authentication/accounts')
+        .set('Cookie', accumulatedCookies);
 
       expect(accountsResponse.statusCode).toBe(200);
       expect(accountsResponse.body.activeAccountId).toBeDefined();
@@ -106,15 +147,28 @@ describe('E2E Sign In Controller', () => {
     });
 
     it('deve bloquear uma terceira conta simultanea', async () => {
-      const agent = supertest.agent(kernel.server);
       const first = await createUser('first@example.com', 'First User');
       const second = await createUser('second@example.com', 'Second User');
       const third = await createUser('third@example.com', 'Third User');
 
-      await agent.post('/authentication/sign-in').send(first);
-      await agent.post('/authentication/sign-in').send(second);
+      const firstResponse = await supertest(kernel.server)
+        .post('/authentication/sign-in')
+        .send(first);
 
-      const response = await agent.post('/authentication/sign-in').send(third);
+      const secondResponse = await supertest(kernel.server)
+        .post('/authentication/sign-in')
+        .set('Cookie', mergeSetCookies([firstResponse.headers['set-cookie']]))
+        .send(second);
+
+      const accumulatedCookies = mergeSetCookies([
+        firstResponse.headers['set-cookie'],
+        secondResponse.headers['set-cookie'],
+      ]);
+
+      const response = await supertest(kernel.server)
+        .post('/authentication/sign-in')
+        .set('Cookie', accumulatedCookies)
+        .send(third);
 
       expect(response.statusCode).toBe(409);
       expect(response.body.cause).toBe('MULTI_ACCOUNT_LIMIT_REACHED');
