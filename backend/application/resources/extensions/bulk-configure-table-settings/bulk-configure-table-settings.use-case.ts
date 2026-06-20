@@ -68,6 +68,7 @@ export default class BulkConfigureTableSettingsUseCase {
       let applied = 0;
       let skipped = 0;
       const errors: string[] = [];
+      const appliedTableIds: string[] = [];
 
       for (const [tableId, rawSettings] of Object.entries(tableSettings)) {
         // Valida settings com o schema do guard.
@@ -100,7 +101,22 @@ export default class BulkConfigureTableSettingsUseCase {
           }
         }
 
+        appliedTableIds.push(tableId);
         applied++;
+      }
+
+      // Vincula explicitamente via tableScope.mode='specific'. Sem isso, o
+      // default 'all' do tableScope faria o RowAccessGuardService ignorar o
+      // guard (supportsScopeAll=false) — e/ou afetar tabelas não configuradas.
+      if (appliedTableIds.length > 0) {
+        const existingIds = existing.tableScope?.tableIds ?? [];
+        const tableIds = Array.from(
+          new Set([...existingIds, ...appliedTableIds]),
+        );
+        await this.extensionRepository.updateTableScope({
+          _id,
+          tableScope: { mode: 'specific', tableIds },
+        });
       }
 
       return right({ applied, skipped, errors });
