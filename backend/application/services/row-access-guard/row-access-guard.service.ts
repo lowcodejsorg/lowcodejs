@@ -3,17 +3,17 @@ import { Service } from 'fastify-decorators';
 
 import type { IRow, ITable, ValueOf } from '@application/core/entity.core';
 import { E_ROLE } from '@application/core/entity.core';
-import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
-import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
-import { GroupResolverContractService } from '@application/services/group-resolver/group-resolver-contract.service';
-
-import { RowAccessControlGuard } from '../../../extensions/core/plugins/row-access/guard';
-
 import type {
   GuardEvalContext,
   GuardWriteDecision,
   RowAccessGuard,
-} from './row-access-guard.contract';
+} from '@application/core/extensions/row-access-guard.contract';
+import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { GroupResolverContractService } from '@application/services/group-resolver/group-resolver-contract.service';
+import { RowAccessControlGuard } from '@extensions/core/plugins/row-access/guard';
+
+import { RowAccessGuardContractService } from './row-access-guard-contract.service';
 
 const GUARDS: Record<string, RowAccessGuard> = {};
 
@@ -34,13 +34,14 @@ function resolveRole(group: unknown): ValueOf<typeof E_ROLE> {
 }
 
 @Service()
-export class RowAccessGuardService {
+export default class RowAccessGuardService extends RowAccessGuardContractService {
   constructor(
     private readonly extensionRepository: ExtensionContractRepository,
     private readonly userRepository: UserContractRepository,
     private readonly groupResolver: GroupResolverContractService,
     private readonly rowAccessGuard: RowAccessControlGuard,
   ) {
+    super();
     RowAccessGuardService.register(
       this.rowAccessGuard.pluginKey,
       this.rowAccessGuard,

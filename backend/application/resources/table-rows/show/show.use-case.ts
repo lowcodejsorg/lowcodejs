@@ -5,10 +5,10 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
+import { RowAccessGuardContractService } from '@application/services/row-access-guard/row-access-guard-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { RowContextBuilderContractService } from '@application/services/table/row-context-builder-contract.service';
 
@@ -30,7 +30,7 @@ export default class TableRowShowUseCase {
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly rowContextBuilder: RowContextBuilderContractService,
     private readonly fieldVisibility: FieldVisibilityContractService,
-    private readonly rowAccessGuard: RowAccessGuardService,
+    private readonly rowAccessGuard: RowAccessGuardContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {

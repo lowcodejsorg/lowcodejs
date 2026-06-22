@@ -6,7 +6,6 @@ import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
 import { E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { FieldSlug } from '@application/core/field-slug.core';
 import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
@@ -14,6 +13,7 @@ import { TableContractRepository } from '@application/repositories/table/table-c
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { FieldValidationContractService } from '@application/services/field-validation/field-validation-contract.service';
 import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
+import { RowAccessGuardContractService } from '@application/services/row-access-guard/row-access-guard-contract.service';
 import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
@@ -40,7 +40,7 @@ export default class TableRowCreateUseCase {
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
     private readonly fieldVisibility: FieldVisibilityContractService,
     private readonly fieldValidation: FieldValidationContractService,
-    private readonly rowAccessGuard: RowAccessGuardService,
+    private readonly rowAccessGuard: RowAccessGuardContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {

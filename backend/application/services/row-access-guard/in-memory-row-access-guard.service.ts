@@ -1,18 +1,17 @@
 /**
- * Stub de RowAccessGuardService para testes unitários.
- * Não tem guards registrados — todos os métodos retornam valores permissivos
- * (sem restrição), permitindo que os use-cases sejam testados sem infra de extensões.
- *
- * Os métodos declaram apenas os parâmetros que de fato usam (os no-op não recebem
- * nenhum): a injeção nos specs é feita como `as any`, então a aridade reduzida não
- * afeta os callers, que enxergam o contrato completo.
+ * Stub permissivo de RowAccessGuardContractService para testes unitários.
+ * Sem guards registrados — todos os métodos liberam (sem restrição), permitindo
+ * testar os use-cases sem infra de extensões. Implementa o contrato, então é
+ * atribuível onde o contrato é injetado (sem casts).
  */
 import type {
   GuardEvalContext,
   GuardWriteDecision,
-} from './row-access-guard.contract';
+} from '@application/core/extensions/row-access-guard.contract';
 
-export class InMemoryRowAccessGuardService {
+import { RowAccessGuardContractService } from './row-access-guard-contract.service';
+
+export class InMemoryRowAccessGuardService extends RowAccessGuardContractService {
   async resolveContext(userId: string | undefined): Promise<GuardEvalContext> {
     return {
       user: undefined,

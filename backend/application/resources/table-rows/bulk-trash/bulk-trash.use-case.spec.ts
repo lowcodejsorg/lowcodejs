@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { E_TABLE_STYLE } from '@application/core/entity.core';
-import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import { InMemoryRowAccessGuardService } from '@application/services/row-access-guard/in-memory-row-access-guard.service';
 
 import BulkTrashUseCase from './bulk-trash.use-case';
 
@@ -29,7 +29,7 @@ describe('Bulk Trash Use Case', () => {
     sut = new BulkTrashUseCase(
       tableInMemoryRepository,
       rowInMemoryRepository,
-      new InMemoryRowAccessGuardService() as any,
+      new InMemoryRowAccessGuardService(),
     );
     vi.clearAllMocks();
   });

@@ -4,11 +4,11 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
-import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { resolveCreatorId } from '@application/core/row-ownership.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { RelationshipDeletionContractService } from '@application/services/relationship/relationship-deletion-contract.service';
+import { RowAccessGuardContractService } from '@application/services/row-access-guard/row-access-guard-contract.service';
 
 import type { TableRowDeletePayload } from './delete.validator';
 
@@ -25,7 +25,7 @@ export default class TableRowDeleteUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
     private readonly relationshipDeletion: RelationshipDeletionContractService,
-    private readonly rowAccessGuard: RowAccessGuardService,
+    private readonly rowAccessGuard: RowAccessGuardContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
