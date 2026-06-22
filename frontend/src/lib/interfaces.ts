@@ -119,6 +119,11 @@ export type IUser = Merge<
   }
 >;
 
+export type IAuthenticationAccounts = {
+  activeAccountId: string | null;
+  accounts: Array<IUser>;
+};
+
 export type INotificationAction = {
   type: 'route' | 'url';
   href: string;

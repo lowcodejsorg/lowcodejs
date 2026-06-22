@@ -72,6 +72,15 @@ export const SignInSchema: FastifySchema = {
         },
       },
     },
+    409: {
+      description: 'Conflito - Limite de contas simultâneas atingido',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [409] },
+        cause: { type: 'string', enum: ['MULTI_ACCOUNT_LIMIT_REACHED'] },
+      },
+    },
     500: {
       description: 'Erro interno do servidor',
       type: 'object',
