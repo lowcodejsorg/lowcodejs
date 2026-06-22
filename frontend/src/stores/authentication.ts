@@ -24,7 +24,10 @@ function upsertAccount(accounts: Array<IUser>, user: IUser): Array<IUser> {
   const exists = accounts.some((account) => account._id === user._id);
   if (!exists) return [...accounts, user];
 
-  return accounts.map((account) => (account._id === user._id ? user : account));
+  return accounts.map((account) => {
+    if (account._id === user._id) return user;
+    return account;
+  });
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -41,12 +44,16 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       setUser: (user: IUser | null): void => {
-        set((state) => ({
-          user,
-          activeAccountId: user?._id ?? null,
-          accounts: user ? upsertAccount(state.accounts, user) : state.accounts,
-          isAuthenticated: Boolean(user),
-        }));
+        set((state) => {
+          let accounts = state.accounts;
+          if (user) accounts = upsertAccount(state.accounts, user);
+          return {
+            user,
+            activeAccountId: user?._id ?? null,
+            accounts,
+            isAuthenticated: Boolean(user),
+          };
+        });
       },
 
       setAccounts: (
@@ -81,10 +88,10 @@ export const useAuthStore = create<AuthStore>()(
           const accounts = state.accounts.filter(
             (account) => account._id !== accountId,
           );
-          const activeUser =
-            state.activeAccountId === accountId
-              ? (accounts[0] ?? null)
-              : state.user;
+          let activeUser = state.user;
+          if (state.activeAccountId === accountId) {
+            activeUser = accounts[0] ?? null;
+          }
 
           return {
             accounts,

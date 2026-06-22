@@ -19,14 +19,26 @@ const getCookieOptions = (
   sameSite: 'none' | 'lax';
   httpOnly: boolean;
   domain?: string;
-} => ({
-  path: '/',
-  secure: Env.NODE_ENV === 'production',
-  sameSite:
-    Env.NODE_ENV === 'production' ? ('none' as const) : ('lax' as const),
-  httpOnly,
-  ...(Env.COOKIE_DOMAIN && { domain: Env.COOKIE_DOMAIN }),
-});
+} => {
+  const isProduction = Env.NODE_ENV === 'production';
+  let sameSite: 'none' | 'lax' = 'lax';
+  if (isProduction) sameSite = 'none';
+
+  const options: {
+    path: string;
+    secure: boolean;
+    sameSite: 'none' | 'lax';
+    httpOnly: boolean;
+    domain?: string;
+  } = {
+    path: '/',
+    secure: isProduction,
+    sameSite,
+    httpOnly,
+  };
+  if (Env.COOKIE_DOMAIN) options.domain = Env.COOKIE_DOMAIN;
+  return options;
+};
 
 function parseCookieHeader(
   cookieHeader: string | undefined,
@@ -67,7 +79,8 @@ export function getTokenCookieName(
   type: 'access' | 'refresh',
   accountId: string,
 ): string {
-  return `${type === 'access' ? ACCESS_TOKEN_COOKIE : REFRESH_TOKEN_COOKIE}_${accountId}`;
+  if (type === 'access') return `${ACCESS_TOKEN_COOKIE}_${accountId}`;
+  return `${REFRESH_TOKEN_COOKIE}_${accountId}`;
 }
 
 export function listAuthAccountIds(request: FastifyRequest): Array<string> {

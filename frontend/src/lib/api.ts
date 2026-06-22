@@ -103,8 +103,11 @@ const performRefresh = (accountId: string | null): Promise<void> => {
   const existingPromise = refreshPromises.get(refreshKey);
   if (existingPromise) return existingPromise;
 
+  const headers: Record<string, string> = {};
+  if (accountId) headers['X-Auth-Account-Id'] = accountId;
+
   const refreshPromise = API.post('/authentication/refresh-token', undefined, {
-    headers: accountId ? { 'X-Auth-Account-Id': accountId } : undefined,
+    headers,
   })
     .then(() => undefined)
     .finally(() => {
@@ -133,7 +136,7 @@ API.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const status = error.response?.status;
-    const config = error.config as RetriableConfig | undefined;
+    const config: RetriableConfig | undefined = error.config;
 
     if (status !== 401 || !config) {
       return Promise.reject(error);
