@@ -43,7 +43,7 @@ export default class {
     const result = await this.useCase.execute({
       routeSlug: params.slug,
       ...payload,
-      actorRole: request.user?.role,
+      actorId: request.user?.sub,
       actorIsOwner: request.ownership?.isOwner ?? false,
     });
 

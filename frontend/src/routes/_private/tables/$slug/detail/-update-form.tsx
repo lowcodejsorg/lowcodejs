@@ -16,6 +16,7 @@ import {
   E_PERMISSION_TARGET,
   E_TABLE_PROFILE,
   E_TABLE_STYLE,
+  PERMISSION_DESCRIPTION_MAPPER,
   PERMISSION_LABEL_MAPPER,
   TABLE_NAME_REGEX,
   TABLE_PERMISSION_ACTIONS,
@@ -412,6 +413,11 @@ export const UpdateTableFormFields = withForm({
           <p className="text-sm font-medium text-muted-foreground">
             Permissões da tabela
           </p>
+          <p className="text-xs text-muted-foreground">
+            Liberar uma ação para um grupo só tem efeito se o grupo também tiver
+            a permissão correspondente (regra de interseção). "Todos (Público)"
+            libera para qualquer pessoa; "Ninguém" bloqueia.
+          </p>
 
           {/* Preset de colaboração: preenche os 10 bindings de uma vez. */}
           <form.Subscribe selector={(state) => state.values.permissions}>
@@ -464,6 +470,7 @@ export const UpdateTableFormFields = withForm({
               {(field) => (
                 <field.FieldPermissionBinding
                   label={PERMISSION_LABEL_MAPPER[action] ?? action}
+                  description={PERMISSION_DESCRIPTION_MAPPER[action]}
                   disabled={isDisabled}
                 />
               )}

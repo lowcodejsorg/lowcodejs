@@ -9,12 +9,26 @@ import {
 
 // Binding de uma acao: a quem ela esta liberada (Grupo|Public|Nobody).
 export const TablePermissionBindingSchema = z.object({
-  kind: z.enum([
-    E_PERMISSION_TARGET.PUBLIC,
-    E_PERMISSION_TARGET.NOBODY,
-    E_PERMISSION_TARGET.GROUP,
-  ]),
-  group: z.string().trim().nullable().default(null),
+  kind: z
+    .enum([
+      E_PERMISSION_TARGET.PUBLIC,
+      E_PERMISSION_TARGET.NOBODY,
+      E_PERMISSION_TARGET.GROUP,
+    ])
+    .describe(
+      'Alvo da acao: PUBLIC (qualquer pessoa, inclusive sem login), NOBODY ' +
+        '(ninguem) ou GROUP (apenas o grupo informado em `group`). Para GROUP ' +
+        'vale a regra de intersecao: o usuario tambem precisa da permissao ' +
+        'global correspondente no seu grupo.',
+    ),
+  group: z
+    .string()
+    .trim()
+    .nullable()
+    .default(null)
+    .describe(
+      'Id do grupo liberado quando `kind` = GROUP; null caso contrario.',
+    ),
 });
 
 // Mapa das 10 acoes -> binding. Todas opcionais.
@@ -31,7 +45,13 @@ export const TablePermissionsSchema = z
     [E_TABLE_PERMISSION.REMOVE_ROW]: TablePermissionBindingSchema,
     [E_TABLE_PERMISSION.VIEW_ROW]: TablePermissionBindingSchema,
   })
-  .partial();
+  .partial()
+  .describe(
+    'Permissoes por acao da tabela (binding Grupo/Publico/Ninguem). O acesso ' +
+      'efetivo e a intersecao: alem do binding liberar, o usuario precisa da ' +
+      'permissao global da acao no seu grupo. Dono e membros (members[]) sao ' +
+      'concessoes explicitas e nao dependem dessa intersecao.',
+  );
 
 // Convidados da tabela e seus perfis.
 export const TableMembersSchema = z

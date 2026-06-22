@@ -39,7 +39,10 @@ export const UserGroupCreateSchema: FastifySchema = {
         type: 'array',
         minItems: 1,
         items: { type: 'string' },
-        description: 'Lista de IDs de permissões',
+        description:
+          'IDs das permissões globais do grupo (12 de tabela + 7 de área). ' +
+          'Capacidades de área liberam as áreas do sistema; as permissões de ' +
+          'tabela compõem a regra de interseção com os bindings da tabela.',
         errorMessage: {
           type: 'Permissões deve ser uma lista',
           minItems: 'Pelo menos uma permissão é obrigatória',
@@ -48,7 +51,9 @@ export const UserGroupCreateSchema: FastifySchema = {
       encompasses: {
         type: 'array',
         items: { type: 'string' },
-        description: 'Lista de IDs de grupos englobados',
+        description:
+          'IDs dos grupos englobados (Engloba). O grupo herda as permissões ' +
+          'de tudo que engloba (fecho transitivo).',
         errorMessage: {
           type: 'Grupos englobados deve ser uma lista',
         },

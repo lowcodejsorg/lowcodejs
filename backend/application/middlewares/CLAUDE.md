@@ -23,10 +23,19 @@ em vez de exigir um role fixo, exige uma **capacidade de area**
 (`E_AREA_CAPABILITY`) atribuivel a qualquer grupo.
 
 1. Exige usuario autenticado
-2. MASTER bypassa
+2. MASTER bypassa — resolvido pelo **fecho de grupos** (`GroupResolver.isMaster`),
+   nao pelo `role` do JWT (que reflete so o grupo principal)
 3. Resolve as capacidades do usuario pelo **fecho de grupos** (grupo principal +
    adicionais + englobados via `encompasses[]`) com o `GroupResolverContractService`
 4. Lanca Forbidden se a capacidade nao estiver presente
+
+## `role.middleware.ts`
+
+`RoleMiddleware([MASTER|ADMINISTRATOR])` — guarda por papel de sistema resolvida
+pelo **fecho de grupos** (carrega o usuario e usa `GroupResolver.isMaster` /
+`isPrivileged`), nao pelo `role` do JWT. `[MASTER]` exige `isMaster`; conjuntos
+que incluem ADMINISTRATOR exigem `isPrivileged`. Usado por storage-migration,
+setup e o export cross-tabela (`table-base/export-csv`).
 
 **Uso:**
 ```typescript

@@ -192,13 +192,18 @@ sistema. MASTER bypassa.
 ### Bindings por acao (`E_PERMISSION_TARGET`)
 
 Alvo `{ kind, group }` onde `kind ∈ { PUBLIC, NOBODY, GROUP }` (PUBLIC inclui
-visitante; GROUP libera se o grupo estiver no fecho do usuario). Reusado em:
+visitante; GROUP por **intersecao** — libera so se o grupo estiver no fecho do
+usuario **E** o fecho de capacidades contiver a permissao global da acao). Dono,
+membros e PUBLIC nao passam pela intersecao; `CREATE_TABLE` (sem tabela) usa so a
+capacidade do grupo. Reusado em:
 
 - `table.permissions`: mapa das 10 acoes de tabela (viewTable/updateTable/
   createField/updateField/removeField/viewField/createRow/updateRow/removeRow/
   viewRow) → binding.
-- `field.permissions: { list, form, detail }` → binding por contexto.
-  Enforcado server-side pelo `FieldVisibilityService` (`services/field-visibility/`):
+- `field.permissions: { list, form, detail }` → binding por contexto. GROUP
+  segue a mesma **intersecao** das acoes de tabela: exige o grupo no fecho E a
+  capacidade `VIEW_FIELD`. Enforcado server-side pelo `FieldVisibilityService`
+  (`services/field-visibility/`):
   remove os valores de campos ocultos das respostas de row (`paginated`=list,
   `show`=detail) e descarta escritas em campos ocultos (`create`/`update`/
   `bulk-update`=form). Campos nativos e usuarios privilegiados (MASTER/ADMIN/dono)

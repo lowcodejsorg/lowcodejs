@@ -243,6 +243,42 @@ export const PERMISSION_LABEL_MAPPER: Record<string, string> = {
   [E_AREA_CAPABILITY.MANAGE_CHAT]: 'Usar o assistente de IA',
 };
 
+// Descrições de cada permissão/capacidade (pedido do QA: "explicar o que cada
+// opção faz"). Espelham as descrições do seed do backend.
+export const PERMISSION_DESCRIPTION_MAPPER: Record<string, string> = {
+  [E_TABLE_PERMISSION.CREATE_TABLE]: 'Permite criar uma nova tabela.',
+  [E_TABLE_PERMISSION.UPDATE_TABLE]:
+    'Permite editar os dados/configuração de uma tabela existente.',
+  [E_TABLE_PERMISSION.REMOVE_TABLE]: 'Permite remover ou excluir tabelas.',
+  [E_TABLE_PERMISSION.VIEW_TABLE]: 'Permite visualizar uma tabela existente.',
+  [E_TABLE_PERMISSION.CREATE_FIELD]:
+    'Permite criar campos em uma tabela existente.',
+  [E_TABLE_PERMISSION.UPDATE_FIELD]:
+    'Permite editar campos de uma tabela existente.',
+  [E_TABLE_PERMISSION.REMOVE_FIELD]:
+    'Permite remover ou excluir campos de uma tabela existente.',
+  [E_TABLE_PERMISSION.VIEW_FIELD]:
+    'Permite visualizar os campos de uma tabela existente.',
+  [E_TABLE_PERMISSION.CREATE_ROW]:
+    'Permite criar novos registros em uma tabela existente.',
+  [E_TABLE_PERMISSION.UPDATE_ROW]:
+    'Permite editar registros de uma tabela existente.',
+  [E_TABLE_PERMISSION.REMOVE_ROW]:
+    'Permite remover registros de uma tabela existente.',
+  [E_TABLE_PERMISSION.VIEW_ROW]:
+    'Permite visualizar registros de uma tabela existente.',
+  [E_AREA_CAPABILITY.MANAGE_USERS]: 'Permite gerenciar os usuários do sistema.',
+  [E_AREA_CAPABILITY.MANAGE_MENU]: 'Permite gerenciar as opções de menu.',
+  [E_AREA_CAPABILITY.MANAGE_USER_GROUPS]:
+    'Permite gerenciar os grupos de usuários e suas permissões.',
+  [E_AREA_CAPABILITY.MANAGE_SETTINGS]:
+    'Permite gerenciar as configurações do sistema.',
+  [E_AREA_CAPABILITY.MANAGE_TOOLS]:
+    'Permite gerenciar as ferramentas (extensões do tipo tool).',
+  [E_AREA_CAPABILITY.MANAGE_PLUGINS]: 'Permite gerenciar os plugins.',
+  [E_AREA_CAPABILITY.MANAGE_CHAT]: 'Permite usar o chat do assistente de IA.',
+};
+
 // ============== OPTIONS PARA SELECTS ==============
 export const FIELD_TYPE_OPTIONS = [
   { label: 'Texto curto', value: E_FIELD_TYPE.TEXT_SHORT },

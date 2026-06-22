@@ -6,6 +6,7 @@ import type { FieldContext } from '@/lib/permission';
 import {
   isFieldVisibleInContext,
   isPrivileged,
+  resolveUserCapabilities,
   resolveUserGroupIds,
 } from '@/lib/permission';
 import { useAuthStore } from '@/stores/authentication';
@@ -32,10 +33,21 @@ export function useFieldVisibility(): {
     [user, groups],
   );
 
+  const capabilities = useMemo(
+    () => resolveUserCapabilities(user, groups ?? []),
+    [user, groups],
+  );
+
   const isFieldVisible = useCallback(
     (field: IField, context: FieldContext): boolean =>
-      isFieldVisibleInContext(field, context, userGroupIds, privileged),
-    [userGroupIds, privileged],
+      isFieldVisibleInContext(
+        field,
+        context,
+        userGroupIds,
+        privileged,
+        capabilities,
+      ),
+    [userGroupIds, privileged, capabilities],
   );
 
   return { isFieldVisible };

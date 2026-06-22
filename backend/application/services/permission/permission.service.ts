@@ -158,8 +158,15 @@ export default class PermissionService implements PermissionContractService {
   }
 
   /**
-   * Avalia o binding de uma acao: PUBLIC libera todos; GROUP libera se o grupo
-   * estiver no fecho do usuario; NOBODY nega.
+   * Avalia o binding de uma acao: PUBLIC libera todos; GROUP libera por
+   * intersecao (o usuario precisa do grupo do binding no fecho E da capacidade
+   * global da acao no fecho de grupos); NOBODY nega.
+   *
+   * Intersecao (grupo E tabela): liberar a tabela para um grupo so concede a
+   * acao a quem tambem tem a permissao global correspondente. Ex.: tabela com
+   * VIEW_ROW liberado para o grupo X nao deixa o membro de X ver registros se X
+   * nao possui a permissao "Visualizar registro". PUBLIC e visitantes nao
+   * dependem de grupo/capacidade.
    */
   private async bindingAllows(
     table: ITable,
@@ -173,6 +180,10 @@ export default class PermissionService implements PermissionContractService {
 
     if (binding.kind === E_PERMISSION_TARGET.GROUP) {
       if (!binding.group) return false;
+
+      const capabilities = await this.groupResolver.resolveCapabilities(user);
+      if (!capabilities.has(action)) return false;
+
       const groupIds = await this.groupResolver.resolveUserGroupIds(user);
       return groupIds.has(binding.group);
     }

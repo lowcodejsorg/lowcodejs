@@ -1,11 +1,7 @@
 import type { FastifyRequest } from 'fastify';
 import { getInstanceByToken } from 'fastify-decorators';
 
-import {
-  E_AREA_CAPABILITY,
-  E_ROLE,
-  type ValueOf,
-} from '@application/core/entity.core';
+import { E_AREA_CAPABILITY, type ValueOf } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import UserMongooseRepository from '@application/repositories/user/user.repository';
@@ -30,8 +26,6 @@ export function PermissionMiddleware(
       );
     }
 
-    if (request.user.role === E_ROLE.MASTER) return;
-
     const userRepository = getInstanceByToken<UserContractRepository>(
       UserMongooseRepository,
     );
@@ -39,6 +33,12 @@ export function PermissionMiddleware(
       getInstanceByToken<GroupResolverContractService>(GroupResolverService);
 
     const user = await userRepository.findById(request.user.sub);
+
+    // MASTER (pelo fecho de grupos, nao apenas grupo principal) bypassa as
+    // capacidades de area. ADMINISTRATOR nao bypassa — so as capacidades que o
+    // seu grupo possui.
+    if (await groupResolver.isMaster(user)) return;
+
     const capabilities = await groupResolver.resolveCapabilities(user);
 
     if (!capabilities.has(capability)) {

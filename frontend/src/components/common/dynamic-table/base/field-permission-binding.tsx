@@ -5,11 +5,13 @@ import type { IPermissionBinding } from '@/lib/interfaces';
 
 interface FieldPermissionBindingProps {
   label: string;
+  description?: string;
   disabled?: boolean;
 }
 
 export function FieldPermissionBinding({
   label,
+  description,
   disabled,
 }: FieldPermissionBindingProps): React.JSX.Element {
   const field = useFieldContext<IPermissionBinding>();
@@ -20,6 +22,9 @@ export function FieldPermissionBinding({
       data-test-id="field-permission-binding"
     >
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+      {description && (
+        <p className="text-muted-foreground text-xs">{description}</p>
+      )}
       <PermissionBindingSelect
         disabled={disabled}
         value={field.state.value}

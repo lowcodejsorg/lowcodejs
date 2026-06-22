@@ -2,6 +2,7 @@ import type { Readable } from 'node:stream';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
   E_TABLE_STYLE,
   type IField,
@@ -29,9 +30,7 @@ const buildField = (overrides: Partial<IField>): IField =>
     multiple: false,
     format: null,
     showInFilter: false,
-    showInForm: true,
-    showInDetail: true,
-    showInList: true,
+    permissions: buildFieldPermissions(true, true, true),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,

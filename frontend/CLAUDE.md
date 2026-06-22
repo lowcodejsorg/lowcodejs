@@ -254,7 +254,10 @@ usuario (incluindo o fecho `encompasses[]`) a cada request.
   qualquer grupo.
 - **Bindings por acao** (`{ kind, group }` com `kind ∈ PUBLIC|NOBODY|GROUP`)
   controlam tabela (`table.permissions`), visibilidade de campo
-  (`field.permissions.{list,form,detail}`) e menu (`menu.visibility`).
+  (`field.permissions.{list,form,detail}`) e menu (`menu.visibility`). Para
+  acoes de tabela o acesso e a **intersecao**: o grupo precisa da permissao
+  global da acao (`resolveUserCapabilities`) E o binding precisa liberar.
+  PUBLIC, dono e membros nao passam pela intersecao.
 - **Membros da tabela** (`table.members[]` com perfis owner/admin/editor/
   contributor/viewer). Nao existe mais `administrators[]`.
 

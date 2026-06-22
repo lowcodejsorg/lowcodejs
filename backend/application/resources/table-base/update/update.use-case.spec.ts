@@ -1,27 +1,76 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { E_ROLE, E_TABLE_STYLE } from '@application/core/entity.core';
+import {
+  E_ROLE,
+  E_TABLE_STYLE,
+  type IGroup,
+} from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
+import GroupResolverService from '@application/services/group-resolver/group-resolver.service';
 import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
 
 import TableUpdateUseCase from './update.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let userInMemoryRepository: UserInMemoryRepository;
+let userGroupInMemoryRepository: UserGroupInMemoryRepository;
+let groupResolver: GroupResolverService;
 let modelBuilder: InMemoryModelBuilder;
 let sut: TableUpdateUseCase;
+
+function makeGroup(slug: string): IGroup {
+  return {
+    _id: 'group-' + slug,
+    name: slug,
+    slug,
+    description: null,
+    permissions: [],
+    encompasses: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    trashed: false,
+    trashedAt: null,
+  };
+}
+
+// Cria um ator no repo de usuarios com o grupo informado e devolve o _id.
+async function makeActor(groupSlug: string): Promise<string> {
+  const actor = await userInMemoryRepository.create({
+    name: 'Ator ' + groupSlug,
+    email: groupSlug.toLowerCase() + '@x.com',
+    password: 'pwd',
+    group: 'group-' + groupSlug,
+  });
+  actor.group = makeGroup(groupSlug);
+  return actor._id;
+}
 
 describe('Table Update Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    userInMemoryRepository = new UserInMemoryRepository();
+    userGroupInMemoryRepository = new UserGroupInMemoryRepository();
+    // O fecho de grupos resolve o privilegio a partir do group repo (id->grupo).
+    userGroupInMemoryRepository.items.push(
+      makeGroup(E_ROLE.MASTER),
+      makeGroup(E_ROLE.ADMINISTRATOR),
+      makeGroup(E_ROLE.MANAGER),
+      makeGroup(E_ROLE.REGISTERED),
+    );
+    groupResolver = new GroupResolverService(userGroupInMemoryRepository);
     modelBuilder = new InMemoryModelBuilder();
 
     sut = new TableUpdateUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
       modelBuilder,
+      userInMemoryRepository,
+      groupResolver,
     );
   });
 
@@ -178,12 +227,14 @@ describe('Table Update Use Case', () => {
       });
     });
 
-    it('deve negar troca de dono para quem nao e dono nem MASTER/ADMINISTRATOR', async () => {
+    it('deve negar troca de dono para quem nao e dono nem privilegiado', async () => {
+      const actorId = await makeActor(E_ROLE.REGISTERED);
+
       const result = await sut.execute({
         routeSlug: 'clientes',
         ...baseFields,
         owner: 'new-owner-id',
-        actorRole: E_ROLE.REGISTERED,
+        actorId,
         actorIsOwner: false,
       });
 
@@ -195,11 +246,13 @@ describe('Table Update Use Case', () => {
     });
 
     it('deve permitir que o dono atual troque o dono', async () => {
+      const actorId = await makeActor(E_ROLE.MANAGER);
+
       const result = await sut.execute({
         routeSlug: 'clientes',
         ...baseFields,
         owner: 'new-owner-id',
-        actorRole: E_ROLE.MANAGER,
+        actorId,
         actorIsOwner: true,
       });
 
@@ -210,11 +263,13 @@ describe('Table Update Use Case', () => {
     });
 
     it('deve permitir que MASTER troque o dono', async () => {
+      const actorId = await makeActor(E_ROLE.MASTER);
+
       const result = await sut.execute({
         routeSlug: 'clientes',
         ...baseFields,
         owner: 'new-owner-id',
-        actorRole: E_ROLE.MASTER,
+        actorId,
         actorIsOwner: false,
       });
 
@@ -225,11 +280,38 @@ describe('Table Update Use Case', () => {
     });
 
     it('deve permitir que ADMINISTRATOR troque o dono', async () => {
+      const actorId = await makeActor(E_ROLE.ADMINISTRATOR);
+
       const result = await sut.execute({
         routeSlug: 'clientes',
         ...baseFields,
         owner: 'new-owner-id',
-        actorRole: E_ROLE.ADMINISTRATOR,
+        actorId,
+        actorIsOwner: false,
+      });
+
+      expect(result.isRight()).toBe(true);
+      if (!result.isRight()) throw new Error('Expected right');
+
+      expect(result.value.owner._id).toBe('new-owner-id');
+    });
+
+    it('deve permitir privilegiado por grupo adicional/englobado (nao apenas o principal)', async () => {
+      // Ator com grupo principal REGISTERED, mas com MASTER em groups[].
+      const actor = await userInMemoryRepository.create({
+        name: 'Ator misto',
+        email: 'misto@x.com',
+        password: 'pwd',
+        group: 'group-REGISTERED',
+      });
+      actor.group = makeGroup(E_ROLE.REGISTERED);
+      actor.groups = [makeGroup(E_ROLE.MASTER)];
+
+      const result = await sut.execute({
+        routeSlug: 'clientes',
+        ...baseFields,
+        owner: 'new-owner-id',
+        actorId: actor._id,
         actorIsOwner: false,
       });
 
@@ -240,11 +322,13 @@ describe('Table Update Use Case', () => {
     });
 
     it('nao deve aplicar a trava quando o dono nao muda', async () => {
+      const actorId = await makeActor(E_ROLE.REGISTERED);
+
       const result = await sut.execute({
         routeSlug: 'clientes',
         ...baseFields,
         owner: 'owner-id',
-        actorRole: E_ROLE.REGISTERED,
+        actorId,
         actorIsOwner: false,
       });
 

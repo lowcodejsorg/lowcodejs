@@ -41,6 +41,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useSidebar } from '@/components/ui/sidebar';
+import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
 import { useUserBulkDelete } from '@/hooks/tanstack-query/use-user-bulk-delete';
 import { useUserBulkRestore } from '@/hooks/tanstack-query/use-user-bulk-restore';
 import { useUserBulkTrash } from '@/hooks/tanstack-query/use-user-bulk-trash';
@@ -50,7 +51,6 @@ import { useUserRemoveFromTrash } from '@/hooks/tanstack-query/use-user-remove-f
 import { useUserSendToTrash } from '@/hooks/tanstack-query/use-user-send-to-trash';
 import { useDataTable } from '@/hooks/use-data-table';
 import {
-  E_ROLE,
   E_USER_STATUS,
   USER_GROUP_MAPPER,
   USER_STATUS_MAPPER,
@@ -58,7 +58,7 @@ import {
 import { formatDate } from '@/lib/format-date';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
-import { isPrivileged } from '@/lib/permission';
+import { isMaster, isPrivileged } from '@/lib/permission';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -378,10 +378,11 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
   const auth = useAuthStore();
   const search = useSearch({ from: '/_private/users/' });
 
-  // Hard-delete é MASTER-only; trash/restore libera para privilegiados.
-  const role = auth.user?.group?.slug;
-  const isMaster = role === E_ROLE.MASTER;
-  const canTrash = isPrivileged(auth.user, []);
+  // Hard-delete é MASTER-only; trash/restore libera para privilegiados. Ambos
+  // resolvidos pelo fecho de grupos (não apenas o grupo principal).
+  const groups = useGroupReadList();
+  const master = isMaster(auth.user, groups.data ?? []);
+  const canTrash = isPrivileged(auth.user, groups.data ?? []);
   const isTrashView = search.trashed === true;
 
   const [singleTrashUser, setSingleTrashUser] = React.useState<IUser | null>(
@@ -543,7 +544,7 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
     () =>
       buildColumns({
         canTrash,
-        isMaster,
+        isMaster: master,
         isPending: isAnySinglePending,
         onSendToTrash: (user) => setSingleTrashUser(user),
         onRemoveFromTrash: (user) => setSingleRestoreUser(user),
@@ -551,13 +552,7 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
         onView: (user) => navigateToUser(user._id),
         onEdit: (user) => navigateToEditUser(user._id),
       }),
-    [
-      canTrash,
-      isMaster,
-      isAnySinglePending,
-      navigateToUser,
-      navigateToEditUser,
-    ],
+    [canTrash, master, isAnySinglePending, navigateToUser, navigateToEditUser],
   );
 
   const leftPinning: Array<string> = [];
@@ -602,7 +597,7 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
         <BulkActionBar
           selectedCount={selectedCount}
           isTrashView={isTrashView}
-          canDelete={isMaster}
+          canDelete={master}
           onClear={() => table.resetRowSelection()}
           onTrash={() => setBulkTrashOpen(true)}
           onRestore={() => setBulkRestoreOpen(true)}

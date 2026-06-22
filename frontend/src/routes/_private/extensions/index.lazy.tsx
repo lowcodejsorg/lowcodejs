@@ -61,9 +61,15 @@ import {
 import { extensionListOptions } from '@/hooks/tanstack-query/_query-options';
 import { useExtensionConfigureTableScope } from '@/hooks/tanstack-query/use-extension-configure-table-scope';
 import { useExtensionToggle } from '@/hooks/tanstack-query/use-extension-toggle';
-import { EXTENSION_TYPE_LABEL, E_EXTENSION_TYPE } from '@/lib/constant';
+import {
+  EXTENSION_TYPE_LABEL,
+  E_AREA_CAPABILITY,
+  E_EXTENSION_TYPE,
+} from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IExtension } from '@/lib/interfaces';
+import { hasAreaCapability } from '@/lib/menu/menu-access-permissions';
+import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/extensions/')({
   component: RouteComponent,
@@ -111,11 +117,13 @@ function getTableScopeLabel(extension: IExtension): string | null {
 
 interface ExtensionCardProps {
   extension: IExtension;
+  canConfigurePlugins: boolean;
   onConfigureTableScope: (extension: IExtension) => void;
 }
 
 function ExtensionCard({
   extension,
+  canConfigurePlugins,
   onConfigureTableScope,
 }: ExtensionCardProps): React.JSX.Element {
   const navigate = useNavigate();
@@ -191,17 +199,19 @@ function ExtensionCard({
               <span className="text-xs uppercase tracking-wide">Escopo</span>
               <div className="text-foreground">{tableScopeLabel}</div>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="cursor-pointer"
-              onClick={() => onConfigureTableScope(extension)}
-              data-test-id={`extension-configure-${extension._id}`}
-            >
-              <SettingsIcon className="size-4" />
-              Configurar
-            </Button>
+            {canConfigurePlugins && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="cursor-pointer"
+                onClick={() => onConfigureTableScope(extension)}
+                data-test-id={`extension-configure-${extension._id}`}
+              >
+                <SettingsIcon className="size-4" />
+                Configurar
+              </Button>
+            )}
           </div>
         )}
 
@@ -228,11 +238,13 @@ function ExtensionCard({
 
 interface ExtensionTableRowProps {
   extension: IExtension;
+  canConfigurePlugins: boolean;
   onConfigureTableScope: (extension: IExtension) => void;
 }
 
 function ExtensionTableRow({
   extension,
+  canConfigurePlugins,
   onConfigureTableScope,
 }: ExtensionTableRowProps): React.JSX.Element {
   const navigate = useNavigate();
@@ -304,7 +316,7 @@ function ExtensionTableRow({
         </div>
       </TableCell>
       <TableCell className="text-right">
-        {extension.type === E_EXTENSION_TYPE.PLUGIN && (
+        {extension.type === E_EXTENSION_TYPE.PLUGIN && canConfigurePlugins && (
           <Button
             type="button"
             variant="outline"
@@ -483,6 +495,15 @@ const STATUS_FILTERS: Array<{ value: StatusFilter; label: string }> = [
 
 function RouteComponent(): React.JSX.Element {
   const { data } = useSuspenseQuery(extensionListOptions());
+
+  // Configurar escopo de plugin exige MANAGE_PLUGINS no backend
+  // (configure-table-scope). A rota /extensions abre com MANAGE_TOOLS, entao o
+  // botao so aparece para quem tambem tem MANAGE_PLUGINS — evita 403 ao salvar.
+  const capabilities = useAuthStore((state) => state.user?.capabilities);
+  const canConfigurePlugins = hasAreaCapability(
+    capabilities,
+    E_AREA_CAPABILITY.MANAGE_PLUGINS,
+  );
 
   const [scopeExtension, setScopeExtension] = React.useState<IExtension | null>(
     null,
@@ -706,6 +727,7 @@ function RouteComponent(): React.JSX.Element {
                   <ExtensionCard
                     key={extension._id}
                     extension={extension}
+                    canConfigurePlugins={canConfigurePlugins}
                     onConfigureTableScope={handleConfigureTableScope}
                   />
                 ))}
@@ -733,6 +755,7 @@ function RouteComponent(): React.JSX.Element {
                   <ExtensionTableRow
                     key={extension._id}
                     extension={extension}
+                    canConfigurePlugins={canConfigurePlugins}
                     onConfigureTableScope={handleConfigureTableScope}
                   />
                 ))}

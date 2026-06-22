@@ -44,7 +44,6 @@ export default class {
     const result = await this.useCase.execute({
       _id: params._id,
       actorId: request.user.sub,
-      actorRole: request.user.role,
     });
 
     if (result.isLeft()) {

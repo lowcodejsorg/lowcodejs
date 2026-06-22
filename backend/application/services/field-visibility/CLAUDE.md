@@ -29,7 +29,9 @@ campo oculto (form).
 3. **Privilegiado** (`GroupResolverContractService.isPrivileged` — MASTER/ADMINISTRATOR no **fecho de grupos**, não no `role` do JWT) → nada oculto. O usuário é carregado uma vez (`UserContractRepository.findById`) e reusado para o privilégio e para os bindings GROUP.
 4. Para cada campo nao nativo, avalia `field.permissions[context]`:
    - sem binding → campo visivel (default)
-   - `PUBLIC` → visivel; `NOBODY` → oculto; `GROUP` → visivel se o grupo estiver no fecho do usuario
+   - `PUBLIC` → visivel; `NOBODY` → oculto; `GROUP` → **intersecao**: visivel so
+     se o grupo do binding estiver no fecho do usuario **E** o fecho de
+     capacidades contiver `VIEW_FIELD` (espelha a intersecao das acoes de tabela)
 
 ## Onde e aplicado (`table-rows`)
 

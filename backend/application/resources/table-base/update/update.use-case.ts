@@ -3,14 +3,12 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import {
-  E_ROLE,
-  type ITable as Entity,
-  type ValueOf,
-} from '@application/core/entity.core';
+import { type ITable as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { GroupResolverContractService } from '@application/services/group-resolver/group-resolver-contract.service';
 import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
 
 import type { TableUpdatePayload } from './update.validator';
@@ -20,7 +18,7 @@ type Response = Either<HTTPException, Entity>;
 // Identidade do ator (resolvida no controller a partir de request.user +
 // request.ownership) usada para autorizar a troca de dono.
 type Payload = TableUpdatePayload & {
-  actorRole?: ValueOf<typeof E_ROLE>;
+  actorId?: string;
   actorIsOwner?: boolean;
 };
 
@@ -30,6 +28,8 @@ export default class TableUpdateUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
     private readonly modelBuilder: ModelBuilderContractService,
+    private readonly userRepository: UserContractRepository,
+    private readonly groupResolver: GroupResolverContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -41,16 +41,22 @@ export default class TableUpdateUseCase {
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
-      // Troca de dono so e permitida ao dono atual ou a MASTER/ADMINISTRATOR.
+      // Troca de dono so e permitida ao dono atual ou a um privilegiado
+      // (MASTER/ADMINISTRATOR resolvido pelo fecho de grupos, nao pelo role do
+      // JWT — assim um privilegiado por grupo adicional/englobado tambem vale).
       const isOwnerChange =
         payload.owner !== undefined &&
         payload.owner !== table.owner._id.toString();
 
       if (isOwnerChange) {
+        let actorIsPrivileged = false;
+        if (payload.actorId) {
+          const actor = await this.userRepository.findById(payload.actorId);
+          actorIsPrivileged = await this.groupResolver.isPrivileged(actor);
+        }
+
         const canReassignOwner =
-          payload.actorRole === E_ROLE.MASTER ||
-          payload.actorRole === E_ROLE.ADMINISTRATOR ||
-          payload.actorIsOwner === true;
+          actorIsPrivileged || payload.actorIsOwner === true;
 
         if (!canReassignOwner)
           return left(

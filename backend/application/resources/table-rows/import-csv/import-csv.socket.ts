@@ -20,13 +20,14 @@
  * state.
  */
 
+import { getInstanceByToken } from 'fastify-decorators';
 import type { Namespace, Server } from 'socket.io';
 
-import {
-  E_JWT_TYPE,
-  E_ROLE,
-  type IJWTPayload,
-} from '@application/core/entity.core';
+import { E_JWT_TYPE, type IJWTPayload } from '@application/core/entity.core';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import UserMongooseRepository from '@application/repositories/user/user.repository';
+import { GroupResolverContractService } from '@application/services/group-resolver/group-resolver-contract.service';
+import GroupResolverService from '@application/services/group-resolver/group-resolver.service';
 
 export const CSV_IMPORT_NAMESPACE = '/csv-import';
 
@@ -86,7 +87,7 @@ export function initCsvImportSocket(
   const namespace = io.of(CSV_IMPORT_NAMESPACE);
   const results = new Map<string, StoredFinalEvent>();
 
-  namespace.use((socket, next) => {
+  namespace.use(async (socket, next) => {
     const cookieHeader = socket.handshake.headers.cookie;
     const accessToken = extractCookieValue(cookieHeader, 'accessToken');
 
@@ -101,10 +102,18 @@ export function initCsvImportSocket(
       return;
     }
 
-    if (
-      decoded.role !== E_ROLE.MASTER &&
-      decoded.role !== E_ROLE.ADMINISTRATOR
-    ) {
+    // Privilegio resolvido pelo fecho de grupos (nao pelo role do JWT, que so
+    // reflete o grupo principal): MASTER/ADMINISTRATOR por grupo adicional ou
+    // englobado tambem e admitido.
+    const userRepository = getInstanceByToken<UserContractRepository>(
+      UserMongooseRepository,
+    );
+    const groupResolver =
+      getInstanceByToken<GroupResolverContractService>(GroupResolverService);
+
+    const user = await userRepository.findById(decoded.sub);
+
+    if (!(await groupResolver.isPrivileged(user))) {
       next(new Error('Acesso negado.'));
       return;
     }

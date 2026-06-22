@@ -18,7 +18,6 @@ import {
   E_AREA_CAPABILITY,
   E_CHAT_EVENT,
   E_JWT_TYPE,
-  E_ROLE,
   type IJWTPayload,
 } from '@application/core/entity.core';
 import { Setting } from '@application/model/setting.model';
@@ -278,12 +277,14 @@ export function initChatSocket(
 
     const user = decoded;
 
-    // Capacidade de chat por grupo (MASTER bypassa). Mantem o chat indisponivel
+    // Capacidade de chat por grupo (MASTER bypassa). Privilegio MASTER resolvido
+    // pelo fecho de grupos (nao pelo role do JWT). Mantem o chat indisponivel
     // para grupos sem a permissao, alem do toggle global AI_ASSISTANT_ENABLED.
-    if (user.role !== E_ROLE.MASTER) {
-      const userRepository = getInstanceByToken(UserMongooseRepository);
-      const groupResolver = getInstanceByToken(GroupResolverService);
-      const fullUser = await userRepository.findById(user.sub);
+    const userRepository = getInstanceByToken(UserMongooseRepository);
+    const groupResolver = getInstanceByToken(GroupResolverService);
+    const fullUser = await userRepository.findById(user.sub);
+
+    if (!(await groupResolver.isMaster(fullUser))) {
       const capabilities = await groupResolver.resolveCapabilities(fullUser);
 
       if (!capabilities.has(E_AREA_CAPABILITY.MANAGE_CHAT)) {

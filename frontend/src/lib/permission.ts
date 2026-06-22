@@ -1,4 +1,8 @@
-import { E_PERMISSION_TARGET, E_ROLE } from '@/lib/constant';
+import {
+  E_PERMISSION_TARGET,
+  E_ROLE,
+  E_TABLE_PERMISSION,
+} from '@/lib/constant';
 import type {
   IField,
   IGroup,
@@ -71,6 +75,32 @@ export function resolveUserGroupIds(
   return visited;
 }
 
+/**
+ * União das capacidades (slugs de permissão) de todos os grupos do fecho do
+ * usuário (`{group} ∪ groups ∪ encompasses`). Espelha o `resolveCapabilities`
+ * do backend, no client, para gating coarse de ações (ex.: CREATE_TABLE e a
+ * regra de interseção das ações por tabela).
+ */
+export function resolveUserCapabilities(
+  user: IUser | null,
+  allGroups: Array<IGroup>,
+): Set<string> {
+  const capabilities = new Set<string>();
+  if (!user) return capabilities;
+
+  const byId = new Map(allGroups.map((group) => [group._id, group]));
+
+  for (const id of resolveUserGroupIds(user, allGroups)) {
+    const group = byId.get(id);
+    if (!group) continue;
+    for (const permission of group.permissions ?? []) {
+      capabilities.add(permission.slug);
+    }
+  }
+
+  return capabilities;
+}
+
 function isPrivilegedSlug(slug: string | null | undefined): boolean {
   // Uppercase espelha a derivação de role do backend (slug.toUpperCase()): os
   // grupos de sistema do seed usam slug MASTER/ADMINISTRATOR.
@@ -103,6 +133,31 @@ export function isPrivileged(
   const byId = new Map(allGroups.map((group) => [group._id, group]));
   for (const id of resolveUserGroupIds(user, allGroups)) {
     if (isPrivilegedSlug(byId.get(id)?.slug)) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Usuário MASTER pelo fecho de grupos (slug MASTER no grupo principal, adicional
+ * ou englobado). Para gates restritos a MASTER (ex.: exclusão permanente),
+ * mantendo a semântica master-only mas corrigindo o fecho. Espelha o `isMaster`
+ * do backend.
+ */
+export function isMaster(
+  user: IUser | null,
+  allGroups: Array<IGroup>,
+): boolean {
+  if (!user) return false;
+
+  if (user.group?.slug?.toUpperCase() === E_ROLE.MASTER) return true;
+  for (const group of user.groups ?? []) {
+    if (group?.slug?.toUpperCase() === E_ROLE.MASTER) return true;
+  }
+
+  const byId = new Map(allGroups.map((group) => [group._id, group]));
+  for (const id of resolveUserGroupIds(user, allGroups)) {
+    if (byId.get(id)?.slug?.toUpperCase() === E_ROLE.MASTER) return true;
   }
 
   return false;
@@ -143,14 +198,16 @@ export function isFieldShownInContext(
 /**
  * Visibilidade de um campo num contexto (lista/formulário/detalhe) considerando
  * o binding por grupo. NOBODY = oculto para todos. PUBLIC = todos. GROUP =
- * membros do grupo; privilegiados (MASTER/ADMINISTRATOR) também enxergam.
- * Sem binding (campo ainda não backfillado) = visível.
+ * interseção (membro do grupo E capacidade VIEW_FIELD no fecho); privilegiados
+ * (MASTER/ADMINISTRATOR) também enxergam. Sem binding (campo ainda não
+ * backfillado) = visível. Espelha o `FieldVisibilityService` do backend.
  */
 export function isFieldVisibleInContext(
   field: IField,
   context: FieldContext,
   userGroupIds: Set<string>,
   privileged: boolean,
+  capabilities: Set<string>,
 ): boolean {
   const binding = field.permissions?.[context];
   if (!binding) return true;
@@ -158,5 +215,6 @@ export function isFieldVisibleInContext(
   if (binding.kind === E_PERMISSION_TARGET.NOBODY) return false;
   if (binding.kind === E_PERMISSION_TARGET.PUBLIC) return true;
   if (privileged) return true;
+  if (!capabilities.has(E_TABLE_PERMISSION.VIEW_FIELD)) return false;
   return Boolean(binding.group && userGroupIds.has(binding.group));
 }

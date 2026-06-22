@@ -2,7 +2,10 @@
 import { Service } from 'fastify-decorators';
 
 import type { IField, IUser } from '@application/core/entity.core';
-import { E_PERMISSION_TARGET } from '@application/core/entity.core';
+import {
+  E_PERMISSION_TARGET,
+  E_TABLE_PERMISSION,
+} from '@application/core/entity.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { GroupResolverContractService } from '@application/services/group-resolver/group-resolver-contract.service';
 
@@ -44,14 +47,17 @@ export default class FieldVisibilityService implements FieldVisibilityContractSe
     // Privilegiado (MASTER/ADMINISTRATOR no fecho de grupos): nada oculto.
     if (await this.groupResolver.isPrivileged(user)) return hidden;
 
-    // So resolve o fecho de grupos quando algum binding do contexto e GROUP.
+    // So resolve o fecho de grupos/capacidades quando algum binding do contexto
+    // e GROUP (intersecao: precisa do grupo no fecho E da capacidade VIEW_FIELD).
     let groupIds = new Set<string>();
+    let capabilities = new Set<string>();
     if (this.needsGroupResolution(candidates, input.context)) {
       groupIds = await this.groupResolver.resolveUserGroupIds(user);
+      capabilities = await this.groupResolver.resolveCapabilities(user);
     }
 
     for (const field of candidates) {
-      if (!this.isFieldVisible(field, input.context, groupIds)) {
+      if (!this.isFieldVisible(field, input.context, groupIds, capabilities)) {
         hidden.add(field.slug);
       }
     }
@@ -89,6 +95,7 @@ export default class FieldVisibilityService implements FieldVisibilityContractSe
     field: IField,
     context: FieldVisibilityContext,
     groupIds: Set<string>,
+    capabilities: Set<string>,
   ): boolean {
     const binding = field.permissions?.[context];
 
@@ -99,8 +106,11 @@ export default class FieldVisibilityService implements FieldVisibilityContractSe
     if (binding.kind === E_PERMISSION_TARGET.PUBLIC) return true;
     if (binding.kind === E_PERMISSION_TARGET.NOBODY) return false;
 
-    // GROUP: visivel se o grupo estiver no fecho do usuario.
+    // GROUP por intersecao: o grupo do binding precisa estar no fecho do usuario
+    // E o fecho precisa conter a capacidade VIEW_FIELD (ver campos). Espelha a
+    // intersecao das acoes de tabela.
     if (!binding.group) return false;
+    if (!capabilities.has(E_TABLE_PERMISSION.VIEW_FIELD)) return false;
 
     return groupIds.has(binding.group);
   }

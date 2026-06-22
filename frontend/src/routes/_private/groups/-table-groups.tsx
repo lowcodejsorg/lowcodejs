@@ -43,12 +43,14 @@ import { useGroupBulkDelete } from '@/hooks/tanstack-query/use-group-bulk-delete
 import { useGroupBulkRestore } from '@/hooks/tanstack-query/use-group-bulk-restore';
 import { useGroupBulkTrash } from '@/hooks/tanstack-query/use-group-bulk-trash';
 import { useGroupDelete } from '@/hooks/tanstack-query/use-group-delete';
+import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
 import { useGroupRemoveFromTrash } from '@/hooks/tanstack-query/use-group-remove-from-trash';
 import { useGroupSendToTrash } from '@/hooks/tanstack-query/use-group-send-to-trash';
 import { useDataTable } from '@/hooks/use-data-table';
 import { E_ROLE, USER_GROUP_MAPPER } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IGroup } from '@/lib/interfaces';
+import { isMaster } from '@/lib/permission';
 import { useAuthStore } from '@/stores/authentication';
 
 const ROUTE_ID = '/_private/groups/';
@@ -329,9 +331,10 @@ export function TableGroups({ data, toolbarPortal }: Props): React.JSX.Element {
   const auth = useAuthStore();
   const search = useSearch({ from: '/_private/groups/' });
 
-  const role = auth.user?.group?.slug;
-  const isMaster = role === E_ROLE.MASTER;
-  const canTrash = role === E_ROLE.MASTER;
+  // Hard-delete/trash de grupos é MASTER-only, resolvido pelo fecho de grupos.
+  const groups = useGroupReadList();
+  const master = isMaster(auth.user, groups.data ?? []);
+  const canTrash = master;
   const isTrashView = search.trashed === true;
 
   const [singleTrashGroup, setSingleTrashGroup] = React.useState<IGroup | null>(
@@ -470,7 +473,7 @@ export function TableGroups({ data, toolbarPortal }: Props): React.JSX.Element {
     () =>
       buildColumns({
         canTrash,
-        isMaster,
+        isMaster: master,
         isPending: isAnySinglePending,
         onSendToTrash: (group) => setSingleTrashGroup(group),
         onRemoveFromTrash: (group) => setSingleRestoreGroup(group),
@@ -480,7 +483,7 @@ export function TableGroups({ data, toolbarPortal }: Props): React.JSX.Element {
       }),
     [
       canTrash,
-      isMaster,
+      master,
       isAnySinglePending,
       navigateToGroup,
       navigateToEditGroup,
@@ -529,7 +532,7 @@ export function TableGroups({ data, toolbarPortal }: Props): React.JSX.Element {
         <BulkActionBar
           selectedCount={selectedCount}
           isTrashView={isTrashView}
-          canDelete={isMaster}
+          canDelete={master}
           onClear={() => table.resetRowSelection()}
           onTrash={() => setBulkTrashOpen(true)}
           onRestore={() => setBulkRestoreOpen(true)}

@@ -2,10 +2,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { E_ROLE, type IGroup } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
+import GroupResolverService from '@application/services/group-resolver/group-resolver.service';
 
 import UserSendToTrashUseCase from './send-to-trash.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
+let userGroupInMemoryRepository: UserGroupInMemoryRepository;
+let groupResolver: GroupResolverService;
 let sut: UserSendToTrashUseCase;
 
 function makeGroup(slug: string): IGroup {
@@ -26,7 +30,15 @@ function makeGroup(slug: string): IGroup {
 describe('User Send To Trash Use Case', () => {
   beforeEach(() => {
     userInMemoryRepository = new UserInMemoryRepository();
-    sut = new UserSendToTrashUseCase(userInMemoryRepository);
+    userGroupInMemoryRepository = new UserGroupInMemoryRepository();
+    // O fecho de grupos resolve o privilegio a partir do group repo (id->grupo).
+    userGroupInMemoryRepository.items.push(
+      makeGroup(E_ROLE.MASTER),
+      makeGroup(E_ROLE.ADMINISTRATOR),
+      makeGroup(E_ROLE.MANAGER),
+    );
+    groupResolver = new GroupResolverService(userGroupInMemoryRepository);
+    sut = new UserSendToTrashUseCase(userInMemoryRepository, groupResolver);
   });
 
   it('deve enviar usuario para a lixeira com sucesso', async () => {
@@ -41,7 +53,6 @@ describe('User Send To Trash Use Case', () => {
     const result = await sut.execute({
       _id: user._id,
       actorId: 'actor-1',
-      actorRole: E_ROLE.ADMINISTRATOR,
     });
 
     expect(result.isRight()).toBe(true);
@@ -62,7 +73,6 @@ describe('User Send To Trash Use Case', () => {
     const result = await sut.execute({
       _id: user._id,
       actorId: user._id,
-      actorRole: E_ROLE.MASTER,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -75,7 +85,6 @@ describe('User Send To Trash Use Case', () => {
     const result = await sut.execute({
       _id: 'unknown',
       actorId: 'actor',
-      actorRole: E_ROLE.MASTER,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -99,7 +108,6 @@ describe('User Send To Trash Use Case', () => {
     const result = await sut.execute({
       _id: user._id,
       actorId: 'other',
-      actorRole: E_ROLE.MASTER,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -119,7 +127,6 @@ describe('User Send To Trash Use Case', () => {
     const result = await sut.execute({
       _id: user._id,
       actorId: 'actor-1',
-      actorRole: E_ROLE.ADMINISTRATOR,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -137,7 +144,6 @@ describe('User Send To Trash Use Case', () => {
     const result = await sut.execute({
       _id: 'x',
       actorId: 'a',
-      actorRole: E_ROLE.MASTER,
     });
 
     expect(result.isLeft()).toBe(true);

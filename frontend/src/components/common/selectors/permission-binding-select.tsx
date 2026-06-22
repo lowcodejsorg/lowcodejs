@@ -17,7 +17,15 @@ import type { IPermissionBinding } from '@/lib/interfaces';
 const PUBLIC_ID = '__PUBLIC__';
 const NOBODY_ID = '__NOBODY__';
 
-type Option = { id: string; label: string };
+type Option = { id: string; label: string; description?: string };
+
+// Descrições das opções fixas — explicam o efeito de cada binding (pedido do QA:
+// "explicar o que cada opção faz"). GROUP é descrito por opção de grupo abaixo.
+const PUBLIC_DESCRIPTION =
+  'Qualquer pessoa, mesmo sem login, pode realizar esta ação.';
+const NOBODY_DESCRIPTION = 'Ninguém pode realizar esta ação (bloqueado).';
+const GROUP_DESCRIPTION =
+  'Apenas membros deste grupo que também tenham a permissão correspondente no grupo (regra de interseção).';
 
 interface PermissionBindingSelectProps {
   value?: IPermissionBinding;
@@ -62,12 +70,17 @@ export function PermissionBindingSelect({
 
   const items = React.useMemo(() => {
     const fixed: Array<Option> = [
-      { id: PUBLIC_ID, label: 'Todos (Público)' },
-      { id: NOBODY_ID, label: 'Ninguém' },
+      {
+        id: PUBLIC_ID,
+        label: 'Todos (Público)',
+        description: PUBLIC_DESCRIPTION,
+      },
+      { id: NOBODY_ID, label: 'Ninguém', description: NOBODY_DESCRIPTION },
     ];
     const groupOptions = (groups ?? []).map((group) => ({
       id: group._id,
       label: groupLabel(group.slug, group.name),
+      description: GROUP_DESCRIPTION,
     }));
     return [...fixed, ...groupOptions];
   }, [groups]);
@@ -108,7 +121,14 @@ export function PermissionBindingSelect({
                 key={option.id}
                 value={option}
               >
-                {option.label}
+                <div className="flex flex-1 flex-col">
+                  <span className="font-medium">{option.label}</span>
+                  {option.description && (
+                    <span className="text-muted-foreground text-sm">
+                      {option.description}
+                    </span>
+                  )}
+                </div>
               </ComboboxItem>
             )}
           </ComboboxList>

@@ -1,10 +1,15 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import type { IField } from '@application/core/entity.core';
+import type {
+  IField,
+  IGroup,
+  IPermission,
+} from '@application/core/entity.core';
 import {
   E_FIELD_TYPE,
   E_PERMISSION_TARGET,
   E_ROLE,
+  E_TABLE_PERMISSION,
 } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
@@ -39,6 +44,36 @@ function makeField(overrides: Partial<IField>): IField {
   };
 
   return { ...base, ...overrides };
+}
+
+function makePermission(slug: string): IPermission {
+  return {
+    _id: slug,
+    name: slug,
+    slug,
+    description: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    trashed: false,
+    trashedAt: null,
+  };
+}
+
+// Empurra um grupo completo no repo in-memory (o create do in-memory perde o
+// slug das permissões; aqui precisamos das permissões com slug para a interseção).
+function makeGroup(id: string, permissionSlugs: Array<string>): IGroup {
+  return {
+    _id: id,
+    name: id,
+    slug: id,
+    description: null,
+    permissions: permissionSlugs.map(makePermission),
+    encompasses: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    trashed: false,
+    trashedAt: null,
+  };
 }
 
 let userRepository: UserInMemoryRepository;
@@ -88,18 +123,26 @@ describe('Field Visibility Service', () => {
     expect(hidden.has('segredo')).toBe(true);
   });
 
-  it('binding GROUP: visível para quem está no grupo, oculto para os demais', async () => {
-    const group = await groupRepository.create({
-      name: 'Vendas',
-      slug: 'vendas',
-      permissions: [],
-    });
+  it('binding GROUP (interseção): visível para membro com VIEW_FIELD; oculto sem a capacidade e para os demais', async () => {
+    // Grupo com a capacidade global VIEW_FIELD.
+    groupRepository.items.push(
+      makeGroup('vendas', [E_TABLE_PERMISSION.VIEW_FIELD]),
+    );
+    // Grupo SEM a capacidade (mesmo binding, mas falta a permissão global).
+    groupRepository.items.push(makeGroup('vendas-sem-cap', []));
 
     const member = await userRepository.create({
       name: 'Membro',
       email: 'membro@x.com',
       password: 'x',
-      group: group._id,
+      group: 'vendas',
+    });
+
+    const memberSemCap = await userRepository.create({
+      name: 'Sem Capacidade',
+      email: 'semcap@x.com',
+      password: 'x',
+      group: 'vendas-sem-cap',
     });
 
     const outsider = await userRepository.create({
@@ -113,9 +156,9 @@ describe('Field Visibility Service', () => {
       makeField({
         slug: 'salario',
         permissions: {
-          list: { kind: E_PERMISSION_TARGET.GROUP, group: group._id },
-          form: { kind: E_PERMISSION_TARGET.GROUP, group: group._id },
-          detail: { kind: E_PERMISSION_TARGET.GROUP, group: group._id },
+          list: { kind: E_PERMISSION_TARGET.GROUP, group: 'vendas' },
+          form: { kind: E_PERMISSION_TARGET.GROUP, group: 'vendas' },
+          detail: { kind: E_PERMISSION_TARGET.GROUP, group: 'vendas' },
         },
       }),
     ];
@@ -127,12 +170,52 @@ describe('Field Visibility Service', () => {
     });
     expect(hiddenForMember.has('salario')).toBe(false);
 
+    // Interseção: pertence ao grupo do binding? Não (binding aponta 'vendas'),
+    // e ainda que apontasse, faltaria a capacidade — oculto.
+    const hiddenForSemCap = await sut.hiddenSlugs({
+      fields,
+      context: 'list',
+      userId: memberSemCap._id,
+    });
+    expect(hiddenForSemCap.has('salario')).toBe(true);
+
     const hiddenForOutsider = await sut.hiddenSlugs({
       fields,
       context: 'list',
       userId: outsider._id,
     });
     expect(hiddenForOutsider.has('salario')).toBe(true);
+  });
+
+  it('binding GROUP: membro do grupo do binding mas SEM VIEW_FIELD fica oculto (interseção)', async () => {
+    // O binding aponta para o próprio grupo do usuário, mas o grupo não tem a
+    // capacidade VIEW_FIELD — a interseção nega.
+    groupRepository.items.push(makeGroup('rh', []));
+
+    const member = await userRepository.create({
+      name: 'RH',
+      email: 'rh@x.com',
+      password: 'x',
+      group: 'rh',
+    });
+
+    const fields = [
+      makeField({
+        slug: 'salario',
+        permissions: {
+          list: { kind: E_PERMISSION_TARGET.GROUP, group: 'rh' },
+          form: { kind: E_PERMISSION_TARGET.GROUP, group: 'rh' },
+          detail: { kind: E_PERMISSION_TARGET.GROUP, group: 'rh' },
+        },
+      }),
+    ];
+
+    const hidden = await sut.hiddenSlugs({
+      fields,
+      context: 'list',
+      userId: member._id,
+    });
+    expect(hidden.has('salario')).toBe(true);
   });
 
   it('campo sem binding (permissions null) permanece visível', async () => {

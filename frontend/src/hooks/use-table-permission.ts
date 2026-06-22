@@ -3,10 +3,11 @@ import { useMemo } from 'react';
 import { useGroupReadList } from './tanstack-query/use-group-read-list';
 import { useProfileRead } from './tanstack-query/use-profile-read';
 
-import { E_TABLE_PROFILE } from '@/lib/constant';
+import { E_PERMISSION_TARGET, E_TABLE_PROFILE } from '@/lib/constant';
 import type { ITable } from '@/lib/interfaces';
 import {
   isPrivileged,
+  resolveUserCapabilities,
   resolveUserGroupIds,
   userSatisfiesBinding,
 } from '@/lib/permission';
@@ -25,21 +26,6 @@ export type TableAction =
   | 'CREATE_ROW'
   | 'UPDATE_ROW'
   | 'REMOVE_ROW';
-
-const PERMISSION_SLUG_MAP: Record<TableAction, string> = {
-  CREATE_TABLE: 'create-table',
-  UPDATE_TABLE: 'update-table',
-  REMOVE_TABLE: 'remove-table',
-  VIEW_TABLE: 'view-table',
-  CREATE_FIELD: 'create-field',
-  UPDATE_FIELD: 'update-field',
-  REMOVE_FIELD: 'remove-field',
-  VIEW_FIELD: 'view-field',
-  CREATE_ROW: 'create-row',
-  UPDATE_ROW: 'update-row',
-  REMOVE_ROW: 'remove-row',
-  VIEW_ROW: 'view-row',
-};
 
 interface UseTablePermissionResult {
   isOwner: boolean;
@@ -97,6 +83,11 @@ export function useTablePermission(
     return resolveUserGroupIds(profile.data ?? null, groups.data ?? []);
   }, [profile.data, groups.data]);
 
+  const capabilities = useMemo(
+    () => resolveUserCapabilities(profile.data ?? null, groups.data ?? []),
+    [profile.data, groups.data],
+  );
+
   const privileged = useMemo(
     () => isPrivileged(profile.data ?? null, groups.data ?? []),
     [profile.data, groups.data],
@@ -114,9 +105,16 @@ export function useTablePermission(
       // Ausente => negado (espelha o backend, que nega ação sem binding).
       if (!binding) return false;
 
+      // PUBLIC libera todos (inclui visitante), sem exigir capacidade.
+      if (binding.kind === E_PERMISSION_TARGET.PUBLIC) return true;
+
+      // Interseção (espelha o backend): GROUP exige a capacidade global da ação
+      // no fecho de grupos E o grupo do binding no fecho.
+      if (!capabilities.has(action)) return false;
+
       return userSatisfiesBinding(binding, userGroupIds);
     };
-  }, [privileged, isOwnerOrAdmin, table, userGroupIds]);
+  }, [privileged, isOwnerOrAdmin, table, userGroupIds, capabilities]);
 
   return {
     isOwner,
@@ -136,29 +134,31 @@ export function usePermission(): {
   isLoading: boolean;
 } {
   const profile = useProfileRead();
+  const groups = useGroupReadList();
 
-  // Sem lista completa de grupos aqui: o fast-path do isPrivileged cobre
-  // MASTER/ADMINISTRATOR por grupo principal ou adicional (slug já populado no
-  // perfil).
   const privileged = useMemo(
-    () => isPrivileged(profile.data ?? null, []),
-    [profile.data],
+    () => isPrivileged(profile.data ?? null, groups.data ?? []),
+    [profile.data, groups.data],
   );
 
-  const permissions = useMemo(() => {
-    if (!profile.data) return [];
-    return profile.data.group.permissions.map((p) => p.slug.toLowerCase());
-  }, [profile.data]);
+  // Capacidades do fecho de grupos (grupo principal + adicionais + englobados),
+  // espelhando o `resolveCapabilities` do backend. Antes só o grupo principal
+  // era considerado e o slug era comparado em kebab-case (nunca casava com o
+  // slug UPPER_SNAKE do backend) — por isso o botão "Nova Tabela" não aparecia.
+  const capabilities = useMemo(
+    () => resolveUserCapabilities(profile.data ?? null, groups.data ?? []),
+    [profile.data, groups.data],
+  );
 
   const can = useMemo(() => {
     return (action: TableAction): boolean => {
       // Privilegiado (MASTER/ADMINISTRATOR no fecho) tem acesso total.
       if (privileged) return true;
 
-      const requiredSlug = PERMISSION_SLUG_MAP[action].toLowerCase();
-      return permissions.includes(requiredSlug);
+      // TableAction == slug da permissão (UPPER_SNAKE), igual ao backend.
+      return capabilities.has(action);
     };
-  }, [privileged, permissions]);
+  }, [privileged, capabilities]);
 
   return {
     can,

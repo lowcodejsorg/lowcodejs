@@ -27,6 +27,7 @@ import { InputSearch } from '@/components/common/input-search';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Pagination } from '@/components/common/pagination';
 import { Badge } from '@/components/ui/badge';
+import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
 import { useLoggerReadPaginated } from '@/hooks/tanstack-query/use-logger-read-paginated';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import {
@@ -47,7 +48,8 @@ function RouteComponent(): React.JSX.Element {
   const navigate = useNavigate({ from: '/logs/' });
   const search = useSearch({ from: ROUTE_ID });
   const auth = useAuthStore();
-  const privileged = isPrivileged(auth.user, []);
+  const groups = useGroupReadList();
+  const privileged = isPrivileged(auth.user, groups.data ?? []);
 
   const filterSidebar = useFilterSidebar();
   const [jsonEntry, setJsonEntry] = React.useState<ILogger | null>(null);

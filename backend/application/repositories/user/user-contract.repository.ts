@@ -39,6 +39,9 @@ export type UserQueryPayload = {
   group?: string;
   status?: ValueOf<typeof E_USER_STATUS>;
   role?: ValueOf<typeof E_ROLE>;
+  // Oculta usuarios do grupo MASTER da listagem. Resolvido pelo use-case via
+  // fecho de grupos do ator (privilegiado, porem nao MASTER).
+  hideMaster?: boolean;
   trashed?: boolean;
   sort?: Record<string, 'asc' | 'desc'>;
 };

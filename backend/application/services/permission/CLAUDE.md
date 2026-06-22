@@ -38,7 +38,13 @@ mais `checkLegacyAccess`/regras de visibilidade.
 4. Dono da tabela (`table.owner` **ou** membro com perfil OWNER) - acesso total
 5. Avalia, nesta ordem:
    - perfil de membro via `TABLE_PROFILE_MATRIX[profile][acao]` → ALLOW libera, OWN libera apenas as proprias rows (`ownership.ownOnly`), DENY segue
-   - binding da acao (`bindingAllows`): PUBLIC libera todos; GROUP libera se o grupo estiver no fecho do usuario; NOBODY nega
+   - binding da acao (`bindingAllows`): PUBLIC libera todos; **GROUP por intersecao** — libera so se o grupo estiver no fecho do usuario **E** o fecho de capacidades contiver a acao (a permissao global da acao no grupo); NOBODY nega
+
+> **Intersecao (grupo E tabela).** Liberar uma acao para um grupo no binding so
+> concede acesso a quem tambem possui a permissao global correspondente. Ex.:
+> uma tabela com `VIEW_ROW` liberado para o grupo X nao deixa membros de X verem
+> registros se X nao tem a permissao "Visualizar registro". Dono, membros e
+> PUBLIC sao concessoes explicitas e nao passam por essa intersecao.
 
 ## Perfis de membro (`TABLE_PROFILE_MATRIX`)
 
@@ -51,4 +57,6 @@ definida em `entity.core.ts`.
 - Nao possui implementacao in-memory (apenas contract + implementacao)
 - Resolucao de grupos/capacidades delegada ao `GroupResolverContractService`
   (fecho transitivo de `encompasses[]`), nao queries diretas ao UserModel
-- `bindingAllows` avalia o binding `{ kind, group }` por acao
+- `bindingAllows` avalia o binding `{ kind, group }` por acao. GROUP exige
+  intersecao: `resolveCapabilities(user).has(acao)` E o grupo do binding no fecho
+  (`resolveUserGroupIds`). PUBLIC libera sem checagem de grupo/capacidade.

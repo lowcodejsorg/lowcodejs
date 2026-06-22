@@ -23,6 +23,7 @@ import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
+import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
 import { useTablesExportCsv } from '@/hooks/tanstack-query/use-tables-export-csv';
 import { useChatSidebar } from '@/hooks/use-chat-sidebar';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
@@ -55,7 +56,8 @@ function RouteComponent(): React.JSX.Element {
   const { data } = useSuspenseQuery(tableListOptions(search));
   const permission = usePermission();
   const auth = useAuthStore();
-  const canExportCsv = isPrivileged(auth.user, []);
+  const groups = useGroupReadList();
+  const canExportCsv = isPrivileged(auth.user, groups.data ?? []);
   // Chat exige o toggle global E a capacidade MANAGE_CHAT (MASTER/ADMINISTRATOR
   // bypassam a capacidade). Espelha o gate do socket no backend.
   const canUseChat =

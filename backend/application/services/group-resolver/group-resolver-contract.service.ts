@@ -27,4 +27,22 @@ export abstract class GroupResolverContractService {
    * grupo principal (singular) e ignoravam grupos adicionais/englobados.
    */
   abstract isPrivileged(user: IUser | null): Promise<boolean>;
+
+  /**
+   * `true` se o usuario e MASTER pelo fecho de grupos (`{group} ∪ groups`
+   * seguindo `encompasses`). Diferente de `isPrivileged` (MASTER ou
+   * ADMINISTRATOR): usado nas decisoes restritas a MASTER (bypass de capacidade
+   * de area, protecao de trash de outro MASTER, ocultar o grupo MASTER de
+   * administradores). Substitui as comparacoes `role === E_ROLE.MASTER`, que
+   * enxergavam apenas o grupo principal.
+   */
+  abstract isMaster(user: IUser | null): Promise<boolean>;
+
+  /**
+   * `true` quando o ator e privilegiado (MASTER ou ADMINISTRATOR pelo fecho)
+   * porem **nao** e MASTER — caso em que o grupo/usuarios MASTER devem ser
+   * ocultados das listagens administrativas. Substitui o filtro baseado em
+   * `role === ADMINISTRATOR` dos repositorios.
+   */
+  abstract shouldHideMaster(user: IUser | null): Promise<boolean>;
 }

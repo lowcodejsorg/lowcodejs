@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/empty';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
@@ -209,12 +210,18 @@ function RouteComponent(): React.JSX.Element {
   const selectionResetKey = `${slug}:${search.page}:${search.perPage}:${search.trashed ?? false}:${tableStyle ?? ''}`;
 
   const auth = useAuthStore();
-  const canExportCsv = isPrivileged(auth.user, []);
+  const groups = useGroupReadList();
+  const privileged = isPrivileged(auth.user, groups.data ?? []);
+  // Export/import de CSV espelha o backend (Fase C): quem vê linhas exporta
+  // (VIEW_ROW); quem cria linhas importa (CREATE_ROW). A interseção é avaliada
+  // por `useTablePermission`.
+  const canExportCsv = permission.can('VIEW_ROW');
+  const canImportCsv = permission.can('CREATE_ROW');
   // Chat exige o toggle global E a capacidade MANAGE_CHAT (MASTER/ADMINISTRATOR
   // bypassam a capacidade). Espelha o gate do socket no backend.
   const canUseChat =
     aiAssistantEnabled &&
-    (canExportCsv ||
+    (privileged ||
       hasAreaCapability(
         auth.user?.capabilities,
         E_AREA_CAPABILITY.MANAGE_CHAT,
@@ -321,7 +328,7 @@ function RouteComponent(): React.JSX.Element {
                 }
               />
             )}
-            {canExportCsv && (
+            {canImportCsv && (
               <ImportCsvDialog
                 slug={slug}
                 open={importCsvOpen}

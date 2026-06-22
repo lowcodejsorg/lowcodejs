@@ -39,6 +39,27 @@ export default class GroupResolverService implements GroupResolverContractServic
     });
   }
 
+  async isMaster(user: IUser | null): Promise<boolean> {
+    const closure = await this.resolveClosure(user);
+    return closure.some((group) => group.slug?.toUpperCase() === E_ROLE.MASTER);
+  }
+
+  async shouldHideMaster(user: IUser | null): Promise<boolean> {
+    const closure = await this.resolveClosure(user);
+
+    let hasMaster = false;
+    let hasPrivileged = false;
+    for (const group of closure) {
+      const slug = group.slug?.toUpperCase();
+      if (slug === E_ROLE.MASTER) hasMaster = true;
+      if (slug === E_ROLE.MASTER || slug === E_ROLE.ADMINISTRATOR) {
+        hasPrivileged = true;
+      }
+    }
+
+    return hasPrivileged && !hasMaster;
+  }
+
   /**
    * Calcula o fecho transitivo dos grupos do usuario seguindo `encompasses`.
    * Carrega todos os grupos uma vez (sao poucos) e faz uma BFS em memoria sobre
