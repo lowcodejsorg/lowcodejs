@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
-import type { IRow, ITable } from '@application/core/entity.core';
+import type { IRow, ITable, ValueOf } from '@application/core/entity.core';
 import { E_ROLE } from '@application/core/entity.core';
 import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
@@ -17,13 +17,35 @@ import type {
 
 const GUARDS: Record<string, RowAccessGuard> = {};
 
+function isRole(value: string): value is ValueOf<typeof E_ROLE> {
+  return (
+    value === E_ROLE.MASTER ||
+    value === E_ROLE.ADMINISTRATOR ||
+    value === E_ROLE.MANAGER ||
+    value === E_ROLE.REGISTERED
+  );
+}
+
+// user.group é o grupo principal (legacy compat para JWT). Pode ser string
+// (slug/role) ou objeto — só vira role quando bate com um E_ROLE válido.
+function resolveRole(group: unknown): ValueOf<typeof E_ROLE> {
+  if (typeof group === 'string' && isRole(group)) return group;
+  return E_ROLE.REGISTERED;
+}
+
 @Service()
 export class RowAccessGuardService {
   constructor(
     private readonly extensionRepository: ExtensionContractRepository,
     private readonly userRepository: UserContractRepository,
     private readonly groupResolver: GroupResolverContractService,
-  ) {}
+    private readonly rowAccessGuard: RowAccessControlGuard,
+  ) {
+    RowAccessGuardService.register(
+      this.rowAccessGuard.pluginKey,
+      this.rowAccessGuard,
+    );
+  }
 
   static register(key: string, guard: RowAccessGuard): void {
     GUARDS[key] = guard;
@@ -66,13 +88,7 @@ export class RowAccessGuardService {
       user: {
         sub: user._id,
         email: user.email,
-        // user.group é o grupo principal (legacy compat para JWT). Pode ser
-        // string ou objeto — extraímos o slug ou usamos REGISTERED como fallback.
-        role: (typeof user.group === 'string'
-          ? user.group
-          : E_ROLE.REGISTERED) as import('@application/core/entity.core').ValueOf<
-          typeof E_ROLE
-        >,
+        role: resolveRole(user.group),
         type: 'ACCESS',
       },
       userId,
@@ -82,6 +98,13 @@ export class RowAccessGuardService {
   }
 
   // ── Private helpers ─────────────────────────────────────────────────────────
+
+  private extractTableSettings(
+    extension: { tableSettings: Record<string, Record<string, unknown>> },
+    tableId: string,
+  ): Record<string, unknown> {
+    return extension.tableSettings[tableId] ?? {};
+  }
 
   private async getActiveGuardsWithSettings(
     tableId: string,
@@ -97,25 +120,12 @@ export class RowAccessGuardService {
     for (const ext of extensions) {
       const guard = GUARDS[`${ext.pkg}:${ext.extensionId}`];
       if (!guard) continue;
-      // tableSettings é um Record<tableId, settings> armazenado no campo Mixed
-      const tableSettings = (ext as Record<string, unknown>)['tableSettings'];
-      const settings: Record<string, unknown> =
-        tableSettings &&
-        typeof tableSettings === 'object' &&
-        !Array.isArray(tableSettings)
-          ? (((tableSettings as Record<string, unknown>)[tableId] as Record<
-              string,
-              unknown
-            >) ?? {})
-          : {};
+      const settings = this.extractTableSettings(ext, tableId);
       // Guard sem suporte a scope-all NÃO enforça via binding mode='all'
       // (ex.: core:row-access auto-ativado no boot com o default 'all' porém
       // nunca vinculado a uma tabela). Só enforça quando vinculado
       // explicitamente via tableScope.mode='specific' (feito pelo bulk-configure).
-      const tableScope = (ext as Record<string, unknown>)['tableScope'] as
-        | { mode?: string }
-        | undefined;
-      if (!guard.supportsScopeAll && tableScope?.mode === 'all') continue;
+      if (!guard.supportsScopeAll && ext.tableScope.mode === 'all') continue;
       result.push({ guard, settings });
     }
     return result;
@@ -152,12 +162,7 @@ export class RowAccessGuardService {
       }
     }
 
-    const restrictedQuery: Record<string, unknown> = restrictive.length
-      ? {
-          ...baseQuery,
-          $and: [...((baseQuery.$and as unknown[]) ?? []), ...restrictive],
-        }
-      : baseQuery;
+    const restrictedQuery = this.buildRestrictedQuery(baseQuery, restrictive);
 
     if (!permissive.length) return restrictedQuery;
 
@@ -167,6 +172,19 @@ export class RowAccessGuardService {
         restrictedQuery,
         ...permissive.map((p) => ({ ...baseQuery, ...p })),
       ],
+    };
+  }
+
+  private buildRestrictedQuery(
+    baseQuery: Record<string, unknown>,
+    restrictive: Record<string, unknown>[],
+  ): Record<string, unknown> {
+    if (!restrictive.length) return baseQuery;
+    const existingAnd: unknown[] = [];
+    if (Array.isArray(baseQuery.$and)) existingAnd.push(...baseQuery.$and);
+    return {
+      ...baseQuery,
+      $and: [...existingAnd, ...restrictive],
     };
   }
 
@@ -245,8 +263,3 @@ export class RowAccessGuardService {
     return out;
   }
 }
-
-RowAccessGuardService.register(
-  RowAccessControlGuard.pluginKey,
-  RowAccessControlGuard,
-);

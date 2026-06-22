@@ -2,12 +2,28 @@ import { describe, expect, it } from 'vitest';
 
 import type { IRow, ITable } from '@application/core/entity.core';
 import type { GuardEvalContext } from '@application/core/extensions/row-access-guard.contract';
+import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
+import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
+import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
 import { RowAccessControlGuard } from './guard';
 import {
   DEFAULT_ROW_ACCESS_SETTINGS,
   type RowAccessSettings,
 } from './settings-schema';
+
+// Testes de métodos puros (adjustListQuery/canRead/canWrite/sanitizeWritePayload):
+// não tocam nas deps (só onTableBound usa). O guard agora é @Service, então
+// instanciamos com repositórios/builders in-memory.
+const guard = new RowAccessControlGuard(
+  new FieldInMemoryRepository(),
+  new TableInMemoryRepository(),
+  new RowInMemoryRepository(),
+  new InMemorySchemaBuilder(),
+  new InMemoryModelBuilder(),
+);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -110,20 +126,20 @@ function makeRow(extra: Partial<Record<string, unknown>> = {}): IRow {
 
 describe('RowAccessControlGuard shape', () => {
   it('possui pluginKey, category, supportsScopeAll, defaultSettings e settingsSchema', () => {
-    expect(RowAccessControlGuard.pluginKey).toBe('core:row-access');
-    expect(RowAccessControlGuard.category).toBe('restrictive');
-    expect(RowAccessControlGuard.supportsScopeAll).toBe(false);
-    expect(RowAccessControlGuard.settingsSchema).toBeDefined();
-    expect(RowAccessControlGuard.defaultSettings).toBeDefined();
+    expect(guard.pluginKey).toBe('core:row-access');
+    expect(guard.category).toBe('restrictive');
+    expect(guard.supportsScopeAll).toBe(false);
+    expect(guard.settingsSchema).toBeDefined();
+    expect(guard.defaultSettings).toBeDefined();
   });
 });
 
 // ── adjustListQuery ───────────────────────────────────────────────────────────
 
-describe('RowAccessControlGuard.adjustListQuery', () => {
+describe('guard.adjustListQuery', () => {
   it('visitante (sem userId) retorna query bloqueante para evitar list-leak', () => {
     const settings = makeGroupSettings();
-    const q = RowAccessControlGuard.adjustListQuery(
+    const q = guard.adjustListQuery(
       {},
       makeVisitorCtx(),
       baseTable,
@@ -138,7 +154,7 @@ describe('RowAccessControlGuard.adjustListQuery', () => {
 
   it('usuario no grupo g-manager com defaults: $or [visibility $in PUBLIC,INTERNO + creator]', () => {
     const settings = makeGroupSettings();
-    const q = RowAccessControlGuard.adjustListQuery(
+    const q = guard.adjustListQuery(
       {},
       makeCtx(['g-manager']),
       baseTable,
@@ -157,7 +173,7 @@ describe('RowAccessControlGuard.adjustListQuery', () => {
 
   it('usuario sem grupo nenhum: visibility bloqueada para __BLOCKED__ + creator escape', () => {
     const settings = makeGroupSettings();
-    const q = RowAccessControlGuard.adjustListQuery(
+    const q = guard.adjustListQuery(
       {},
       makeCtx([]),
       baseTable,
@@ -172,7 +188,7 @@ describe('RowAccessControlGuard.adjustListQuery', () => {
     const settings = makeGroupSettings({
       creatorBypass: { enabled: false },
     });
-    const q = RowAccessControlGuard.adjustListQuery(
+    const q = guard.adjustListQuery(
       {},
       makeCtx(['g-manager']),
       baseTable,
@@ -186,7 +202,7 @@ describe('RowAccessControlGuard.adjustListQuery', () => {
     const settings = makeGroupSettings({
       dateWindow: { mode: 'createdAt-sliding', slidingDays: 7 },
     });
-    const q = RowAccessControlGuard.adjustListQuery(
+    const q = guard.adjustListQuery(
       {},
       makeCtx(['g-manager']),
       baseTable,
@@ -205,7 +221,7 @@ describe('RowAccessControlGuard.adjustListQuery', () => {
       visibility: { ...DEFAULT_ROW_ACCESS_SETTINGS.visibility, enabled: false },
       creatorBypass: { enabled: false },
     };
-    const q = RowAccessControlGuard.adjustListQuery(
+    const q = guard.adjustListQuery(
       {},
       makeCtx(['g-manager']),
       baseTable,
@@ -217,10 +233,10 @@ describe('RowAccessControlGuard.adjustListQuery', () => {
 
 // ── canRead ───────────────────────────────────────────────────────────────────
 
-describe('RowAccessControlGuard.canRead', () => {
+describe('guard.canRead', () => {
   it('creator-bypass: criador da row sempre allow', () => {
     const row = makeRow({ creator: 'u1', visibility: ['SIGILOSO'] });
-    const decision = RowAccessControlGuard.canRead(
+    const decision = guard.canRead(
       row,
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -231,7 +247,7 @@ describe('RowAccessControlGuard.canRead', () => {
 
   it('usuario no g-manager lendo SIGILOSO de outro: deny', () => {
     const row = makeRow({ creator: 'other', visibility: ['SIGILOSO'] });
-    const decision = RowAccessControlGuard.canRead(
+    const decision = guard.canRead(
       row,
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -242,7 +258,7 @@ describe('RowAccessControlGuard.canRead', () => {
 
   it('usuario no g-manager lendo PUBLIC: abstain', () => {
     const row = makeRow({ creator: 'other', visibility: ['PUBLIC'] });
-    const decision = RowAccessControlGuard.canRead(
+    const decision = guard.canRead(
       row,
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -253,7 +269,7 @@ describe('RowAccessControlGuard.canRead', () => {
 
   it('usuario no g-admin lendo SIGILOSO: abstain', () => {
     const row = makeRow({ creator: 'other', visibility: ['SIGILOSO'] });
-    const decision = RowAccessControlGuard.canRead(
+    const decision = guard.canRead(
       row,
       makeCtx(['g-admin'], 'u1'),
       baseTable,
@@ -264,7 +280,7 @@ describe('RowAccessControlGuard.canRead', () => {
 
   it('visitante: deny quando visibility habilitada', () => {
     const row = makeRow({ creator: 'other', visibility: ['PUBLIC'] });
-    const decision = RowAccessControlGuard.canRead(
+    const decision = guard.canRead(
       row,
       makeVisitorCtx(),
       baseTable,
@@ -283,7 +299,7 @@ describe('RowAccessControlGuard.canRead', () => {
       visibility: ['PUBLIC'],
       createdAt: new Date(Date.now() - 10 * 86400000),
     });
-    const decision = RowAccessControlGuard.canRead(
+    const decision = guard.canRead(
       row,
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -306,7 +322,7 @@ describe('RowAccessControlGuard.canRead', () => {
       visibility: ['PUBLIC'],
       createdAt: new Date(),
     });
-    const decision = RowAccessControlGuard.canRead(
+    const decision = guard.canRead(
       row,
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -318,10 +334,10 @@ describe('RowAccessControlGuard.canRead', () => {
 
 // ── canWrite ──────────────────────────────────────────────────────────────────
 
-describe('RowAccessControlGuard.canWrite', () => {
+describe('guard.canWrite', () => {
   it('creator update: allow (criador edita propria row)', () => {
     const row = makeRow({ creator: 'u1', visibility: ['PUBLIC'] });
-    const decision = RowAccessControlGuard.canWrite(
+    const decision = guard.canWrite(
       row,
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -333,7 +349,7 @@ describe('RowAccessControlGuard.canWrite', () => {
   });
 
   it('g-manager tentando setar SIGILOSO no payload: deny', () => {
-    const decision = RowAccessControlGuard.canWrite(
+    const decision = guard.canWrite(
       null,
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -348,7 +364,7 @@ describe('RowAccessControlGuard.canWrite', () => {
   });
 
   it('g-manager setando PUBLIC: abstain', () => {
-    const decision = RowAccessControlGuard.canWrite(
+    const decision = guard.canWrite(
       null,
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -360,7 +376,7 @@ describe('RowAccessControlGuard.canWrite', () => {
   });
 
   it('g-admin setando SIGILOSO: abstain (grupo tem acesso)', () => {
-    const decision = RowAccessControlGuard.canWrite(
+    const decision = guard.canWrite(
       null,
       makeCtx(['g-admin'], 'u1'),
       baseTable,
@@ -374,9 +390,9 @@ describe('RowAccessControlGuard.canWrite', () => {
 
 // ── sanitizeWritePayload ──────────────────────────────────────────────────────
 
-describe('RowAccessControlGuard.sanitizeWritePayload', () => {
+describe('guard.sanitizeWritePayload', () => {
   it('g-manager create com PUBLIC: normaliza para array', () => {
-    const out = RowAccessControlGuard.sanitizeWritePayload(
+    const out = guard.sanitizeWritePayload(
       { nome: 'x', visibility: 'PUBLIC' },
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -388,7 +404,7 @@ describe('RowAccessControlGuard.sanitizeWritePayload', () => {
   });
 
   it('g-manager create sem visibility: aplica defaultValue como array', () => {
-    const out = RowAccessControlGuard.sanitizeWritePayload(
+    const out = guard.sanitizeWritePayload(
       { nome: 'x' },
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -401,7 +417,7 @@ describe('RowAccessControlGuard.sanitizeWritePayload', () => {
 
   it('g-manager update tentando SIGILOSO: preserva valor atual', () => {
     const current = makeRow({ visibility: ['INTERNO'] });
-    const out = RowAccessControlGuard.sanitizeWritePayload(
+    const out = guard.sanitizeWritePayload(
       { visibility: ['SIGILOSO'] },
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -414,7 +430,7 @@ describe('RowAccessControlGuard.sanitizeWritePayload', () => {
 
   it('g-admin update com SIGILOSO: permite (grupo tem acesso)', () => {
     const current = makeRow({ visibility: ['RESTRITO'] });
-    const out = RowAccessControlGuard.sanitizeWritePayload(
+    const out = guard.sanitizeWritePayload(
       { visibility: ['SIGILOSO'] },
       makeCtx(['g-admin'], 'u1'),
       baseTable,
@@ -430,7 +446,7 @@ describe('RowAccessControlGuard.sanitizeWritePayload', () => {
       ...DEFAULT_ROW_ACCESS_SETTINGS,
       visibility: { ...DEFAULT_ROW_ACCESS_SETTINGS.visibility, enabled: false },
     };
-    const out = RowAccessControlGuard.sanitizeWritePayload(
+    const out = guard.sanitizeWritePayload(
       { nome: 'x', visibility: 'PUBLIC' },
       makeCtx(['g-manager'], 'u1'),
       baseTable,
@@ -442,7 +458,7 @@ describe('RowAccessControlGuard.sanitizeWritePayload', () => {
   });
 
   it('visitante: identity (sem userId nao sanitiza)', () => {
-    const out = RowAccessControlGuard.sanitizeWritePayload(
+    const out = guard.sanitizeWritePayload(
       { nome: 'x' },
       makeVisitorCtx(),
       baseTable,
@@ -457,7 +473,7 @@ describe('RowAccessControlGuard.sanitizeWritePayload', () => {
     // guard.sanitizeWritePayload recebe ctx.isPrivileged=true mas não tem bypass próprio
     // O bypass ocorre no service (antes de chamar o guard)
     // Aqui testamos apenas que o guard retorna o payload inalterado se o valor for permitido
-    const out = RowAccessControlGuard.sanitizeWritePayload(
+    const out = guard.sanitizeWritePayload(
       { nome: 'x', visibility: 'SIGILOSO' },
       makeCtx(['g-admin'], 'u1', true),
       baseTable,

@@ -9,12 +9,15 @@ import {
   type IExtensionTableScope,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import { RowAccessControlGuard } from '../../../../extensions/core/plugins/row-access/guard';
 import { rowAccessSettingsSchema } from '../../../../extensions/core/plugins/row-access/settings-schema';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 type Input = {
   _id: string;
@@ -31,7 +34,7 @@ export default class ExtensionConfigureTableScopeUseCase {
   constructor(
     private readonly extensionRepository: ExtensionContractRepository,
     private readonly tableRepository: TableContractRepository,
-    private readonly rowAccessGuard: RowAccessGuardService,
+    private readonly rowAccessControlGuard: RowAccessControlGuard,
   ) {}
 
   async execute({ _id, tableScope, tableSettings }: Input): Promise<Response> {
@@ -57,13 +60,11 @@ export default class ExtensionConfigureTableScopeUseCase {
       }
 
       // Detecta se o plugin é um row-access-guard pelo manifest placement.
-      const manifestSnapshot = existing.manifestSnapshot as Record<
-        string,
-        unknown
-      >;
-      const placement = manifestSnapshot?.placement as
-        | Record<string, unknown>
-        | undefined;
+      const manifestSnapshot = existing.manifestSnapshot;
+      let placement: Record<string, unknown> | undefined;
+      if (isRecord(manifestSnapshot.placement)) {
+        placement = manifestSnapshot.placement;
+      }
       const isRowAccessGuard = placement?.kind === 'row-access-guard';
 
       // Se houver tableSettings (configuração por tabela do row-access-guard)
@@ -89,18 +90,19 @@ export default class ExtensionConfigureTableScopeUseCase {
         }
 
         // Persiste as settings da tabela.
+        const settingsRecord: Record<string, unknown> = { ...parsed.data };
         await this.extensionRepository.updateTableSettings({
           _id,
           tableId,
-          settings: parsed.data as Record<string, unknown>,
+          settings: settingsRecord,
         });
 
         // Carrega a tabela para onTableBound.
         const table = await this.tableRepository.findById(tableId);
         if (table) {
-          const bindResult = await RowAccessControlGuard.onTableBound(
+          const bindResult = await this.rowAccessControlGuard.onTableBound(
             table,
-            parsed.data as Record<string, unknown>,
+            settingsRecord,
           );
           if (bindResult.isLeft()) {
             // Rollback: reverte o tableSettings que acabamos de persistir.

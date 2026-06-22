@@ -11,6 +11,10 @@ import { TableContractRepository } from '@application/repositories/table/table-c
 import { RowAccessControlGuard } from '../../../../extensions/core/plugins/row-access/guard';
 import { rowAccessSettingsSchema } from '../../../../extensions/core/plugins/row-access/settings-schema';
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 type Input = {
   _id: string;
   tableSettings: Record<string, Record<string, unknown>>;
@@ -29,6 +33,7 @@ export default class BulkConfigureTableSettingsUseCase {
   constructor(
     private readonly extensionRepository: ExtensionContractRepository,
     private readonly tableRepository: TableContractRepository,
+    private readonly rowAccessControlGuard: RowAccessControlGuard,
   ) {}
 
   async execute({ _id, tableSettings }: Input): Promise<Response> {
@@ -54,13 +59,11 @@ export default class BulkConfigureTableSettingsUseCase {
       }
 
       // Detecta se o plugin é um row-access-guard pelo manifest placement.
-      const manifestSnapshot = existing.manifestSnapshot as Record<
-        string,
-        unknown
-      >;
-      const placement = manifestSnapshot?.placement as
-        | Record<string, unknown>
-        | undefined;
+      const manifestSnapshot = existing.manifestSnapshot;
+      let placement: Record<string, unknown> | undefined;
+      if (isRecord(manifestSnapshot.placement)) {
+        placement = manifestSnapshot.placement;
+      }
       if (placement?.kind !== 'row-access-guard') {
         return left(
           HTTPException.BadRequest(
@@ -88,18 +91,19 @@ export default class BulkConfigureTableSettingsUseCase {
         }
 
         // Persiste.
+        const settingsRecord: Record<string, unknown> = { ...parsed.data };
         await this.extensionRepository.updateTableSettings({
           _id,
           tableId,
-          settings: parsed.data as Record<string, unknown>,
+          settings: settingsRecord,
         });
 
         // onTableBound.
         const table = await this.tableRepository.findById(tableId);
         if (table) {
-          const bindResult = await RowAccessControlGuard.onTableBound(
+          const bindResult = await this.rowAccessControlGuard.onTableBound(
             table,
-            parsed.data as Record<string, unknown>,
+            settingsRecord,
           );
           if (bindResult.isLeft()) {
             errors.push(`tableId=${tableId}: ${bindResult.value.message}`);

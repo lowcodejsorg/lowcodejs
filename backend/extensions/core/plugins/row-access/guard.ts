@@ -12,7 +12,13 @@
  * interno para o creator-bypass quando habilitado. O service apenas envolve
  * o fragmento via $and (sem inspecionar conteúdo), então a semântica fica
  * preservada.
+ *
+ * Dependências (fieldRepo/tableRepo/rowRepo/builders) chegam por constructor
+ * injection (@Service + di-registry) — sem setter global nem wiring manual.
  */
+/* eslint-disable no-unused-vars */
+import { Service } from 'fastify-decorators';
+
 import { left, right } from '@application/core/either.core';
 import type { Either } from '@application/core/either.core';
 import type {
@@ -20,21 +26,23 @@ import type {
   IField,
   IRow,
   ITable,
+  ITableSchema,
 } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import type {
   GuardAccessDecision,
   GuardBindResult,
+  GuardCategory,
   GuardEvalContext,
   GuardWriteDecision,
   RowAccessGuard,
 } from '@application/core/extensions/row-access-guard.contract';
-import type { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
-import type { RowContractRepository } from '@application/repositories/row/row-contract.repository';
-import type { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import type { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
-import type { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
+import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
 import {
   DEFAULT_ROW_ACCESS_SETTINGS,
@@ -46,22 +54,6 @@ import {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 export const ROW_ACCESS_PLUGIN_KEY = 'core:row-access';
-
-// ── Dependency injection ──────────────────────────────────────────────────────
-
-type Deps = {
-  fieldRepo: FieldContractRepository;
-  tableRepo: TableContractRepository;
-  rowRepo: RowContractRepository;
-  schemaBuilder: SchemaBuilderContractService;
-  modelBuilder: ModelBuilderContractService;
-};
-
-let deps: Deps | null = null;
-
-export function injectRowAccessGuardDeps(d: Deps): void {
-  deps = d;
-}
 
 // ── Helpers: settings parsing ─────────────────────────────────────────────────
 
@@ -85,21 +77,16 @@ function readVisibility(
 ): string | undefined {
   if (!source) return undefined;
   const v = source[slug];
-  if (Array.isArray(v)) return v.length > 0 ? String(v[0]) : undefined;
-  return v == null ? undefined : String(v);
+  if (Array.isArray(v)) {
+    if (v.length > 0) return String(v[0]);
+    return undefined;
+  }
+  if (v == null) return undefined;
+  return String(v);
 }
 
 function asVisibilityArray(value: string): [string] {
   return [value];
-}
-
-function isCompatibleVisibilityDropdown(
-  field: IField,
-  values: readonly string[],
-): boolean {
-  if (field.type !== E_FIELD_TYPE.DROPDOWN) return false;
-  const ids = (field.dropdown ?? []).map((o) => o.id);
-  return values.every((v) => ids.includes(v));
 }
 
 function buildDropdownOptions(values: readonly string[]): IDropdown[] {
@@ -119,21 +106,27 @@ function buildDropdownOptions(values: readonly string[]): IDropdown[] {
 // ── Helpers: creator-bypass ───────────────────────────────────────────────────
 
 function rowCreatorMatchesUser(
-  row: { creator?: unknown } | null | undefined,
+  row: IRow | null | undefined,
   ctx: GuardEvalContext,
 ): boolean {
-  if (!row || typeof row.creator !== 'string' || !row.creator) return false;
+  if (!row) return false;
+  const creator = row.creator;
+  if (typeof creator !== 'string' || !creator) return false;
   if (!ctx.userId) return false;
-  return row.creator === ctx.userId;
+  return creator === ctx.userId;
 }
 
 // ── Helpers: date-window ──────────────────────────────────────────────────────
 
 function asDate(value: unknown): Date | null {
-  if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+  if (value instanceof Date) {
+    if (isNaN(value.getTime())) return null;
+    return value;
+  }
   if (typeof value === 'string') {
     const d = new Date(value);
-    return isNaN(d.getTime()) ? null : d;
+    if (isNaN(d.getTime())) return null;
+    return d;
   }
   return null;
 }
@@ -175,14 +168,14 @@ function rowPassesDateWindow(
   if (settings.mode === 'off') return true;
 
   if (settings.mode === 'createdAt-sliding') {
-    const created = asDate((row as Record<string, unknown>).createdAt);
+    const created = asDate(row.createdAt);
     if (!created) return true; // sem createdAt: não bloqueia
     const threshold = now.getTime() - settings.slidingDays * 86400000;
     return created.getTime() >= threshold;
   }
 
   if (settings.mode === 'createdAt-fixed') {
-    const created = asDate((row as Record<string, unknown>).createdAt);
+    const created = asDate(row.createdAt);
     if (!created) return true;
     if (settings.fixedFrom && created < new Date(settings.fixedFrom))
       return false;
@@ -191,10 +184,8 @@ function rowPassesDateWindow(
   }
 
   // field-range
-  const from = asDate((row as Record<string, unknown>)[settings.validFromSlug]);
-  const until = asDate(
-    (row as Record<string, unknown>)[settings.validUntilSlug],
-  );
+  const from = asDate(row[settings.validFromSlug]);
+  const until = asDate(row[settings.validUntilSlug]);
   if (from && now < from) return false;
   if (until && now > until) return false;
   return true;
@@ -239,184 +230,166 @@ function visibleValuesForCtx(
   );
 }
 
-// ── onTableBound helpers ──────────────────────────────────────────────────────
-
 function findFieldBySlug(
   populatedFields: IField[],
   slug: string,
 ): IField | null {
-  return (
-    populatedFields.find(
-      (f) => typeof f === 'object' && f !== null && (f as IField).slug === slug,
-    ) ?? null
-  );
-}
-
-async function ensureDateField(
-  populatedFields: IField[],
-  slug: string,
-  label: string,
-): Promise<Either<HTTPException, { wasCreated: boolean; field: IField }>> {
-  if (!deps) {
-    return left(
-      HTTPException.InternalServerError(
-        'Dependencias do RowAccessGuard nao foram injetadas',
-        'GUARD_DEPS_NOT_INJECTED',
-      ),
-    );
-  }
-
-  const existing = findFieldBySlug(populatedFields, slug);
-  if (existing) {
-    if (existing.type !== E_FIELD_TYPE.DATE) {
-      return left(
-        HTTPException.Conflict(
-          `O campo '${slug}' ja existe nesta tabela mas nao e do tipo DATE.`,
-          'ROW_GUARD_FIELD_INCOMPATIBLE',
-        ),
-      );
-    }
-    return right({ wasCreated: false, field: existing });
-  }
-
-  const created = await deps.fieldRepo.create({
-    name: label,
-    slug,
-    type: E_FIELD_TYPE.DATE,
-    required: false,
-    multiple: false,
-    format: null,
-    showInFilter: true,
-    permissions: null,
-    widthInForm: null,
-    widthInList: null,
-    widthInDetail: null,
-    tip: null,
-    locked: true,
-    native: false,
-    defaultValue: null,
-    relationship: null,
-    dropdown: [],
-    allowCustomDropdownOptions: false,
-    allowCreateRelationshipRecords: false,
-    category: [],
-    group: null,
-  });
-
-  return right({ wasCreated: true, field: created });
-}
-
-async function ensureVisibilityField(
-  populatedFields: IField[],
-  settings: RowAccessSettings,
-): Promise<Either<HTTPException, { wasCreated: boolean; field: IField }>> {
-  if (!deps) {
-    return left(
-      HTTPException.InternalServerError(
-        'Dependencias do RowAccessGuard nao foram injetadas',
-        'GUARD_DEPS_NOT_INJECTED',
-      ),
-    );
-  }
-
-  const slug = settings.visibility.fieldSlug;
-  const existing = findFieldBySlug(populatedFields, slug);
-
-  if (existing) {
-    if (existing.type !== E_FIELD_TYPE.DROPDOWN) {
-      return left(
-        HTTPException.Conflict(
-          `O campo '${slug}' ja existe mas nao e DROPDOWN.`,
-          'VISIBILITY_FIELD_INCOMPATIBLE',
-        ),
-      );
-    }
-    // Atualiza dropdown options para refletir settings.values
-    const existingByIds = new Map(
-      (existing.dropdown ?? []).map((o) => [o.id, o]),
-    );
-    const defaultOpts = buildDropdownOptions(settings.visibility.values);
-    const nextDropdown = defaultOpts.map(
-      (opt) => existingByIds.get(opt.id) ?? opt,
-    );
-
-    const needsUpdate =
-      (existing.dropdown ?? []).length !== nextDropdown.length ||
-      !(existing.dropdown ?? []).every((o, i) => o.id === nextDropdown[i]?.id);
-
-    if (needsUpdate) {
-      const updated = await deps.fieldRepo.update({
-        _id: existing._id,
-        dropdown: nextDropdown,
-      });
-      return right({ wasCreated: false, field: updated });
-    }
-    return right({ wasCreated: false, field: existing });
-  }
-
-  const created = await deps.fieldRepo.create({
-    name: 'Visibilidade',
-    slug,
-    type: E_FIELD_TYPE.DROPDOWN,
-    required: false,
-    multiple: false,
-    format: null,
-    showInFilter: true,
-    permissions: null,
-    widthInForm: null,
-    widthInList: null,
-    widthInDetail: null,
-    tip: null,
-    locked: true,
-    native: false,
-    defaultValue: asVisibilityArray(settings.visibility.defaultValue),
-    relationship: null,
-    dropdown: buildDropdownOptions(settings.visibility.values),
-    allowCustomDropdownOptions: false,
-    allowCreateRelationshipRecords: false,
-    category: [],
-    group: null,
-  });
-
-  return right({ wasCreated: true, field: created });
+  return populatedFields.find((f) => f.slug === slug) ?? null;
 }
 
 // ── Guard ─────────────────────────────────────────────────────────────────────
 
-export const RowAccessControlGuard: RowAccessGuard = {
-  pluginKey: ROW_ACCESS_PLUGIN_KEY,
-  category: 'restrictive',
-  supportsScopeAll: false,
-  settingsSchema: rowAccessSettingsSchema,
-  defaultSettings: DEFAULT_ROW_ACCESS_SETTINGS as unknown as Record<
-    string,
-    unknown
-  >,
+@Service()
+export class RowAccessControlGuard implements RowAccessGuard {
+  readonly pluginKey = ROW_ACCESS_PLUGIN_KEY;
+  readonly category: GuardCategory = 'restrictive';
+  readonly supportsScopeAll = false;
+  readonly settingsSchema = rowAccessSettingsSchema;
+  readonly defaultSettings: Record<string, unknown> = {
+    ...DEFAULT_ROW_ACCESS_SETTINGS,
+  };
+
+  constructor(
+    private readonly fieldRepo: FieldContractRepository,
+    private readonly tableRepo: TableContractRepository,
+    private readonly rowRepo: RowContractRepository,
+    private readonly schemaBuilder: SchemaBuilderContractService,
+    private readonly modelBuilder: ModelBuilderContractService,
+  ) {}
+
+  // ── onTableBound helpers ──────────────────────────────────────────────────
+
+  private async ensureDateField(
+    populatedFields: IField[],
+    slug: string,
+    label: string,
+  ): Promise<Either<HTTPException, { wasCreated: boolean; field: IField }>> {
+    const existing = findFieldBySlug(populatedFields, slug);
+    if (existing) {
+      if (existing.type !== E_FIELD_TYPE.DATE) {
+        return left(
+          HTTPException.Conflict(
+            `O campo '${slug}' ja existe nesta tabela mas nao e do tipo DATE.`,
+            'ROW_GUARD_FIELD_INCOMPATIBLE',
+          ),
+        );
+      }
+      return right({ wasCreated: false, field: existing });
+    }
+
+    const created = await this.fieldRepo.create({
+      name: label,
+      slug,
+      type: E_FIELD_TYPE.DATE,
+      required: false,
+      multiple: false,
+      format: null,
+      showInFilter: true,
+      permissions: null,
+      widthInForm: null,
+      widthInList: null,
+      widthInDetail: null,
+      tip: null,
+      locked: true,
+      native: false,
+      defaultValue: null,
+      relationship: null,
+      dropdown: [],
+      allowCustomDropdownOptions: false,
+      allowCreateRelationshipRecords: false,
+      category: [],
+      group: null,
+    });
+
+    return right({ wasCreated: true, field: created });
+  }
+
+  private async ensureVisibilityField(
+    populatedFields: IField[],
+    settings: RowAccessSettings,
+  ): Promise<Either<HTTPException, { wasCreated: boolean; field: IField }>> {
+    const slug = settings.visibility.fieldSlug;
+    const existing = findFieldBySlug(populatedFields, slug);
+
+    if (existing) {
+      if (existing.type !== E_FIELD_TYPE.DROPDOWN) {
+        return left(
+          HTTPException.Conflict(
+            `O campo '${slug}' ja existe mas nao e DROPDOWN.`,
+            'VISIBILITY_FIELD_INCOMPATIBLE',
+          ),
+        );
+      }
+      // Atualiza dropdown options para refletir settings.values
+      const existingByIds = new Map(
+        (existing.dropdown ?? []).map((o) => [o.id, o]),
+      );
+      const defaultOpts = buildDropdownOptions(settings.visibility.values);
+      const nextDropdown = defaultOpts.map(
+        (opt) => existingByIds.get(opt.id) ?? opt,
+      );
+
+      const needsUpdate =
+        (existing.dropdown ?? []).length !== nextDropdown.length ||
+        !(existing.dropdown ?? []).every(
+          (o, i) => o.id === nextDropdown[i]?.id,
+        );
+
+      if (needsUpdate) {
+        const updated = await this.fieldRepo.update({
+          _id: existing._id,
+          dropdown: nextDropdown,
+        });
+        return right({ wasCreated: false, field: updated });
+      }
+      return right({ wasCreated: false, field: existing });
+    }
+
+    const created = await this.fieldRepo.create({
+      name: 'Visibilidade',
+      slug,
+      type: E_FIELD_TYPE.DROPDOWN,
+      required: false,
+      multiple: false,
+      format: null,
+      showInFilter: true,
+      permissions: null,
+      widthInForm: null,
+      widthInList: null,
+      widthInDetail: null,
+      tip: null,
+      locked: true,
+      native: false,
+      defaultValue: asVisibilityArray(settings.visibility.defaultValue),
+      relationship: null,
+      dropdown: buildDropdownOptions(settings.visibility.values),
+      allowCustomDropdownOptions: false,
+      allowCreateRelationshipRecords: false,
+      category: [],
+      group: null,
+    });
+
+    return right({ wasCreated: true, field: created });
+  }
 
   async onTableBound(
     table: ITable,
     rawSettings: Record<string, unknown>,
   ): Promise<Either<HTTPException, GuardBindResult>> {
-    if (!deps) {
-      return left(
-        HTTPException.InternalServerError(
-          'Dependencias do RowAccessGuard nao foram injetadas',
-          'GUARD_DEPS_NOT_INJECTED',
-        ),
-      );
-    }
-
     const settings = parseSettings(rawSettings);
 
-    const populatedFields = (
-      Array.isArray(table.fields) ? table.fields : []
-    ).filter((f): f is IField => typeof f === 'object' && f !== null);
+    const populatedFields = table.fields.filter(
+      (f): f is IField => typeof f === 'object' && f !== null,
+    );
 
     const createdFields: IField[] = [];
 
     // 1. Garante visibility field
     if (settings.visibility.enabled) {
-      const result = await ensureVisibilityField(populatedFields, settings);
+      const result = await this.ensureVisibilityField(
+        populatedFields,
+        settings,
+      );
       if (result.isLeft()) return result;
       if (result.value.wasCreated) createdFields.push(result.value.field);
     }
@@ -424,7 +397,7 @@ export const RowAccessControlGuard: RowAccessGuard = {
     // 2. Garante fields de date-window (modo field-range)
     if (settings.dateWindow.mode === 'field-range') {
       const fieldsSoFar = [...populatedFields, ...createdFields];
-      const fromResult = await ensureDateField(
+      const fromResult = await this.ensureDateField(
         fieldsSoFar,
         settings.dateWindow.validFromSlug,
         'Valido a partir de',
@@ -433,7 +406,7 @@ export const RowAccessControlGuard: RowAccessGuard = {
       if (fromResult.value.wasCreated)
         createdFields.push(fromResult.value.field);
 
-      const untilResult = await ensureDateField(
+      const untilResult = await this.ensureDateField(
         [...fieldsSoFar, ...createdFields],
         settings.dateWindow.validUntilSlug,
         'Valido ate',
@@ -445,16 +418,14 @@ export const RowAccessControlGuard: RowAccessGuard = {
 
     // 3. Atualiza schema da tabela se algo foi criado
     if (createdFields.length > 0) {
-      const currentFieldIds = (
-        Array.isArray(table.fields) ? table.fields : []
-      ).map((f) => (typeof f === 'string' ? f : (f as IField)._id));
+      const currentFieldIds = table.fields.map((f) => f._id);
       const allFields = [...populatedFields, ...createdFields];
       const addedIds = createdFields.map((f) => f._id);
 
-      const newSchema = deps.schemaBuilder.build(allFields, table.groups);
-      const mergedSchema = { ...table._schema, ...newSchema };
+      const newSchema = this.schemaBuilder.build(allFields, table.groups);
+      const mergedSchema: ITableSchema = { ...table._schema, ...newSchema };
 
-      await deps.tableRepo.update({
+      await this.tableRepo.update({
         _id: table._id,
         fields: [...currentFieldIds, ...addedIds],
         _schema: mergedSchema,
@@ -464,19 +435,16 @@ export const RowAccessControlGuard: RowAccessGuard = {
         fieldOrderDetail: [...(table.fieldOrderDetail ?? []), ...addedIds],
       });
 
-      await deps.modelBuilder.build({
-        ...table,
-        _schema: mergedSchema,
-      } as ITable);
+      await this.modelBuilder.build({ ...table, _schema: mergedSchema });
     }
 
     // 4. Backfill visibility (apenas se habilitado e há rowRepo)
     // Usa updateMany para backfill REAL de TODAS as rows sem o campo.
     // Idempotente: rows que já têm o campo não são afetadas.
-    if (settings.visibility.enabled && deps.rowRepo) {
+    if (settings.visibility.enabled) {
       const slug = settings.visibility.fieldSlug;
       const defaultVal = asVisibilityArray(settings.visibility.defaultValue);
-      await deps.rowRepo.updateMany({
+      await this.rowRepo.updateMany({
         table,
         filter: { [slug]: { $exists: false } },
         update: { $set: { [slug]: defaultVal } },
@@ -484,7 +452,7 @@ export const RowAccessControlGuard: RowAccessGuard = {
     }
 
     return right({ wasCreated: createdFields.length > 0 });
-  },
+  }
 
   /**
    * Monta fragmento de query Mongo.
@@ -535,12 +503,7 @@ export const RowAccessControlGuard: RowAccessGuard = {
     const dateFrag = buildDateWindowQuery(settings.dateWindow, new Date());
     if (Object.keys(dateFrag).length > 0) restrictiveParts.push(dateFrag);
 
-    const restrictive: Record<string, unknown> =
-      restrictiveParts.length === 0
-        ? {}
-        : restrictiveParts.length === 1
-          ? restrictiveParts[0]!
-          : { $and: restrictiveParts };
+    const restrictive = this.combineRestrictiveParts(restrictiveParts);
 
     // creator-bypass
     if (!settings.creatorBypass.enabled) return restrictive;
@@ -553,7 +516,15 @@ export const RowAccessControlGuard: RowAccessGuard = {
     }
 
     return { $or: [restrictive, permissive] };
-  },
+  }
+
+  private combineRestrictiveParts(
+    parts: Record<string, unknown>[],
+  ): Record<string, unknown> {
+    if (parts.length === 0) return {};
+    if (parts.length === 1) return parts[0]!;
+    return { $and: parts };
+  }
 
   /**
    * Tri-state:
@@ -571,20 +542,14 @@ export const RowAccessControlGuard: RowAccessGuard = {
     const settings = parseSettings(rawSettings);
 
     // 1. Creator bypass (allow vence tudo)
-    if (
-      settings.creatorBypass.enabled &&
-      rowCreatorMatchesUser(row as { creator?: unknown }, ctx)
-    ) {
+    if (settings.creatorBypass.enabled && rowCreatorMatchesUser(row, ctx)) {
       return 'allow';
     }
 
     // 2. Visibility por grupo
     if (settings.visibility.enabled) {
       if (!ctx.userId) return 'deny'; // visitante
-      const vis = readVisibility(
-        row as Record<string, unknown>,
-        settings.visibility.fieldSlug,
-      );
+      const vis = readVisibility(row, settings.visibility.fieldSlug);
       if (!ctxCanSeeValue(settings, vis, ctx)) return 'deny';
     }
 
@@ -594,7 +559,7 @@ export const RowAccessControlGuard: RowAccessGuard = {
     }
 
     return 'abstain';
-  },
+  }
 
   /**
    * Write decisions:
@@ -616,7 +581,7 @@ export const RowAccessControlGuard: RowAccessGuard = {
     if (
       settings.creatorBypass.enabled &&
       operation !== 'create' &&
-      rowCreatorMatchesUser(currentRow as { creator?: unknown } | null, ctx)
+      rowCreatorMatchesUser(currentRow, ctx)
     ) {
       return { decision: 'allow' };
     }
@@ -630,7 +595,7 @@ export const RowAccessControlGuard: RowAccessGuard = {
     }
 
     return { decision: 'abstain' };
-  },
+  }
 
   /**
    * Sanitize visibility no payload:
@@ -658,7 +623,7 @@ export const RowAccessControlGuard: RowAccessGuard = {
 
     if (operation === 'create') {
       if (incomingAllowed) {
-        return { ...payload, [slug]: asVisibilityArray(incoming!) };
+        return { ...payload, [slug]: asVisibilityArray(incoming) };
       }
       // força o primeiro valor visível ou o defaultValue
       const fallback = visibleValuesForCtx(settings, ctx)[0];
@@ -667,19 +632,30 @@ export const RowAccessControlGuard: RowAccessGuard = {
         settings.visibility.defaultValue,
         ctx,
       );
-      const finalValue = defaultVisible
-        ? settings.visibility.defaultValue
-        : (fallback ?? settings.visibility.defaultValue);
+      const finalValue = this.resolveCreateFallback(
+        settings,
+        defaultVisible,
+        fallback,
+      );
       return { ...payload, [slug]: asVisibilityArray(finalValue) };
     }
 
     // update: preserva valor atual se incoming proibido; normaliza para array
     if (incomingAllowed) {
-      return { ...payload, [slug]: asVisibilityArray(incoming!) };
+      return { ...payload, [slug]: asVisibilityArray(incoming) };
     }
     const currentValue =
-      readVisibility(currentRow as Record<string, unknown> | undefined, slug) ??
+      readVisibility(currentRow ?? undefined, slug) ??
       settings.visibility.defaultValue;
     return { ...payload, [slug]: asVisibilityArray(currentValue) };
-  },
-};
+  }
+
+  private resolveCreateFallback(
+    settings: RowAccessSettings,
+    defaultVisible: boolean,
+    fallback: string | undefined,
+  ): string {
+    if (defaultVisible) return settings.visibility.defaultValue;
+    return fallback ?? settings.visibility.defaultValue;
+  }
+}

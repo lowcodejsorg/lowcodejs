@@ -884,6 +884,8 @@ export type IExtension = Merge<
     available: boolean;
     /** Configuração de escopo por tabela (relevante para PLUGIN). */
     tableScope: IExtensionTableScope;
+    /** Settings por tabela: mapa tableId -> settings da extensão (campo Mixed). */
+    tableSettings: Record<string, Record<string, unknown>>;
     /** Manifesto completo, para auditoria/diagnóstico. */
     manifestSnapshot: Record<string, unknown>;
     requires: IExtensionRequires;

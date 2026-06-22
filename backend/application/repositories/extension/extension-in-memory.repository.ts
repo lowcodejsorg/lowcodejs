@@ -81,6 +81,7 @@ export default class ExtensionInMemoryRepository implements ExtensionContractRep
       enabled: options?.enabledOnInsert ?? false,
       available: true,
       tableScope: { mode: 'all', tableIds: [] },
+      tableSettings: {},
       permissions: payload.permissions ?? { view: [] },
       createdAt: new Date(),
       updatedAt: new Date(),

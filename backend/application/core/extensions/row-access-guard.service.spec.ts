@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { right } from '@application/core/either.core';
@@ -14,10 +15,27 @@ import type {
 } from '@application/core/extensions/row-access-guard.contract';
 import type { ExtensionUpsertPayload } from '@application/repositories/extension/extension-contract.repository';
 import ExtensionInMemoryRepository from '@application/repositories/extension/extension-in-memory.repository';
+import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
+import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import { GroupResolverContractService } from '@application/services/group-resolver/group-resolver-contract.service';
+import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
+import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
+
+import { RowAccessControlGuard } from '../../../extensions/core/plugins/row-access/guard';
 
 import { RowAccessGuardService } from './row-access-guard.service';
+
+function makeRowAccessControlGuard(): RowAccessControlGuard {
+  return new RowAccessControlGuard(
+    new FieldInMemoryRepository(),
+    new TableInMemoryRepository(),
+    new RowInMemoryRepository(),
+    new InMemorySchemaBuilder(),
+    new InMemoryModelBuilder(),
+  );
+}
 
 // Dummy GroupResolver — nenhum usuario é privilegiado nos testes de compose
 class DummyGroupResolver extends GroupResolverContractService {
@@ -106,7 +124,7 @@ function makeRestrictiveGuard(
   fragment: Record<string, unknown>,
   readDecision: GuardAccessDecision = 'abstain',
   writeDecision: GuardWriteDecision = { decision: 'abstain' },
-  sanitizeFn?: (_p: Record<string, unknown>) => Record<string, unknown>,
+  sanitizeFn?: (payload: Record<string, unknown>) => Record<string, unknown>,
 ): RowAccessGuard {
   return {
     pluginKey: key,
@@ -131,9 +149,10 @@ function makeRestrictiveGuard(
     },
 
     sanitizeWritePayload(
-      _payload: Record<string, unknown>,
+      payload: Record<string, unknown>,
     ): Record<string, unknown> {
-      return sanitizeFn ? sanitizeFn(_payload) : _payload;
+      if (sanitizeFn) return sanitizeFn(payload);
+      return payload;
     },
   };
 }
@@ -188,6 +207,7 @@ describe('RowAccessGuardService.composeListQuery', () => {
       extensionRepo,
       new UserInMemoryRepository(),
       new DummyGroupResolver(),
+      makeRowAccessControlGuard(),
     );
   });
 
@@ -356,6 +376,7 @@ describe('RowAccessGuardService.composeReadDecision', () => {
       extensionRepo,
       new UserInMemoryRepository(),
       new DummyGroupResolver(),
+      makeRowAccessControlGuard(),
     );
   });
 
@@ -462,6 +483,7 @@ describe('RowAccessGuardService.composeWriteDecision', () => {
       extensionRepo,
       new UserInMemoryRepository(),
       new DummyGroupResolver(),
+      makeRowAccessControlGuard(),
     );
   });
 
@@ -586,6 +608,7 @@ describe('RowAccessGuardService.composeSanitize', () => {
       extensionRepo,
       new UserInMemoryRepository(),
       new DummyGroupResolver(),
+      makeRowAccessControlGuard(),
     );
   });
 

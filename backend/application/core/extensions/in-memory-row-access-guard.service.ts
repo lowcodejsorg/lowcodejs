@@ -2,9 +2,11 @@
  * Stub de RowAccessGuardService para testes unitários.
  * Não tem guards registrados — todos os métodos retornam valores permissivos
  * (sem restrição), permitindo que os use-cases sejam testados sem infra de extensões.
+ *
+ * Os métodos declaram apenas os parâmetros que de fato usam (os no-op não recebem
+ * nenhum): a injeção nos specs é feita como `as any`, então a aridade reduzida não
+ * afeta os callers, que enxergam o contrato completo.
  */
-import type { IRow, ITable } from '@application/core/entity.core';
-
 import type {
   GuardEvalContext,
   GuardWriteDecision,
@@ -23,39 +25,21 @@ export class InMemoryRowAccessGuardService {
   async composeListQuery(
     _tableId: string,
     baseQuery: Record<string, unknown>,
-    _ctx: GuardEvalContext,
-    _table: ITable,
   ): Promise<Record<string, unknown>> {
     return baseQuery;
   }
 
-  async composeReadDecision(
-    _tableId: string,
-    _row: IRow,
-    _ctx: GuardEvalContext,
-    _table: ITable,
-  ): Promise<boolean> {
+  async composeReadDecision(): Promise<boolean> {
     return true;
   }
 
-  async composeWriteDecision(
-    _tableId: string,
-    _row: IRow | null,
-    _ctx: GuardEvalContext,
-    _table: ITable,
-    _payload: Record<string, unknown> | null,
-    _operation: 'create' | 'update' | 'delete',
-  ): Promise<GuardWriteDecision> {
+  async composeWriteDecision(): Promise<GuardWriteDecision> {
     return { decision: 'allow' };
   }
 
   async composeSanitize(
     _tableId: string,
     payload: Record<string, unknown>,
-    _ctx: GuardEvalContext,
-    _table: ITable,
-    _operation: 'create' | 'update',
-    _currentRow: IRow | null,
   ): Promise<Record<string, unknown>> {
     return payload;
   }
