@@ -378,8 +378,8 @@ function FieldUpdateContent({
       if (_update.status === 'pending' || _updateGroupField.isPending) return;
 
       const hasRelationship = value.relationship.tableId !== '';
-      const hasDropdown = value.dropdown.length > 0;
-      const hasCategory = value.category.length > 0;
+      const hasDropdown = (value.dropdown?.length ?? 0) > 0;
+      const hasCategory = (value.category?.length ?? 0) > 0;
 
       const payload: Partial<IField> & {
         trashed?: boolean;

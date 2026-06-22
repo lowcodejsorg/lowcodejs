@@ -60,8 +60,8 @@ function buildFieldPayload(
   overrides: Partial<IField>,
 ): Record<string, unknown> {
   const hasRelationship = field.relationship !== null;
-  const hasDropdown = field.dropdown.length > 0;
-  const hasCategory = field.category.length > 0;
+  const hasDropdown = (field.dropdown?.length ?? 0) > 0;
+  const hasCategory = (field.category?.length ?? 0) > 0;
   let group: { slug: string; _id?: string } | null = null;
   if (field.group) {
     group = { slug: field.group.slug };

@@ -137,8 +137,8 @@ function RouteComponent(): React.JSX.Element {
         return;
 
       const hasRelationship = value.relationship.tableId !== '';
-      const hasDropdown = value.dropdown.length > 0;
-      const hasCategory = value.category.length > 0;
+      const hasDropdown = (value.dropdown?.length ?? 0) > 0;
+      const hasCategory = (value.category?.length ?? 0) > 0;
 
       const payload: Partial<IField> = {
         name: value.name,
