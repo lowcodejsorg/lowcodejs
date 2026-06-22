@@ -41,7 +41,10 @@ export default class BulkTrashUseCase {
 
       // Filtra os ids pelo guard — rows negadas são simplesmente ignoradas
       // (comportamento consistente com __ownOnly que já filtra silenciosamente).
-      const actorUserId = typeof payload.__actorUserId === 'string' ? payload.__actorUserId : undefined;
+      const actorUserId =
+        typeof payload.__actorUserId === 'string'
+          ? payload.__actorUserId
+          : undefined;
       const ctx = await this.rowAccessGuard.resolveContext(actorUserId);
       const tableId = table._id.toString();
 

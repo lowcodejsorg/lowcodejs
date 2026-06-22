@@ -33,8 +33,8 @@ import type {
 import type { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import type { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import type { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import type { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 import type { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
+import type { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
 import {
   DEFAULT_ROW_ACCESS_SETTINGS,
@@ -388,7 +388,10 @@ export const RowAccessControlGuard: RowAccessGuard = {
   category: 'restrictive',
   supportsScopeAll: false,
   settingsSchema: rowAccessSettingsSchema,
-  defaultSettings: DEFAULT_ROW_ACCESS_SETTINGS as unknown as Record<string, unknown>,
+  defaultSettings: DEFAULT_ROW_ACCESS_SETTINGS as unknown as Record<
+    string,
+    unknown
+  >,
 
   async onTableBound(
     table: ITable,
@@ -473,7 +476,11 @@ export const RowAccessControlGuard: RowAccessGuard = {
     if (settings.visibility.enabled && deps.rowRepo) {
       const slug = settings.visibility.fieldSlug;
       const defaultVal = asVisibilityArray(settings.visibility.defaultValue);
-      await deps.rowRepo.updateMany({ table, filter: { [slug]: { $exists: false } }, update: { $set: { [slug]: defaultVal } } });
+      await deps.rowRepo.updateMany({
+        table,
+        filter: { [slug]: { $exists: false } },
+        update: { $set: { [slug]: defaultVal } },
+      });
     }
 
     return right({ wasCreated: createdFields.length > 0 });

@@ -37,9 +37,11 @@ export const Route = createFileRoute('/_private')({
     }
 
     try {
-      const user = await context.queryClient.ensureQueryData(
-        profileDetailOptions(),
-      );
+      // Reconciliar as contas ANTES de qualquer request que dependa do token
+      // indexado: /authentication/accounts resolve pelos cookies de refresh (nao
+      // depende do header) e devolve a conta ativa correta. Assim o store para
+      // de mandar um X-Auth-Account-Id stale do localStorage no GET /profile —
+      // causa do 401 -> logout ao dar refresh.
       const accountsResponse = await API.get<IAuthenticationAccounts>(
         '/authentication/accounts',
       );
@@ -47,8 +49,18 @@ export const Route = createFileRoute('/_private')({
         .getState()
         .setAccounts(
           accountsResponse.data.accounts,
-          accountsResponse.data.activeAccountId ?? user._id,
+          accountsResponse.data.activeAccountId,
         );
+
+      const user = await context.queryClient.ensureQueryData(
+        profileDetailOptions(),
+      );
+
+      // Sessao legada (sem contas indexadas) ainda precisa popular o store.
+      if (accountsResponse.data.accounts.length === 0) {
+        useAuthStore.getState().setUser(user);
+      }
+
       context.queryClient.prefetchQuery(settingOptions());
     } catch {
       useAuthStore.getState().clear();

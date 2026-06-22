@@ -5,7 +5,10 @@
  */
 import type { IRow, ITable } from '@application/core/entity.core';
 
-import type { GuardEvalContext, GuardWriteDecision } from './row-access-guard.contract';
+import type {
+  GuardEvalContext,
+  GuardWriteDecision,
+} from './row-access-guard.contract';
 
 export class InMemoryRowAccessGuardService {
   async resolveContext(userId: string | undefined): Promise<GuardEvalContext> {

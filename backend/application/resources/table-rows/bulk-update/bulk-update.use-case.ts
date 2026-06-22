@@ -3,6 +3,7 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
+import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
@@ -12,8 +13,6 @@ import { KanbanCommentMentionContractService } from '@application/services/kanba
 import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
-
-import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 
 import TableRowUpdateUseCase from '../update/update.use-case';
 

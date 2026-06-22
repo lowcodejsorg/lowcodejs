@@ -95,10 +95,7 @@ describe('E2E Sign Out Controller', () => {
 
       const secondSignIn = await supertest(kernel.server)
         .post('/authentication/sign-in')
-        .set(
-          'Cookie',
-          mergeSetCookies([firstSignIn.headers['set-cookie']]),
-        )
+        .set('Cookie', mergeSetCookies([firstSignIn.headers['set-cookie']]))
         .send({ email: second.user.email, password: 'password123' });
 
       // After two sign-ins: accessToken_<id1>, accessToken_<id2>, activeAccountId=<id2>

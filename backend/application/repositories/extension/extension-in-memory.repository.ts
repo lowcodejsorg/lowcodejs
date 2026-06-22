@@ -120,7 +120,11 @@ export default class ExtensionInMemoryRepository implements ExtensionContractRep
   }: ExtensionUpdateTableSettingsPayload): Promise<IExtension> {
     const item = this.items.find((i) => i._id === _id);
     if (!item) throw new Error('Extension not found');
-    const tableSettings = ((item as Record<string, unknown>)['tableSettings'] as Record<string, unknown>) ?? {};
+    const tableSettings =
+      ((item as Record<string, unknown>)['tableSettings'] as Record<
+        string,
+        unknown
+      >) ?? {};
     tableSettings[tableId] = settings;
     (item as Record<string, unknown>)['tableSettings'] = tableSettings;
     item.updatedAt = new Date();

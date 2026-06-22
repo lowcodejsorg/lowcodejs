@@ -16,7 +16,10 @@ export const BulkConfigureTableSettingsBodyValidator = z
      * Mapa de tableId -> settings a persistir em lote.
      * As settings são validadas individualmente pelo guard antes de persistir.
      */
-    tableSettings: z.record(z.string().min(1), z.record(z.string(), z.unknown())),
+    tableSettings: z.record(
+      z.string().min(1),
+      z.record(z.string(), z.unknown()),
+    ),
   })
   .strict();
 

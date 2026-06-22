@@ -13,8 +13,8 @@ import { RowAccessGuardService } from '@application/core/extensions/row-access-g
 import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import { rowAccessSettingsSchema } from '../../../../extensions/core/plugins/row-access/settings-schema';
 import { RowAccessControlGuard } from '../../../../extensions/core/plugins/row-access/guard';
+import { rowAccessSettingsSchema } from '../../../../extensions/core/plugins/row-access/settings-schema';
 
 type Input = {
   _id: string;
@@ -57,8 +57,13 @@ export default class ExtensionConfigureTableScopeUseCase {
       }
 
       // Detecta se o plugin é um row-access-guard pelo manifest placement.
-      const manifestSnapshot = existing.manifestSnapshot as Record<string, unknown>;
-      const placement = manifestSnapshot?.placement as Record<string, unknown> | undefined;
+      const manifestSnapshot = existing.manifestSnapshot as Record<
+        string,
+        unknown
+      >;
+      const placement = manifestSnapshot?.placement as
+        | Record<string, unknown>
+        | undefined;
       const isRowAccessGuard = placement?.kind === 'row-access-guard';
 
       // Se houver tableSettings (configuração por tabela do row-access-guard)

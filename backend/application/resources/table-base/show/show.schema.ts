@@ -275,6 +275,17 @@ export const TableShowSchema: FastifySchema = {
                   slug: { type: 'string', nullable: true },
                 },
               },
+              validations: {
+                type: 'array',
+                description: 'Regras de validação configuradas para o campo',
+                items: {
+                  type: 'object',
+                  properties: {
+                    rule: { type: 'string' },
+                    config: { type: 'object', additionalProperties: true },
+                  },
+                },
+              },
               trashed: {
                 type: 'boolean',
                 description: 'Se o campo está na lixeira',
@@ -464,6 +475,10 @@ export const TableShowSchema: FastifySchema = {
                       type: 'object',
                       nullable: true,
                       additionalProperties: true,
+                    },
+                    validations: {
+                      type: 'array',
+                      items: { type: 'object', additionalProperties: true },
                     },
                     trashed: { type: 'boolean' },
                     trashedAt: {

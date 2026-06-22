@@ -6,8 +6,8 @@ import { left, right } from '@application/core/either.core';
 import type { IRow, ITable } from '@application/core/entity.core';
 import { E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { FieldSlug } from '@application/core/field-slug.core';
 import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
+import { FieldSlug } from '@application/core/field-slug.core';
 import { resolveCreatorId } from '@application/core/row-ownership.core';
 import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
@@ -74,7 +74,10 @@ export default class TableRowUpdateUseCase {
       }
 
       // Verifica permissão de escrita (update) via guard.
-      const actorUserId = typeof payload.__actorUserId === 'string' ? payload.__actorUserId : undefined;
+      const actorUserId =
+        typeof payload.__actorUserId === 'string'
+          ? payload.__actorUserId
+          : undefined;
       const ctx = await this.rowAccessGuard.resolveContext(actorUserId);
       const tableId = table._id.toString();
 

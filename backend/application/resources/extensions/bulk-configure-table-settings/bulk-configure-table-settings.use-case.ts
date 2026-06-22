@@ -8,8 +8,8 @@ import HTTPException from '@application/core/exception.core';
 import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import { rowAccessSettingsSchema } from '../../../../extensions/core/plugins/row-access/settings-schema';
 import { RowAccessControlGuard } from '../../../../extensions/core/plugins/row-access/guard';
+import { rowAccessSettingsSchema } from '../../../../extensions/core/plugins/row-access/settings-schema';
 
 type Input = {
   _id: string;
@@ -54,8 +54,13 @@ export default class BulkConfigureTableSettingsUseCase {
       }
 
       // Detecta se o plugin é um row-access-guard pelo manifest placement.
-      const manifestSnapshot = existing.manifestSnapshot as Record<string, unknown>;
-      const placement = manifestSnapshot?.placement as Record<string, unknown> | undefined;
+      const manifestSnapshot = existing.manifestSnapshot as Record<
+        string,
+        unknown
+      >;
+      const placement = manifestSnapshot?.placement as
+        | Record<string, unknown>
+        | undefined;
       if (placement?.kind !== 'row-access-guard') {
         return left(
           HTTPException.BadRequest(
@@ -74,7 +79,9 @@ export default class BulkConfigureTableSettingsUseCase {
         // Valida settings com o schema do guard.
         const parsed = rowAccessSettingsSchema.safeParse(rawSettings);
         if (!parsed.success) {
-          const msgs = parsed.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`);
+          const msgs = parsed.error.issues.map(
+            (e) => `${e.path.join('.')}: ${e.message}`,
+          );
           errors.push(`tableId=${tableId}: ${msgs.join('; ')}`);
           skipped++;
           continue;
@@ -121,7 +128,10 @@ export default class BulkConfigureTableSettingsUseCase {
 
       return right({ applied, skipped, errors });
     } catch (error) {
-      console.error('[extensions > bulk-configure-table-settings][error]:', error);
+      console.error(
+        '[extensions > bulk-configure-table-settings][error]:',
+        error,
+      );
       return left(
         HTTPException.InternalServerError(
           'Erro ao configurar settings em lote',

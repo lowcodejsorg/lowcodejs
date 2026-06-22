@@ -118,10 +118,7 @@ describe('E2E Sign In Controller', () => {
         .send(first);
       const secondResponse = await supertest(kernel.server)
         .post('/authentication/sign-in')
-        .set(
-          'Cookie',
-          mergeSetCookies([firstResponse.headers['set-cookie']]),
-        )
+        .set('Cookie', mergeSetCookies([firstResponse.headers['set-cookie']]))
         .send(second);
 
       expect(firstResponse.statusCode).toBe(200);

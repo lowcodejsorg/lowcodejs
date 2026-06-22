@@ -68,7 +68,11 @@ export class RowAccessGuardService {
         email: user.email,
         // user.group é o grupo principal (legacy compat para JWT). Pode ser
         // string ou objeto — extraímos o slug ou usamos REGISTERED como fallback.
-        role: (typeof user.group === 'string' ? user.group : E_ROLE.REGISTERED) as import('@application/core/entity.core').ValueOf<typeof E_ROLE>,
+        role: (typeof user.group === 'string'
+          ? user.group
+          : E_ROLE.REGISTERED) as import('@application/core/entity.core').ValueOf<
+          typeof E_ROLE
+        >,
         type: 'ACCESS',
       },
       userId,

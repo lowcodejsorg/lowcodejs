@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { E_FIELD_FORMAT } from '@application/core/entity.core';
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
@@ -11,8 +12,6 @@ import InMemoryRowPasswordService from '@application/services/row-password/in-me
 import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 import { makeTextLongField } from '@test/helpers/field-factory.helper';
 import { makeTable } from '@test/helpers/table-factory.helper';
-
-import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
 
 import TableRowCreateUseCase from '../create.use-case';
 

@@ -472,6 +472,17 @@ export const TableFieldUpdateSchema: FastifySchema = {
             slug: { type: 'string' },
           },
         },
+        validations: {
+          type: 'array',
+          description: 'Regras de validação configuradas para o campo',
+          items: {
+            type: 'object',
+            properties: {
+              rule: { type: 'string' },
+              config: { type: 'object', additionalProperties: true },
+            },
+          },
+        },
         trashed: {
           type: 'boolean',
           description: 'Campo está na lixeira',

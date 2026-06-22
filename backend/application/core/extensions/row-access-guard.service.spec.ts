@@ -2,9 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 import { right } from '@application/core/either.core';
 import type { Either } from '@application/core/either.core';
-import {
-  E_EXTENSION_TYPE,
-} from '@application/core/entity.core';
+import { E_EXTENSION_TYPE } from '@application/core/entity.core';
 import type { IRow, ITable } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import type {
@@ -16,7 +14,6 @@ import type {
 } from '@application/core/extensions/row-access-guard.contract';
 import type { ExtensionUpsertPayload } from '@application/repositories/extension/extension-contract.repository';
 import ExtensionInMemoryRepository from '@application/repositories/extension/extension-in-memory.repository';
-
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import { GroupResolverContractService } from '@application/services/group-resolver/group-resolver-contract.service';
 
@@ -24,11 +21,21 @@ import { RowAccessGuardService } from './row-access-guard.service';
 
 // Dummy GroupResolver — nenhum usuario é privilegiado nos testes de compose
 class DummyGroupResolver extends GroupResolverContractService {
-  async resolveUserGroupIds(): Promise<Set<string>> { return new Set(); }
-  async resolveCapabilities(): Promise<Set<string>> { return new Set(); }
-  async isPrivileged(): Promise<boolean> { return false; }
-  async isMaster(): Promise<boolean> { return false; }
-  async shouldHideMaster(): Promise<boolean> { return false; }
+  async resolveUserGroupIds(): Promise<Set<string>> {
+    return new Set();
+  }
+  async resolveCapabilities(): Promise<Set<string>> {
+    return new Set();
+  }
+  async isPrivileged(): Promise<boolean> {
+    return false;
+  }
+  async isMaster(): Promise<boolean> {
+    return false;
+  }
+  async shouldHideMaster(): Promise<boolean> {
+    return false;
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -177,7 +184,11 @@ describe('RowAccessGuardService.composeListQuery', () => {
 
   beforeEach(() => {
     extensionRepo = new ExtensionInMemoryRepository();
-    service = new RowAccessGuardService(extensionRepo, new UserInMemoryRepository(), new DummyGroupResolver());
+    service = new RowAccessGuardService(
+      extensionRepo,
+      new UserInMemoryRepository(),
+      new DummyGroupResolver(),
+    );
   });
 
   it('privilegiado → retorna baseQuery inalterada, nao chama guards', async () => {
@@ -341,7 +352,11 @@ describe('RowAccessGuardService.composeReadDecision', () => {
 
   beforeEach(() => {
     extensionRepo = new ExtensionInMemoryRepository();
-    service = new RowAccessGuardService(extensionRepo, new UserInMemoryRepository(), new DummyGroupResolver());
+    service = new RowAccessGuardService(
+      extensionRepo,
+      new UserInMemoryRepository(),
+      new DummyGroupResolver(),
+    );
   });
 
   it('privilegiado → true sem consultar guards', async () => {
@@ -443,7 +458,11 @@ describe('RowAccessGuardService.composeWriteDecision', () => {
 
   beforeEach(() => {
     extensionRepo = new ExtensionInMemoryRepository();
-    service = new RowAccessGuardService(extensionRepo, new UserInMemoryRepository(), new DummyGroupResolver());
+    service = new RowAccessGuardService(
+      extensionRepo,
+      new UserInMemoryRepository(),
+      new DummyGroupResolver(),
+    );
   });
 
   it('privilegiado → { decision: allow }', async () => {
@@ -563,7 +582,11 @@ describe('RowAccessGuardService.composeSanitize', () => {
 
   beforeEach(() => {
     extensionRepo = new ExtensionInMemoryRepository();
-    service = new RowAccessGuardService(extensionRepo, new UserInMemoryRepository(), new DummyGroupResolver());
+    service = new RowAccessGuardService(
+      extensionRepo,
+      new UserInMemoryRepository(),
+      new DummyGroupResolver(),
+    );
   });
 
   it('privilegiado → payload inalterado', async () => {

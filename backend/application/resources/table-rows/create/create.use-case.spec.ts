@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { E_TABLE_STYLE } from '@application/core/entity.core';
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
@@ -9,8 +10,6 @@ import InMemoryFieldVisibilityService from '@application/services/field-visibili
 import InMemoryRowMemberNotificationService from '@application/services/row-member-notification/in-memory-row-member-notification.service';
 import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
-
-import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
 
 import TableRowCreateUseCase from './create.use-case';
 

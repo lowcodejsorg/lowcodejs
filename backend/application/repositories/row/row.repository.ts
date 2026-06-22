@@ -168,10 +168,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     const query: Record<string, unknown> =
       payload.guardQuery && Object.keys(payload.guardQuery).length > 0
         ? {
-            $and: [
-              baseQuery,
-              payload.guardQuery,
-            ],
+            $and: [baseQuery, payload.guardQuery],
           }
         : baseQuery;
 

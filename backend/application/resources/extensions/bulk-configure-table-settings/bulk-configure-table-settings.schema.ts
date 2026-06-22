@@ -6,7 +6,10 @@ const badRequestBlock = {
   properties: {
     message: { type: 'string' },
     code: { type: 'number', enum: [400] },
-    cause: { type: 'string', enum: ['INVALID_GUARD_SETTINGS', 'INVALID_PAYLOAD_FORMAT'] },
+    cause: {
+      type: 'string',
+      enum: ['INVALID_GUARD_SETTINGS', 'INVALID_PAYLOAD_FORMAT'],
+    },
     errors: { type: 'object', additionalProperties: { type: 'string' } },
   },
 } as const;
@@ -57,7 +60,8 @@ const serverErrorBlock = {
 
 export const BulkConfigureTableSettingsSchema: FastifySchema = {
   tags: ['Extensões'],
-  summary: 'Configura as settings de múltiplas tabelas para um plugin row-access-guard',
+  summary:
+    'Configura as settings de múltiplas tabelas para um plugin row-access-guard',
   description:
     'Persiste tableSettings[tableId] para N tabelas e chama onTableBound em cada uma. Restrito a usuários com MANAGE_PLUGINS.',
   security: [{ cookieAuth: [] }],

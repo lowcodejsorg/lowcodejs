@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { E_TABLE_STYLE } from '@application/core/entity.core';
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import RelationshipDefinitionInMemoryRepository from '@application/repositories/relationship-definition/relationship-definition-in-memory.repository';
 import RelationshipLinkInMemoryRepository from '@application/repositories/relationship-link/relationship-link-in-memory.repository';
@@ -8,8 +9,6 @@ import RowInMemoryRepository from '@application/repositories/row/row-in-memory.r
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import RelationshipDeletionService from '@application/services/relationship/relationship-deletion.service';
 import RelationshipService from '@application/services/relationship/relationship.service';
-
-import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
 
 import TableRowDeleteUseCase from './delete.use-case';
 

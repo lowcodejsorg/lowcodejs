@@ -6,8 +6,8 @@ import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
 import { E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { FieldSlug } from '@application/core/field-slug.core';
 import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
+import { FieldSlug } from '@application/core/field-slug.core';
 import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -54,7 +54,8 @@ export default class TableRowCreateUseCase {
       }
 
       // Verifica permissão de escrita (create) via guard.
-      const creatorId = typeof payload.creator === 'string' ? payload.creator : undefined;
+      const creatorId =
+        typeof payload.creator === 'string' ? payload.creator : undefined;
       const ctx = await this.rowAccessGuard.resolveContext(creatorId);
       const tableId = table._id.toString();
 

@@ -54,10 +54,26 @@ export default class MenuMongooseRepository implements MenuContractRepository {
     return where;
   }
 
+  // table/parent sao ids (string) no contrato IMenu e em todos os schemas, mas
+  // o populate os entrega como documento. Normaliza de volta para id para nao
+  // serializar "[object Object]" nem quebrar o $in do loadLinkedTables. owner
+  // permanece populado (paginacao exibe nome/email).
+  private toId(ref: unknown): string | null {
+    if (!ref) return null;
+    if (typeof ref === 'string') return ref;
+    if (typeof ref === 'object' && ref !== null && '_id' in ref) {
+      return String(ref._id);
+    }
+    return String(ref);
+  }
+
   private transform(entity: InstanceType<typeof Model>): IMenu {
+    const json = entity.toJSON({ flattenObjectIds: true });
     return {
-      ...entity.toJSON({ flattenObjectIds: true }),
+      ...json,
       _id: entity._id.toString(),
+      table: this.toId(json.table),
+      parent: this.toId(json.parent),
     };
   }
 
@@ -144,6 +160,8 @@ export default class MenuMongooseRepository implements MenuContractRepository {
       return populated.map((doc: any) => ({
         ...doc,
         _id: doc._id.toString(),
+        table: this.toId(doc.table),
+        parent: this.toId(doc.parent),
       }));
     }
 

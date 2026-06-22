@@ -11,7 +11,15 @@ export const AUTH_ACCOUNT_HEADER = 'x-auth-account-id';
 const ACCESS_TOKEN_COOKIE = 'accessToken';
 const REFRESH_TOKEN_COOKIE = 'refreshToken';
 
-const getCookieOptions = (httpOnly = true) => ({
+const getCookieOptions = (
+  httpOnly = true,
+): {
+  path: string;
+  secure: boolean;
+  sameSite: 'none' | 'lax';
+  httpOnly: boolean;
+  domain?: string;
+} => ({
   path: '/',
   secure: Env.NODE_ENV === 'production',
   sameSite:
@@ -114,6 +122,26 @@ export function getIndexedToken(
   return getRequestCookie(request, getTokenCookieName(type, accountId));
 }
 
+// Quando o accountId pedido (header/cookie) nao tem token correspondente — id
+// stale do localStorage ou SSR sem header — cair para a unica conta que de fato
+// tem token, antes do fallback legado. Evita 401 -> logout espurio.
+function resolveSingleIndexedAccount(
+  request: FastifyRequest,
+  type: 'access' | 'refresh',
+): { token: string; accountId: string } | undefined {
+  const withToken = listAuthAccountIds(request)
+    .map((id) => ({ id, token: getIndexedToken(request, type, id) }))
+    .filter((entry): entry is { id: string; token: string } =>
+      Boolean(entry.token),
+    );
+
+  if (withToken.length === 1) {
+    return { token: withToken[0].token, accountId: withToken[0].id };
+  }
+
+  return undefined;
+}
+
 export function resolveAccessToken(request: FastifyRequest): {
   token?: string;
   accountId?: string;
@@ -121,11 +149,17 @@ export function resolveAccessToken(request: FastifyRequest): {
 } {
   const accountId = resolveAuthAccountId(request);
   if (accountId) {
-    return {
-      token: getIndexedToken(request, 'access', accountId),
-      accountId,
-      legacy: false,
-    };
+    const token = getIndexedToken(request, 'access', accountId);
+    if (token) return { token, accountId, legacy: false };
+
+    const fallback = resolveSingleIndexedAccount(request, 'access');
+    if (fallback) {
+      return {
+        token: fallback.token,
+        accountId: fallback.accountId,
+        legacy: false,
+      };
+    }
   }
 
   return {
@@ -141,11 +175,17 @@ export function resolveRefreshToken(request: FastifyRequest): {
 } {
   const accountId = resolveAuthAccountId(request);
   if (accountId) {
-    return {
-      token: getIndexedToken(request, 'refresh', accountId),
-      accountId,
-      legacy: false,
-    };
+    const token = getIndexedToken(request, 'refresh', accountId);
+    if (token) return { token, accountId, legacy: false };
+
+    const fallback = resolveSingleIndexedAccount(request, 'refresh');
+    if (fallback) {
+      return {
+        token: fallback.token,
+        accountId: fallback.accountId,
+        legacy: false,
+      };
+    }
   }
 
   return {

@@ -170,12 +170,10 @@ async function start(): Promise<void> {
     const rowAccessRowRepo = getInstanceByToken<RowContractRepository>(
       RowMongooseRepository,
     );
-    const rowAccessSchemaBuilder = getInstanceByToken<SchemaBuilderContractService>(
-      MongooseSchemaBuilder,
-    );
-    const rowAccessModelBuilder = getInstanceByToken<ModelBuilderContractService>(
-      MongooseModelBuilder,
-    );
+    const rowAccessSchemaBuilder =
+      getInstanceByToken<SchemaBuilderContractService>(MongooseSchemaBuilder);
+    const rowAccessModelBuilder =
+      getInstanceByToken<ModelBuilderContractService>(MongooseModelBuilder);
     injectRowAccessGuardDeps({
       fieldRepo: rowAccessFieldRepo,
       tableRepo: rowAccessTableRepo,

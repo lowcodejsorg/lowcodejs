@@ -56,9 +56,14 @@ export function useTablePermission(
 
   const isOwner = useMemo(() => {
     if (!table || !userId) return false;
-    const ownerId =
-      typeof table.owner === 'string' ? table.owner : table.owner._id;
-    if (ownerId === userId) return true;
+    // owner pode vir ausente/null (tabela recém-criada ou resposta sem populate)
+    // — nunca desreferenciar direto, senão estoura em render.
+    if (table.owner) {
+      let ownerId: string | null = null;
+      if (typeof table.owner === 'string') ownerId = table.owner;
+      if (typeof table.owner === 'object') ownerId = table.owner._id;
+      if (ownerId === userId) return true;
+    }
     return Boolean(
       table.members?.some(
         (member) =>

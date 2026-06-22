@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IRow, ITable } from '@application/core/entity.core';
+import type { GuardEvalContext } from '@application/core/extensions/row-access-guard.contract';
 
 import { RowAccessControlGuard } from './guard';
 import {
   DEFAULT_ROW_ACCESS_SETTINGS,
   type RowAccessSettings,
 } from './settings-schema';
-import type { GuardEvalContext } from '@application/core/extensions/row-access-guard.contract';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -26,14 +26,21 @@ function makeCtx(
 }
 
 function makeVisitorCtx(): GuardEvalContext {
-  return { user: undefined, userId: undefined, groupIds: new Set(), isPrivileged: false };
+  return {
+    user: undefined,
+    userId: undefined,
+    groupIds: new Set(),
+    isPrivileged: false,
+  };
 }
 
 /**
  * Settings com groupMatrix mapeando 'PUBLIC' e 'INTERNO' para o grupo 'g-manager',
  * 'RESTRITO' e 'SIGILOSO' para o grupo 'g-admin'.
  */
-function makeGroupSettings(overrides?: Partial<RowAccessSettings>): RowAccessSettings {
+function makeGroupSettings(
+  overrides?: Partial<RowAccessSettings>,
+): RowAccessSettings {
   return {
     visibility: {
       enabled: true,
@@ -71,11 +78,22 @@ const baseTable: ITable = {
   updatedAt: new Date(),
   trashed: false,
   trashedAt: null,
-  methods: { onLoad: { code: null }, beforeSave: { code: null }, afterSave: { code: null } },
+  methods: {
+    onLoad: { code: null },
+    beforeSave: { code: null },
+    afterSave: { code: null },
+  },
   order: null,
   layoutFields: {
-    title: null, description: null, cover: null, category: null,
-    startDate: null, endDate: null, color: null, participants: null, reminder: null,
+    title: null,
+    description: null,
+    cover: null,
+    category: null,
+    startDate: null,
+    endDate: null,
+    color: null,
+    participants: null,
+    reminder: null,
   },
   rowSlugFieldId: null,
   description: null,
@@ -113,7 +131,9 @@ describe('RowAccessControlGuard.adjustListQuery', () => {
     );
     // FIX 1: quando visibility está habilitada e não há userId,
     // deve bloquear (não vazar a lista inteira para visitantes)
-    expect(q).toEqual({ [settings.visibility.fieldSlug]: { $in: ['__BLOCKED__'] } });
+    expect(q).toEqual({
+      [settings.visibility.fieldSlug]: { $in: ['__BLOCKED__'] },
+    });
   });
 
   it('usuario no grupo g-manager com defaults: $or [visibility $in PUBLIC,INTERNO + creator]', () => {
