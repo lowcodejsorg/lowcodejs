@@ -11,6 +11,8 @@ import InMemoryScriptExecutionService from '@application/services/script-executi
 import { makeFileField } from '@test/helpers/field-factory.helper';
 import { makeTable } from '@test/helpers/table-factory.helper';
 
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
+
 import TableRowCreateUseCase from '../create.use-case';
 
 const VALID_OBJECT_ID = '507f1f77bcf86cd799439011';
@@ -41,6 +43,7 @@ describe('Table Row Create - FILE', () => {
       new InMemoryRowMemberNotificationService(),
       new InMemoryFieldVisibilityService(),
       new FieldValidationService(rowRepository, userRepository),
+      new InMemoryRowAccessGuardService() as any,
     );
   });
 

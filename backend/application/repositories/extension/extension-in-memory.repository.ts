@@ -7,6 +7,7 @@ import type {
   ExtensionToggleEnabledPayload,
   ExtensionType,
   ExtensionUpdateTableScopePayload,
+  ExtensionUpdateTableSettingsPayload,
   ExtensionUpsertOptions,
   ExtensionUpsertPayload,
 } from './extension-contract.repository';
@@ -112,6 +113,20 @@ export default class ExtensionInMemoryRepository implements ExtensionContractRep
     return item;
   }
 
+  async updateTableSettings({
+    _id,
+    tableId,
+    settings,
+  }: ExtensionUpdateTableSettingsPayload): Promise<IExtension> {
+    const item = this.items.find((i) => i._id === _id);
+    if (!item) throw new Error('Extension not found');
+    const tableSettings = ((item as Record<string, unknown>)['tableSettings'] as Record<string, unknown>) ?? {};
+    tableSettings[tableId] = settings;
+    (item as Record<string, unknown>)['tableSettings'] = tableSettings;
+    item.updatedAt = new Date();
+    return item;
+  }
+
   async markUnavailableExcept(
     presentKeys: ExtensionAvailabilityKey[],
   ): Promise<number> {
@@ -131,5 +146,19 @@ export default class ExtensionInMemoryRepository implements ExtensionContractRep
       }
     }
     return count;
+  }
+
+  async findActiveForTable(tableId: string): Promise<IExtension[]> {
+    return this.items
+      .filter((i) => {
+        if (i.trashed || !i.enabled || !i.available) return false;
+        if (i.tableScope.mode === 'all') return true;
+        return i.tableScope.tableIds.includes(tableId);
+      })
+      .sort((a, b) => {
+        if (a.pkg !== b.pkg) return a.pkg.localeCompare(b.pkg);
+        if (a.type !== b.type) return a.type.localeCompare(b.type);
+        return a.name.localeCompare(b.name);
+      });
   }
 }

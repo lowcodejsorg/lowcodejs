@@ -27,6 +27,15 @@ async function readDirectoryNames(path: string): Promise<string[]> {
   return entries.filter((e) => e.isDirectory()).map((e) => e.name);
 }
 
+/** Extrai os slots de placement, retornando [] para plugins com kind. */
+function resolvePlacementSlots(
+  placement: { slots: string[] } | { kind: string } | undefined,
+): string[] {
+  if (!placement) return [];
+  if ('slots' in placement) return placement.slots;
+  return [];
+}
+
 export interface LoadExtensionsResult {
   loaded: number;
   invalid: number;
@@ -82,7 +91,7 @@ export async function loadExtensions(
               author: manifest.author ?? null,
               icon: manifest.icon ?? null,
               image: manifest.image ?? null,
-              slots: manifest.placement?.slots ?? [],
+              slots: resolvePlacementSlots(manifest.placement),
               route: manifest.route ?? null,
               configRoute: manifest.configRoute ?? null,
               submenu: manifest.tool?.submenu ?? null,

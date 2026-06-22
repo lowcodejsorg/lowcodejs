@@ -12,9 +12,53 @@ import type {
   RowGroupItemPayload,
   RowSetFieldPayload,
   RowTableContext,
+  RowUpdateManyPayload,
   RowUpdatePayload,
 } from './row-contract.repository';
 import { RowContractRepository } from './row-contract.repository';
+
+/**
+ * Aplica um fragmento de guardQuery sobre um item da colecao in-memory.
+ * Suporta operadores basicos usados pelo RowAccessGuard: $in, $and, $or.
+ * Para testes: nao precisa cobrir todo o MongoDB query DSL.
+ */
+function matchesGuardQuery(
+  row: Record<string, unknown>,
+  query: Record<string, unknown>,
+): boolean {
+  if (!query || Object.keys(query).length === 0) return true;
+
+  for (const [key, condition] of Object.entries(query)) {
+    if (key === '$and') {
+      const parts = condition as Record<string, unknown>[];
+      if (!parts.every((part) => matchesGuardQuery(row, part))) return false;
+      continue;
+    }
+    if (key === '$or') {
+      const parts = condition as Record<string, unknown>[];
+      if (!parts.some((part) => matchesGuardQuery(row, part))) return false;
+      continue;
+    }
+
+    const fieldVal = row[key];
+    if (
+      condition !== null &&
+      typeof condition === 'object' &&
+      !Array.isArray(condition)
+    ) {
+      const ops = condition as Record<string, unknown>;
+      if ('$in' in ops) {
+        const allowed = ops['$in'] as unknown[];
+        const rowValue = Array.isArray(fieldVal) ? fieldVal[0] : fieldVal;
+        if (!allowed.includes(rowValue)) return false;
+      }
+    } else {
+      if (fieldVal !== condition) return false;
+    }
+  }
+
+  return true;
+}
 
 export default class RowInMemoryRepository implements RowContractRepository {
   private collections = new Map<string, IRow[]>();
@@ -97,6 +141,10 @@ export default class RowInMemoryRepository implements RowContractRepository {
         }
         if (row[key] !== value) return false;
       }
+      // Aplica o fragmento de guardQuery (row-access-guard)
+      if (payload.guardQuery && Object.keys(payload.guardQuery).length > 0) {
+        if (!matchesGuardQuery(row, payload.guardQuery)) return false;
+      }
       return true;
     });
 
@@ -113,6 +161,7 @@ export default class RowInMemoryRepository implements RowContractRepository {
   async count(
     table: RowTableContext,
     rawFilters?: Record<string, unknown>,
+    guardQuery?: Record<string, unknown>,
   ): Promise<number> {
     const collection = this.getCollection(table.slug);
     const filters = rawFilters ?? {};
@@ -133,6 +182,9 @@ export default class RowInMemoryRepository implements RowContractRepository {
           continue;
         }
         if (row[key] !== value) return false;
+      }
+      if (guardQuery && Object.keys(guardQuery).length > 0) {
+        if (!matchesGuardQuery(row, guardQuery)) return false;
       }
       return true;
     }).length;
@@ -363,7 +415,7 @@ export default class RowInMemoryRepository implements RowContractRepository {
     return true;
   }
 
-  // ── Atomic update (forum-message) ─────────────────────────
+  // ── Atomic update (forum-message / backfill) ──────────────
 
   async findOneAndUpdate(
     table: RowTableContext,
@@ -390,6 +442,53 @@ export default class RowInMemoryRepository implements RowContractRepository {
 
     row.updatedAt = new Date();
     return { ...row };
+  }
+
+  async updateMany(payload: RowUpdateManyPayload): Promise<number> {
+    const collection = this.getCollection(payload.table.slug);
+    let count = 0;
+
+    for (const row of collection) {
+      const record = row as Record<string, unknown>;
+      let matches = true;
+      for (const [key, condition] of Object.entries(payload.filter)) {
+        if (
+          condition !== null &&
+          typeof condition === 'object' &&
+          !Array.isArray(condition)
+        ) {
+          const ops = condition as Record<string, unknown>;
+          if ('$exists' in ops) {
+            const shouldExist = ops['$exists'] as boolean;
+            const fieldExists = key in record && record[key] !== undefined;
+            if (shouldExist !== fieldExists) {
+              matches = false;
+              break;
+            }
+          }
+        } else {
+          if (record[key] !== condition) {
+            matches = false;
+            break;
+          }
+        }
+      }
+
+      if (!matches) continue;
+
+      const setData = (payload.update as { $set?: Record<string, unknown> })
+        .$set;
+      if (setData) {
+        for (const [key, value] of Object.entries(setData)) {
+          record[key] = value;
+        }
+      }
+
+      row.updatedAt = new Date();
+      count++;
+    }
+
+    return count;
   }
 
   // ── Infrastructure-level ops (table/import/export tools) ──

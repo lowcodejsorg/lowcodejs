@@ -11,6 +11,8 @@ import InMemoryRowMemberNotificationService from '@application/services/row-memb
 import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
+
 import TableRowUpdateUseCase from './update.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
@@ -39,6 +41,7 @@ describe('Table Row Update Use Case', () => {
       new InMemoryRowMemberNotificationService(),
       new InMemoryFieldVisibilityService(),
       new FieldValidationService(rowRepository, new UserInMemoryRepository()),
+      new InMemoryRowAccessGuardService() as any,
     );
     vi.clearAllMocks();
   });

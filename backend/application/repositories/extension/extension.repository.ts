@@ -10,6 +10,7 @@ import type {
   ExtensionToggleEnabledPayload,
   ExtensionType,
   ExtensionUpdateTableScopePayload,
+  ExtensionUpdateTableSettingsPayload,
   ExtensionUpsertOptions,
   ExtensionUpsertPayload,
 } from './extension-contract.repository';
@@ -138,5 +139,36 @@ export default class ExtensionMongooseRepository implements ExtensionContractRep
       { $set: { available: false } },
     );
     return result.modifiedCount;
+  }
+
+  async updateTableSettings({
+    _id,
+    tableId,
+    settings,
+  }: ExtensionUpdateTableSettingsPayload): Promise<IExtension> {
+    const doc = await Model.findOne({ _id });
+    if (!doc) throw new Error('Extension not found');
+    // tableSettings e um campo Mixed — usamos dot-notation no $set para
+    // atualizar apenas a key do tableId sem sobrescrever os demais.
+    await Model.updateOne(
+      { _id },
+      { $set: { [`tableSettings.${tableId}`]: settings } },
+    );
+    const updated = await Model.findOne({ _id });
+    if (!updated) throw new Error('Extension not found after update');
+    return this.transform(updated);
+  }
+
+  async findActiveForTable(tableId: string): Promise<IExtension[]> {
+    const docs = await Model.find({
+      enabled: true,
+      available: true,
+      trashed: false,
+      $or: [
+        { 'tableScope.mode': 'all' },
+        { 'tableScope.mode': 'specific', 'tableScope.tableIds': tableId },
+      ],
+    }).sort({ pkg: 'asc', type: 'asc', name: 'asc' });
+    return docs.map((d) => this.transform(d));
   }
 }

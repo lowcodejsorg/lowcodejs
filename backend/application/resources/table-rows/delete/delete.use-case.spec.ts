@@ -9,6 +9,8 @@ import TableInMemoryRepository from '@application/repositories/table/table-in-me
 import RelationshipDeletionService from '@application/services/relationship/relationship-deletion.service';
 import RelationshipService from '@application/services/relationship/relationship.service';
 
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
+
 import TableRowDeleteUseCase from './delete.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
@@ -34,6 +36,7 @@ describe('Table Row Delete Use Case', () => {
       tableInMemoryRepository,
       rowRepository,
       relationshipDeletion,
+      new InMemoryRowAccessGuardService() as any,
     );
     vi.clearAllMocks();
   });

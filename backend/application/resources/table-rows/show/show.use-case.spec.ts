@@ -7,6 +7,8 @@ import InMemoryFieldVisibilityService from '@application/services/field-visibili
 import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 import InMemoryRowContextBuilder from '@application/services/table/in-memory-row-context-builder.service';
 
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
+
 import TableRowShowUseCase from './show.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
@@ -31,6 +33,7 @@ describe('Table Row Show Use Case', () => {
       rowPasswordService,
       rowContextBuilder,
       fieldVisibility,
+      new InMemoryRowAccessGuardService() as any,
     );
     vi.clearAllMocks();
   });

@@ -58,6 +58,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ConfiguredTablesList } from '@/components/extensions/row-access/configured-tables-list';
+import { RowAccessConfigSheet } from '@/components/extensions/row-access/row-access-config-sheet';
 import { extensionListOptions } from '@/hooks/tanstack-query/_query-options';
 import { useExtensionConfigureTableScope } from '@/hooks/tanstack-query/use-extension-configure-table-scope';
 import { useExtensionToggle } from '@/hooks/tanstack-query/use-extension-toggle';
@@ -74,6 +76,12 @@ import { useAuthStore } from '@/stores/authentication';
 export const Route = createLazyFileRoute('/_private/extensions/')({
   component: RouteComponent,
 });
+
+const ROW_ACCESS_PLUGIN_KEY = 'core:row-access';
+
+function isRowAccessPlugin(extension: IExtension): boolean {
+  return `${extension.pkg}:${extension.extensionId}` === ROW_ACCESS_PLUGIN_KEY;
+}
 
 function TypeBadge({ type }: { type: IExtension['type'] }): React.JSX.Element {
   const Icon =
@@ -119,12 +127,14 @@ interface ExtensionCardProps {
   extension: IExtension;
   canConfigurePlugins: boolean;
   onConfigureTableScope: (extension: IExtension) => void;
+  onConfigureRowAccess: (extension: IExtension, initialTableId?: string) => void;
 }
 
 function ExtensionCard({
   extension,
   canConfigurePlugins,
   onConfigureTableScope,
+  onConfigureRowAccess,
 }: ExtensionCardProps): React.JSX.Element {
   const navigate = useNavigate();
   const toggle = useExtensionToggle({
@@ -205,7 +215,11 @@ function ExtensionCard({
                 variant="outline"
                 size="sm"
                 className="cursor-pointer"
-                onClick={() => onConfigureTableScope(extension)}
+                onClick={() =>
+                  isRowAccessPlugin(extension)
+                    ? onConfigureRowAccess(extension)
+                    : onConfigureTableScope(extension)
+                }
                 data-test-id={`extension-configure-${extension._id}`}
               >
                 <SettingsIcon className="size-4" />
@@ -214,6 +228,17 @@ function ExtensionCard({
             )}
           </div>
         )}
+
+        {isRowAccessPlugin(extension) &&
+          extension.tableScope.mode === 'specific' &&
+          extension.tableScope.tableIds.length > 0 && (
+            <div className="pt-2 border-t">
+              <ConfiguredTablesList
+                tableIds={extension.tableScope.tableIds}
+                onClick={(tableId) => onConfigureRowAccess(extension, tableId)}
+              />
+            </div>
+          )}
 
         {extension.type !== E_EXTENSION_TYPE.PLUGIN &&
           extension.configRoute && (
@@ -240,12 +265,14 @@ interface ExtensionTableRowProps {
   extension: IExtension;
   canConfigurePlugins: boolean;
   onConfigureTableScope: (extension: IExtension) => void;
+  onConfigureRowAccess: (extension: IExtension, initialTableId?: string) => void;
 }
 
 function ExtensionTableRow({
   extension,
   canConfigurePlugins,
   onConfigureTableScope,
+  onConfigureRowAccess,
 }: ExtensionTableRowProps): React.JSX.Element {
   const navigate = useNavigate();
   const toggle = useExtensionToggle({
@@ -322,7 +349,11 @@ function ExtensionTableRow({
             variant="outline"
             size="sm"
             className="cursor-pointer"
-            onClick={() => onConfigureTableScope(extension)}
+            onClick={() =>
+              isRowAccessPlugin(extension)
+                ? onConfigureRowAccess(extension)
+                : onConfigureTableScope(extension)
+            }
             data-test-id={`extension-table-configure-${extension._id}`}
           >
             <SettingsIcon className="size-4" />
@@ -510,6 +541,13 @@ function RouteComponent(): React.JSX.Element {
   );
   const [scopeOpen, setScopeOpen] = React.useState(false);
 
+  const [rowAccessExtension, setRowAccessExtension] =
+    React.useState<IExtension | null>(null);
+  const [rowAccessOpen, setRowAccessOpen] = React.useState(false);
+  const [rowAccessInitialTableId, setRowAccessInitialTableId] = React.useState<
+    string | undefined
+  >(undefined);
+
   const [search, setSearch] = React.useState('');
   const [typeFilter, setTypeFilter] = React.useState<Array<TypeFilter>>([]);
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('all');
@@ -542,6 +580,15 @@ function RouteComponent(): React.JSX.Element {
     (extension: IExtension) => {
       setScopeExtension(extension);
       setScopeOpen(true);
+    },
+    [],
+  );
+
+  const handleConfigureRowAccess = React.useCallback(
+    (extension: IExtension, initialTableId?: string) => {
+      setRowAccessExtension(extension);
+      setRowAccessInitialTableId(initialTableId);
+      setRowAccessOpen(true);
     },
     [],
   );
@@ -729,6 +776,7 @@ function RouteComponent(): React.JSX.Element {
                     extension={extension}
                     canConfigurePlugins={canConfigurePlugins}
                     onConfigureTableScope={handleConfigureTableScope}
+                    onConfigureRowAccess={handleConfigureRowAccess}
                   />
                 ))}
               </div>
@@ -757,6 +805,7 @@ function RouteComponent(): React.JSX.Element {
                     extension={extension}
                     canConfigurePlugins={canConfigurePlugins}
                     onConfigureTableScope={handleConfigureTableScope}
+                    onConfigureRowAccess={handleConfigureRowAccess}
                   />
                 ))}
               </TableBody>
@@ -769,6 +818,16 @@ function RouteComponent(): React.JSX.Element {
         extension={scopeExtension}
         open={scopeOpen}
         onOpenChange={setScopeOpen}
+      />
+
+      <RowAccessConfigSheet
+        extension={rowAccessExtension}
+        open={rowAccessOpen}
+        onOpenChange={(o) => {
+          setRowAccessOpen(o);
+          if (!o) setRowAccessInitialTableId(undefined);
+        }}
+        initialTableId={rowAccessInitialTableId}
       />
     </PageShell>
   );

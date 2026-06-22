@@ -13,6 +13,8 @@ import { RowMemberNotificationContractService } from '@application/services/row-
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
 
+import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
+
 import TableRowUpdateUseCase from '../update/update.use-case';
 
 import type { BulkUpdatePayload } from './bulk-update.validator';
@@ -44,6 +46,7 @@ export default class BulkUpdateUseCase {
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
     private readonly fieldVisibility: FieldVisibilityContractService,
     private readonly fieldValidation: FieldValidationContractService,
+    private readonly rowAccessGuard: RowAccessGuardService,
   ) {
     this.updateUseCase = new TableRowUpdateUseCase(
       tableRepository,
@@ -55,6 +58,7 @@ export default class BulkUpdateUseCase {
       rowMemberNotificationService,
       fieldVisibility,
       fieldValidation,
+      rowAccessGuard,
     );
   }
 

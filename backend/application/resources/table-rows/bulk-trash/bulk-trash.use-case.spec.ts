@@ -4,6 +4,8 @@ import { E_TABLE_STYLE } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
+
 import BulkTrashUseCase from './bulk-trash.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
@@ -25,7 +27,7 @@ describe('Bulk Trash Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     rowInMemoryRepository = new RowInMemoryRepository();
-    sut = new BulkTrashUseCase(tableInMemoryRepository, rowInMemoryRepository);
+    sut = new BulkTrashUseCase(tableInMemoryRepository, rowInMemoryRepository, new InMemoryRowAccessGuardService() as any);
     vi.clearAllMocks();
   });
 
