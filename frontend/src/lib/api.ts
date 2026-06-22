@@ -28,7 +28,14 @@ API.interceptors.request.use(async (config) => {
   }
   config.baseURL = resolvedBaseUrl;
 
-  if (typeof window !== 'undefined') {
+  // Só injeta o activeAccountId do store se a request NÃO trouxe um
+  // X-Auth-Account-Id explícito. Fluxos de transição (add/switch) passam um
+  // header próprio (vazio = usar cookie) para não serem poluídos pelo store
+  // ainda stale.
+  if (
+    typeof window !== 'undefined' &&
+    !config.headers.has('X-Auth-Account-Id')
+  ) {
     const activeAccountId = useAuthStore.getState().activeAccountId;
     if (activeAccountId) {
       config.headers.set('X-Auth-Account-Id', activeAccountId);
@@ -39,8 +46,6 @@ API.interceptors.request.use(async (config) => {
     try {
       const cookies = await getServerCookies();
       if (cookies) config.headers.set('Cookie', cookies);
-      // Log diagnostico: confirma se a request SSR leva cookie de auth.
-      console.info('[api][ssr]', config.url, 'cookie?', Boolean(cookies));
     } catch {
       /* not in request context */
     }
