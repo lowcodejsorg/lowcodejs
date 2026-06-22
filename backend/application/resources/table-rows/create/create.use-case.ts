@@ -11,6 +11,7 @@ import { RowPayloadValidator } from '@application/core/row-payload-validator.cor
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { FieldValidationContractService } from '@application/services/field-validation/field-validation-contract.service';
 import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
 import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
@@ -37,6 +38,7 @@ export default class TableRowCreateUseCase {
     private readonly scriptExecutionService: ScriptExecutionContractService,
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
     private readonly fieldVisibility: FieldVisibilityContractService,
+    private readonly fieldValidation: FieldValidationContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -73,6 +75,23 @@ export default class TableRowCreateUseCase {
             'Requisição inválida',
             'INVALID_PAYLOAD_FORMAT',
             errors,
+          ),
+        );
+      }
+
+      // Passe de validacao das regras configuradas (camada unica). Async porque
+      // regras como IS_UNIQUE/EMAIL_EXISTS consultam o banco.
+      const validationErrors = await this.fieldValidation.validate(
+        payload,
+        table,
+      );
+
+      if (validationErrors) {
+        return left(
+          HTTPException.BadRequest(
+            'Requisição inválida',
+            'INVALID_PAYLOAD_FORMAT',
+            validationErrors,
           ),
         );
       }

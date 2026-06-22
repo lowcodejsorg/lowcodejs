@@ -11,6 +11,7 @@ import {
   FIELD_NATIVE_LIST,
   type IField,
   type IFieldPermissions,
+  type IFieldValidation,
   type IGroupConfiguration,
   type ILayoutFields,
   type ITable,
@@ -48,6 +49,7 @@ type ExportedField = {
   required: boolean;
   multiple: boolean;
   format: string | null;
+  validations?: IFieldValidation[];
   showInFilter: boolean;
   permissions?: IFieldPermissions | null;
   widthInForm: number | null;
@@ -1269,6 +1271,7 @@ export default class ImportTableUseCase {
       required: exported.required,
       multiple: exported.multiple,
       format: exported.format as IField['format'],
+      validations: exported.validations ?? [],
       permissions:
         exported.permissions ?? buildFieldPermissions(true, true, true),
       showInFilter: exported.showInFilter,

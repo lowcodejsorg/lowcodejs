@@ -13,7 +13,7 @@ import type {
   E_TABLE_TYPE,
   E_USER_STATUS,
 } from './constant';
-import type { Merge, ValueOf } from './interfaces';
+import type { IFieldValidation, Merge, ValueOf } from './interfaces';
 
 // ============== AUTHENTICATION ==============
 export type SignInPayload = {
@@ -185,6 +185,7 @@ export type FieldConfigurationPayload = {
   required?: boolean;
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
+  validations?: Array<IFieldValidation>;
   showInFilter?: boolean;
   permissions?: {
     list: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
@@ -221,6 +222,7 @@ export type FieldCreatePayload = {
   required?: boolean;
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
+  validations?: Array<IFieldValidation>;
   showInFilter?: boolean;
   permissions?: {
     list: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
@@ -258,6 +260,7 @@ export type FieldUpdatePayload = {
   required?: boolean;
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
+  validations?: Array<IFieldValidation>;
   showInFilter?: boolean;
   permissions?: {
     list: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };

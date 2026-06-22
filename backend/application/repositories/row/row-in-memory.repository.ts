@@ -138,6 +138,24 @@ export default class RowInMemoryRepository implements RowContractRepository {
     }).length;
   }
 
+  async countFieldValue(
+    table: RowTableContext,
+    fieldSlug: string,
+    value: unknown,
+    excludeRowId: string | null = null,
+  ): Promise<number> {
+    const collection = this.getCollection(table.slug);
+
+    return collection.filter((row) => {
+      if (row.trashedAt != null) return false;
+      if (excludeRowId && row._id === excludeRowId) return false;
+      const current = row[fieldSlug];
+      // Campo multiplo (array): match se contiver o valor (semantica mongo).
+      if (Array.isArray(current)) return current.includes(value);
+      return current === value;
+    }).length;
+  }
+
   async update(payload: RowUpdatePayload): Promise<IRow | null> {
     const collection = this.getCollection(payload.table.slug);
     const index = collection.findIndex((item) => item._id === payload._id);

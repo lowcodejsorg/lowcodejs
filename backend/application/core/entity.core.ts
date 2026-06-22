@@ -86,6 +86,31 @@ export const E_FIELD_FORMAT = {
   YYYY_MM_DD_HH_MM_SS_DASH: 'yyyy-MM-dd HH:mm:ss',
 } as const;
 
+// Regras de validacao de valor aplicaveis a um campo. Cada chave tem uma
+// subpasta em `core/validations/<regra>`. Regras puras validam no front e no
+// back; as marcadas async (IS_UNIQUE, ARE_UNIQUE_VALUES, EMAIL_EXISTS,
+// USER_EXISTS) consultam o banco e validam so no back (autoritativo).
+export const E_FIELD_VALIDATION = {
+  // Puras (sincronas)
+  NOT_EMPTY: 'NOT_EMPTY',
+  IS_EMAIL: 'IS_EMAIL',
+  IS_NUMERIC: 'IS_NUMERIC',
+  IS_ALPHA_NUMERIC: 'IS_ALPHA_NUMERIC',
+  IS_IN_RANGE: 'IS_IN_RANGE',
+  IS_IBAN: 'IS_IBAN',
+  IS_NOT: 'IS_NOT',
+  // Migradas do format (puras)
+  IS_URL: 'IS_URL',
+  IS_PHONE: 'IS_PHONE',
+  IS_CPF: 'IS_CPF',
+  IS_CNPJ: 'IS_CNPJ',
+  // Async (consultam o banco)
+  IS_UNIQUE: 'IS_UNIQUE',
+  ARE_UNIQUE_VALUES: 'ARE_UNIQUE_VALUES',
+  EMAIL_EXISTS: 'EMAIL_EXISTS',
+  USER_EXISTS: 'USER_EXISTS',
+} as const;
+
 export const E_ROLE = {
   MASTER: 'MASTER',
   ADMINISTRATOR: 'ADMINISTRATOR',
@@ -465,6 +490,14 @@ export type IFieldPermissions = {
   detail: IPermissionBinding;
 };
 
+// Uma regra de validacao configurada num campo. `config` carrega os parametros
+// da regra (ex.: IS_IN_RANGE → { min, max }; IS_NOT → { values }). Regras sem
+// parametro usam `{}`.
+export type IFieldValidation = {
+  rule: ValueOf<typeof E_FIELD_VALIDATION>;
+  config: Record<string, unknown>;
+};
+
 export type IField = Merge<
   Base,
   {
@@ -474,6 +507,10 @@ export type IField = Merge<
     required: boolean;
     multiple: boolean;
     format: ValueOf<typeof E_FIELD_FORMAT> | null;
+    // Regras de validacao de valor do campo (camada unica de validacao).
+    // Opcional no tipo; em runtime sempre presente ([] por default do
+    // mongoose/zod + migration 19).
+    validations?: IFieldValidation[];
     // Exibe o campo na barra de filtros (config de UX, nao e permissao).
     showInFilter: boolean;
     // Visibilidade por contexto (list/form/detail). null apenas em documentos
@@ -569,6 +606,7 @@ export type FieldCreatePayload = Pick<
   | 'required'
   | 'multiple'
   | 'format'
+  | 'validations'
   | 'showInFilter'
   | 'permissions'
   | 'widthInForm'

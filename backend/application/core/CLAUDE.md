@@ -8,13 +8,15 @@ Logica central compartilhada por toda a aplicacao.
 
 Enums, tipos e interfaces do dominio. Fonte unica de verdade para:
 
-- Enums: `E_ROLE`, `E_FIELD_TYPE`, `E_FIELD_FORMAT`, `E_TABLE_TYPE`,
-  `E_TABLE_STYLE`, `E_TABLE_PERMISSION`, `E_PERMISSION_TARGET`,
+- Enums: `E_ROLE`, `E_FIELD_TYPE`, `E_FIELD_FORMAT`, `E_FIELD_VALIDATION`,
+  `E_TABLE_TYPE`, `E_TABLE_STYLE`, `E_TABLE_PERMISSION`, `E_PERMISSION_TARGET`,
   `E_TABLE_PROFILE`, `E_JWT_TYPE`, `E_USER_STATUS`, `E_SCHEMA_TYPE`,
   `E_CHAT_EVENT`
-- Interfaces: `IUser`, `ITable`, `IField`, `IRow`, `IGroup`, `IPermission`,
-  `IStorage`, `IMenu`, `ISetting`, `IValidationToken`, `IReaction`,
-  `IEvaluation`
+- Interfaces: `IUser`, `ITable`, `IField`, `IFieldValidation`, `IRow`, `IGroup`,
+  `IPermission`, `IStorage`, `IMenu`, `ISetting`, `IValidationToken`,
+  `IReaction`, `IEvaluation`
+  - `IField.validations?: IFieldValidation[]` — regras de validação de valor do
+    campo (camada única); opcional no tipo, sempre `[]` em runtime.
 - Tipos base: `Base` (campos comuns: \_id, createdAt, updatedAt, trashed,
   trashedAt)
 - Helpers: `Optional<T, K>`, `Merge<T, U>`, `ValueOf<T>`, `Paginated<Entity>`,
@@ -58,7 +60,15 @@ detalhe de impl Mongoose — ver `services/table/CLAUDE.md`. O antigo
 
 ### `field-rules.core.ts`
 
-Constantes puras de validacao de campo agnosticas de banco. Ex: `PASSWORD_REGEX`.
+Constantes/regexes puros de validacao de campo agnosticos de banco. Fonte unica
+reusada pelo `RowPayloadValidator` (format legado) **e** pelas regras de
+`validations/`. Ex: `PASSWORD_REGEX`, `EMAIL_REGEX`, `CPF_REGEX`, `NUMERIC_REGEX`.
+
+### `validations/` (camada unica de validacao)
+
+Regras de validacao de valor configuraveis por campo (`field.validations[]`),
+uma por subpasta, implementando `FieldValidationRule`. Executadas (async) pelo
+`FieldValidationService` no create/update de row. Ver `validations/CLAUDE.md`.
 
 ### `row-payload-validator.core.ts`
 
@@ -67,7 +77,10 @@ Classe `RowPayloadValidator` com metodo estatico `validate(payload, fields, grou
 
 - Validadores por tipo: TEXT_SHORT/LONG, DATE, DROPDOWN, FILE, RELATIONSHIP,
   CATEGORY, FIELD_GROUP
-- Validadores de formato: EMAIL, URL, INTEGER, DECIMAL, PHONE, CNPJ, CPF
+- Validadores de **formato** (legado, sincrono, todos os caminhos de escrita):
+  EMAIL, URL, INTEGER, DECIMAL, PHONE, CNPJ, CPF (regexes de `field-rules.core`).
+  As validacoes **configuraveis** (is-unique, ranges, etc.) ficam em
+  `validations/` + `FieldValidationService`, nao aqui.
 
 ### `controllers.ts`
 

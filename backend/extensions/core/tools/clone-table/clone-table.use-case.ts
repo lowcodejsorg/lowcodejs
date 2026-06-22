@@ -356,6 +356,7 @@ export default class CloneTableUseCase {
         required: field.required,
         multiple: field.multiple,
         format: field.format,
+        validations: field.validations,
         permissions:
           field.permissions ?? buildFieldPermissions(true, true, true),
         showInFilter: field.showInFilter,
@@ -783,6 +784,7 @@ export default class CloneTableUseCase {
           required: field.required,
           multiple: field.multiple,
           format: field.format,
+          validations: field.validations,
           permissions:
             field.permissions ?? buildFieldPermissions(true, true, true),
           showInFilter: field.showInFilter,

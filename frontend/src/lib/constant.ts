@@ -90,6 +90,139 @@ export const E_FIELD_FORMAT = {
   YYYY_MM_DD_HH_MM_SS_DASH: 'yyyy-MM-dd HH:mm:ss',
 } as const;
 
+// Regras de validacao de valor de campo (espelha o backend E_FIELD_VALIDATION).
+// Cada regra vive numa subpasta em backend/application/core/validations.
+export const E_FIELD_VALIDATION = {
+  NOT_EMPTY: 'NOT_EMPTY',
+  IS_EMAIL: 'IS_EMAIL',
+  IS_NUMERIC: 'IS_NUMERIC',
+  IS_ALPHA_NUMERIC: 'IS_ALPHA_NUMERIC',
+  IS_IN_RANGE: 'IS_IN_RANGE',
+  IS_IBAN: 'IS_IBAN',
+  IS_NOT: 'IS_NOT',
+  IS_URL: 'IS_URL',
+  IS_PHONE: 'IS_PHONE',
+  IS_CPF: 'IS_CPF',
+  IS_CNPJ: 'IS_CNPJ',
+  IS_UNIQUE: 'IS_UNIQUE',
+  ARE_UNIQUE_VALUES: 'ARE_UNIQUE_VALUES',
+  EMAIL_EXISTS: 'EMAIL_EXISTS',
+  USER_EXISTS: 'USER_EXISTS',
+} as const;
+
+// Opcoes para o dropdown de validacoes no editor de campo. `types` lista os
+// tipos elegiveis ([] = qualquer tipo); `multipleOnly` exige field.multiple;
+// `requiresConfig` indica regras com parametros (range/is-not). `async` marca
+// regras que so validam no backend (banco) — front nao roda no submit.
+export const FIELD_VALIDATION_OPTIONS = [
+  {
+    label: 'Não vazio',
+    value: E_FIELD_VALIDATION.NOT_EMPTY,
+    types: [E_FIELD_TYPE.TEXT_SHORT, E_FIELD_TYPE.TEXT_LONG],
+    requiresConfig: false,
+    async: false,
+  },
+  {
+    label: 'É e-mail',
+    value: E_FIELD_VALIDATION.IS_EMAIL,
+    types: [E_FIELD_TYPE.TEXT_SHORT],
+    requiresConfig: false,
+    async: false,
+  },
+  {
+    label: 'É numérico',
+    value: E_FIELD_VALIDATION.IS_NUMERIC,
+    types: [E_FIELD_TYPE.TEXT_SHORT],
+    requiresConfig: false,
+    async: false,
+  },
+  {
+    label: 'É alfanumérico',
+    value: E_FIELD_VALIDATION.IS_ALPHA_NUMERIC,
+    types: [E_FIELD_TYPE.TEXT_SHORT],
+    requiresConfig: false,
+    async: false,
+  },
+  {
+    label: 'Maior ou menor que',
+    value: E_FIELD_VALIDATION.IS_IN_RANGE,
+    types: [E_FIELD_TYPE.TEXT_SHORT],
+    requiresConfig: true,
+    async: false,
+  },
+  {
+    label: 'É IBAN',
+    value: E_FIELD_VALIDATION.IS_IBAN,
+    types: [E_FIELD_TYPE.TEXT_SHORT],
+    requiresConfig: false,
+    async: false,
+  },
+  {
+    label: 'Diferente de',
+    value: E_FIELD_VALIDATION.IS_NOT,
+    types: [E_FIELD_TYPE.TEXT_SHORT, E_FIELD_TYPE.TEXT_LONG],
+    requiresConfig: true,
+    async: false,
+  },
+  {
+    label: 'É URL',
+    value: E_FIELD_VALIDATION.IS_URL,
+    types: [E_FIELD_TYPE.TEXT_SHORT],
+    requiresConfig: false,
+    async: false,
+  },
+  {
+    label: 'É telefone',
+    value: E_FIELD_VALIDATION.IS_PHONE,
+    types: [E_FIELD_TYPE.TEXT_SHORT],
+    requiresConfig: false,
+    async: false,
+  },
+  {
+    label: 'É CPF',
+    value: E_FIELD_VALIDATION.IS_CPF,
+    types: [E_FIELD_TYPE.TEXT_SHORT],
+    requiresConfig: false,
+    async: false,
+  },
+  {
+    label: 'É CNPJ',
+    value: E_FIELD_VALIDATION.IS_CNPJ,
+    types: [E_FIELD_TYPE.TEXT_SHORT],
+    requiresConfig: false,
+    async: false,
+  },
+  {
+    label: 'Valor único',
+    value: E_FIELD_VALIDATION.IS_UNIQUE,
+    types: [E_FIELD_TYPE.TEXT_SHORT],
+    requiresConfig: false,
+    async: true,
+  },
+  {
+    label: 'Valores únicos',
+    value: E_FIELD_VALIDATION.ARE_UNIQUE_VALUES,
+    types: [],
+    multipleOnly: true,
+    requiresConfig: false,
+    async: true,
+  },
+  {
+    label: 'E-mail existe',
+    value: E_FIELD_VALIDATION.EMAIL_EXISTS,
+    types: [E_FIELD_TYPE.TEXT_SHORT],
+    requiresConfig: false,
+    async: true,
+  },
+  {
+    label: 'Usuário existe',
+    value: E_FIELD_VALIDATION.USER_EXISTS,
+    types: [E_FIELD_TYPE.TEXT_SHORT, E_FIELD_TYPE.USER],
+    requiresConfig: false,
+    async: true,
+  },
+] as const;
+
 export const E_TABLE_TYPE = {
   TABLE: 'TABLE',
   FIELD_GROUP: 'FIELD_GROUP',

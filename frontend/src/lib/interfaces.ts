@@ -18,6 +18,7 @@ import type {
   E_EXTENSION_TYPE,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
+  E_FIELD_VALIDATION,
   E_JWT_TYPE,
   E_LOGGER_ACTION_TYPE,
   E_LOGGER_OBJECT_TYPE,
@@ -263,6 +264,13 @@ export type IFieldConfigurationGroup = {
   fields?: Array<IField>;
 };
 
+// Uma regra de validação configurada num campo. `config` carrega os parâmetros
+// (IS_IN_RANGE → { min, max }; IS_NOT → { values }); regras sem parâmetro = {}.
+export type IFieldValidation = {
+  rule: ValueOf<typeof E_FIELD_VALIDATION>;
+  config: Record<string, unknown>;
+};
+
 export type IField = Merge<
   Base,
   {
@@ -272,6 +280,9 @@ export type IField = Merge<
     required: boolean;
     multiple: boolean;
     format: ValueOf<typeof E_FIELD_FORMAT> | null;
+    // Regras de validação de valor do campo (camada única de validação).
+    // Opcional no tipo; em runtime sempre presente ([] por default).
+    validations?: Array<IFieldValidation>;
     // Exibe o campo na barra de filtros (config de UX, não é permissão).
     showInFilter: boolean;
     // Visibilidade do campo por contexto (Grupo|Public|Nobody). null apenas em

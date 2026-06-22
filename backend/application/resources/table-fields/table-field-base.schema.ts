@@ -2,6 +2,7 @@ import z from 'zod';
 
 import {
   E_FIELD_FORMAT,
+  E_FIELD_VALIDATION,
   E_PERMISSION_TARGET,
   E_RELATIONSHIP_ON_DELETE,
 } from '@application/core/entity.core';
@@ -75,6 +76,22 @@ const Dropdown = z.object({
   sortField: z.string().nullable().optional(),
   sortDirection: z.enum(['asc', 'desc']).nullable().optional(),
 });
+
+// Regra de validacao configurada no campo: { rule, config }. `config` carrega os
+// parametros da regra (range → { min, max }; is-not → { values }); vazio para
+// regras sem parametro.
+const Validation = z.object({
+  rule: z.enum(E_FIELD_VALIDATION),
+  config: z
+    .record(z.string(), z.unknown())
+    .nullish()
+    .transform((value) => value ?? {}),
+});
+// Aceita null/undefined (clientes que reenviam o campo cru do GET) → [].
+export const FieldValidationsSchema = z
+  .array(Validation)
+  .nullish()
+  .transform((value) => value ?? []);
 
 // Propriedades flat do campo (não aninhadas em configuration)
 export const FieldRequiredSchema = z.boolean().default(false);
@@ -204,6 +221,7 @@ export const TableFieldBaseSchema = z.object({
   required: FieldRequiredSchema,
   multiple: FieldMultipleSchema,
   format: FieldFormatSchema,
+  validations: FieldValidationsSchema,
   showInFilter: FieldShowInFilterSchema,
   permissions: FieldPermissionsSchema,
   widthInForm: FieldWidthInFormSchema,

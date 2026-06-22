@@ -207,6 +207,16 @@ const Dropdown = new mongoose.Schema(
   },
 );
 
+// Uma regra de validacao configurada no campo (camada unica de validacao).
+// `config` guarda os parametros da regra (ex.: { min, max } | { values }).
+const Validation = new mongoose.Schema(
+  {
+    rule: { type: String, required: true },
+    config: { type: mongoose.Schema.Types.Mixed, default: {} },
+  },
+  { _id: false },
+);
+
 export const Schema = new mongoose.Schema(
   {
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
@@ -232,6 +242,11 @@ export const Schema = new mongoose.Schema(
       type: String,
       enum: Object.values(E_FIELD_FORMAT),
       default: null,
+    },
+    // Regras de validacao de valor do campo (camada unica de validacao).
+    validations: {
+      type: [Validation],
+      default: [],
     },
     // Exibe o campo na barra de filtros (config de UX, nao e permissao).
     showInFilter: {

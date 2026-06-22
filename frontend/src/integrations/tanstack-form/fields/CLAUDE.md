@@ -34,19 +34,20 @@ registro no `createFormHook`.
 
 ### table-config.ts - Configuracao de Tabela (12)
 
-| Componente                          | Descricao                         |
-| ----------------------------------- | --------------------------------- |
-| `TableComboboxField`                | Combobox de tabela                |
-| `TableLayoutFieldSelect`            | Select de layout                  |
-| `TableOrderSelectField`             | Select de ordenacao               |
-| `TableStyleSelectField`             | Select de estilo                  |
-| `TableFieldTypeSelect`              | Select de tipo de campo           |
-| `TableFieldFormatSelect`            | Select de formato de campo        |
-| `TableFieldDropdownOptions`         | Opcoes de dropdown                |
-| `TableFieldDropdownDefaultValue`    | Valor padrao de dropdown          |
-| `TableFieldRelationshipTableSelect` | Select de tabela relacionada      |
-| `TableFieldRelationshipOrderSelect` | Select de ordem de relacionamento |
-| `TableFieldCategoryTree`            | Arvore de categorias              |
+| Componente                          | Descricao                                      |
+| ----------------------------------- | ---------------------------------------------- |
+| `TableComboboxField`                | Combobox de tabela                             |
+| `TableLayoutFieldSelect`            | Select de layout                               |
+| `TableOrderSelectField`             | Select de ordenacao                            |
+| `TableStyleSelectField`             | Select de estilo                               |
+| `TableFieldTypeSelect`              | Select de tipo de campo                        |
+| `TableFieldValidationsField`        | Multi-select de validações do campo (+ config) |
+| `TableFieldFormatSelect`            | Select de formato de campo                     |
+| `TableFieldDropdownOptions`         | Opcoes de dropdown                             |
+| `TableFieldDropdownDefaultValue`    | Valor padrao de dropdown                       |
+| `TableFieldRelationshipTableSelect` | Select de tabela relacionada                   |
+| `TableFieldRelationshipOrderSelect` | Select de ordem de relacionamento              |
+| `TableFieldCategoryTree`            | Arvore de categorias                           |
 
 ### table-row.ts - Input de Dados de Registro (10)
 

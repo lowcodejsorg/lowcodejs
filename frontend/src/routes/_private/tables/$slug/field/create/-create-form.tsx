@@ -23,6 +23,7 @@ import {
 import type {
   IDropdown,
   IField,
+  IFieldValidation,
   IRelationshipLabelPart,
   ITable,
 } from '@/lib/interfaces';
@@ -79,6 +80,7 @@ export const FieldCreateSchema = z.object({
     .default(''),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
+  validations: z.array(z.custom<IFieldValidation>()).default([]),
   defaultValue: z.string().default(''),
   dropdown: z.array(z.custom<IDropdown>()).default([]),
   allowCustomDropdownOptions: z.boolean().default(false),
@@ -126,6 +128,7 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   tip: '',
   type: '',
   format: '',
+  validations: [],
   defaultValue: '',
   dropdown: [],
   allowCustomDropdownOptions: false,
@@ -832,6 +835,20 @@ export const CreateFieldFormFields = withForm({
               <field.FieldBooleanSwitch
                 label="Obrigatoriedade"
                 description="Este campo é obrigatório?"
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Validações do campo */}
+        {(isTextShort || isTextLong || isUser) && (
+          <form.AppField name="validations">
+            {(field) => (
+              <field.TableFieldValidationsField
+                label="Validações"
+                fieldType={fieldType}
+                multiple={fieldMultiple}
                 disabled={isPending}
               />
             )}

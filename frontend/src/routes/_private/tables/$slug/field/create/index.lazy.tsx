@@ -154,6 +154,7 @@ function RouteComponent(): React.JSX.Element {
         format: value.format
           ? (value.format as ValueOf<typeof E_FIELD_FORMAT>)
           : null,
+        validations: value.validations,
         defaultValue: normalizeDefaultValue(value.type, value.defaultValue),
         dropdown: hasDropdown ? value.dropdown.map((item) => item) : [],
         allowCustomDropdownOptions:

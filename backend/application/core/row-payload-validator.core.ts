@@ -4,40 +4,52 @@ import {
   type IField,
   type IGroupConfiguration,
 } from './entity.core';
+import {
+  CNPJ_REGEX,
+  CPF_REGEX,
+  DECIMAL_REGEX,
+  EMAIL_REGEX,
+  INTEGER_REGEX,
+  PHONE_REGEX,
+  URL_REGEX,
+} from './field-rules.core';
 
-// type FieldType = (typeof E_FIELD_TYPE)[keyof typeof E_FIELD_TYPE];
 type FieldFormat = (typeof E_FIELD_FORMAT)[keyof typeof E_FIELD_FORMAT];
 
 const OBJECT_ID_REGEX = /^[a-fA-F0-9]{24}$/;
 
+// Validacao por `format` (legado, sincrona, roda em todos os caminhos de escrita
+// de row). Os regexes vivem em `field-rules.core.ts` — a mesma fonte usada pela
+// camada nova de regras (`core/validations/*`). As novas validacoes configuraveis
+// (is-unique, not-empty, ranges, etc.) rodam no FieldValidationService (async).
 const FORMAT_VALIDATORS: Record<string, { regex: RegExp; message: string }> = {
   [E_FIELD_FORMAT.EMAIL]: {
-    regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    regex: EMAIL_REGEX,
     message: 'Formato de e-mail inválido',
   },
   [E_FIELD_FORMAT.URL]: {
-    regex: /^https?:\/\/.+/,
+    regex: URL_REGEX,
     message: 'Formato de URL inválido',
   },
   [E_FIELD_FORMAT.INTEGER]: {
-    regex: /^-?\d+$/,
+    regex: INTEGER_REGEX,
     message: 'Deve ser um número inteiro',
   },
   [E_FIELD_FORMAT.DECIMAL]: {
-    regex: /^-?\d+(\.\d+)?$/,
+    regex: DECIMAL_REGEX,
     message: 'Deve ser um número decimal',
   },
   [E_FIELD_FORMAT.PHONE]: {
-    regex: /^\(\d{2}\)\s?\d{4,5}-\d{4}$/,
+    regex: PHONE_REGEX,
     message:
       'Formato de telefone inválido. Use (XX) XXXXX-XXXX ou (XX) XXXX-XXXX',
   },
   [E_FIELD_FORMAT.CNPJ]: {
-    regex: /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/,
+    regex: CNPJ_REGEX,
     message: 'Formato de CNPJ inválido. Use XX.XXX.XXX/XXXX-XX',
   },
   [E_FIELD_FORMAT.CPF]: {
-    regex: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
+    regex: CPF_REGEX,
     message: 'Formato de CPF inválido. Use XXX.XXX.XXX-XX',
   },
 };

@@ -29,6 +29,7 @@ mecanismo de marcadores no documento Setting singleton.
 | 11 | `11-menu-visibility.sh` | `migrate-menu-visibility.ts` | Define `visibility=PUBLIC` (binding visível) nos menus sem o campo. Marker `MIGRATION_MENU_VISIBILITY_AT` |
 | 12 | `12-drop-legacy-permission-fields.sh` | `migrate-drop-legacy-permission-fields.ts` | `$unset` **permanente** dos campos legados (`visibility`/`collaboration`/`administrators` das tabelas; `showInList`/`showInForm`/`showInDetail` dos campos — **não** `showInFilter`). Roda depois de 09/10/11; como o dual-write foi removido, o drop é definitivo. Marker `MIGRATION_DROP_LEGACY_PERMISSION_FIELDS_AT` |
 | 13 | `13-backfill-logger-audit.sh` | `migrate-backfill-logger-audit.ts` | Backfilla nos logs de `ROW` os campos do registro referenciado (`creator`/`updater`/`objectCreatedAt`/`objectUpdatedAt`), lidos das linhas de tabela dinâmica (dual-connection). Marker `MIGRATION_LOGGER_AUDIT_AT` |
+| 19 | `19-field-validations.sh` | `migrate-field-validations.ts` | Backfilla `validations: []` em Field docs sem a propriedade (camada única de validação de campo). Não deriva do `format` (legado segue validando). Marker `MIGRATION_FIELD_VALIDATIONS_AT` |
 
 ## Fluxo
 

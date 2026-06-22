@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import { E_FIELD_TYPE } from '@application/core/entity.core';
+import type { IFieldValidation } from '@application/core/entity.core';
 import {
   FIELD_NAME_MAX_LENGTH,
   FIELD_SLUG_MAX_LENGTH,
@@ -22,10 +23,12 @@ export const TableFieldCreateParamsValidator = z.object({
 
 export type TableFieldCreatePayload = Omit<
   z.infer<typeof TableFieldCreateBodyValidator>,
-  'allowCustomDropdownOptions' | 'tip' | 'slug'
+  'allowCustomDropdownOptions' | 'tip' | 'slug' | 'validations'
 > & {
   slug?: string;
   tableSlug?: string;
   allowCustomDropdownOptions?: boolean;
   tip?: string | null;
+  // Opcional no tipo (specs/clients podem omitir); runtime sempre [] via zod.
+  validations?: IFieldValidation[];
 };

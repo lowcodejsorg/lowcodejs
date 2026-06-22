@@ -19,6 +19,7 @@ const FIELD_BASE: Omit<IField, '_id'> = {
   required: false,
   multiple: false,
   format: null,
+  validations: [],
   showInFilter: false,
   permissions: buildFieldPermissions(true, true, true),
   widthInForm: 50,

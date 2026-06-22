@@ -1,5 +1,8 @@
 import type { Either } from '@application/core/either.core';
-import type { IFieldPermissions } from '@application/core/entity.core';
+import type {
+  IFieldPermissions,
+  IFieldValidation,
+} from '@application/core/entity.core';
 import type HTTPException from '@application/core/exception.core';
 
 import type { ExportTablePayload } from './export-table.validator';
@@ -16,6 +19,7 @@ export type ExportedField = {
   required: boolean;
   multiple: boolean;
   format: string | null;
+  validations?: IFieldValidation[];
   showInFilter: boolean;
   permissions?: IFieldPermissions | null;
   widthInForm: number | null;

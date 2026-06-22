@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { E_FIELD_FORMAT, E_FIELD_TYPE } from './constant';
+import { E_FIELD_FORMAT, E_FIELD_TYPE, E_FIELD_VALIDATION } from './constant';
 import type {
   ICategory,
   IDropdown,
@@ -416,6 +416,122 @@ export function mountRowValue(value: FieldValue, field: IField): RowPayload {
   }
 }
 
+// Regexes das regras puras de validação (espelham o backend field-rules.core).
+const PURE_RULE_REGEX: Record<string, { regex: RegExp; message: string }> = {
+  [E_FIELD_VALIDATION.IS_EMAIL]: {
+    regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    message: 'Formato de e-mail inválido',
+  },
+  [E_FIELD_VALIDATION.IS_URL]: {
+    regex: /^https?:\/\/.+/,
+    message: 'Formato de URL inválido',
+  },
+  [E_FIELD_VALIDATION.IS_NUMERIC]: {
+    regex: /^-?\d+(\.\d+)?$/,
+    message: 'Deve ser um número',
+  },
+  [E_FIELD_VALIDATION.IS_ALPHA_NUMERIC]: {
+    regex: /^[a-zA-Z0-9]+$/,
+    message: 'Deve conter apenas letras e números',
+  },
+  [E_FIELD_VALIDATION.IS_PHONE]: {
+    regex: /^\(\d{2}\)\s?\d{4,5}-\d{4}$/,
+    message: 'Formato de telefone inválido',
+  },
+  [E_FIELD_VALIDATION.IS_CPF]: {
+    regex: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
+    message: 'Formato de CPF inválido',
+  },
+  [E_FIELD_VALIDATION.IS_CNPJ]: {
+    regex: /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/,
+    message: 'Formato de CNPJ inválido',
+  },
+};
+
+function coerceNumber(input: unknown): number | null {
+  if (typeof input === 'number' && !Number.isNaN(input)) return input;
+  if (typeof input === 'string' && input.trim() !== '') {
+    const parsed = Number(input);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+  return null;
+}
+
+function isValidIban(raw: string): boolean {
+  const iban = raw.replace(/\s+/g, '').toUpperCase();
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(iban)) return false;
+  if (iban.length < 15 || iban.length > 34) return false;
+  const rearranged = iban.slice(4) + iban.slice(0, 4);
+  let expanded = '';
+  for (const char of rearranged) {
+    if (char >= '0' && char <= '9') {
+      expanded += char;
+      continue;
+    }
+    expanded += String(char.charCodeAt(0) - 55);
+  }
+  let remainder = 0;
+  for (const digit of expanded) {
+    remainder = (remainder * 10 + Number(digit)) % 97;
+  }
+  return remainder === 1;
+}
+
+// Roda as regras de validação PURAS configuradas no campo (camada única). As
+// regras de banco (is-unique, email-exists, etc.) ficam a cargo do backend no
+// submit — aqui são ignoradas. Retorna a 1ª mensagem de erro ou undefined.
+function validatePureRules(
+  field: IField,
+  value: FieldValue | undefined,
+): string | undefined {
+  const validations = field.validations;
+  if (!validations || validations.length === 0) return undefined;
+
+  const empty = value === null || value === undefined || value === '';
+
+  for (const { rule, config } of validations) {
+    if (rule === E_FIELD_VALIDATION.NOT_EMPTY) {
+      const blankString = typeof value === 'string' && value.trim() === '';
+      if (empty || blankString) return field.name + ' não pode ser vazio';
+      continue;
+    }
+
+    if (empty) continue;
+    if (typeof value !== 'string') continue;
+
+    const regexRule = PURE_RULE_REGEX[rule];
+    if (regexRule) {
+      if (!regexRule.regex.test(value)) return regexRule.message;
+      continue;
+    }
+
+    if (rule === E_FIELD_VALIDATION.IS_IN_RANGE) {
+      const num = coerceNumber(value);
+      if (num === null) return 'Deve ser um número';
+      const min = coerceNumber(config.min);
+      const max = coerceNumber(config.max);
+      if (min !== null && num < min) return 'Deve ser maior ou igual a ' + min;
+      if (max !== null && num > max) return 'Deve ser menor ou igual a ' + max;
+      continue;
+    }
+
+    if (rule === E_FIELD_VALIDATION.IS_NOT) {
+      const list: Array<unknown> = [];
+      if (Array.isArray(config.values)) list.push(...config.values);
+      if (list.map((item) => String(item)).includes(value))
+        return 'Valor não permitido';
+      continue;
+    }
+
+    if (rule === E_FIELD_VALIDATION.IS_IBAN) {
+      if (!isValidIban(value)) return 'IBAN inválido';
+      continue;
+    }
+  }
+
+  return undefined;
+}
+
 export function buildFieldValidator(
   field: IField,
   value: FieldValue | undefined,
@@ -497,6 +613,9 @@ export function buildFieldValidator(
       return validator.message;
     }
   }
+
+  const ruleError = validatePureRules(field, value);
+  if (ruleError) return ruleError;
 
   return undefined;
 }

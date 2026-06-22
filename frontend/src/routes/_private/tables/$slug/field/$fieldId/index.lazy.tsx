@@ -331,6 +331,7 @@ function FieldUpdateContent({
       tip: data.tip ?? '',
       type: data.type,
       format: data.format ?? '',
+      validations: data.validations ?? [],
       defaultValue: Array.isArray(data.defaultValue)
         ? (data.defaultValue[0] ?? '')
         : (data.defaultValue ?? ''),
@@ -397,6 +398,7 @@ function FieldUpdateContent({
         format: value.format
           ? (value.format as ValueOf<typeof E_FIELD_FORMAT>)
           : null,
+        validations: value.validations,
         defaultValue: normalizeDefaultValue(value.type, value.defaultValue),
         dropdown: hasDropdown ? value.dropdown.map((item) => item) : [],
         allowCustomDropdownOptions:

@@ -14,6 +14,7 @@ export { TableFieldRelationshipOnDeleteSelect } from '@/components/common/dynami
 export { TableFieldRelationshipOrderSelect } from '@/components/common/dynamic-table/table-config/table-field-relationship-order-select';
 export { TableFieldRelationshipTableSelect } from '@/components/common/dynamic-table/table-config/table-field-relationship-table-select';
 export { TableFieldTypeSelect } from '@/components/common/dynamic-table/table-config/table-field-type-select';
+export { TableFieldValidationsField } from '@/components/common/dynamic-table/table-config/table-field-validations-field';
 export { TableLayoutFieldSelect } from '@/components/common/dynamic-table/table-config/table-layout-field-select';
 export { TableOrderSelectField } from '@/components/common/dynamic-table/table-config/table-order-select-field';
 export { TableStyleSelectField } from '@/components/common/dynamic-table/table-config/table-style-select-field';

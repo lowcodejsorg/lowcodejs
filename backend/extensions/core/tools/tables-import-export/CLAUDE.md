@@ -109,6 +109,8 @@ suportados na importação — internamente são normalizados para o formato v2.
      diferente o ID pode não existir e o campo fica vazio (sem erro)
    - Campos referenciais que NÃO viajam: `FILE`, `EVALUATION`, `REACTION`
      (dependem de arquivos físicos ou de agregados da instância de origem)
+   - As `validations` (regras de validação) de cada campo **viajam** na
+     estrutura e são recriadas na importação (round-trip preserva as regras)
    - Cada row carrega `_originalId` para o remapeamento e `_originalCreator`
      (quando há criador) para restaurar o campo nativo CREATOR na importação.
      Subrows de field groups carregam os mesmos dois marcadores

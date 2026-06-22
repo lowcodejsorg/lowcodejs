@@ -84,6 +84,19 @@ export abstract class RowContractRepository {
     rawFilters?: Record<string, unknown>,
   ): Promise<number>;
 
+  /**
+   * Conta rows (nao-trashed) cujo campo `fieldSlug` seja exatamente `value`,
+   * ignorando `excludeRowId` (a propria row no update). Match exato — usada pela
+   * validacao de unicidade (IS_UNIQUE / ARE_UNIQUE_VALUES). Difere de `count`,
+   * que passa pelo QueryBuilder e trata TEXT como `$regex` parcial.
+   */
+  abstract countFieldValue(
+    table: RowTableContext,
+    fieldSlug: string,
+    value: unknown,
+    excludeRowId?: string | null,
+  ): Promise<number>;
+
   abstract update(payload: RowUpdatePayload): Promise<IRow | null>;
 
   abstract deleteOne(table: RowTableContext, _id: string): Promise<boolean>;

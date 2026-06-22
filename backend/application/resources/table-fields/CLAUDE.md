@@ -31,6 +31,11 @@ apenas a sidebar de filtros (nao e permissao). Os booleans
 ## Schema Base
 
 Definido em `table-field-base.schema.ts`: required, multiple, format,
-`permissions` (FieldPermissionsSchema: { list, form, detail } → binding),
-showInFilter (controla a sidebar de filtros), widthInForm, widthInList,
-widthInDetail, locked, defaultValue, relationship, dropdown, category, group.
+`validations` (array de `{ rule, config }` — regras de `field.validations[]`;
+`rule` ∈ `E_FIELD_VALIDATION`; default `[]`), `permissions` (FieldPermissionsSchema:
+{ list, form, detail } → binding), showInFilter (controla a sidebar de filtros),
+widthInForm, widthInList, widthInDetail, locked, defaultValue, relationship,
+dropdown, category, group.
+
+> O passe das regras configuradas em `validations` roda no create/update de
+> **row** (`FieldValidationService`), não na criação do campo. Aqui só persiste.

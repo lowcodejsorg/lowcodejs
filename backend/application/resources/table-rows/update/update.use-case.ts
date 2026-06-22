@@ -12,6 +12,7 @@ import { RowPayloadValidator } from '@application/core/row-payload-validator.cor
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { FieldValidationContractService } from '@application/services/field-validation/field-validation-contract.service';
 import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
 import { KanbanCommentMentionContractService } from '@application/services/kanban-comment-mention/kanban-comment-mention-contract.service';
 import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
@@ -42,6 +43,7 @@ export default class TableRowUpdateUseCase {
     private readonly kanbanCommentMentionService: KanbanCommentMentionContractService,
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
     private readonly fieldVisibility: FieldVisibilityContractService,
+    private readonly fieldValidation: FieldValidationContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -84,6 +86,24 @@ export default class TableRowUpdateUseCase {
             'Requisição inválida',
             'INVALID_PAYLOAD_FORMAT',
             errors,
+          ),
+        );
+      }
+
+      // Passe das regras configuradas. skipMissing (update parcial) + currentRowId
+      // para a unicidade ignorar a propria row.
+      const validationErrors = await this.fieldValidation.validate(
+        payload,
+        table,
+        { skipMissing: true, currentRowId: payload._id },
+      );
+
+      if (validationErrors) {
+        return left(
+          HTTPException.BadRequest(
+            'Requisição inválida',
+            'INVALID_PAYLOAD_FORMAT',
+            validationErrors,
           ),
         );
       }

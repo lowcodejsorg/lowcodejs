@@ -155,6 +155,7 @@ Codigo de usuario (beforeSave, afterSave, onLoad) roda em Node VM isolada com ti
 | `E_ROLE` | MASTER, ADMINISTRATOR, MANAGER, REGISTERED |
 | `E_FIELD_TYPE` | TEXT_SHORT, TEXT_LONG, DROPDOWN, DATE, RELATIONSHIP, FILE, FIELD_GROUP, REACTION, EVALUATION, CATEGORY, USER + nativos |
 | `E_FIELD_FORMAT` | ALPHA_NUMERIC, INTEGER, DECIMAL, URL, EMAIL, PASSWORD, PHONE, CNPJ, CPF, RICH_TEXT, PLAIN_TEXT + date formats |
+| `E_FIELD_VALIDATION` | NOT_EMPTY, IS_EMAIL/NUMERIC/ALPHA_NUMERIC/IN_RANGE/IBAN/NOT/URL/PHONE/CPF/CNPJ, IS_UNIQUE, ARE_UNIQUE_VALUES, EMAIL_EXISTS, USER_EXISTS (15 — camada única de validação de campo; ver `core/validations/`) |
 | `E_TABLE_TYPE` | TABLE, FIELD_GROUP |
 | `E_TABLE_STYLE` | LIST, GALLERY, DOCUMENT, CARD, MOSAIC, KANBAN, FORUM, CALENDAR, GANTT |
 | `E_TABLE_PERMISSION` | CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW (12 total) |
@@ -303,7 +304,7 @@ Impl)` e chamado para cada par encontrado.
 - Servicos: Email, EmailQueue (use-cases injetam este, nao Email diretamente),
   CsvImportQueue, StorageMigrationQueue, Password, Permission, RowPassword,
   ScriptExecution, Notification, KanbanCommentMention, RowMemberNotification,
-  Storage, Llm, Table
+  Storage, Llm, Table, FieldValidation (regras de `field.validations[]`)
 - Builders de tabela dinamica (`services/table/`): SchemaBuilder, ModelBuilder,
   QueryBuilder, PopulateBuilder, RowContextBuilder
 
@@ -653,6 +654,14 @@ Em **dev local** (`npm run dev`, sem Docker) elas nao rodam — use os npm scrip
 - `npm run migrate:relationship-lift-out-of-groups` / `-embedded-to-links` /
   `-endpoint-flags` — avulsas (mesma ordem se rodadas a mao)
 - Cada uma aceita `-- --force` p/ reexecutar ignorando o marker
+
+### Migration 19 — validações de campo
+
+`19-field-validations.sh` → `migrate-field-validations.ts`: backfill de
+`validations: []` em Field docs sem a propriedade (marker
+`MIGRATION_FIELD_VALIDATIONS_AT`). Roda no boot Docker pelo mesmo loop; **sem npm
+script** (convenção do projeto). Não deriva regras do `format` (legado segue
+validando) — evita validação dupla.
 
 Pos-migracao **todo** campo `RELATIONSHIP` fica top-level e materializado
 (`relationship.relationshipId` + campo-espelho); o passo 16 falha alto (nao grava

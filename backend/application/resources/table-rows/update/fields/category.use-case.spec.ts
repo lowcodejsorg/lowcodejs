@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import FieldValidationService from '@application/services/field-validation/field-validation.service';
 import InMemoryFieldVisibilityService from '@application/services/field-visibility/in-memory-field-visibility.service';
 import InMemoryKanbanCommentMentionService from '@application/services/kanban-comment-mention/in-memory-kanban-comment-mention.service';
 import InMemoryRowMemberNotificationService from '@application/services/row-member-notification/in-memory-row-member-notification.service';
@@ -45,6 +46,7 @@ describe('Table Row Update - CATEGORY', () => {
       new InMemoryKanbanCommentMentionService(),
       new InMemoryRowMemberNotificationService(),
       new InMemoryFieldVisibilityService(),
+      new FieldValidationService(rowRepository, new UserInMemoryRepository()),
     );
   });
 

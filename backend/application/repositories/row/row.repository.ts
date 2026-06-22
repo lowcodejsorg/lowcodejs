@@ -196,6 +196,21 @@ export default class RowMongooseRepository implements RowContractRepository {
     return model.countDocuments(query);
   }
 
+  async countFieldValue(
+    table: RowTableContext,
+    fieldSlug: string,
+    value: unknown,
+    excludeRowId: string | null = null,
+  ): Promise<number> {
+    const model = await this.getModel(table);
+    const filter: Record<string, unknown> = {
+      [fieldSlug]: value,
+      trashedAt: null,
+    };
+    if (excludeRowId) filter._id = { $ne: excludeRowId };
+    return model.countDocuments(filter);
+  }
+
   async update(payload: RowUpdatePayload): Promise<IRow> {
     const model = await this.getModel(payload.table);
     const populate = await this.getPopulate(payload.table);

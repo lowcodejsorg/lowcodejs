@@ -32,6 +32,13 @@ Registrado no DI automaticamente pelo scanner.
 
 **Nota:** Ainda nao segue o pattern contract. Candidato a formalizacao futura.
 
+## Field Validation Service (`field-validation/`)
+
+Executa as regras de `field.validations[]` (camada única — `core/validations/`)
+no create/update/bulk-update de row, após o `RowPayloadValidator` estrutural.
+Async (regras como is-unique consultam o banco). Injeta `RowContractRepository` +
+`UserContractRepository`. Detalhes em `field-validation/CLAUDE.md`.
+
 ## Para Criar Novo Service
 
 1. Crie diretorio `services/{nome}/`

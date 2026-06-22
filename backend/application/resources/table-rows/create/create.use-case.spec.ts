@@ -4,6 +4,7 @@ import { E_TABLE_STYLE } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import FieldValidationService from '@application/services/field-validation/field-validation.service';
 import InMemoryFieldVisibilityService from '@application/services/field-visibility/in-memory-field-visibility.service';
 import InMemoryRowMemberNotificationService from '@application/services/row-member-notification/in-memory-row-member-notification.service';
 import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
@@ -35,6 +36,7 @@ describe('Table Row Create Use Case', () => {
       scriptExecutionService,
       new InMemoryRowMemberNotificationService(),
       new InMemoryFieldVisibilityService(),
+      new FieldValidationService(rowRepository, userRepository),
     );
   });
 

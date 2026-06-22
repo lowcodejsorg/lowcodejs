@@ -266,6 +266,7 @@ export default class ExportTableUseCase {
       required: field.required,
       multiple: field.multiple,
       format: field.format,
+      validations: field.validations ?? [],
       showInFilter: field.showInFilter,
       permissions: field.permissions,
       widthInForm: field.widthInForm,
