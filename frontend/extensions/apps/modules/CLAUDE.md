@@ -11,6 +11,25 @@ desativadas, MASTER ativa em `/extensions`). Módulos são telas com URL própri
 | ID          | URL default         | Entry                 | Descrição                                      |
 | ----------- | ------------------- | --------------------- | ---------------------------------------------- |
 | `dashboard` | `/e/apps/dashboard` | `dashboard/index.tsx` | Painel administrativo com dados reais (MASTER) |
+| `senhas`    | `/e/apps/senhas`    | `senhas/index.tsx`    | Cofre de senhas inspirado no passbolt: canais privados por padrão + segredos cifrados em repouso (qualquer autenticado) |
+
+## senhas
+
+Layout `PageShell` com sidebar de canais (esquerda) + painel de senhas
+(direita). Dados via `use-senhas.tsx` (TanStack Query → CRUD em
+`/e/apps/senhas/channels` e `.../entries`). Reusa `ForumUserMultiSelect` do core
+para selecionar membros. O segredo das entradas só é revelado sob demanda
+(botão olho) e copiável para a área de transferência. Subcomponentes:
+
+| Arquivo               | Papel                                                  |
+| --------------------- | ------------------------------------------------------ |
+| `channel-sidebar.tsx` | Lista de canais (cadeado privado, contagem, ações dono) |
+| `channel-dialog.tsx`  | Criar/editar canal (nome, descrição, privado, membros) |
+| `entry-list.tsx`      | Grid de senhas com revelar/copiar/editar/excluir       |
+| `entry-dialog.tsx`    | Criar/editar senha (revelar + gerador de senha forte)  |
+| `confirm-dialog.tsx`  | Confirmação genérica de exclusão                       |
+| `senhas-types.ts`     | Tipos espelhados do backend                            |
+| `use-senhas.tsx`      | Hooks de query/mutation do módulo                      |
 
 ## dashboard
 
