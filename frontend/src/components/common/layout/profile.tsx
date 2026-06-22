@@ -65,9 +65,15 @@ export function Profile(): React.JSX.Element {
   const switchAccount = async (accountId: string): Promise<void> => {
     if (accountId === activeAccountId) return;
 
+    const target = accounts.find((account) => account._id === accountId);
+
     try {
       setSwitchingAccountId(accountId);
       await API.post('/authentication/switch-account', { accountId });
+      // Atualiza o store para a conta nova ANTES de limpar o cache: o
+      // queryClient.clear() refaz queries (ex.: useProfileRead do avatar) e
+      // elas precisam mandar o X-Auth-Account-Id da conta nova, não da antiga.
+      if (target) useAuthStore.getState().setActiveAccount(target);
       queryClient.clear();
 
       const accountsResponse = await API.get<IAuthenticationAccounts>(
