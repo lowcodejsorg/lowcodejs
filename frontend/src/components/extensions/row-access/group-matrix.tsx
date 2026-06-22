@@ -66,7 +66,10 @@ export function GroupMatrix({
               className="border-b last:border-b-0"
             >
               <td className="px-3 py-2 font-medium">
-                <span className="truncate max-w-[160px] block" title={group.name}>
+                <span
+                  className="truncate max-w-[160px] block"
+                  title={group.name}
+                >
                   {group.name}
                 </span>
               </td>

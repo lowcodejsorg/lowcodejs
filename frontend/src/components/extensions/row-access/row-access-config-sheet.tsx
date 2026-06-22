@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { DateWindowModeSelector } from './date-window-mode-selector';
 import { GroupMatrix } from './group-matrix';
@@ -31,7 +32,6 @@ import { groupAllOptions } from '@/hooks/tanstack-query/_query-options';
 import { useExtensionBulkConfigureTableSettings } from '@/hooks/tanstack-query/use-extension-bulk-configure-table-settings';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IExtension } from '@/lib/interfaces';
-import { toast } from 'sonner';
 
 interface RowAccessConfigSheetProps {
   extension: IExtension | null;
@@ -40,6 +40,31 @@ interface RowAccessConfigSheetProps {
   /** Quando definido, pré-carrega a config dessa tabela ao abrir (modo "editar"). */
   initialTableId?: string;
 }
+
+function getResponseStatus(error: unknown): number | undefined {
+  if (typeof error !== 'object' || error === null) return undefined;
+  if (!('response' in error)) return undefined;
+  const response = error.response;
+  if (typeof response !== 'object' || response === null) return undefined;
+  if (!('status' in response)) return undefined;
+  const status = response.status;
+  if (typeof status === 'number') return status;
+  return undefined;
+}
+
+// Resolve o elemento real de um evento "outside" do Sheet: prioriza o target do
+// originalEvent (clique dentro de um portal) e cai para o target do evento.
+function resolveOutsideTarget(
+  originalEvent: Event,
+  fallback: EventTarget | null,
+): Element | null {
+  if (originalEvent.target instanceof Element) return originalEvent.target;
+  if (fallback instanceof Element) return fallback;
+  return null;
+}
+
+const OUTSIDE_PORTAL_SELECTOR =
+  '[data-base-ui-portal], [data-slot="combobox-content"], [data-slot="combobox-list"], [data-slot="combobox-item"], [data-radix-popper-content-wrapper], [role="listbox"], [role="menu"], [role="option"]';
 
 function deriveInitialSettings(
   extension: IExtension | null,
@@ -51,7 +76,7 @@ function deriveInitialSettings(
       ? extension.tableSettings[initialTableId]
       : Object.values(extension.tableSettings)[0];
   if (isRowAccessSettings(target)) {
-    return target as unknown as RowAccessSettings;
+    return target;
   }
   return DEFAULT_ROW_ACCESS_SETTINGS;
 }
@@ -78,10 +103,7 @@ export function RowAccessConfigSheet({
     if (initialTableId) {
       setTableIds([initialTableId]);
     } else {
-      setTableIds(
-        (extension as unknown as { tableScope?: { tableIds?: Array<string> } })
-          .tableScope?.tableIds ?? [],
-      );
+      setTableIds(extension.tableScope?.tableIds ?? []);
     }
     setConflictError(null);
   }, [extension, initialTableId, open]);
@@ -102,8 +124,7 @@ export function RowAccessConfigSheet({
       }
     },
     onError(error) {
-      const axiosError = error as { response?: { status?: number } };
-      if (axiosError?.response?.status === 409) {
+      if (getResponseStatus(error) === 409) {
         setConflictError(
           'Configuração modificada por outro usuário. Recarregue a página e tente novamente.',
         );
@@ -154,19 +175,18 @@ export function RowAccessConfigSheet({
       toast.error('Validação', { description: validationError });
       return;
     }
-    const extAny = ext as unknown as {
-      updatedAt?: unknown;
-      createdAt?: unknown;
-    };
-    const ts = extAny.updatedAt ?? extAny.createdAt;
-    const expectedUpdatedAt =
-      ts && typeof ts === 'object' && 'toISOString' in ts
-        ? (ts as Date).toISOString()
-        : String(ts ?? '');
+    // Em runtime as datas chegam como string (JSON) apesar do tipo Date.
+    const ts: unknown = ext.updatedAt ?? ext.createdAt;
+    let expectedUpdatedAt = '';
+    if (ts instanceof Date) {
+      expectedUpdatedAt = ts.toISOString();
+    } else if (ts != null) {
+      expectedUpdatedAt = String(ts);
+    }
     mutation.mutate({
       extensionId: ext._id,
       tableIds,
-      settings: settings as unknown as Record<string, unknown>,
+      settings: settings,
       expectedUpdatedAt,
     });
   }
@@ -181,28 +201,14 @@ export function RowAccessConfigSheet({
         // Impede que o Sheet capture cliques destinados aos portals filhos
         // (TableMultiSelect's Combobox = @base-ui/react, DropdownMenu, Select).
         onPointerDownOutside={(e) => {
-          const target =
-            ((e as unknown as CustomEvent<{ originalEvent?: EventTarget }>)
-              .detail?.originalEvent as Element | null) ??
-            (e.target as Element | null);
-          if (
-            target?.closest?.(
-              '[data-base-ui-portal], [data-slot="combobox-content"], [data-slot="combobox-list"], [data-slot="combobox-item"], [data-radix-popper-content-wrapper], [role="listbox"], [role="menu"], [role="option"]',
-            )
-          ) {
+          const target = resolveOutsideTarget(e.detail.originalEvent, e.target);
+          if (target?.closest?.(OUTSIDE_PORTAL_SELECTOR)) {
             e.preventDefault();
           }
         }}
         onInteractOutside={(e) => {
-          const target =
-            ((e as unknown as CustomEvent<{ originalEvent?: EventTarget }>)
-              .detail?.originalEvent as Element | null) ??
-            (e.target as Element | null);
-          if (
-            target?.closest?.(
-              '[data-base-ui-portal], [data-slot="combobox-content"], [data-slot="combobox-list"], [data-slot="combobox-item"], [data-radix-popper-content-wrapper], [role="listbox"], [role="menu"], [role="option"]',
-            )
-          ) {
+          const target = resolveOutsideTarget(e.detail.originalEvent, e.target);
+          if (target?.closest?.(OUTSIDE_PORTAL_SELECTOR)) {
             e.preventDefault();
           }
         }}
@@ -255,17 +261,21 @@ export function RowAccessConfigSheet({
                   values={settings.visibility.values}
                   matrix={settings.visibility.groupMatrix}
                   onChange={(values, matrix) =>
-                    setSettings((p) => ({
-                      ...p,
-                      visibility: {
-                        ...p.visibility,
-                        values,
-                        groupMatrix: matrix,
-                        defaultValue: values.includes(p.visibility.defaultValue)
-                          ? p.visibility.defaultValue
-                          : values[0],
-                      },
-                    }))
+                    setSettings((p) => {
+                      let defaultValue = values[0];
+                      if (values.includes(p.visibility.defaultValue)) {
+                        defaultValue = p.visibility.defaultValue;
+                      }
+                      return {
+                        ...p,
+                        visibility: {
+                          ...p.visibility,
+                          values,
+                          groupMatrix: matrix,
+                          defaultValue,
+                        },
+                      };
+                    })
                   }
                   disabled={isPending}
                 />

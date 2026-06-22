@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 
 import { TableMultiSelect } from '@/components/common/dynamic-table/table-selectors/table-multi-select';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
+import { ConfiguredTablesList } from '@/components/extensions/row-access/configured-tables-list';
+import { RowAccessConfigSheet } from '@/components/extensions/row-access/row-access-config-sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -58,8 +60,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ConfiguredTablesList } from '@/components/extensions/row-access/configured-tables-list';
-import { RowAccessConfigSheet } from '@/components/extensions/row-access/row-access-config-sheet';
 import { extensionListOptions } from '@/hooks/tanstack-query/_query-options';
 import { useExtensionConfigureTableScope } from '@/hooks/tanstack-query/use-extension-configure-table-scope';
 import { useExtensionToggle } from '@/hooks/tanstack-query/use-extension-toggle';
@@ -127,7 +127,10 @@ interface ExtensionCardProps {
   extension: IExtension;
   canConfigurePlugins: boolean;
   onConfigureTableScope: (extension: IExtension) => void;
-  onConfigureRowAccess: (extension: IExtension, initialTableId?: string) => void;
+  onConfigureRowAccess: (
+    extension: IExtension,
+    initialTableId?: string,
+  ) => void;
 }
 
 function ExtensionCard({
@@ -265,7 +268,10 @@ interface ExtensionTableRowProps {
   extension: IExtension;
   canConfigurePlugins: boolean;
   onConfigureTableScope: (extension: IExtension) => void;
-  onConfigureRowAccess: (extension: IExtension, initialTableId?: string) => void;
+  onConfigureRowAccess: (
+    extension: IExtension,
+    initialTableId?: string,
+  ) => void;
 }
 
 function ExtensionTableRow({
@@ -427,7 +433,8 @@ function TableScopeSheet({
         onInteractOutside={(e) => {
           // Combobox (base-ui) renderiza popup via Portal fora do SheetContent.
           // Sem isso, clicar numa opção fecha o Sheet por "click outside".
-          const target = e.target as HTMLElement | null;
+          let target: HTMLElement | null = null;
+          if (e.target instanceof HTMLElement) target = e.target;
           if (target?.closest('[data-slot="combobox-content"]')) {
             e.preventDefault();
           }
