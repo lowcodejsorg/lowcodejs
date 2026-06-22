@@ -16,14 +16,14 @@ export function Logo({ className }: { className?: string }): React.JSX.Element {
         data-test-id="app-logo"
         src={lightSrc}
         alt="Logo"
-        className={cn('dark:hidden', className)}
+        className={cn(className, 'dark:hidden')}
       />
       <img
         data-slot="logo"
         data-test-id="app-logo"
         src={darkSrc}
         alt="Logo"
-        className={cn('hidden dark:block', className)}
+        className={cn(className, 'hidden dark:block')}
       />
     </>
   );
