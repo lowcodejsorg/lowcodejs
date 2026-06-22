@@ -7,5 +7,5 @@ case "$prefix" in
     ;;
 esac
 
-# npm run lint:backend
-# npm run lint:frontend
+npm run lint:backend
+npm run lint:frontend
