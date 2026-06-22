@@ -165,8 +165,6 @@ export function KanbanRowDialog({
         description: 'O card foi atualizado com sucesso',
       });
       onRowUpdated?.(data);
-      setTaskTitle('');
-      setCommentText('');
       setEditingTaskIndex(null);
       setEditingTaskTitle('');
     },
@@ -318,6 +316,12 @@ export function KanbanRowDialog({
     setAttachmentUploadFiles([]);
     setAttachmentUploadStorages([]);
     setIsAttachmentUploading(false);
+  }, [rowId]);
+
+  React.useEffect(() => {
+    setCommentText('');
+    setEditingCommentIndex(null);
+    setEditingCommentText('');
   }, [rowId]);
 
   const normalizeCommentPayload = React.useCallback(

@@ -29,9 +29,9 @@ apps/
 
 ## Entries
 
-| Tipo      | ID          | Path                          | Descrição                                                               |
-| --------- | ----------- | ----------------------------- | ----------------------------------------------------------------------- |
-| `modules` | `dashboard` | `modules/dashboard/index.tsx` | Painel administrativo com dados reais (URL `/e/apps/dashboard`, MASTER) |
+| Tipo      | ID          | Path                          | Descrição                                                                                                              |
+| --------- | ----------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `modules` | `dashboard` | `modules/dashboard/index.tsx` | Painel administrativo com dados reais (URL `/e/apps/dashboard`, MASTER)                                                |
 | `modules` | `senhas`    | `modules/senhas/index.tsx`    | Cofre de senhas (URL `/e/apps/senhas`): canais privados + segredos cifrados. Reusa `ForumUserMultiSelect` para membros |
 
 ## Convenções
