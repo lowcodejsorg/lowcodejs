@@ -28,12 +28,24 @@ API.interceptors.request.use(async (config) => {
   }
   config.baseURL = resolvedBaseUrl;
 
+  // Só injeta o activeAccountId do store se a request NÃO trouxe um
+  // X-Auth-Account-Id explícito. Fluxos de transição (add/switch) passam um
+  // header próprio (vazio = usar cookie) para não serem poluídos pelo store
+  // ainda stale.
+  if (
+    typeof window !== 'undefined' &&
+    !config.headers.has('X-Auth-Account-Id')
+  ) {
+    const activeAccountId = useAuthStore.getState().activeAccountId;
+    if (activeAccountId) {
+      config.headers.set('X-Auth-Account-Id', activeAccountId);
+    }
+  }
+
   if (typeof window === 'undefined') {
     try {
       const cookies = await getServerCookies();
       if (cookies) config.headers.set('Cookie', cookies);
-      // Log diagnostico: confirma se a request SSR leva cookie de auth.
-      console.info('[api][ssr]', config.url, 'cookie?', Boolean(cookies));
     } catch {
       /* not in request context */
     }
@@ -53,6 +65,8 @@ const AUTH_ENDPOINTS = [
   '/authentication/sign-up',
   '/authentication/sign-out',
   '/authentication/refresh-token',
+  '/authentication/accounts',
+  '/authentication/switch-account',
 ];
 
 const isAuthEndpoint = (url: string | undefined): boolean => {
@@ -62,16 +76,22 @@ const isAuthEndpoint = (url: string | undefined): boolean => {
 
 type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean };
 
-let refreshPromise: Promise<void> | null = null;
+const refreshPromises = new Map<string, Promise<void>>();
 
-const performRefresh = (): Promise<void> => {
-  if (!refreshPromise) {
-    refreshPromise = API.post('/authentication/refresh-token')
-      .then(() => undefined)
-      .finally(() => {
-        refreshPromise = null;
-      });
-  }
+const performRefresh = (accountId: string | null): Promise<void> => {
+  const refreshKey = accountId ?? 'legacy';
+  const existingPromise = refreshPromises.get(refreshKey);
+  if (existingPromise) return existingPromise;
+
+  const refreshPromise = API.post('/authentication/refresh-token', undefined, {
+    headers: accountId ? { 'X-Auth-Account-Id': accountId } : undefined,
+  })
+    .then(() => undefined)
+    .finally(() => {
+      refreshPromises.delete(refreshKey);
+    });
+
+  refreshPromises.set(refreshKey, refreshPromise);
   return refreshPromise;
 };
 
@@ -79,7 +99,12 @@ const handleSessionLost = (): void => {
   if (typeof window === 'undefined') return;
   const currentPath = window.location.pathname;
   if (isPublicPath(currentPath)) return;
-  useAuthStore.getState().clear();
+  const activeAccountId = useAuthStore.getState().activeAccountId;
+  if (activeAccountId) {
+    useAuthStore.getState().removeAccount(activeAccountId);
+  } else {
+    useAuthStore.getState().clear();
+  }
   window.location.href = '/';
 };
 
@@ -105,9 +130,10 @@ API.interceptors.response.use(
     }
 
     config._retried = true;
+    const activeAccountId = useAuthStore.getState().activeAccountId;
 
     try {
-      await performRefresh();
+      await performRefresh(activeAccountId);
       return API.request(config);
     } catch (refreshError) {
       handleSessionLost();

@@ -17,12 +17,20 @@ import { startStorageMigrationWorker } from '@application/services/storage-migra
 import { initCsvImportSocket } from '@application/resources/table-rows/import-csv/import-csv.socket';
 import { initTableImportSocket } from '@extensions/core/tools/tables-import-export/import-table.socket';
 import { startCsvImportWorker } from '@application/services/csv-import/worker';
+import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import FieldMongooseRepository from '@application/repositories/field/field.repository';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import RowMongooseRepository from '@application/repositories/row/row.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import TableMongooseRepository from '@application/repositories/table/table.repository';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import BcryptRowPasswordService from '@application/services/row-password/row-password.service';
+import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
+import MongooseModelBuilder from '@application/services/table/model-builder.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
+import MongooseSchemaBuilder from '@application/services/table/schema-builder.service';
+import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
+import { injectRowAccessGuardDeps } from '@extensions/core/plugins/row-access/guard';
 import StorageService from '@application/services/storage/storage.service';
 import { MongooseConnect } from '@config/database.config';
 import { syncStorageEnv } from '@config/setting-env-sync';
@@ -147,6 +155,35 @@ async function start(): Promise<void> {
       rowPasswordService: csvRowPasswordService,
     });
     console.info('CSV import worker started');
+
+    // Injeta dependências do RowAccessGuard (fieldRepo, tableRepo, rowRepo, builders)
+    // e garante que o RowAccessGuardService registra o guard no boot.
+    const _rowAccessGuardService = getInstanceByToken<RowAccessGuardService>(
+      RowAccessGuardService,
+    );
+    const rowAccessFieldRepo = getInstanceByToken<FieldContractRepository>(
+      FieldMongooseRepository,
+    );
+    const rowAccessTableRepo = getInstanceByToken<TableContractRepository>(
+      TableMongooseRepository,
+    );
+    const rowAccessRowRepo = getInstanceByToken<RowContractRepository>(
+      RowMongooseRepository,
+    );
+    const rowAccessSchemaBuilder = getInstanceByToken<SchemaBuilderContractService>(
+      MongooseSchemaBuilder,
+    );
+    const rowAccessModelBuilder = getInstanceByToken<ModelBuilderContractService>(
+      MongooseModelBuilder,
+    );
+    injectRowAccessGuardDeps({
+      fieldRepo: rowAccessFieldRepo,
+      tableRepo: rowAccessTableRepo,
+      rowRepo: rowAccessRowRepo,
+      schemaBuilder: rowAccessSchemaBuilder,
+      modelBuilder: rowAccessModelBuilder,
+    });
+    console.info('RowAccessGuard deps injected');
   } catch (err) {
     console.error('Error starting server:', err);
     process.exit(1);

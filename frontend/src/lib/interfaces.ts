@@ -119,6 +119,11 @@ export type IUser = Merge<
   }
 >;
 
+export type IAuthenticationAccounts = {
+  activeAccountId: string | null;
+  accounts: Array<IUser>;
+};
+
 export type INotificationAction = {
   type: 'route' | 'url';
   href: string;
@@ -583,6 +588,8 @@ export type IExtension = Merge<
     manifestSnapshot: Record<string, unknown>;
     requires: IExtensionRequires;
     permissions: IExtensionPermissions;
+    supportsScopeAll: boolean;
+    tableSettings?: Record<string, Record<string, unknown>>;
   }
 >;
 

@@ -7,6 +7,7 @@ import type { IRow } from '@application/core/entity.core';
 import { E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldSlug } from '@application/core/field-slug.core';
+import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -39,6 +40,7 @@ export default class TableRowCreateUseCase {
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
     private readonly fieldVisibility: FieldVisibilityContractService,
     private readonly fieldValidation: FieldValidationContractService,
+    private readonly rowAccessGuard: RowAccessGuardService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -51,11 +53,47 @@ export default class TableRowCreateUseCase {
         );
       }
 
+      // Verifica permissão de escrita (create) via guard.
+      const creatorId = typeof payload.creator === 'string' ? payload.creator : undefined;
+      const ctx = await this.rowAccessGuard.resolveContext(creatorId);
+      const tableId = table._id.toString();
+
+      const writeDecision = await this.rowAccessGuard.composeWriteDecision(
+        tableId,
+        null,
+        ctx,
+        table,
+        payload,
+        'create',
+      );
+      if (writeDecision.decision === 'deny') {
+        return left(
+          HTTPException.Forbidden(
+            writeDecision.reason ?? 'Acesso negado',
+            'ROW_WRITE_RESTRICTED',
+          ),
+        );
+      }
+
+      // Sanitiza payload antes de validar/salvar (ex: forçar valor de visibility).
+      const sanitized = await this.rowAccessGuard.composeSanitize(
+        tableId,
+        payload as Record<string, unknown>,
+        ctx,
+        table,
+        'create',
+        null,
+      );
+      // Copia de volta as chaves sanitizadas para o payload mutável.
+      for (const key of Object.keys(sanitized)) {
+        (payload as Record<string, unknown>)[key] = sanitized[key];
+      }
+
       // Descarta escritas em campos ocultos no formulario para o solicitante.
       const hidden = await this.fieldVisibility.hiddenSlugs({
         fields: table.fields,
         context: 'form',
-        userId: payload.creator,
+        userId: creatorId,
         isOwner: payload.__isOwner,
         isAdministrator: payload.__isAdministrator,
       });
@@ -175,7 +213,7 @@ export default class TableRowCreateUseCase {
           context: {
             userAction: 'novo_registro',
             executionMoment: 'antes_salvar',
-            userId: payload.creator ?? undefined,
+            userId: creatorId,
             isNew: true,
             viaSaveHook: false,
             previous: null,

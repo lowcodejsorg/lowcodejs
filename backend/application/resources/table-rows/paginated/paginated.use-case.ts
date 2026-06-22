@@ -5,6 +5,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IMeta, IRow, Paginated } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
@@ -29,6 +30,7 @@ export default class TableRowPaginatedUseCase {
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly rowContextBuilder: RowContextBuilderContractService,
     private readonly fieldVisibility: FieldVisibilityContractService,
+    private readonly rowAccessGuard: RowAccessGuardService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -50,14 +52,28 @@ export default class TableRowPaginatedUseCase {
         );
       }
 
+      const ctx = await this.rowAccessGuard.resolveContext(payload.user);
+      const tableId = table._id.toString();
+      const guardQuery = await this.rowAccessGuard.composeListQuery(
+        tableId,
+        {},
+        ctx,
+        table,
+      );
+
       const rows = await this.rowRepository.findMany({
         table,
         rawFilters: payload,
         skip,
         limit,
+        guardQuery: Object.keys(guardQuery).length > 0 ? guardQuery : undefined,
       });
 
-      const total = await this.rowRepository.count(table, payload);
+      const total = await this.rowRepository.count(
+        table,
+        payload,
+        Object.keys(guardQuery).length > 0 ? guardQuery : undefined,
+      );
 
       const perPage = fetchAll ? total : payload.perPage;
       const page = fetchAll ? 1 : payload.page;

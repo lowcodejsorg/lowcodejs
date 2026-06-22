@@ -11,6 +11,8 @@ import InMemoryScriptExecutionService from '@application/services/script-executi
 import { makeDropdownField } from '@test/helpers/field-factory.helper';
 import { makeTable } from '@test/helpers/table-factory.helper';
 
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
+
 import TableRowCreateUseCase from '../create.use-case';
 
 let tableRepository: TableInMemoryRepository;
@@ -44,6 +46,7 @@ describe('Table Row Create - DROPDOWN', () => {
       new InMemoryRowMemberNotificationService(),
       new InMemoryFieldVisibilityService(),
       new FieldValidationService(rowRepository, userRepository),
+      new InMemoryRowAccessGuardService() as any,
     );
   });
 

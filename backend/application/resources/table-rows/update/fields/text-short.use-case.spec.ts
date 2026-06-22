@@ -17,6 +17,8 @@ import {
 } from '@test/helpers/field-factory.helper';
 import { makeTable } from '@test/helpers/table-factory.helper';
 
+import { InMemoryRowAccessGuardService } from '@application/core/extensions/in-memory-row-access-guard.service';
+
 import TableRowUpdateUseCase from '../update.use-case';
 
 let tableRepository: TableInMemoryRepository;
@@ -43,6 +45,7 @@ describe('Table Row Update - TEXT_SHORT', () => {
       new InMemoryRowMemberNotificationService(),
       new InMemoryFieldVisibilityService(),
       new FieldValidationService(rowRepository, new UserInMemoryRepository()),
+      new InMemoryRowAccessGuardService() as any,
     );
   });
 

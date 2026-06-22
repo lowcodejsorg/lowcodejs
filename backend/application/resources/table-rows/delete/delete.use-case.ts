@@ -4,6 +4,7 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
+import { RowAccessGuardService } from '@application/core/extensions/row-access-guard.service';
 import { resolveCreatorId } from '@application/core/row-ownership.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -24,6 +25,7 @@ export default class TableRowDeleteUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
     private readonly relationshipDeletion: RelationshipDeletionContractService,
+    private readonly rowAccessGuard: RowAccessGuardService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -58,6 +60,40 @@ export default class TableRowDeleteUseCase {
             ),
           );
         }
+      }
+
+      // Carrega a row para o guard (necessário para canWrite delete).
+      const row = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload._id },
+      });
+
+      if (!row) {
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
+      }
+
+      // Verifica permissão de delete via guard.
+      const actorUserId = typeof payload.__actorUserId === 'string' ? payload.__actorUserId : undefined;
+      const ctx = await this.rowAccessGuard.resolveContext(actorUserId);
+      const tableId = table._id.toString();
+
+      const writeDecision = await this.rowAccessGuard.composeWriteDecision(
+        tableId,
+        row,
+        ctx,
+        table,
+        null,
+        'delete',
+      );
+      if (writeDecision.decision === 'deny') {
+        return left(
+          HTTPException.Forbidden(
+            writeDecision.reason ?? 'Acesso negado',
+            'ROW_WRITE_RESTRICTED',
+          ),
+        );
       }
 
       // onDelete (§9): RESTRICT bloqueia; SET_NULL/CASCADE removem links e

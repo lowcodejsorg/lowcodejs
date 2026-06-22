@@ -44,6 +44,15 @@ export const Schema = new mongoose.Schema(
       tableIds: { type: [String], default: [] },
     },
 
+    /**
+     * Configurações por tabela. Mapa tableId -> settings (Record<string, unknown>).
+     * Populado por configure-table-scope e lido por RowAccessGuardService.
+     */
+    tableSettings: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+
     manifestSnapshot: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
