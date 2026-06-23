@@ -70,9 +70,9 @@ export function Profile(): React.JSX.Element {
     try {
       setSwitchingAccountId(accountId);
       await API.post('/authentication/switch-account', { accountId });
-      // Atualiza o store para a conta nova ANTES de limpar o cache: o
-      // queryClient.clear() refaz queries (ex.: useProfileRead do avatar) e
-      // elas precisam mandar o X-Auth-Account-Id da conta nova, não da antiga.
+      // O switch-account já reescreveu os cookies (accessToken + activeAccountId)
+      // para a conta nova; o store é atualizado antes do clear só para a UI
+      // refletir a troca imediatamente (avatar, nome).
       if (target) useAuthStore.getState().setActiveAccount(target);
       queryClient.clear();
 

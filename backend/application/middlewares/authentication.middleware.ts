@@ -2,7 +2,7 @@ import { type FastifyRequest } from 'fastify';
 
 import { E_JWT_TYPE, type IJWTPayload } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { resolveAccessToken } from '@application/utils/cookies.util';
+import { getRequestCookie } from '@application/utils/cookies.util';
 
 interface AuthOptions {
   optional?: boolean;
@@ -13,8 +13,7 @@ export function AuthenticationMiddleware(
 ) {
   return async function (request: FastifyRequest): Promise<void> {
     try {
-      const resolvedToken = resolveAccessToken(request);
-      const accessToken = resolvedToken.token;
+      const accessToken = getRequestCookie(request, 'accessToken');
 
       if (!accessToken) {
         if (options.optional) return;
@@ -29,9 +28,7 @@ export function AuthenticationMiddleware(
 
       if (
         !accessTokenDecoded ||
-        accessTokenDecoded.type !== E_JWT_TYPE.ACCESS ||
-        (resolvedToken.accountId &&
-          accessTokenDecoded.sub !== resolvedToken.accountId)
+        accessTokenDecoded.type !== E_JWT_TYPE.ACCESS
       ) {
         if (options.optional) return;
         throw HTTPException.Unauthorized(

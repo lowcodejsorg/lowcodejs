@@ -1,22 +1,33 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { Controller, POST } from 'fastify-decorators';
+import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
+import { E_JWT_TYPE, type IJWTPayload } from '@application/core/entity.core';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import ProfileShowUseCase from '@application/resources/profile/show/show.use-case';
 import {
-  clearAccountCookieTokens,
-  clearActiveAccountCookie,
-  clearCookieTokens,
-  listAuthAccountIds,
-  resolveAuthAccountId,
-  setActiveAccountCookie,
+  clearAllSessions,
+  readAccountSessions,
+  setActiveSession,
+  writeAccountSessions,
 } from '@application/utils/cookies.util';
+import { createTokens } from '@application/utils/jwt.util';
 
 import { SignOutSchema } from './sign-out.schema';
+import { SignOutBodyValidator } from './sign-out.validator';
+
+const SUCCESS_MESSAGE = 'Logout realizado com sucesso';
 
 @Controller({
   route: 'authentication',
 })
 export default class {
+  constructor(
+    private readonly profileUseCase: ProfileShowUseCase = getInstanceByToken(
+      ProfileShowUseCase,
+    ),
+  ) {}
+
   @POST({
     url: '/sign-out',
     options: {
@@ -29,38 +40,60 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const body = request.body as { all?: boolean } | undefined;
-    const accountIds = listAuthAccountIds(request);
-    const activeAccountId = resolveAuthAccountId(request) ?? request.user.sub;
+    const { all } = SignOutBodyValidator.parse(request.body ?? {});
+    const sessions = readAccountSessions(request);
+    const sessionIds = Object.keys(sessions);
 
-    if (body?.all || accountIds.length === 0) {
-      clearCookieTokens(response);
-      for (const accountId of accountIds) {
-        clearAccountCookieTokens(response, accountId);
-      }
-      clearActiveAccountCookie(response);
+    if (all || sessionIds.length === 0) {
+      clearAllSessions(response);
 
       return response.status(200).send({
-        message: 'Logout realizado com sucesso',
+        message: SUCCESS_MESSAGE,
         activeAccountId: null,
       });
     }
 
-    clearAccountCookieTokens(response, activeAccountId);
+    // Promove a próxima conta inativa válida a ativa (gera novo access token).
+    for (const nextAccountId of sessionIds) {
+      const refreshToken = sessions[nextAccountId];
 
-    const nextAccountId = accountIds.find(
-      (accountId) => accountId !== activeAccountId,
-    );
+      const refreshTokenDecoded: IJWTPayload | null =
+        await request.server.jwt.decode(refreshToken);
 
-    if (nextAccountId) {
-      setActiveAccountCookie(response, nextAccountId);
-    } else {
-      clearActiveAccountCookie(response);
+      if (
+        !refreshTokenDecoded ||
+        refreshTokenDecoded.type !== E_JWT_TYPE.REFRESH ||
+        refreshTokenDecoded.sub !== nextAccountId
+      ) {
+        delete sessions[nextAccountId];
+        continue;
+      }
+
+      const result = await this.profileUseCase.execute({ _id: nextAccountId });
+
+      if (result.isLeft()) {
+        delete sessions[nextAccountId];
+        continue;
+      }
+
+      const tokens = await createTokens(result.value, response);
+
+      delete sessions[nextAccountId];
+      writeAccountSessions(response, sessions);
+      setActiveSession(response, nextAccountId, { ...tokens });
+
+      return response.status(200).send({
+        message: SUCCESS_MESSAGE,
+        activeAccountId: nextAccountId,
+      });
     }
 
+    // Nenhuma sessão inativa válida restante: encerra tudo.
+    clearAllSessions(response);
+
     return response.status(200).send({
-      message: 'Logout realizado com sucesso',
-      activeAccountId: nextAccountId ?? null,
+      message: SUCCESS_MESSAGE,
+      activeAccountId: null,
     });
   }
 }

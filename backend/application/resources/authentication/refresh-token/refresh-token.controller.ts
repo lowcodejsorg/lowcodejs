@@ -5,9 +5,9 @@ import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 import { E_JWT_TYPE, type IJWTPayload } from '@application/core/entity.core';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import {
-  resolveRefreshToken,
-  setAccountCookieTokens,
-  setCookieTokens,
+  getActiveAccountId,
+  getRequestCookie,
+  setActiveSession,
 } from '@application/utils/cookies.util';
 import { createTokens } from '@application/utils/jwt.util';
 
@@ -37,8 +37,7 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     try {
-      const resolvedToken = resolveRefreshToken(request);
-      const refreshToken = resolvedToken.token;
+      const refreshToken = getRequestCookie(request, 'refreshToken');
 
       if (!refreshToken) {
         return response.status(401).send({
@@ -51,11 +50,12 @@ export default class {
       const refreshTokenDecoded: IJWTPayload | null =
         await request.server.jwt.decode(refreshToken);
 
+      const activeAccountId = getActiveAccountId(request);
+
       if (
         !refreshTokenDecoded ||
         refreshTokenDecoded.type !== E_JWT_TYPE.REFRESH ||
-        (resolvedToken.accountId &&
-          refreshTokenDecoded.sub !== resolvedToken.accountId)
+        (activeAccountId && refreshTokenDecoded.sub !== activeAccountId)
       ) {
         return response.status(401).send({
           message: 'Invalid or expired refresh token',
@@ -81,13 +81,7 @@ export default class {
 
       const tokens = await createTokens(result.value, response);
 
-      if (resolvedToken.accountId) {
-        setAccountCookieTokens(response, resolvedToken.accountId, {
-          ...tokens,
-        });
-      } else {
-        setCookieTokens(response, { ...tokens });
-      }
+      setActiveSession(response, refreshTokenDecoded.sub, { ...tokens });
 
       return response.status(200).send();
     } catch (error) {

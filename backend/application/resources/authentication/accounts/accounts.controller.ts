@@ -6,12 +6,12 @@ import { E_JWT_TYPE, type IJWTPayload } from '@application/core/entity.core';
 import ProfileShowUseCase from '@application/resources/profile/show/show.use-case';
 import { toUserResponse } from '@application/resources/users/users.mapper';
 import {
-  clearAccountCookieTokens,
   clearActiveAccountCookie,
-  getIndexedToken,
-  listAuthAccountIds,
-  resolveAuthAccountId,
+  getActiveAccountId,
+  getRequestCookie,
+  readAccountSessions,
   setActiveAccountCookie,
+  writeAccountSessions,
 } from '@application/utils/cookies.util';
 
 import { AuthenticationAccountsSchema } from './accounts.schema';
@@ -33,17 +33,23 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const accountIds = listAuthAccountIds(request);
+    const activeId = getActiveAccountId(request);
+    const activeRefreshToken = getRequestCookie(request, 'refreshToken');
+    const sessions = readAccountSessions(request);
+
+    // Mapa accountId -> refreshToken (conta ativa + inativas, sem duplicar).
+    const candidates = new Map<string, string>();
+    if (activeId && activeRefreshToken) {
+      candidates.set(activeId, activeRefreshToken);
+    }
+    for (const [accountId, refreshToken] of Object.entries(sessions)) {
+      if (!candidates.has(accountId)) candidates.set(accountId, refreshToken);
+    }
+
     const accounts = [];
+    const validSessions: Record<string, string> = {};
 
-    for (const accountId of accountIds) {
-      const refreshToken = getIndexedToken(request, 'refresh', accountId);
-
-      if (!refreshToken) {
-        clearAccountCookieTokens(response, accountId);
-        continue;
-      }
-
+    for (const [accountId, refreshToken] of candidates) {
       const refreshTokenDecoded: IJWTPayload | null =
         await request.server.jwt.decode(refreshToken);
 
@@ -52,26 +58,26 @@ export default class {
         refreshTokenDecoded.type !== E_JWT_TYPE.REFRESH ||
         refreshTokenDecoded.sub !== accountId
       ) {
-        clearAccountCookieTokens(response, accountId);
         continue;
       }
 
       const result = await this.profileUseCase.execute({ _id: accountId });
 
-      if (result.isLeft()) {
-        clearAccountCookieTokens(response, accountId);
-        continue;
-      }
+      if (result.isLeft()) continue;
 
       accounts.push(toUserResponse(result.value));
+      if (accountId !== activeId) validSessions[accountId] = refreshToken;
     }
 
-    const requestedActiveAccountId = resolveAuthAccountId(request);
-    const activeAccountId = accounts.some(
-      (account) => account._id.toString() === requestedActiveAccountId,
-    )
-      ? requestedActiveAccountId
-      : accounts[0]?._id.toString();
+    // Poda sessões inativas inválidas reescrevendo o cookie consolidado.
+    writeAccountSessions(response, validSessions);
+
+    const activeIsValid = accounts.some(
+      (account) => account._id.toString() === activeId,
+    );
+
+    let activeAccountId: string | null = null;
+    if (activeId && activeIsValid) activeAccountId = activeId;
 
     if (activeAccountId) {
       setActiveAccountCookie(response, activeAccountId);
@@ -80,7 +86,7 @@ export default class {
     }
 
     return response.status(200).send({
-      activeAccountId: activeAccountId ?? null,
+      activeAccountId,
       accounts,
     });
   }

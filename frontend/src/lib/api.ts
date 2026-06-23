@@ -10,10 +10,10 @@ let baseUrlPromise: Promise<string> | null = null;
 
 const ACTIVE_ACCOUNT_COOKIE = 'activeAccountId';
 
-// Fonte de verdade da conta ativa no client: o cookie `activeAccountId` (setado
-// pelo backend com httpOnly:false, logo legível por JS). O store/localStorage
-// pode dessincronizar dos cookies (id stale -> 401 -> logout no refresh), então
-// o header X-Auth-Account-Id deve derivar do cookie, não do Zustand.
+// Conta ativa lida do cookie `activeAccountId` (httpOnly:false, legível por JS).
+// Usado só para, ao perder a sessão, decidir entre remover a conta ativa do
+// store ou limpar tudo. A resolução do token no backend é pelo cookie
+// `accessToken` fixo — não há mais header X-Auth-Account-Id.
 function readActiveAccountCookie(): string | null {
   if (typeof document === 'undefined') return null;
 
@@ -48,21 +48,9 @@ API.interceptors.request.use(async (config) => {
   }
   config.baseURL = resolvedBaseUrl;
 
-  // Só injeta o activeAccountId do store se a request NÃO trouxe um
-  // X-Auth-Account-Id explícito. Fluxos de transição (add/switch) passam um
-  // header próprio (vazio = usar cookie) para não serem poluídos pelo store
-  // ainda stale.
-  if (
-    typeof window !== 'undefined' &&
-    !config.headers.has('X-Auth-Account-Id')
-  ) {
-    const activeAccountId = readActiveAccountCookie();
-    if (activeAccountId) {
-      config.headers.set('X-Auth-Account-Id', activeAccountId);
-    }
-  }
-
-  if (typeof window === 'undefined') {
+  // Em SSR injeta os cookies do request — exceto quando a chamada já trouxe um
+  // Cookie explícito (ex.: retry pós-refresh no beforeLoad com os cookies novos).
+  if (typeof window === 'undefined' && !config.headers.has('Cookie')) {
     try {
       const cookies = await getServerCookies();
       if (cookies) config.headers.set('Cookie', cookies);
@@ -96,25 +84,17 @@ const isAuthEndpoint = (url: string | undefined): boolean => {
 
 type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean };
 
-const refreshPromises = new Map<string, Promise<void>>();
+let refreshPromise: Promise<void> | null = null;
 
-const performRefresh = (accountId: string | null): Promise<void> => {
-  const refreshKey = accountId ?? 'legacy';
-  const existingPromise = refreshPromises.get(refreshKey);
-  if (existingPromise) return existingPromise;
+const performRefresh = (): Promise<void> => {
+  if (refreshPromise) return refreshPromise;
 
-  const headers: Record<string, string> = {};
-  if (accountId) headers['X-Auth-Account-Id'] = accountId;
-
-  const refreshPromise = API.post('/authentication/refresh-token', undefined, {
-    headers,
-  })
+  refreshPromise = API.post('/authentication/refresh-token')
     .then(() => undefined)
     .finally(() => {
-      refreshPromises.delete(refreshKey);
+      refreshPromise = null;
     });
 
-  refreshPromises.set(refreshKey, refreshPromise);
   return refreshPromise;
 };
 
@@ -154,11 +134,9 @@ API.interceptors.response.use(
     }
 
     config._retried = true;
-    const activeAccountId =
-      readActiveAccountCookie() ?? useAuthStore.getState().activeAccountId;
 
     try {
-      await performRefresh(activeAccountId);
+      await performRefresh();
       return API.request(config);
     } catch (refreshError) {
       handleSessionLost();

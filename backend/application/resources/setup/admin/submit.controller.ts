@@ -2,10 +2,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
-import {
-  clearCookieTokens,
-  setCookieTokens,
-} from '@application/utils/cookies.util';
+import { setActiveSession } from '@application/utils/cookies.util';
 import { createTokens } from '@application/utils/jwt.util';
 
 import { SetupAdminSubmitSchema } from './submit.schema';
@@ -51,8 +48,7 @@ export default class {
     const { user, ...status } = result.value;
     const tokens = await createTokens(user, response);
 
-    clearCookieTokens(response);
-    setCookieTokens(response, { ...tokens });
+    setActiveSession(response, user._id.toString(), { ...tokens });
 
     return response.status(201).send(status);
   }

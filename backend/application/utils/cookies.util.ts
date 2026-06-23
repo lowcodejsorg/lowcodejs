@@ -6,10 +6,13 @@ import type { TokenPair } from './jwt.util';
 
 export const MAX_AUTH_ACCOUNTS = 2;
 export const ACTIVE_ACCOUNT_COOKIE = 'activeAccountId';
-export const AUTH_ACCOUNT_HEADER = 'x-auth-account-id';
 
 const ACCESS_TOKEN_COOKIE = 'accessToken';
 const REFRESH_TOKEN_COOKIE = 'refreshToken';
+const ACCOUNT_SESSIONS_COOKIE = 'accountSessions';
+
+const ACCESS_MAX_AGE = 60 * 60 * 24 * 1000; // 24h
+const REFRESH_MAX_AGE = 60 * 60 * 7 * 24 * 1000; // 7d
 
 const getCookieOptions = (
   httpOnly = true,
@@ -75,160 +78,51 @@ export function getRequestCookie(
   );
 }
 
-export function getTokenCookieName(
-  type: 'access' | 'refresh',
-  accountId: string,
-): string {
-  if (type === 'access') return `${ACCESS_TOKEN_COOKIE}_${accountId}`;
-  return `${REFRESH_TOKEN_COOKIE}_${accountId}`;
+// Conta ativa: o cookie `activeAccountId` (httpOnly:false, legível por JS no
+// front). Quando ausente, quem precisar do id usa o `sub` do token decodificado.
+export function getActiveAccountId(
+  request: FastifyRequest,
+): string | undefined {
+  const value = getRequestCookie(request, ACTIVE_ACCOUNT_COOKIE)?.trim();
+  if (value) return value;
+  return undefined;
 }
 
-export function listAuthAccountIds(request: FastifyRequest): Array<string> {
-  const accountIds = new Set<string>();
-  const pattern = /^(?:accessToken|refreshToken)_(.+)$/;
+// Sessões inativas vivem consolidadas num único cookie `accountSessions`
+// (JSON httpOnly: { "<accountId>": "<refreshToken>" }). Parse defensivo: valor
+// corrompido vira mapa vazio em vez de derrubar a request.
+export function readAccountSessions(
+  request: FastifyRequest,
+): Record<string, string> {
+  const raw = getRequestCookie(request, ACCOUNT_SESSIONS_COOKIE);
+  if (!raw) return {};
 
-  for (const key of Object.keys(request.cookies)) {
-    const match = key.match(pattern);
-    if (match?.[1]) accountIds.add(match[1]);
+  try {
+    const parsed: unknown = JSON.parse(decodeURIComponent(raw));
+    if (!parsed || typeof parsed !== 'object') return {};
+
+    const sessions: Record<string, string> = {};
+    for (const [accountId, token] of Object.entries(parsed)) {
+      if (typeof token === 'string' && token) sessions[accountId] = token;
+    }
+    return sessions;
+  } catch {
+    return {};
   }
+}
 
-  for (const [key] of parseCookieHeader(request.headers.cookie)) {
-    const match = key.match(pattern);
-    if (match?.[1]) accountIds.add(match[1]);
+export function listAccountIds(request: FastifyRequest): Array<string> {
+  const accountIds = new Set<string>();
+
+  const activeAccountId = getActiveAccountId(request);
+  if (activeAccountId) accountIds.add(activeAccountId);
+
+  for (const accountId of Object.keys(readAccountSessions(request))) {
+    accountIds.add(accountId);
   }
 
   return Array.from(accountIds);
 }
-
-export function getRequestedAccountId(
-  request: FastifyRequest,
-): string | undefined {
-  const headerValue = request.headers[AUTH_ACCOUNT_HEADER];
-  const headerAccountId = Array.isArray(headerValue)
-    ? headerValue.at(-1)
-    : headerValue;
-
-  return (
-    headerAccountId?.trim() ||
-    getRequestCookie(request, ACTIVE_ACCOUNT_COOKIE)?.trim() ||
-    undefined
-  );
-}
-
-export function resolveAuthAccountId(
-  request: FastifyRequest,
-): string | undefined {
-  const requestedAccountId = getRequestedAccountId(request);
-  if (requestedAccountId) return requestedAccountId;
-
-  const accountIds = listAuthAccountIds(request);
-  if (accountIds.length === 1) return accountIds[0];
-
-  return undefined;
-}
-
-export function getIndexedToken(
-  request: FastifyRequest,
-  type: 'access' | 'refresh',
-  accountId: string,
-): string | undefined {
-  return getRequestCookie(request, getTokenCookieName(type, accountId));
-}
-
-// Quando o accountId pedido (header/cookie) nao tem token correspondente — id
-// stale do localStorage ou SSR sem header — cair para a unica conta que de fato
-// tem token, antes do fallback legado. Evita 401 -> logout espurio.
-function resolveSingleIndexedAccount(
-  request: FastifyRequest,
-  type: 'access' | 'refresh',
-): { token: string; accountId: string } | undefined {
-  const withToken = listAuthAccountIds(request)
-    .map((id) => ({ id, token: getIndexedToken(request, type, id) }))
-    .filter((entry): entry is { id: string; token: string } =>
-      Boolean(entry.token),
-    );
-
-  if (withToken.length === 1) {
-    return { token: withToken[0].token, accountId: withToken[0].id };
-  }
-
-  return undefined;
-}
-
-export function resolveAccessToken(request: FastifyRequest): {
-  token?: string;
-  accountId?: string;
-  legacy: boolean;
-} {
-  const accountId = resolveAuthAccountId(request);
-  if (accountId) {
-    const token = getIndexedToken(request, 'access', accountId);
-    if (token) return { token, accountId, legacy: false };
-
-    const fallback = resolveSingleIndexedAccount(request, 'access');
-    if (fallback) {
-      return {
-        token: fallback.token,
-        accountId: fallback.accountId,
-        legacy: false,
-      };
-    }
-  }
-
-  return {
-    token: getRequestCookie(request, ACCESS_TOKEN_COOKIE),
-    legacy: true,
-  };
-}
-
-export function resolveRefreshToken(request: FastifyRequest): {
-  token?: string;
-  accountId?: string;
-  legacy: boolean;
-} {
-  const accountId = resolveAuthAccountId(request);
-  if (accountId) {
-    const token = getIndexedToken(request, 'refresh', accountId);
-    if (token) return { token, accountId, legacy: false };
-
-    const fallback = resolveSingleIndexedAccount(request, 'refresh');
-    if (fallback) {
-      return {
-        token: fallback.token,
-        accountId: fallback.accountId,
-        legacy: false,
-      };
-    }
-  }
-
-  return {
-    token: getRequestCookie(request, REFRESH_TOKEN_COOKIE),
-    legacy: true,
-  };
-}
-
-export const clearCookieTokens = (response: FastifyReply): void => {
-  const cookieOptions = getCookieOptions();
-
-  response
-    .clearCookie(ACCESS_TOKEN_COOKIE, cookieOptions)
-    .clearCookie(REFRESH_TOKEN_COOKIE, cookieOptions);
-};
-
-export const clearAccountCookieTokens = (
-  response: FastifyReply,
-  accountId: string,
-): void => {
-  const cookieOptions = getCookieOptions();
-
-  response
-    .clearCookie(getTokenCookieName('access', accountId), cookieOptions)
-    .clearCookie(getTokenCookieName('refresh', accountId), cookieOptions);
-};
-
-export const clearActiveAccountCookie = (response: FastifyReply): void => {
-  response.clearCookie(ACTIVE_ACCOUNT_COOKIE, getCookieOptions(false));
-};
 
 export const setActiveAccountCookie = (
   response: FastifyReply,
@@ -236,7 +130,30 @@ export const setActiveAccountCookie = (
 ): void => {
   response.setCookie(ACTIVE_ACCOUNT_COOKIE, accountId, {
     ...getCookieOptions(false),
-    maxAge: 60 * 60 * 7 * 24 * 1000, // 7d
+    maxAge: REFRESH_MAX_AGE,
+  });
+};
+
+export const clearActiveAccountCookie = (response: FastifyReply): void => {
+  response.clearCookie(ACTIVE_ACCOUNT_COOKIE, getCookieOptions(false));
+};
+
+export const clearAccountSessions = (response: FastifyReply): void => {
+  response.clearCookie(ACCOUNT_SESSIONS_COOKIE, getCookieOptions());
+};
+
+export const writeAccountSessions = (
+  response: FastifyReply,
+  sessions: Record<string, string>,
+): void => {
+  if (Object.keys(sessions).length === 0) {
+    clearAccountSessions(response);
+    return;
+  }
+
+  response.setCookie(ACCOUNT_SESSIONS_COOKIE, JSON.stringify(sessions), {
+    ...getCookieOptions(),
+    maxAge: REFRESH_MAX_AGE,
   });
 };
 
@@ -249,30 +166,35 @@ export const setCookieTokens = (
   response
     .setCookie(ACCESS_TOKEN_COOKIE, tokens.accessToken, {
       ...cookieOptions,
-      maxAge: 60 * 60 * 24 * 1000, // 24h
+      maxAge: ACCESS_MAX_AGE,
     })
     .setCookie(REFRESH_TOKEN_COOKIE, tokens.refreshToken, {
       ...cookieOptions,
-      maxAge: 60 * 60 * 7 * 24 * 1000, // 7d
+      maxAge: REFRESH_MAX_AGE,
     });
 };
 
-export const setAccountCookieTokens = (
+export const clearCookieTokens = (response: FastifyReply): void => {
+  const cookieOptions = getCookieOptions();
+
+  response
+    .clearCookie(ACCESS_TOKEN_COOKIE, cookieOptions)
+    .clearCookie(REFRESH_TOKEN_COOKIE, cookieOptions);
+};
+
+// Promove uma conta a ativa: grava o par de tokens nos cookies fixos
+// `accessToken`/`refreshToken` e marca `activeAccountId`.
+export const setActiveSession = (
   response: FastifyReply,
   accountId: string,
   tokens: TokenPair,
 ): void => {
-  const cookieOptions = getCookieOptions();
-
-  response
-    .setCookie(getTokenCookieName('access', accountId), tokens.accessToken, {
-      ...cookieOptions,
-      maxAge: 60 * 60 * 24 * 1000, // 24h
-    })
-    .setCookie(getTokenCookieName('refresh', accountId), tokens.refreshToken, {
-      ...cookieOptions,
-      maxAge: 60 * 60 * 7 * 24 * 1000, // 7d
-    });
-
+  setCookieTokens(response, tokens);
   setActiveAccountCookie(response, accountId);
+};
+
+export const clearAllSessions = (response: FastifyReply): void => {
+  clearCookieTokens(response);
+  clearActiveAccountCookie(response);
+  clearAccountSessions(response);
 };

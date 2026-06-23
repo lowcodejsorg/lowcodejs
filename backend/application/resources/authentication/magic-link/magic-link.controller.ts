@@ -2,7 +2,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
-import { setCookieTokens } from '@application/utils/cookies.util';
+import { setActiveSession } from '@application/utils/cookies.util';
 import { createTokens } from '@application/utils/jwt.util';
 import { Env } from '@start/env';
 
@@ -44,7 +44,7 @@ export default class {
 
     const tokens = await createTokens(result.value, response);
 
-    setCookieTokens(response, { ...tokens });
+    setActiveSession(response, result.value._id.toString(), { ...tokens });
 
     return response
       .status(302)

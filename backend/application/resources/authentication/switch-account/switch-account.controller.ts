@@ -5,10 +5,13 @@ import { Controller, POST, getInstanceByToken } from 'fastify-decorators';
 import { E_JWT_TYPE, type IJWTPayload } from '@application/core/entity.core';
 import ProfileShowUseCase from '@application/resources/profile/show/show.use-case';
 import {
-  getIndexedToken,
-  listAuthAccountIds,
-  setActiveAccountCookie,
+  getActiveAccountId,
+  getRequestCookie,
+  readAccountSessions,
+  setActiveSession,
+  writeAccountSessions,
 } from '@application/utils/cookies.util';
+import { createTokens } from '@application/utils/jwt.util';
 
 import { SwitchAccountSchema } from './switch-account.schema';
 import { SwitchAccountBodyValidator } from './switch-account.validator';
@@ -31,9 +34,16 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const { accountId } = SwitchAccountBodyValidator.parse(request.body);
-    const accountIds = listAuthAccountIds(request);
+    const currentActiveId = getActiveAccountId(request);
 
-    if (!accountIds.includes(accountId)) {
+    if (accountId === currentActiveId) {
+      return response.status(200).send({ activeAccountId: accountId });
+    }
+
+    const sessions = readAccountSessions(request);
+    const targetRefreshToken = sessions[accountId];
+
+    if (!targetRefreshToken) {
       return response.status(401).send({
         message: 'Conta autenticada não encontrada',
         code: 401,
@@ -41,24 +51,17 @@ export default class {
       });
     }
 
-    const refreshToken = getIndexedToken(request, 'refresh', accountId);
-
-    if (!refreshToken) {
-      return response.status(401).send({
-        message: 'Refresh token ausente',
-        code: 401,
-        cause: 'MISSING_REFRESH_TOKEN',
-      });
-    }
-
     const refreshTokenDecoded: IJWTPayload | null =
-      await request.server.jwt.decode(refreshToken);
+      await request.server.jwt.decode(targetRefreshToken);
 
     if (
       !refreshTokenDecoded ||
       refreshTokenDecoded.type !== E_JWT_TYPE.REFRESH ||
       refreshTokenDecoded.sub !== accountId
     ) {
+      delete sessions[accountId];
+      writeAccountSessions(response, sessions);
+
       return response.status(401).send({
         message: 'Refresh token inválido ou expirado',
         code: 401,
@@ -79,7 +82,17 @@ export default class {
       });
     }
 
-    setActiveAccountCookie(response, accountId);
+    const tokens = await createTokens(result.value, response);
+
+    // Alvo deixa de ser inativo; a conta ativa atual passa a inativa.
+    delete sessions[accountId];
+    const currentRefreshToken = getRequestCookie(request, 'refreshToken');
+    if (currentActiveId && currentRefreshToken) {
+      sessions[currentActiveId] = currentRefreshToken;
+    }
+    writeAccountSessions(response, sessions);
+
+    setActiveSession(response, accountId, { ...tokens });
 
     return response.status(200).send({ activeAccountId: accountId });
   }

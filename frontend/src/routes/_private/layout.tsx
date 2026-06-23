@@ -15,7 +15,8 @@ import {
 } from '@/hooks/tanstack-query/_query-options';
 import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';
 import { API } from '@/lib/api';
-import type { IAuthenticationAccounts } from '@/lib/interfaces';
+import type { IAuthenticationAccounts, IUser } from '@/lib/interfaces';
+import { serverRefreshSession } from '@/lib/server/refresh-session';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private')({
@@ -36,12 +37,21 @@ export const Route = createFileRoute('/_private')({
       });
     }
 
+    const seedSession = (
+      accounts: Array<IUser>,
+      activeAccountId: string | null,
+      user: IUser,
+    ): void => {
+      useAuthStore.getState().setAccounts(accounts, activeAccountId);
+      // Sessao sem contas indexadas ainda precisa popular o store.
+      if (accounts.length === 0) useAuthStore.getState().setUser(user);
+      context.queryClient.setQueryData(profileDetailOptions().queryKey, user);
+      context.queryClient.prefetchQuery(settingOptions());
+    };
+
     try {
-      // Reconciliar as contas ANTES de qualquer request que dependa do token
-      // indexado: /authentication/accounts resolve pelos cookies de refresh (nao
-      // depende do header) e devolve a conta ativa correta. Assim o store para
-      // de mandar um X-Auth-Account-Id stale do localStorage no GET /profile —
-      // causa do 401 -> logout ao dar refresh.
+      // /authentication/accounts resolve a conta ativa pelos cookies e devolve a
+      // lista; o store para de mandar id stale no GET /profile.
       const accountsResponse = await API.get<IAuthenticationAccounts>(
         '/authentication/accounts',
       );
@@ -56,13 +66,39 @@ export const Route = createFileRoute('/_private')({
         profileDetailOptions(),
       );
 
-      // Sessao legada (sem contas indexadas) ainda precisa popular o store.
       if (accountsResponse.data.accounts.length === 0) {
         useAuthStore.getState().setUser(user);
       }
 
       context.queryClient.prefetchQuery(settingOptions());
     } catch {
+      // SSR não renova o access token pelo interceptor (que é client-only).
+      // Renova server-side, repassa os cookies novos ao browser e refaz a carga
+      // com eles. No client, o interceptor do axios já trata o 401.
+      if (typeof window === 'undefined') {
+        const refreshed = await serverRefreshSession();
+        if (refreshed.ok && refreshed.cookie) {
+          try {
+            const headers = { Cookie: refreshed.cookie };
+            const accountsResponse = await API.get<IAuthenticationAccounts>(
+              '/authentication/accounts',
+              { headers },
+            );
+            const profileResponse = await API.get<IUser>('/profile', {
+              headers,
+            });
+            seedSession(
+              accountsResponse.data.accounts,
+              accountsResponse.data.activeAccountId,
+              profileResponse.data,
+            );
+            return;
+          } catch {
+            /* refresh não recuperou a sessão; segue para o tratamento abaixo */
+          }
+        }
+      }
+
       useAuthStore.getState().clear();
 
       // Permitir acesso público a rotas de visualização de tabela
