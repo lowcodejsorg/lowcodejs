@@ -34,6 +34,8 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
     TABLE_STYLE_OPTIONS.find((opt) => opt.value === data.style)?.label ||
     data.style;
 
+  const members = data.members ?? [];
+
   const groups = useGroupReadList();
   const groupNameById = React.useMemo(() => {
     const map = new Map<string, string>();
@@ -126,9 +128,9 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
         {/* Convidados (perfis de colaboração) */}
         <div className="space-y-1">
           <p className="text-sm font-medium">Convidados</p>
-          {data.members.length > 0 && (
+          {members.length > 0 && (
             <div className="space-y-2">
-              {data.members.map((member) => (
+              {members.map((member) => (
                 <div
                   key={member.user}
                   className="flex items-center justify-between gap-3 rounded-md border p-2"
@@ -143,7 +145,7 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
               ))}
             </div>
           )}
-          {data.members.length === 0 && (
+          {members.length === 0 && (
             <p className="text-sm text-muted-foreground">-</p>
           )}
         </div>
