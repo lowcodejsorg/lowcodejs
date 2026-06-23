@@ -6,6 +6,7 @@ import type {
   IField,
   IGroupConfiguration,
   IRow,
+  ITable,
   Optional,
 } from '@application/core/entity.core';
 import { executeScript } from '@application/core/table/handler';
@@ -19,9 +20,41 @@ export interface Entity extends Omit<IRow, '_id'>, mongoose.Document {
   _id: mongoose.Types.ObjectId;
 }
 
+type BuildTable = Optional<
+  ITable,
+  '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
+>;
+
 @Service()
 export default class MongooseModelBuilder implements ModelBuilderContractService {
   constructor(private readonly schema: SchemaBuilderContractService) {}
+
+  /**
+   * Cache dos models dinamicos compilados, por `table._id`. Sem isto, cada
+   * listagem de rows recompilava o schema (com closures dos hooks) — e o
+   * populate-builder recompila por relacionamento/depth — fazendo o heap
+   * crescer ate OOM. Reusa o model enquanto a `version` bater; so recompila
+   * quando a tabela muda (novo `updatedAt`/assinatura do schema).
+   */
+  private static readonly modelCache = new Map<
+    string,
+    { version: string; model: mongoose.Model<Entity> }
+  >();
+
+  /**
+   * Assinatura barata do que afeta o schema compilado. Prefere `updatedAt`
+   * (edicao de campo/grupo persiste `_schema` no doc Table e bumpa updatedAt);
+   * cai para uma assinatura derivada quando o timestamp nao vem no payload.
+   */
+  private static signature(table: BuildTable): string {
+    if (table.updatedAt) return `t:${String(table.updatedAt)}`;
+    return `s:${JSON.stringify({
+      _schema: table._schema,
+      groups: table.groups,
+      methods: table.methods,
+      slug: table.slug,
+    })}`;
+  }
 
   /**
    * Maps IField array to FieldDefinition array for sandbox execution
@@ -40,17 +73,23 @@ export default class MongooseModelBuilder implements ModelBuilderContractService
     }));
   }
 
-  async build(
-    table: Optional<
-      import('@application/core/entity.core').ITable,
-      '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
-    >,
-  ): Promise<mongoose.Model<Entity>> {
+  async build(table: BuildTable): Promise<mongoose.Model<Entity>> {
     if (!table?.slug) throw new Error('Table slug not found');
 
     if (!table?._schema) throw new Error('Table schema not found');
 
     const conn = getDataConnection();
+
+    const modelName = table._id?.toString();
+    if (!modelName) throw new Error('Table _id not found');
+
+    // Cache hit: model ja compilado e tabela inalterada. Pula a recompilacao do
+    // schema/hooks e o createCollection — corta o leak de heap nas listagens.
+    const version = MongooseModelBuilder.signature(table);
+    const cached = MongooseModelBuilder.modelCache.get(modelName);
+    if (cached && cached.version === version && conn.models[modelName]) {
+      return cached.model;
+    }
 
     const schemaDefinition: mongoose.SchemaDefinition = {};
 
@@ -193,14 +232,14 @@ export default class MongooseModelBuilder implements ModelBuilderContractService
       });
     }
 
-    const modelName = table._id?.toString();
-    if (!modelName) throw new Error('Table _id not found');
     if (conn.models[modelName]) {
       conn.deleteModel(modelName);
     }
     const model = conn.model<Entity>(modelName, schema, table.slug);
 
     await model.createCollection();
+
+    MongooseModelBuilder.modelCache.set(modelName, { version, model });
 
     return model;
   }

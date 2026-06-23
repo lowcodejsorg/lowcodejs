@@ -10,6 +10,14 @@
  * detalhe usa `side` para chamar os endpoints `/links`. Rede de segurança para
  * campos que a 15 não cobriu.
  *
+ * Antes do assert de fechamento, remove Field RELATIONSHIP órfão: `group: null`,
+ * sem `relationshipId` e fora de `table.fields` e `table.groups[].fields`. Esse
+ * campo nunca será materializado por nenhuma migration (15/23 o pulam com
+ * "tabela source não encontrada") — é lixo de rename/remoção que travaria o
+ * gate eternamente. Apagá-lo permite o boot se auto-curar. Campos ainda
+ * recuperáveis (em `table.fields` sem `relationshipId`, ou em grupo) NÃO são
+ * tocados — continuam dando hard-fail até o remodel manual.
+ *
  * Idempotente via marker no Setting singleton:
  *   MIGRATION_RELATIONSHIP_ENDPOINT_FLAGS_AT
  *
@@ -79,6 +87,51 @@ async function backfillSide(systemDb: mongoose.mongo.Db): Promise<number> {
   }
 
   return updated;
+}
+
+// Remove Field RELATIONSHIP órfão antes do assert: `group: null`, sem
+// `relationshipId` e não referenciado por nenhuma `table.fields` nem
+// `table.groups[].fields`. É lixo irrecuperável (rename/remoção) que travaria o
+// gate eternamente. Self-verifying: só apaga o que confirmar sem referência.
+async function pruneOrphanRelationshipFields(
+  systemDb: mongoose.mongo.Db,
+): Promise<number> {
+  const fieldsCol = systemDb.collection('fields');
+  const tablesCol = systemDb.collection('tables');
+
+  const candidates = await fieldsCol
+    .find({
+      type: 'RELATIONSHIP',
+      group: null,
+      $or: [
+        { 'relationship.relationshipId': null },
+        { 'relationship.relationshipId': { $exists: false } },
+      ],
+    })
+    .toArray();
+
+  type OrphanId = (typeof candidates)[number]['_id'];
+  const orphanIds: OrphanId[] = [];
+  for (const field of candidates) {
+    const inFields = await tablesCol.findOne(
+      { fields: field._id },
+      { projection: { _id: 1 } },
+    );
+    if (inFields) continue;
+
+    const inGroups = await tablesCol.findOne(
+      { 'groups.fields': field._id },
+      { projection: { _id: 1 } },
+    );
+    if (inGroups) continue;
+
+    orphanIds.push(field._id);
+  }
+
+  if (orphanIds.length === 0) return 0;
+
+  const result = await fieldsCol.deleteMany({ _id: { $in: orphanIds } });
+  return result.deletedCount ?? 0;
 }
 
 // Assert de fechamento (zero legado): nenhum campo RELATIONSHIP pode sobrar sem
@@ -172,6 +225,11 @@ async function migrate(): Promise<void> {
     logger.done(
       `${result.visibleRel} relationship.visible, ${result.sideRel} relationship.side e ${result.formModeRel} relationship.formMode preenchidos`,
     );
+
+    const pruned = await pruneOrphanRelationshipFields(systemDb);
+    if (pruned > 0) {
+      logger.item(`${pruned} campo(s) RELATIONSHIP órfão(s) removido(s)`);
+    }
 
     const unmaterialized = await countUnmaterialized(systemDb);
     if (unmaterialized > 0) {
