@@ -268,6 +268,18 @@ export const TableFieldUpdateSchema: FastifySchema = {
           },
         },
       },
+      validations: {
+        type: 'array',
+        default: [],
+        description: 'Regras de validação configuradas para o campo',
+        items: {
+          type: 'object',
+          properties: {
+            rule: { type: 'string' },
+            config: { type: 'object', additionalProperties: true },
+          },
+        },
+      },
       trashed: {
         type: 'boolean',
         description: 'Definir o campo como enviado para a lixeira',

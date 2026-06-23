@@ -282,6 +282,18 @@ export const TableFieldCreateSchema: FastifySchema = {
           },
         },
       },
+      validations: {
+        type: 'array',
+        default: [],
+        description: 'Regras de validação configuradas para o campo',
+        items: {
+          type: 'object',
+          properties: {
+            rule: { type: 'string' },
+            config: { type: 'object', additionalProperties: true },
+          },
+        },
+      },
     },
     additionalProperties: false,
   },

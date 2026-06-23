@@ -90,6 +90,18 @@ export const GroupFieldCreateSchema: FastifySchema = {
         default: null,
         description: 'Grupo de destino do campo (slug ou objeto)',
       },
+      validations: {
+        type: 'array',
+        default: [],
+        description: 'Regras de validação configuradas para o campo',
+        items: {
+          type: 'object',
+          properties: {
+            rule: { type: 'string' },
+            config: { type: 'object', additionalProperties: true },
+          },
+        },
+      },
     },
     additionalProperties: false,
   },
@@ -184,6 +196,17 @@ export const GroupFieldCreateSchema: FastifySchema = {
           properties: {
             _id: { type: 'string' },
             slug: { type: 'string' },
+          },
+        },
+        validations: {
+          type: 'array',
+          description: 'Regras de validação configuradas para o campo',
+          items: {
+            type: 'object',
+            properties: {
+              rule: { type: 'string' },
+              config: { type: 'object', additionalProperties: true },
+            },
           },
         },
         trashed: { type: 'boolean' },
