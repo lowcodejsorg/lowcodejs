@@ -178,16 +178,43 @@ export default class RowMongooseRepository implements RowContractRepository {
       payload.table.order,
     );
 
+    const slug = payload.table.slug;
+
     const rows = await model
       .find(query)
       .skip(payload.skip)
       .limit(payload.limit)
       .sort(sort);
 
-    await this.hydrateRelationships(payload.table.fields ?? [], rows);
-    await model.populate(rows, populate);
+    console.info(
+      `[row.repository > findMany] slug=${slug} found=${rows.length} ` +
+        `query=${JSON.stringify(query)}`,
+    );
 
     const fields = payload.table.fields ?? [];
+
+    try {
+      await this.hydrateRelationships(fields, rows);
+    } catch (error) {
+      console.error(
+        `[row.repository > findMany][hydrate-error] slug=${slug} ` +
+          `rows=${rows.length}:`,
+        error,
+      );
+      throw error;
+    }
+
+    try {
+      await model.populate(rows, populate);
+    } catch (error) {
+      console.error(
+        `[row.repository > findMany][populate-error] slug=${slug} ` +
+          `rows=${rows.length} paths=${JSON.stringify(populate.map((p) => p.path))}:`,
+        error,
+      );
+      throw error;
+    }
+
     return rows.map((row) => this.transformRow(row, fields));
   }
 

@@ -61,18 +61,34 @@ export default class TableRowPaginatedUseCase {
         table,
       );
 
+      const hasGuardQuery = Object.keys(guardQuery).length > 0;
+      let guardQueryArg: Record<string, unknown> | undefined = undefined;
+      if (hasGuardQuery) guardQueryArg = guardQuery;
+
+      console.info(
+        `[table-rows > paginated] slug=${payload.slug} tableId=${tableId} ` +
+          `style=${String(table.style)} user=${String(payload.user)} ` +
+          `isPrivileged=${ctx.isPrivileged} hasGuardQuery=${hasGuardQuery} ` +
+          `guardQuery=${JSON.stringify(guardQuery)} skip=${skip} limit=${limit}`,
+      );
+
       const rows = await this.rowRepository.findMany({
         table,
         rawFilters: payload,
         skip,
         limit,
-        guardQuery: Object.keys(guardQuery).length > 0 ? guardQuery : undefined,
+        guardQuery: guardQueryArg,
       });
 
       const total = await this.rowRepository.count(
         table,
         payload,
-        Object.keys(guardQuery).length > 0 ? guardQuery : undefined,
+        guardQueryArg,
+      );
+
+      console.info(
+        `[table-rows > paginated] slug=${payload.slug} rows=${rows.length} ` +
+          `total=${total}`,
       );
 
       const perPage = fetchAll ? total : payload.perPage;

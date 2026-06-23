@@ -130,6 +130,12 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
         }
 
         if (relationshipTable && conn) {
+          console.info(
+            `[populate-builder > build] field=${field.slug} ` +
+              `target=${String(relationshipTable.slug)} depth=${depth} ` +
+              `visited=${visited.size}`,
+          );
+
           const relationModel = await this.model.build({
             ...relationshipTable.toJSON({
               flattenObjectIds: true,

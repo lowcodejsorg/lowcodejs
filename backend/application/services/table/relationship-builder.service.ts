@@ -59,12 +59,31 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
     if (relationshipFields.length === 0 || docs.length === 0) return;
 
     for (const field of relationshipFields) {
+      try {
+        await this.hydrateField(field, docs);
+      } catch (error) {
+        console.error(
+          `[relationship-builder > hydrate][error] field=${field.slug} ` +
+            `relationshipId=${String(field.relationship?.relationshipId)} ` +
+            `side=${String(field.relationship?.side)} docs=${docs.length}:`,
+          error,
+        );
+        throw error;
+      }
+    }
+  }
+
+  private async hydrateField(
+    field: IField,
+    docs: RelationshipHydratableDoc[],
+  ): Promise<void> {
+    {
       // OWNS_FK: a FK single ja vive na propria row; o populate nativo resolve.
       // Nao tocar o path (sobrescrever quebraria o cast single do schema).
       if (
         this.relationship.roleOfField(field) === E_RELATIONSHIP_STORAGE.OWNS_FK
       )
-        continue;
+        return;
 
       const relationshipId = field.relationship?.relationshipId;
 
@@ -76,7 +95,7 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
         console.warn(
           `[relationship-builder] campo "${field.slug}" sem relationshipId — rode "npm run migrate:relationship"`,
         );
-        continue;
+        return;
       }
 
       const definition =
@@ -86,7 +105,7 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
         console.warn(
           `[relationship-builder] definition ${relationshipId} nao encontrada para o campo "${field.slug}"`,
         );
-        continue;
+        return;
       }
 
       const side = this.sideOf(definition, field);
@@ -97,7 +116,7 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
         this.relationship.roleOfField(field) === E_RELATIONSHIP_STORAGE.REVERSE
       ) {
         await this.hydrateReverse(field, definition, docs);
-        continue;
+        return;
       }
 
       // PIVOT (e fallback legado sem role): 1 query de links para a pagina
