@@ -32,13 +32,21 @@ import type { TableFieldUpdatePayload } from './update.validator';
 type Response = Either<HTTPException, Entity>;
 type Payload = TableFieldUpdatePayload;
 
+// "Sem valor padrão" não tem uma única representação: dependendo do tipo do
+// campo e de como o valor trafega na API, chega como null, undefined, string
+// vazia ou array vazio. Semanticamente são todos o mesmo estado (ausência de
+// default), então a comparação precisa normalizá-los antes de decidir igualdade.
+function isEmptyDefaultValue(v: string | string[] | null | undefined): boolean {
+  return v == null || v === '' || (Array.isArray(v) && v.length === 0);
+}
+
 function isDefaultValueEqual(
   a: string | string[] | null | undefined,
   b: string | string[] | null | undefined,
 ): boolean {
+  if (isEmptyDefaultValue(a) && isEmptyDefaultValue(b)) return true;
+  if (isEmptyDefaultValue(a) || isEmptyDefaultValue(b)) return false;
   if (a === b) return true;
-  if (a == null && b == null) return true;
-  if (a == null || b == null) return false;
   if (typeof a === 'string' && typeof b === 'string') return a === b;
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) return false;
