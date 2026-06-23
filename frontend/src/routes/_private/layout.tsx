@@ -37,6 +37,11 @@ export const Route = createFileRoute('/_private')({
       });
     }
 
+    // DEBUG temporário: só loga no servidor (SSR). Remover após diagnóstico.
+    const logSsr = (message: string): void => {
+      if (typeof window === 'undefined') console.info(`[ssr-auth] ${message}`);
+    };
+
     const seedSession = (
       accounts: Array<IUser>,
       activeAccountId: string | null,
@@ -62,6 +67,11 @@ export const Route = createFileRoute('/_private')({
           accountsResponse.data.activeAccountId,
         );
 
+      logSsr(
+        `accounts ok count=${accountsResponse.data.accounts.length} ` +
+          `active=${accountsResponse.data.activeAccountId ?? 'null'}`,
+      );
+
       const user = await context.queryClient.ensureQueryData(
         profileDetailOptions(),
       );
@@ -70,13 +80,16 @@ export const Route = createFileRoute('/_private')({
         useAuthStore.getState().setUser(user);
       }
 
+      logSsr('profile ok');
       context.queryClient.prefetchQuery(settingOptions());
     } catch {
       // SSR não renova o access token pelo interceptor (que é client-only).
       // Renova server-side, repassa os cookies novos ao browser e refaz a carga
       // com eles. No client, o interceptor do axios já trata o 401.
+      logSsr('load failed; attempting ssr refresh');
       if (typeof window === 'undefined') {
         const refreshed = await serverRefreshSession();
+        logSsr(`refresh ok=${refreshed.ok}`);
         if (refreshed.ok && refreshed.cookie) {
           try {
             const headers = { Cookie: refreshed.cookie };
@@ -92,13 +105,15 @@ export const Route = createFileRoute('/_private')({
               accountsResponse.data.activeAccountId,
               profileResponse.data,
             );
+            logSsr('recovered via refresh');
             return;
           } catch {
-            /* refresh não recuperou a sessão; segue para o tratamento abaixo */
+            logSsr('retry after refresh failed');
           }
         }
       }
 
+      logSsr('redirect to /');
       useAuthStore.getState().clear();
 
       // Permitir acesso público a rotas de visualização de tabela

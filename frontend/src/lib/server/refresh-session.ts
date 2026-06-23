@@ -5,6 +5,15 @@ interface RefreshResult {
   cookie: string;
 }
 
+const cookieNames = (header: string): string => {
+  const names = [];
+  for (const part of header.split(';')) {
+    const [name] = part.trim().split('=');
+    if (name) names.push(name);
+  }
+  return names.join(',');
+};
+
 // Renova a sessão no contexto SSR: chama o backend com os cookies recebidos,
 // repassa os cookies renovados (Set-Cookie) ao browser e devolve um Cookie
 // header já atualizado para reusar nas próximas requests do mesmo render.
@@ -16,23 +25,31 @@ export const serverRefreshSession = createServerFn({ method: 'POST' }).handler(
     const { getRequestHeader, setResponseHeader } =
       await import('@tanstack/react-start/server');
 
+    // Mesmo host que o api.ts usa em SSR (interno no Docker), não o público.
+    const baseUrl = process.env.SERVER_API_URL ?? Env.VITE_API_BASE_URL;
     const incoming = getRequestHeader('Cookie') ?? '';
 
-    const response = await fetch(
-      `${Env.VITE_API_BASE_URL}/authentication/refresh-token`,
-      {
-        method: 'POST',
-        headers: { Cookie: incoming },
-      },
+    console.info(
+      `[ssr-refresh] start host=${baseUrl} cookies=[${cookieNames(incoming)}]`,
     );
 
-    if (!response.ok) return { ok: false, cookie: '' };
+    const response = await fetch(`${baseUrl}/authentication/refresh-token`, {
+      method: 'POST',
+      headers: { Cookie: incoming },
+    });
+
+    if (!response.ok) {
+      console.warn(`[ssr-refresh] fail status=${response.status}`);
+      return { ok: false, cookie: '' };
+    }
 
     const renewedCookies = response.headers.getSetCookie();
     if (renewedCookies.length > 0) {
       // Append (não overwrite): cada Set-Cookie vira um header próprio.
       setResponseHeader('set-cookie', renewedCookies);
     }
+
+    console.info(`[ssr-refresh] ok setCookieCount=${renewedCookies.length}`);
 
     // Monta o Cookie das próximas requests SSR: os recebidos, sobrescritos
     // pelos renovados (accessToken/refreshToken/activeAccountId).
