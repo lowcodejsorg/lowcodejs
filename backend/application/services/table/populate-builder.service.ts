@@ -17,18 +17,48 @@ import { FieldGroupBuilderContractService } from './field-group-builder-contract
 import { ModelBuilderContractService } from './model-builder-contract.service';
 import { PopulateBuilderContractService } from './populate-builder-contract.service';
 
+type RelationModel = Awaited<ReturnType<ModelBuilderContractService['build']>>;
+// Doc hidratado do model Table (inferido do próprio model — `Table` usa um
+// `Entity` interno não exportado; inferir o tipo hidratado do model mantém o
+// tipo em sincronia sem cast).
+type ModelDocument<M> =
+  M extends mongoose.Model<
+    infer _TRaw,
+    infer _TQuery,
+    infer _TMethods,
+    infer _TVirtuals,
+    infer THydrated
+  >
+    ? THydrated
+    : never;
+type RelationshipTableDoc = ModelDocument<typeof Table>;
+
+/**
+ * Caches por request que tornam o populate linear. Sem eles cada nó da árvore
+ * faz `Table.findOne().populate()` no DB e reexpande a mesma subárvore em todo
+ * ramo irmão — O(branching^depth). Com eles cada tabela é buscada/compilada 1×
+ * e cada subárvore `(tableId, depth)` é montada 1× e reusada — O(tabelas×depth).
+ */
+interface PopulateBuildCaches {
+  table: Map<string, RelationshipTableDoc | null>;
+  model: Map<string, RelationModel>;
+  subtree: Map<string, mongoose.PopulateOptions[]>;
+}
+
 @Service()
 export default class MongoosePopulateBuilder implements PopulateBuilderContractService {
   /**
-   * Profundidade maxima de populate aninhado de relacionamentos.
-   * 1 = popula apenas o relacionamento direto (sem relacionamento-de-
-   * relacionamento). Esquemas com muitos mirrors cruzados explodem em
-   * O(branching^depth) ao recompilar models dinamicos por nivel/ramo
-   * (o `visited` e por-caminho, nao global), travando o populate antes da
-   * query rodar. Manter raso elimina a explosao; o relacionamento direto
-   * continua sendo populado normalmente.
+   * Profundidade maxima de populate aninhado de relacionamentos. 3 cobre labels
+   * multi-hop (ex.: `fornecedor.cidade.uf`) sem regredir o frontend, que navega
+   * o path por pontos contra o objeto ja populado.
+   *
+   * O custo NAO vem da profundidade e sim de (1) o antigo `visited` ser
+   * por-caminho (mesmo target reexpandido em milhares de ramos irmaos) e (2)
+   * cada no fazer um `Table.findOne().populate()` no DB. A memoizacao por
+   * request (`PopulateBuildCaches`) torna o custo linear — O(tabelas×depth) — e
+   * desacopla a profundidade da explosao, entao mantemos uma profundidade util.
    */
-  private static readonly MAX_RELATIONSHIP_DEPTH = 1;
+  private static readonly MAX_RELATIONSHIP_DEPTH = 3;
 
   constructor(
     private readonly model: ModelBuilderContractService,
@@ -56,10 +86,81 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
     groups?: IGroupConfiguration[],
     conn?: mongoose.Connection,
     depth: number = MongoosePopulateBuilder.MAX_RELATIONSHIP_DEPTH,
-    visited: Set<string> = new Set(),
+    // Vestigial: o guard de ciclo agora é o próprio `depth` decrementando até a
+    // base; mantido na assinatura por compat com o contrato.
+    visited?: Set<string>,
+  ): Promise<mongoose.PopulateOptions[]> {
+    const caches: PopulateBuildCaches = {
+      table: new Map(),
+      model: new Map(),
+      subtree: new Map(),
+    };
+
+    return this.buildPopulateTree(fields, groups, conn, depth, caches);
+  }
+
+  /**
+   * Resolve o doc da tabela alvo (por id ou slug), memoizado por request — uma
+   * busca por tabela em vez de uma por nó da árvore.
+   */
+  private async resolveTable(
+    id: string | undefined,
+    slug: string | undefined,
+    caches: PopulateBuildCaches,
+  ): Promise<RelationshipTableDoc | null> {
+    let key = '';
+    if (id) key = `id:${id}`;
+    else if (slug) key = `slug:${slug}`;
+    else return null;
+
+    const cached = caches.table.get(key);
+    if (cached !== undefined) return cached;
+
+    let table: RelationshipTableDoc | null = null;
+    if (id) {
+      table = await Table.findOne({
+        _id: id,
+        trashed: { $ne: true },
+      }).populate(['fields', 'groups.fields']);
+    } else if (slug) {
+      table = await Table.findOne({
+        slug,
+        trashed: { $ne: true },
+      }).populate(['fields', 'groups.fields']);
+    }
+
+    caches.table.set(key, table);
+    return table;
+  }
+
+  /** Compila o model dinâmico da tabela alvo, memoizado por request. */
+  private async resolveModel(
+    table: RelationshipTableDoc,
+    caches: PopulateBuildCaches,
+  ): Promise<RelationModel> {
+    const tableId = table._id.toString();
+
+    const cached = caches.model.get(tableId);
+    if (cached) return cached;
+
+    const model = await this.model.build({
+      ...table.toJSON({ flattenObjectIds: true }),
+      _id: tableId,
+    });
+
+    caches.model.set(tableId, model);
+    return model;
+  }
+
+  private async buildPopulateTree(
+    fields: IField[] | undefined,
+    groups: IGroupConfiguration[] | undefined,
+    conn: mongoose.Connection | undefined,
+    depth: number,
+    caches: PopulateBuildCaches,
   ): Promise<mongoose.PopulateOptions[]> {
     const relacionamentos = this.getRelationships(fields);
-    const populate = [];
+    const populate: mongoose.PopulateOptions[] = [];
 
     for await (const field of relacionamentos) {
       if (field.type === E_FIELD_TYPE.FILE) {
@@ -111,59 +212,35 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
 
       if (field.type === E_FIELD_TYPE.RELATIONSHIP) {
         // Campo não-materializado (sem relationshipId) não tem ref válida para
-        // expandir aqui; segui-lo recompila model dinâmico por nível e recursa
-        // em esquema cíclico, estourando o heap. A hidratação real é por links
-        // (relationship-builder). Pula.
+        // expandir aqui; a hidratação real é por links (relationship-builder).
+        // Pula.
         if (!field?.relationship?.relationshipId) continue;
 
-        const relationshipTableId = field?.relationship?.table?._id?.toString();
-        const relationshipTableSlug = field?.relationship?.table?.slug;
-
-        let relationshipTable;
-        if (relationshipTableId) {
-          relationshipTable = await Table.findOne({
-            _id: relationshipTableId,
-            trashed: { $ne: true },
-          }).populate(['fields', 'groups.fields']);
-        } else if (relationshipTableSlug) {
-          relationshipTable = await Table.findOne({
-            slug: relationshipTableSlug,
-            trashed: { $ne: true },
-          }).populate(['fields', 'groups.fields']);
-        }
+        const relationshipTable = await this.resolveTable(
+          field?.relationship?.table?._id?.toString(),
+          field?.relationship?.table?.slug,
+          caches,
+        );
 
         if (relationshipTable && conn) {
+          const nextTableId = relationshipTable._id.toString();
+
           console.info(
             `[populate-builder > build] field=${field.slug} ` +
-              `target=${String(relationshipTable.slug)} depth=${depth} ` +
-              `visited=${visited.size}`,
+              `target=${String(relationshipTable.slug)} depth=${depth}`,
           );
 
-          const relationModel = await this.model.build({
-            ...relationshipTable.toJSON({
-              flattenObjectIds: true,
-            }),
-            _id: relationshipTable._id.toString(),
-          });
+          const relationModel = await this.resolveModel(
+            relationshipTable,
+            caches,
+          );
 
-          let relationshipPopulate: mongoose.PopulateOptions[] = [];
-          const nextTableId = relationshipTable._id.toString();
-          // Guard de ciclo: só aprofunda se o alvo ainda não está na cadeia
-          // ancestral (evita A→B→A expandir N níveis recompilando models).
-          if (depth > 1 && !visited.has(nextTableId)) {
-            const relationshipFields = this.getRelationships(
-              relationshipTable?.fields ?? [],
-            );
-            const nextVisited = new Set(visited);
-            nextVisited.add(nextTableId);
-            relationshipPopulate = await this.build(
-              relationshipFields,
-              relationshipTable?.groups ?? [],
-              conn,
-              depth - 1,
-              nextVisited,
-            );
-          }
+          const relationshipPopulate = await this.resolveSubtree(
+            relationshipTable,
+            conn,
+            depth,
+            caches,
+          );
 
           populate.push({
             path: field.slug,
@@ -181,5 +258,38 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
     }
 
     return [...populate];
+  }
+
+  /**
+   * Subárvore de populate dos relacionamentos do alvo, memoizada por
+   * `(tableId, depth)`. A subárvore é idêntica independente do caminho que
+   * chegou no alvo, então é montada 1× e reusada entre todos os ramos irmãos.
+   * A recursão termina por `depth`: na base (`depth <= 1`) não aprofunda.
+   */
+  private async resolveSubtree(
+    table: RelationshipTableDoc,
+    conn: mongoose.Connection,
+    depth: number,
+    caches: PopulateBuildCaches,
+  ): Promise<mongoose.PopulateOptions[]> {
+    const nextDepth = depth - 1;
+    const key = `${table._id.toString()}:${nextDepth}`;
+
+    const cached = caches.subtree.get(key);
+    if (cached) return cached;
+
+    let subtree: mongoose.PopulateOptions[] = [];
+    if (depth > 1) {
+      subtree = await this.buildPopulateTree(
+        this.getRelationships(table?.fields ?? []),
+        table?.groups ?? [],
+        conn,
+        nextDepth,
+        caches,
+      );
+    }
+
+    caches.subtree.set(key, subtree);
+    return subtree;
   }
 }
