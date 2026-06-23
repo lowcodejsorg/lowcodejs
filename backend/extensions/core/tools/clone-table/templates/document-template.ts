@@ -2,14 +2,14 @@ import slugify from 'slugify';
 
 import { right } from '@application/core/either.core';
 import {
+  buildFieldPermissions,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   FIELD_NATIVE_LIST,
   type IField,
+  type IFieldPermissions,
 } from '@application/core/entity.core';
 import type { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import type { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
@@ -46,9 +46,6 @@ export async function createDocumentTemplate(
     logo: null,
     fields: [...nativeFieldIds, ...fields.map((f) => f._id)],
     style: E_TABLE_STYLE.DOCUMENT,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-    collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-    administrators: [],
     owner: payload.ownerId,
     fieldOrderList: [...nativeFieldIds, ...orderList],
     fieldOrderForm: [...nativeFieldIds, ...orderForm],
@@ -87,9 +84,7 @@ export async function buildDocumentFields(
     required: boolean;
     multiple: boolean;
     format: IField['format'];
-    showInList: boolean;
-    showInForm: boolean;
-    showInDetail: boolean;
+    permissions: IFieldPermissions;
     showInFilter: boolean;
     defaultValue: IField['defaultValue'];
     locked: boolean;
@@ -115,9 +110,7 @@ export async function buildDocumentFields(
     required: true,
     multiple: false,
     format: null,
-    showInList: true,
-    showInForm: true,
-    showInDetail: true,
+    permissions: buildFieldPermissions(true, true, true),
     showInFilter: true,
     defaultValue: null,
     locked: false,
@@ -137,9 +130,7 @@ export async function buildDocumentFields(
     required: false,
     multiple: false,
     format: E_FIELD_FORMAT.ALPHA_NUMERIC,
-    showInList: true,
-    showInForm: true,
-    showInDetail: true,
+    permissions: buildFieldPermissions(true, true, true),
     showInFilter: true,
     defaultValue: null,
     locked: false,
@@ -159,9 +150,7 @@ export async function buildDocumentFields(
     required: true,
     multiple: false,
     format: E_FIELD_FORMAT.RICH_TEXT,
-    showInList: false,
-    showInForm: true,
-    showInDetail: true,
+    permissions: buildFieldPermissions(false, true, true),
     showInFilter: false,
     defaultValue: null,
     locked: false,

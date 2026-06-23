@@ -118,7 +118,12 @@ export default class ExportTableUseCase {
 
       const exportedTables: ExportedTable[] = [];
       for (const table of tables) {
-        const exp: ExportedTable = {};
+        // Identidade sempre presente — essencial para o import "somente dados"
+        // casar com a tabela existente no destino.
+        const exp: ExportedTable = {
+          tableSlug: table.slug,
+          tableName: table.name,
+        };
         if (includeStructure) exp.structure = this.exportStructure(table);
         if (includeData) exp.data = await this.exportData(table);
         exportedTables.push(exp);
@@ -221,8 +226,6 @@ export default class ExportTableUseCase {
       slug: table.slug,
       description: table.description,
       style: table.style,
-      visibility: table.visibility,
-      collaboration: table.collaboration,
       fields: exportedFields,
       groups: exportedGroups,
       fieldOrderList: mapOrder(table.fieldOrderList),
@@ -263,10 +266,9 @@ export default class ExportTableUseCase {
       required: field.required,
       multiple: field.multiple,
       format: field.format,
+      validations: field.validations ?? [],
       showInFilter: field.showInFilter,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
-      showInList: field.showInList,
+      permissions: field.permissions,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
       widthInDetail: field.widthInDetail ?? null,

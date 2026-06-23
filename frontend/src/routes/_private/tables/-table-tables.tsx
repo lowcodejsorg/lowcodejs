@@ -26,7 +26,6 @@ import {
 import { DataTableColumnHeader } from '@/components/common/data-table/data-table-column-header';
 import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -54,7 +53,6 @@ import {
   useTablePermission,
 } from '@/hooks/use-table-permission';
 import { API } from '@/lib/api';
-import { E_TABLE_VISIBILITY } from '@/lib/constant';
 import { formatDate } from '@/lib/format-date';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
@@ -62,20 +60,6 @@ import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
 
 const ROUTE_ID = '/_private/tables/';
-
-const VISIBILITY_CONFIG: Record<
-  string,
-  {
-    label: string;
-    variant: 'default' | 'secondary' | 'outline' | 'destructive';
-  }
-> = {
-  [E_TABLE_VISIBILITY.PRIVATE]: { label: 'Privada', variant: 'destructive' },
-  [E_TABLE_VISIBILITY.RESTRICTED]: { label: 'Restrita', variant: 'secondary' },
-  [E_TABLE_VISIBILITY.OPEN]: { label: 'Aberta', variant: 'default' },
-  [E_TABLE_VISIBILITY.PUBLIC]: { label: 'Pública', variant: 'outline' },
-  [E_TABLE_VISIBILITY.FORM]: { label: 'Formulário', variant: 'secondary' },
-};
 
 function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
   const tableRemoveFromTrashButtonRef = React.useRef<HTMLButtonElement | null>(
@@ -330,25 +314,6 @@ const columns: Array<ColumnDef<ITable, any>> = [
           </Button>
         </div>
       );
-    },
-  },
-  {
-    id: 'visibility',
-    accessorKey: 'visibility',
-    header: () => (
-      <DataTableColumnHeader
-        title="Visibilidade"
-        orderKey="order-visibility"
-        routeId={ROUTE_ID}
-      />
-    ),
-    meta: { label: 'Visibilidade' },
-    cell: ({ getValue }): React.ReactElement | null => {
-      const visibility = getValue() as string;
-      const config = VISIBILITY_CONFIG[visibility];
-      return config ? (
-        <Badge variant={config.variant}>{config.label}</Badge>
-      ) : null;
     },
   },
   {

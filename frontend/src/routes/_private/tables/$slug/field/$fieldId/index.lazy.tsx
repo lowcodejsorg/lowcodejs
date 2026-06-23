@@ -28,11 +28,22 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE, E_PERMISSION_TARGET } from '@/lib/constant';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
+import { isFieldShownInContext } from '@/lib/permission';
 import { QueryClient as queryClient } from '@/lib/query-client';
+
+// Deriva o binding de visibilidade a partir do boolean showIn* legado (usado
+// quando o campo ainda não tem o mapa permissions).
+function bindingFromBool(visible: boolean): {
+  kind: ValueOf<typeof E_PERMISSION_TARGET>;
+  group: string | null;
+} {
+  if (visible) return { kind: E_PERMISSION_TARGET.PUBLIC, group: null };
+  return { kind: E_PERMISSION_TARGET.NOBODY, group: null };
+}
 
 function normalizeDefaultValue(
   type: string,
@@ -320,6 +331,7 @@ function FieldUpdateContent({
       tip: data.tip ?? '',
       type: data.type,
       format: data.format ?? '',
+      validations: data.validations ?? [],
       defaultValue: Array.isArray(data.defaultValue)
         ? (data.defaultValue[0] ?? '')
         : (data.defaultValue ?? ''),
@@ -340,13 +352,21 @@ function FieldUpdateContent({
         customLabel: data.relationship?.customLabel ?? false,
         labelParts: data.relationship?.labelParts ?? [],
         labelSeparator: data.relationship?.labelSeparator ?? ' - ',
+        sourceVisible: data.relationship?.visible ?? true,
+        mirrorMultiple: data.relationship?.mirror?.multiple ?? false,
+        mirrorVisible: data.relationship?.mirror?.visible ?? false,
+        mirrorLabel: data.relationship?.mirror?.label ?? '',
+        onDelete: data.relationship?.onDelete ?? 'SET_NULL',
+        formMode: data.relationship?.formMode ?? 'select',
       },
       category: data.category ?? [],
       multiple: data.multiple,
       showInFilter: data.showInFilter,
-      showInForm: data.showInForm,
-      showInDetail: data.showInDetail,
-      showInList: data.showInList,
+      permissions: data.permissions ?? {
+        list: bindingFromBool(isFieldShownInContext(data, 'list')),
+        form: bindingFromBool(isFieldShownInContext(data, 'form')),
+        detail: bindingFromBool(isFieldShownInContext(data, 'detail')),
+      },
       required: data.required,
       trashed: Boolean((data as IField & { trashed?: boolean }).trashed),
       widthInForm: data.widthInForm ?? 50,
@@ -358,8 +378,8 @@ function FieldUpdateContent({
       if (_update.status === 'pending' || _updateGroupField.isPending) return;
 
       const hasRelationship = value.relationship.tableId !== '';
-      const hasDropdown = value.dropdown.length > 0;
-      const hasCategory = value.category.length > 0;
+      const hasDropdown = (value.dropdown?.length ?? 0) > 0;
+      const hasCategory = (value.category?.length ?? 0) > 0;
 
       const payload: Partial<IField> & {
         trashed?: boolean;
@@ -372,14 +392,13 @@ function FieldUpdateContent({
         required: value.trashed ? false : value.required,
         multiple: value.multiple,
         showInFilter: value.showInFilter,
-        showInForm: value.showInForm,
-        showInDetail: value.showInDetail,
-        showInList: value.showInList,
+        permissions: value.permissions,
         widthInForm: value.widthInForm,
         widthInList: value.widthInList,
         format: value.format
           ? (value.format as ValueOf<typeof E_FIELD_FORMAT>)
           : null,
+        validations: value.validations,
         defaultValue: normalizeDefaultValue(value.type, value.defaultValue),
         dropdown: hasDropdown ? value.dropdown.map((item) => item) : [],
         allowCustomDropdownOptions:
@@ -406,6 +425,14 @@ function FieldUpdateContent({
                 ? value.relationship.labelParts
                 : [],
               labelSeparator: value.relationship.labelSeparator || ' - ',
+              visible: value.relationship.sourceVisible,
+              onDelete: value.relationship.onDelete,
+              mirror: {
+                multiple: value.relationship.mirrorMultiple,
+                visible: value.relationship.mirrorVisible,
+                label: value.relationship.mirrorLabel || undefined,
+              },
+              formMode: value.relationship.formMode,
             }
           : null,
         category: hasCategory ? value.category : [],

@@ -25,10 +25,13 @@ type Response = Either<HTTPException, Entity>;
 type Payload = GroupFieldCreatePayload;
 
 // Invariante nível único: tipos proibidos dentro de um grupo de campos.
+// RELATIONSHIP é sempre top-level (associação entre tabelas independentes, §2);
+// grupo é composição embedded e só aceita campos simples.
 const TYPES_NOT_ALLOWED_IN_GROUP = new Set<string>([
   E_FIELD_TYPE.FIELD_GROUP,
   E_FIELD_TYPE.REACTION,
   E_FIELD_TYPE.EVALUATION,
+  E_FIELD_TYPE.RELATIONSHIP,
 ]);
 
 @Service()
@@ -165,7 +168,6 @@ export default class GroupFieldCreateUseCase {
         _schema: parentSchema,
         groups: updatedGroups,
         owner: table.owner._id,
-        administrators: table.administrators.flatMap((a) => a._id),
       });
 
       await this.modelBuilder.build({

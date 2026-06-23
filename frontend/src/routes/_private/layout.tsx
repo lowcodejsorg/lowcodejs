@@ -14,7 +14,8 @@ import {
   setupStatusOptions,
 } from '@/hooks/tanstack-query/_query-options';
 import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';
-import { E_ROLE } from '@/lib/constant';
+import { API } from '@/lib/api';
+import type { IAuthenticationAccounts } from '@/lib/interfaces';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private')({
@@ -36,19 +37,43 @@ export const Route = createFileRoute('/_private')({
     }
 
     try {
+      // Reconciliar as contas ANTES de qualquer request que dependa do token
+      // indexado: /authentication/accounts resolve pelos cookies de refresh (nao
+      // depende do header) e devolve a conta ativa correta. Assim o store para
+      // de mandar um X-Auth-Account-Id stale do localStorage no GET /profile —
+      // causa do 401 -> logout ao dar refresh.
+      const accountsResponse = await API.get<IAuthenticationAccounts>(
+        '/authentication/accounts',
+      );
+      useAuthStore
+        .getState()
+        .setAccounts(
+          accountsResponse.data.accounts,
+          accountsResponse.data.activeAccountId,
+        );
+
       const user = await context.queryClient.ensureQueryData(
         profileDetailOptions(),
       );
-      useAuthStore.getState().setUser(user);
+
+      // Sessao legada (sem contas indexadas) ainda precisa popular o store.
+      if (accountsResponse.data.accounts.length === 0) {
+        useAuthStore.getState().setUser(user);
+      }
+
       context.queryClient.prefetchQuery(settingOptions());
     } catch {
       useAuthStore.getState().clear();
 
       // Permitir acesso público a rotas de visualização de tabela
       // O componente e o backend controlam por visibility
-      const isTableViewRoute = /^\/tables\/[^/]+(?:\/?|\/row\/?.*)$/.test(
-        location.pathname,
-      );
+      const isTableViewRoute =
+        /^\/tables\/[^/]+(?:\/?|\/row\/?.*)$/.test(location.pathname) ||
+        // URL amigavel do registro: /tables/:slug/:rowSlug — mesmo tratamento
+        // publico de /tables/:slug/row (exclui sub-rotas reservadas).
+        /^\/tables\/[^/]+\/(?!(?:row|detail|field|methods|group)(?:\/|$))[^/]+\/?$/.test(
+          location.pathname,
+        );
       if (isTableViewRoute) {
         return;
       }
@@ -61,9 +86,8 @@ export const Route = createFileRoute('/_private')({
 function PrivateLayout(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = Boolean(user);
-  const role = user?.group?.slug?.toUpperCase() ?? E_ROLE.REGISTERED;
 
-  const { menu } = useMenuDynamic(role);
+  const { menu } = useMenuDynamic();
 
   const routesWithoutSearchInput: Array<string | RegExp> = [
     '/',

@@ -2,9 +2,39 @@
 import mongoose from 'mongoose';
 
 import type { IField as Core, Merge } from '@application/core/entity.core';
-import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@application/core/entity.core';
+import {
+  E_FIELD_FORMAT,
+  E_FIELD_TYPE,
+  E_PERMISSION_TARGET,
+} from '@application/core/entity.core';
 
 type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
+
+// Binding de visibilidade do campo num contexto (lista/formulario/detalhe).
+const FieldPermissionBinding = new mongoose.Schema(
+  {
+    kind: {
+      type: String,
+      enum: Object.values(E_PERMISSION_TARGET),
+      default: E_PERMISSION_TARGET.PUBLIC,
+    },
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'UserGroup',
+      default: null,
+    },
+  },
+  { _id: false },
+);
+
+const FieldPermissions = new mongoose.Schema(
+  {
+    list: { type: FieldPermissionBinding },
+    form: { type: FieldPermissionBinding },
+    detail: { type: FieldPermissionBinding },
+  },
+  { _id: false },
+);
 
 const RelationshipLabelPart = new mongoose.Schema(
   {
@@ -42,6 +72,53 @@ const Relationship = new mongoose.Schema(
     labelSeparator: {
       type: String,
       default: ' - ',
+    },
+    // Mostra a tabela interna de gestao deste lado (apresentacao). Default true.
+    visible: {
+      type: Boolean,
+      default: true,
+    },
+    // Back-pointer para a RelationshipDefinition (fonte de verdade do vinculo).
+    relationshipId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'RelationshipDefinition',
+      default: null,
+    },
+    // Lado da definition que este campo representa ('source' = declarante,
+    // 'target' = espelho). Usado pela tela de detalhe para chamar /links.
+    side: {
+      type: String,
+      enum: ['source', 'target'],
+      default: null,
+    },
+    // Como o relacionamento aparece no formulário: 'select' (multi-select de
+    // vínculo direto, padrão histórico) ou 'manage' (tabelas internas / cards +
+    // Sheet). Ausência = 'select'.
+    formMode: {
+      type: String,
+      enum: ['select', 'manage'],
+      default: 'select',
+    },
+    // Comportamento ao excluir (denormalizado; fonte de verdade é
+    // RelationshipDefinition.onDelete). Nullable.
+    onDelete: {
+      type: String,
+      default: null,
+    },
+    // Config denormalizada do lado oposto (espelho). `mirror.multiple` é o
+    // `multiple` do campo do outro endpoint e deriva a cardinalidade/role sem
+    // ida ao DB (RelationshipStorage.roleOfField). Sem isto, o role cai sempre
+    // no fallback legado (pivô). Default null = ausente (dados pré-migration).
+    mirror: {
+      type: new mongoose.Schema(
+        {
+          multiple: { type: Boolean, default: false },
+          visible: { type: Boolean, default: true },
+          label: { type: String, default: null },
+        },
+        { _id: false },
+      ),
+      default: null,
     },
   },
   {
@@ -115,10 +192,29 @@ const Dropdown = new mongoose.Schema(
       type: String,
       default: null,
     },
+    sortField: {
+      type: String,
+      default: null,
+    },
+    sortDirection: {
+      type: String,
+      enum: ['asc', 'desc'],
+      default: null,
+    },
   },
   {
     _id: false,
   },
+);
+
+// Uma regra de validacao configurada no campo (camada unica de validacao).
+// `config` guarda os parametros da regra (ex.: { min, max } | { values }).
+const Validation = new mongoose.Schema(
+  {
+    rule: { type: String, required: true },
+    config: { type: mongoose.Schema.Types.Mixed, default: {} },
+  },
+  { _id: false },
 );
 
 export const Schema = new mongoose.Schema(
@@ -147,21 +243,20 @@ export const Schema = new mongoose.Schema(
       enum: Object.values(E_FIELD_FORMAT),
       default: null,
     },
+    // Regras de validacao de valor do campo (camada unica de validacao).
+    validations: {
+      type: [Validation],
+      default: [],
+    },
+    // Exibe o campo na barra de filtros (config de UX, nao e permissao).
     showInFilter: {
       type: Boolean,
       default: false,
     },
-    showInForm: {
-      type: Boolean,
-      default: false,
-    },
-    showInDetail: {
-      type: Boolean,
-      default: false,
-    },
-    showInList: {
-      type: Boolean,
-      default: false,
+    // Visibilidade por contexto (list/form/detail) → binding por grupo.
+    permissions: {
+      type: FieldPermissions,
+      default: null,
     },
     widthInForm: {
       type: Number,

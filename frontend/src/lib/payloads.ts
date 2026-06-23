@@ -4,15 +4,16 @@ import type {
   E_LOGGER_ACTION_TYPE,
   E_LOGGER_OBJECT_TYPE,
   E_MENU_ITEM_TYPE,
+  E_PERMISSION_TARGET,
   E_REACTION_TYPE,
   E_ROLE,
-  E_TABLE_COLLABORATION,
+  E_TABLE_PERMISSION,
+  E_TABLE_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   E_USER_STATUS,
 } from './constant';
-import type { Merge, ValueOf } from './interfaces';
+import type { IFieldValidation, Merge, ValueOf } from './interfaces';
 
 // ============== AUTHENTICATION ==============
 export type SignInPayload = {
@@ -44,6 +45,7 @@ export type UserCreatePayload = {
   email: string;
   password: string;
   group: string;
+  groups?: Array<string>;
 };
 
 export type UserUpdatePayload = {
@@ -52,6 +54,7 @@ export type UserUpdatePayload = {
   email?: string;
   password?: string;
   group?: string;
+  groups?: Array<string>;
   status?: ValueOf<typeof E_USER_STATUS>;
 };
 
@@ -60,6 +63,7 @@ export type UserGroupCreatePayload = {
   name: string;
   description?: string | null;
   permissions: Array<string>;
+  encompasses?: Array<string>;
 };
 
 export type UserGroupUpdatePayload = {
@@ -67,6 +71,7 @@ export type UserGroupUpdatePayload = {
   name?: string;
   description?: string | null;
   permissions?: Array<string>;
+  encompasses?: Array<string>;
 };
 
 // ============== MENU ==============
@@ -86,6 +91,10 @@ export type MenuCreatePayload = {
   order?: number;
   isInitial?: boolean;
   extension?: MenuExtensionRefPayload | null;
+  visibility?: {
+    kind: ValueOf<typeof E_PERMISSION_TARGET>;
+    group: string | null;
+  } | null;
 };
 
 export type MenuUpdatePayload = {
@@ -100,6 +109,10 @@ export type MenuUpdatePayload = {
   order?: number;
   isInitial?: boolean;
   extension?: MenuExtensionRefPayload | null;
+  visibility?: {
+    kind: ValueOf<typeof E_PERMISSION_TARGET>;
+    group: string | null;
+  } | null;
 };
 
 export type MenuReorderPayload = {
@@ -117,7 +130,6 @@ export type TableCreatePayload = {
   owner?: string;
   logo?: string | null;
   style?: ValueOf<typeof E_TABLE_STYLE>;
-  visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
 };
 
 export type TableMethodPayload = {
@@ -133,9 +145,14 @@ export type TableUpdatePayload = {
   description?: string | null;
   logo?: string | null;
   style?: ValueOf<typeof E_TABLE_STYLE>;
-  visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
-  collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
-  administrators?: Array<string>;
+  permissions?: Partial<
+    Record<
+      ValueOf<typeof E_TABLE_PERMISSION>,
+      { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null }
+    >
+  >;
+  members?: Array<{ user: string; profile: ValueOf<typeof E_TABLE_PROFILE> }>;
+  owner?: string;
   fieldOrderList?: Array<string>;
   fieldOrderForm?: Array<string>;
   fieldOrderFilter?: Array<string>;
@@ -168,10 +185,13 @@ export type FieldConfigurationPayload = {
   required?: boolean;
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
+  validations?: Array<IFieldValidation>;
   showInFilter?: boolean;
-  showInForm?: boolean;
-  showInDetail?: boolean;
-  showInList?: boolean;
+  permissions?: {
+    list: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
+    form: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
+    detail: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
+  } | null;
   widthInForm?: number | null;
   widthInList?: number | null;
   tip?: string | null;
@@ -183,6 +203,10 @@ export type FieldConfigurationPayload = {
     customLabel?: boolean;
     labelParts?: Array<{ path: string; label?: string }>;
     labelSeparator?: string;
+    visible?: boolean;
+    onDelete?: 'CASCADE' | 'SET_NULL' | 'RESTRICT';
+    mirror?: { multiple: boolean; visible: boolean; label?: string };
+    formMode?: 'select' | 'manage';
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;
@@ -198,10 +222,13 @@ export type FieldCreatePayload = {
   required?: boolean;
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
+  validations?: Array<IFieldValidation>;
   showInFilter?: boolean;
-  showInForm?: boolean;
-  showInDetail?: boolean;
-  showInList?: boolean;
+  permissions?: {
+    list: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
+    form: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
+    detail: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
+  } | null;
   widthInForm?: number | null;
   widthInList?: number | null;
   tip?: string | null;
@@ -213,6 +240,10 @@ export type FieldCreatePayload = {
     customLabel?: boolean;
     labelParts?: Array<{ path: string; label?: string }>;
     labelSeparator?: string;
+    visible?: boolean;
+    onDelete?: 'CASCADE' | 'SET_NULL' | 'RESTRICT';
+    mirror?: { multiple: boolean; visible: boolean; label?: string };
+    formMode?: 'select' | 'manage';
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;
@@ -229,10 +260,13 @@ export type FieldUpdatePayload = {
   required?: boolean;
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
+  validations?: Array<IFieldValidation>;
   showInFilter?: boolean;
-  showInForm?: boolean;
-  showInDetail?: boolean;
-  showInList?: boolean;
+  permissions?: {
+    list: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
+    form: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
+    detail: { kind: ValueOf<typeof E_PERMISSION_TARGET>; group: string | null };
+  } | null;
   widthInForm?: number | null;
   widthInList?: number | null;
   tip?: string | null;
@@ -244,6 +278,10 @@ export type FieldUpdatePayload = {
     customLabel?: boolean;
     labelParts?: Array<{ path: string; label?: string }>;
     labelSeparator?: string;
+    visible?: boolean;
+    onDelete?: 'CASCADE' | 'SET_NULL' | 'RESTRICT';
+    mirror?: { multiple: boolean; visible: boolean; label?: string };
+    formMode?: 'select' | 'manage';
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;
@@ -551,4 +589,17 @@ export type ExtensionConfigureTableScopePayload = {
   _id: string;
   mode: 'all' | 'specific';
   tableIds: Array<string>;
+};
+
+export type ExtensionBulkConfigureTableSettingsPayload = {
+  extensionId: string;
+  tableIds: Array<string>;
+  settings: Record<string, unknown>;
+  expectedUpdatedAt: string;
+};
+
+export type ExtensionBulkConfigureTableSettingsResponse = {
+  extension: unknown; // IExtension (sem importar pra evitar ciclo)
+  success: Array<string>;
+  failed: Array<{ tableId: string; reason: string; message: string }>;
 };

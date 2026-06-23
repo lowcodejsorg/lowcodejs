@@ -7,7 +7,12 @@ import HTTPException from '@application/core/exception.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-type Payload = { slug: string };
+type Payload = {
+  slug: string;
+  __actorUserId?: string;
+  // Convidado contributor: só esvazia da lixeira os próprios registros.
+  __ownOnly?: boolean;
+};
 type Response = Either<HTTPException, { deleted: number }>;
 
 @Service()
@@ -27,7 +32,10 @@ export default class EmptyTrashUseCase {
         );
       }
 
-      const deleted = await this.rowRepository.emptyTrash(table);
+      let creatorId: string | undefined = undefined;
+      if (payload.__ownOnly) creatorId = payload.__actorUserId;
+
+      const deleted = await this.rowRepository.emptyTrash(table, creatorId);
 
       return right({ deleted });
     } catch (error) {

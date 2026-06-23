@@ -11,6 +11,9 @@ import { RowPayloadValidator } from '@application/core/row-payload-validator.cor
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { FieldValidationContractService } from '@application/services/field-validation/field-validation-contract.service';
+import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
+import { RowAccessGuardContractService } from '@application/services/row-access-guard/row-access-guard-contract.service';
 import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
@@ -20,6 +23,10 @@ type Response = Either<HTTPException, IRow>;
 type Payload = Record<string, unknown> & {
   slug: string;
   creator?: string | null;
+  // Sinais do solicitante (TableAccessMiddleware) para a visibilidade de campo
+  // no formulario. Mongoose strict descarta as chaves __ ao persistir.
+  __isOwner?: boolean;
+  __isAdministrator?: boolean;
 };
 
 @Service()
@@ -31,6 +38,9 @@ export default class TableRowCreateUseCase {
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly scriptExecutionService: ScriptExecutionContractService,
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
+    private readonly fieldVisibility: FieldVisibilityContractService,
+    private readonly fieldValidation: FieldValidationContractService,
+    private readonly rowAccessGuard: RowAccessGuardContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -42,6 +52,55 @@ export default class TableRowCreateUseCase {
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
       }
+
+      // Verifica permissão de escrita (create) via guard.
+      const creatorId =
+        typeof payload.creator === 'string' ? payload.creator : undefined;
+      const ctx = await this.rowAccessGuard.resolveContext(creatorId);
+      const tableId = table._id.toString();
+
+      const writeDecision = await this.rowAccessGuard.composeWriteDecision(
+        tableId,
+        null,
+        ctx,
+        table,
+        payload,
+        'create',
+      );
+      if (writeDecision.decision === 'deny') {
+        return left(
+          HTTPException.Forbidden(
+            writeDecision.reason ?? 'Acesso negado',
+            'ROW_WRITE_RESTRICTED',
+          ),
+        );
+      }
+
+      // Sanitiza payload antes de validar/salvar (ex: forçar valor de visibility).
+      const sanitized = await this.rowAccessGuard.composeSanitize(
+        tableId,
+        payload as Record<string, unknown>,
+        ctx,
+        table,
+        'create',
+        null,
+      );
+      // Copia de volta as chaves sanitizadas para o payload mutável.
+      for (const key of Object.keys(sanitized)) {
+        (payload as Record<string, unknown>)[key] = sanitized[key];
+      }
+
+      // Descarta escritas em campos ocultos no formulario para o solicitante.
+      const hidden = await this.fieldVisibility.hiddenSlugs({
+        fields: table.fields,
+        context: 'form',
+        userId: creatorId,
+        isOwner: payload.__isOwner,
+        isAdministrator: payload.__isAdministrator,
+      });
+      this.fieldVisibility.project(payload, hidden);
+      delete payload.__isOwner;
+      delete payload.__isAdministrator;
 
       const errors = RowPayloadValidator.validate(
         payload,
@@ -55,6 +114,23 @@ export default class TableRowCreateUseCase {
             'Requisição inválida',
             'INVALID_PAYLOAD_FORMAT',
             errors,
+          ),
+        );
+      }
+
+      // Passe de validacao das regras configuradas (camada unica). Async porque
+      // regras como IS_UNIQUE/EMAIL_EXISTS consultam o banco.
+      const validationErrors = await this.fieldValidation.validate(
+        payload,
+        table,
+      );
+
+      if (validationErrors) {
+        return left(
+          HTTPException.BadRequest(
+            'Requisição inválida',
+            'INVALID_PAYLOAD_FORMAT',
+            validationErrors,
           ),
         );
       }
@@ -138,7 +214,7 @@ export default class TableRowCreateUseCase {
           context: {
             userAction: 'novo_registro',
             executionMoment: 'antes_salvar',
-            userId: payload.creator ?? undefined,
+            userId: creatorId,
             isNew: true,
             viaSaveHook: false,
             previous: null,
@@ -188,6 +264,9 @@ export default class TableRowCreateUseCase {
 
       return right(row);
     } catch (error) {
+      // Violacoes de cardinalidade/vinculo (RELATIONSHIP) chegam como
+      // HTTPException pelo row.repository — preserva code/cause originais.
+      if (error instanceof HTTPException) return left(error);
       console.error('[table-rows > create][error]:', error);
       return left(
         HTTPException.InternalServerError(

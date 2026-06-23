@@ -4,6 +4,7 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField as Entity } from '@application/core/entity.core';
+import { buildFieldPermissions } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -45,9 +46,7 @@ export default class TableFieldRemoveFromTrashUseCase {
 
       const updatedField = await this.fieldRepository.update({
         _id: field._id,
-        showInList: true,
-        showInForm: true,
-        showInDetail: true,
+        permissions: buildFieldPermissions(true, true, true),
         showInFilter: true,
         required: false,
         trashed: false,

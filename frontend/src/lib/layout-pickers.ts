@@ -1,7 +1,9 @@
 import type { IField } from './interfaces';
 
+import { isFieldShownInContext } from '@/lib/permission';
+
 export function HeaderFilter(field: IField): boolean {
-  return field.showInList && !field.trashed;
+  return isFieldShownInContext(field, 'list') && !field.trashed;
 }
 
 export function HeaderSorter(order: Array<string>) {

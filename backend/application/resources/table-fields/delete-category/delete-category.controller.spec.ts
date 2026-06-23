@@ -2,11 +2,10 @@ import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import { Field } from '@application/model/field.model';
 import { Table } from '@application/model/table.model';
@@ -36,11 +35,9 @@ async function makeDocumentTableWithCategory(ownerId: string): Promise<{
     dropdown: [],
     defaultValue: null,
     showInFilter: true,
-    showInForm: true,
-    showInDetail: true,
     format: null,
     group: null,
-    showInList: true,
+    permissions: buildFieldPermissions(true, true, true),
     locked: false,
     allowCreateRelationshipRecords: false,
     multiple: true,
@@ -58,12 +55,9 @@ async function makeDocumentTableWithCategory(ownerId: string): Promise<{
 
   const tablePayload: TableCreatePayload = {
     owner: ownerId,
-    administrators: [],
-    collaboration: E_TABLE_COLLABORATION.OPEN,
     fieldOrderForm: [],
     fieldOrderList: [],
     style: E_TABLE_STYLE.DOCUMENT,
-    visibility: E_TABLE_VISIBILITY.PUBLIC,
     name: 'Artigos',
     slug: 'artigos',
     fields: [field._id.toString()],

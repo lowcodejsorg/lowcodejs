@@ -40,6 +40,8 @@ export default class {
       ...(request.body as Record<string, any>),
       ...params,
       ...(request?.user?.sub && { creator: request.user.sub }),
+      __isOwner: request.ownership?.isOwner,
+      __isAdministrator: request.ownership?.isAdministrator,
     });
 
     if (result.isLeft()) {

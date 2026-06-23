@@ -8,17 +8,21 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
+import { getInstanceByToken } from 'fastify-decorators';
 import * as http from 'node:http';
 import type { Server as HttpServer } from 'node:http';
 import * as https from 'node:https';
 import { Server as SocketIOServer } from 'socket.io';
 
 import {
+  E_AREA_CAPABILITY,
   E_CHAT_EVENT,
   E_JWT_TYPE,
   type IJWTPayload,
 } from '@application/core/entity.core';
 import { Setting } from '@application/model/setting.model';
+import UserMongooseRepository from '@application/repositories/user/user.repository';
+import GroupResolverService from '@application/services/group-resolver/group-resolver.service';
 import { resolveLlmConfig } from '@application/services/llm/ai-setting-fields';
 import type { LlmChatMessage } from '@application/services/llm/llm-chat.types';
 import { getLlmProviderLabel } from '@application/services/llm/llm-defaults';
@@ -272,6 +276,25 @@ export function initChatSocket(
     }
 
     const user = decoded;
+
+    // Capacidade de chat por grupo (MASTER bypassa). Privilegio MASTER resolvido
+    // pelo fecho de grupos (nao pelo role do JWT). Mantem o chat indisponivel
+    // para grupos sem a permissao, alem do toggle global AI_ASSISTANT_ENABLED.
+    const userRepository = getInstanceByToken(UserMongooseRepository);
+    const groupResolver = getInstanceByToken(GroupResolverService);
+    const fullUser = await userRepository.findById(user.sub);
+
+    if (!(await groupResolver.isMaster(fullUser))) {
+      const capabilities = await groupResolver.resolveCapabilities(fullUser);
+
+      if (!capabilities.has(E_AREA_CAPABILITY.MANAGE_CHAT)) {
+        socket.emit(E_CHAT_EVENT.ERROR, {
+          message: 'Você não tem permissão para usar o assistente de IA.',
+        });
+        socket.disconnect();
+        return;
+      }
+    }
 
     const setting = await Setting.findOne().lean();
     const aiEnabled = Boolean(setting?.AI_ASSISTANT_ENABLED);

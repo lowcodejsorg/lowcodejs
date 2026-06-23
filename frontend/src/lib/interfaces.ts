@@ -18,18 +18,20 @@ import type {
   E_EXTENSION_TYPE,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
+  E_FIELD_VALIDATION,
   E_JWT_TYPE,
   E_LOGGER_ACTION_TYPE,
   E_LOGGER_OBJECT_TYPE,
   E_MENU_ITEM_TYPE,
   E_NOTIFICATION_TYPE,
+  E_PERMISSION_TARGET,
   E_REACTION_TYPE,
   E_ROLE,
   E_ROW_STATUS,
-  E_TABLE_COLLABORATION,
+  E_TABLE_PERMISSION,
+  E_TABLE_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   E_TOKEN_STATUS,
   E_USER_STATUS,
 } from './constant';
@@ -94,6 +96,8 @@ export type IGroup = Merge<
     slug: string;
     description: string | null;
     permissions: Array<IPermission>;
+    // IDs dos grupos englobados (quem pertence a este grupo herda o acesso deles).
+    encompasses: Array<string>;
   }
 >;
 
@@ -104,10 +108,21 @@ export type IUser = Merge<
     email: string;
     password: string;
     status: ValueOf<typeof E_USER_STATUS>;
+    // Grupo principal (define o papel no sistema).
     group: IGroup;
+    // Grupos adicionais do usuario (multi-grupo).
+    groups: Array<IGroup>;
+    // Capacidades de area resolvidas pelo backend (fecho de grupos): slugs de
+    // permissao (MANAGE_*) usados para liberar a navegacao por capability.
+    capabilities?: Array<string>;
     notificationsEnabled: boolean;
   }
 >;
+
+export type IAuthenticationAccounts = {
+  activeAccountId: string | null;
+  accounts: Array<IUser>;
+};
 
 export type INotificationAction = {
   type: 'route' | 'url';
@@ -173,6 +188,8 @@ export type IMenu = Merge<
     order: number;
     isInitial: boolean;
     extension: IMenuExtensionRef | null;
+    // Visibilidade da opção (Grupo|Public|Nobody). null em menus legados.
+    visibility?: IPermissionBinding | null;
     children?: Array<IMenu>;
   }
 >;
@@ -187,6 +204,10 @@ export type IDropdown = {
   id: string;
   label: string;
   color: string | null;
+  /** Slug do campo usado para ordenar os cards desta lista no Kanban. */
+  sortField?: string | null;
+  /** Direção da ordenação dos cards desta lista no Kanban. */
+  sortDirection?: 'asc' | 'desc' | null;
 };
 
 export type IRelationshipLabelPart = {
@@ -212,12 +233,47 @@ export type IFieldConfigurationRelationship = {
   labelParts?: Array<IRelationshipLabelPart>;
   /** Separador usado entre os `labelParts`. Default: " - ". */
   labelSeparator?: string;
+  visible?: boolean;
+  onDelete?: 'CASCADE' | 'SET_NULL' | 'RESTRICT';
+  mirror?: { multiple: boolean; visible: boolean; label?: string };
+  /** Back-pointer para a RelationshipDefinition (fonte de verdade do vínculo). */
+  relationshipId?: string | null;
+  /**
+   * Lado da definition que este campo representa. A tela de detalhe usa para
+   * chamar os endpoints `/links` com o `side` correto.
+   */
+  side?: 'source' | 'target' | null;
+  /**
+   * Como o relacionamento aparece no formulário: `select` (multi-select de
+   * vínculo direto) ou `manage` (tabelas internas / cards + Sheet). Ausência =
+   * `select`.
+   */
+  formMode?: 'select' | 'manage';
+};
+
+/** Vínculo entre dois registros (pivô) gerido pelos endpoints `/links`. */
+export type IRelationshipLink = {
+  _id: string;
+  relationshipId: string;
+  sourceId: string;
+  targetId: string;
+  order: number;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type IFieldConfigurationGroup = {
   _id?: string;
   slug: string;
   fields?: Array<IField>;
+};
+
+// Uma regra de validação configurada num campo. `config` carrega os parâmetros
+// (IS_IN_RANGE → { min, max }; IS_NOT → { values }); regras sem parâmetro = {}.
+export type IFieldValidation = {
+  rule: ValueOf<typeof E_FIELD_VALIDATION>;
+  config: Record<string, unknown>;
 };
 
 export type IField = Merge<
@@ -229,10 +285,18 @@ export type IField = Merge<
     required: boolean;
     multiple: boolean;
     format: ValueOf<typeof E_FIELD_FORMAT> | null;
+    // Regras de validação de valor do campo (camada única de validação).
+    // Opcional no tipo; em runtime sempre presente ([] por default).
+    validations?: Array<IFieldValidation>;
+    // Exibe o campo na barra de filtros (config de UX, não é permissão).
     showInFilter: boolean;
-    showInForm: boolean;
-    showInDetail: boolean;
-    showInList: boolean;
+    // Visibilidade do campo por contexto (Grupo|Public|Nobody). null apenas em
+    // documentos ainda não backfillados.
+    permissions?: {
+      list: IPermissionBinding;
+      form: IPermissionBinding;
+      detail: IPermissionBinding;
+    } | null;
     widthInForm: number | null;
     widthInList: number | null;
     widthInDetail: number | null;
@@ -293,6 +357,23 @@ export type ILayoutFields = {
   reminder: string | null;
 };
 
+// Vínculo de uma ação a quem pode realizá-la. `group` só é usado quando
+// kind === 'GROUP'.
+export type IPermissionBinding = {
+  kind: ValueOf<typeof E_PERMISSION_TARGET>;
+  group: string | null;
+};
+
+// Mapa ação -> binding. Parcial: tabelas legadas podem não ter o mapa.
+export type ITablePermissions = Partial<
+  Record<ValueOf<typeof E_TABLE_PERMISSION>, IPermissionBinding>
+>;
+
+export type ITableMember = {
+  user: string;
+  profile: ValueOf<typeof E_TABLE_PROFILE>;
+};
+
 export type ITable = Merge<
   Base,
   {
@@ -304,10 +385,12 @@ export type ITable = Merge<
     fields: Array<IField>;
     type: ValueOf<typeof E_TABLE_TYPE>;
     style: ValueOf<typeof E_TABLE_STYLE>;
-    visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
-    collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
-    administrators: Array<IUser>;
     owner: IUser;
+    // Cada ação aponta para um binding (Grupo|Public|Nobody). null apenas em
+    // documentos ainda não backfillados.
+    permissions: ITablePermissions | null;
+    // Convidados da tabela e seus perfis.
+    members: Array<ITableMember>;
     fieldOrderList: Array<string>;
     fieldOrderForm: Array<string>;
     fieldOrderFilter: Array<string>;
@@ -391,6 +474,7 @@ export type IRow = Merge<
   Omit<Base, 'trashed'>,
   {
     creator: IUser;
+    updater?: IUser | null;
     status?: ValueOf<typeof E_ROW_STATUS>;
     draftAt?: string | null;
     sharedRowSlug?: string | null;
@@ -504,6 +588,8 @@ export type IExtension = Merge<
     manifestSnapshot: Record<string, unknown>;
     requires: IExtensionRequires;
     permissions: IExtensionPermissions;
+    supportsScopeAll: boolean;
+    tableSettings?: Record<string, Record<string, unknown>>;
   }
 >;
 
@@ -518,6 +604,12 @@ export type ILogger = Merge<
     object: ValueOf<typeof E_LOGGER_OBJECT_TYPE> | null;
     object_id: string | null;
     content: Record<string, unknown> | null;
+    // Dados do registro referenciado por object_id (nao do log). Null quando o
+    // objeto nao for uma ROW de tabela dinamica.
+    creator: ILoggerUserRef | null;
+    updater: ILoggerUserRef | null;
+    objectCreatedAt: string | null;
+    objectUpdatedAt: string | null;
   }
 >;
 

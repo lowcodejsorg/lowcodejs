@@ -4,7 +4,6 @@ import {
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 
 const FIELD_FORMAT_VALUES = Object.values(E_FIELD_FORMAT) as Array<
@@ -78,7 +77,6 @@ const SchemaImportTableSchema = z.object({
     .trim()
     .min(1, 'Nome da tabela é obrigatório')
     .max(40, 'Nome da tabela deve ter no máximo 40 caracteres'),
-  visibility: z.enum(E_TABLE_VISIBILITY).optional(),
   style: z.enum(E_TABLE_STYLE).optional(),
   fields: z
     .array(SchemaImportFieldSchema)

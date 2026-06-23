@@ -15,6 +15,13 @@ frontend/extensions/
     └── tools/<id>/index.tsx            ← entry component da ferramenta
 ```
 
+## Pacotes
+
+| Pacote   | Conteúdo                                                                                                          |
+| -------- | ----------------------------------------------------------------------------------------------------------------- |
+| `core/`  | Extensões oficiais (tools, plugins, módulos) — ver `core/CLAUDE.md`                                               |
+| `forms/` | Extensões opcionais de configuração de formulários (cascade-dropdown, conditional-fields) — ver `forms/CLAUDE.md` |
+
 O frontend descobre as extensões com `import.meta.glob`:
 
 ```ts

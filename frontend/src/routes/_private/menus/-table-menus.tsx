@@ -44,16 +44,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useSidebar } from '@/components/ui/sidebar';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
+import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
 import { useMenuBulkDelete } from '@/hooks/tanstack-query/use-menu-bulk-delete';
 import { useMenuBulkRestore } from '@/hooks/tanstack-query/use-menu-bulk-restore';
 import { useMenuBulkTrash } from '@/hooks/tanstack-query/use-menu-bulk-trash';
 import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
 import { useDataTable } from '@/hooks/use-data-table';
 import { API } from '@/lib/api';
-import { E_MENU_ITEM_TYPE, E_ROLE } from '@/lib/constant';
+import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { formatDate } from '@/lib/format-date';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IMenu } from '@/lib/interfaces';
+import { isMaster, isPrivileged } from '@/lib/permission';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -628,9 +630,11 @@ export function TableMenus({
   const auth = useAuthStore();
   const search = useSearch({ from: '/_private/menus/' });
 
-  const role = auth.user?.group?.slug;
-  const isMaster = role === E_ROLE.MASTER;
-  const canTrash = role === E_ROLE.MASTER || role === E_ROLE.ADMINISTRATOR;
+  // Hard-delete é MASTER-only; trash/restore libera para privilegiados. Ambos
+  // resolvidos pelo fecho de grupos (não apenas o grupo principal).
+  const groups = useGroupReadList();
+  const master = isMaster(auth.user, groups.data ?? []);
+  const canTrash = isPrivileged(auth.user, groups.data ?? []);
   const isTrashView = search.trashed === true;
 
   const [singleDeleteMenu, setSingleDeleteMenu] = React.useState<IMenu | null>(
@@ -732,12 +736,12 @@ export function TableMenus({
     () =>
       buildColumns({
         canTrash,
-        isMaster,
+        isMaster: master,
         getPositionLabel: (menu) =>
           positionLabels.get(menu._id) ?? String(menu.order ?? 0),
         onPermanentDelete: (menu) => setSingleDeleteMenu(menu),
       }),
-    [canTrash, isMaster, positionLabels],
+    [canTrash, master, positionLabels],
   );
 
   const leftPinning: Array<string> = [];
@@ -784,7 +788,7 @@ export function TableMenus({
         <BulkActionBar
           selectedCount={selectedCount}
           isTrashView={isTrashView}
-          canDelete={isMaster}
+          canDelete={master}
           onClear={() => table.resetRowSelection()}
           onTrash={() => setBulkTrashOpen(true)}
           onRestore={() => setBulkRestoreOpen(true)}

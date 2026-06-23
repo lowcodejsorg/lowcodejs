@@ -57,11 +57,11 @@ backend/
 ├── application/
 │   ├── core/                      # Logica central (entity types, Either, exception, builders, sandbox)
 │   ├── middlewares/               # Auth JWT + Table access/permissions
-│   ├── model/                     # Mongoose schemas (11 models, todos no DB system)
-│   ├── repositories/              # Contract + Mongoose + InMemory (11 entidades)
+│   ├── model/                     # Mongoose schemas (14 models, todos no DB system)
+│   ├── repositories/              # Contract + Mongoose + InMemory (15 entidades)
 │   ├── services/                  # Email (contract + nodemailer + in-memory), Storage (flydrive)
 │   ├── utils/                     # JWT tokens, cookies
-│   └── resources/                 # 16 recursos REST (cada um com operacoes isoladas)
+│   └── resources/                 # 20 recursos REST (cada um com operacoes isoladas)
 ├── database/
 │   ├── seeders/                   # Permissions, user groups, settings (idempotente)
 │   └── migrations/                # Migracoes one-time (dual-connection)
@@ -108,7 +108,8 @@ backend/
 
 ### Middleware
 - `authentication.middleware.ts` - Extrai JWT de cookie/header, popula `request.user`
-- `table-access.middleware.ts` - Verifica permissoes RBAC + visibilidade de tabela
+- `permission.middleware.ts` - `PermissionMiddleware(capability)`: exige uma capacidade de area (`E_AREA_CAPABILITY`) resolvida pelo fecho de grupos. Substitui o RoleMiddleware nas areas; MASTER bypassa
+- `table-access.middleware.ts` - Verifica acesso a tabela: bindings por acao (`table.permissions`) + perfil de membro (`table.members`) + dono
 
 ### Model (`*.model.ts`)
 - Mongoose schemas com timestamps
@@ -154,29 +155,95 @@ Codigo de usuario (beforeSave, afterSave, onLoad) roda em Node VM isolada com ti
 | `E_ROLE` | MASTER, ADMINISTRATOR, MANAGER, REGISTERED |
 | `E_FIELD_TYPE` | TEXT_SHORT, TEXT_LONG, DROPDOWN, DATE, RELATIONSHIP, FILE, FIELD_GROUP, REACTION, EVALUATION, CATEGORY, USER + nativos |
 | `E_FIELD_FORMAT` | ALPHA_NUMERIC, INTEGER, DECIMAL, URL, EMAIL, PASSWORD, PHONE, CNPJ, CPF, RICH_TEXT, PLAIN_TEXT + date formats |
+| `E_FIELD_VALIDATION` | NOT_EMPTY, IS_EMAIL/NUMERIC/ALPHA_NUMERIC/IN_RANGE/IBAN/NOT/URL/PHONE/CPF/CNPJ, IS_UNIQUE, ARE_UNIQUE_VALUES, EMAIL_EXISTS, USER_EXISTS (15 — camada única de validação de campo; ver `core/validations/`) |
 | `E_TABLE_TYPE` | TABLE, FIELD_GROUP |
 | `E_TABLE_STYLE` | LIST, GALLERY, DOCUMENT, CARD, MOSAIC, KANBAN, FORUM, CALENDAR, GANTT |
-| `E_TABLE_VISIBILITY` | PUBLIC, RESTRICTED, OPEN, FORM, PRIVATE |
-| `E_TABLE_COLLABORATION` | OPEN, RESTRICTED |
 | `E_TABLE_PERMISSION` | CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW (12 total) |
+| `E_AREA_CAPABILITY` | MANAGE_USERS, MANAGE_MENU, MANAGE_USER_GROUPS, MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS, MANAGE_CHAT (7 total) |
+| `E_PERMISSION_TARGET` | PUBLIC, NOBODY, GROUP (binding `{ kind, group }`) |
+| `E_TABLE_PROFILE` | OWNER, ADMIN, EDITOR, CONTRIBUTOR, VIEWER (perfis de membro) |
+| `E_PROFILE_ACCESS` | ALLOW, DENY, OWN (celula da `TABLE_PROFILE_MATRIX`) |
 | `E_JWT_TYPE` | ACCESS, REFRESH |
 | `E_USER_STATUS` | ACTIVE, INACTIVE |
 
 ## Sistema de Permissoes (RBAC)
 
-| Role | Permissoes |
-|------|-----------|
-| MASTER | Todas (bypassa checks) |
-| ADMINISTRATOR | Todas (acesso a todas as tabelas) |
-| MANAGER | CRUD + VIEW (respeita ownership) |
-| REGISTERED | VIEW + CREATE_ROW apenas |
+O modelo de permissoes foi reescrito. Nao ha mais 4 roles fixos governando tudo
+— roles continuam existindo apenas para compat (JWT/derivacao). O controle real
+gira em torno de **grupos custom + capacidades + bindings por acao**.
 
-Visibilidade de tabela (para nao-owners):
-- **PUBLIC**: GET view liberado para visitantes
-- **FORM**: POST create liberado para visitantes
-- **OPEN**: VIEW + CREATE_ROW
-- **RESTRICTED**: VIEW only
-- **PRIVATE**: bloqueado
+### Grupos custom com hierarquia
+
+- Grupos sao configuraveis e podem englobar outros via `encompasses[]` (fecho
+  transitivo / "Engloba"): um grupo herda as permissoes de tudo que engloba.
+- Um usuario pertence a **varios grupos** (`user.groups[]`). O campo legado
+  `user.group` foi **mantido** para compat e fallback.
+- Resolver: `application/services/group-resolver/` —
+  `resolveUserGroupIds(user)` (fecho dos ids) e `resolveCapabilities(user)`
+  (uniao das permissoes do fecho).
+
+### Capacidades de area
+
+`E_AREA_CAPABILITY` (MANAGE_USERS, MANAGE_MENU, MANAGE_USER_GROUPS,
+MANAGE_SETTINGS, MANAGE_TOOLS, MANAGE_PLUGINS, MANAGE_CHAT — 7 capacidades) sao
+permissoes atribuiveis a qualquer grupo, enforcadas por
+`PermissionMiddleware(capability)` — substitui o `RoleMiddleware` nas areas do
+sistema. MASTER bypassa.
+
+### Bindings por acao (`E_PERMISSION_TARGET`)
+
+Alvo `{ kind, group }` onde `kind ∈ { PUBLIC, NOBODY, GROUP }` (PUBLIC inclui
+visitante; GROUP por **intersecao** — libera so se o grupo estiver no fecho do
+usuario **E** o fecho de capacidades contiver a permissao global da acao). Dono,
+membros e PUBLIC nao passam pela intersecao; `CREATE_TABLE` (sem tabela) usa so a
+capacidade do grupo. Reusado em:
+
+- `table.permissions`: mapa das 10 acoes de tabela (viewTable/updateTable/
+  createField/updateField/removeField/viewField/createRow/updateRow/removeRow/
+  viewRow) → binding.
+- `field.permissions: { list, form, detail }` → binding por contexto. GROUP
+  segue a mesma **intersecao** das acoes de tabela: exige o grupo no fecho E a
+  capacidade `VIEW_FIELD`. Enforcado server-side pelo `FieldVisibilityService`
+  (`services/field-visibility/`):
+  remove os valores de campos ocultos das respostas de row (`paginated`=list,
+  `show`=detail) e descarta escritas em campos ocultos (`create`/`update`/
+  `bulk-update`=form). Campos nativos e usuarios privilegiados (MASTER/ADMIN/dono)
+  nunca sao filtrados. Ausencia de binding para um contexto = campo visivel.
+- `menu.visibility` → binding.
+
+### Convidados da tabela (membros)
+
+`table.members[]` (`{ user, profile }`) com perfis fixos `E_TABLE_PROFILE`
+(owner/admin/editor/contributor/viewer) avaliados pela matriz
+`TABLE_PROFILE_MATRIX`. `contributor` edita/remove **apenas as suas** rows (OWN).
+`owner` tem acesso total e pode "trocar dono".
+
+### Modelo novo unico (sem fallback legado)
+
+Os campos antigos `visibility`/`collaboration`/`administrators` (tabela) e
+`showInList`/`showInForm`/`showInDetail` (campo) foram **removidos** do schema,
+dos tipos e dos enums. Nao ha mais fallback: o enforcement le **somente**
+`table.permissions`/`table.members`/`table.owner` e `field.permissions`. Tabelas
+novas ja nascem no modelo novo (preset `RESTRICTED` via
+`buildDefaultTablePermissions`, dono como membro `OWNER`) — nunca com
+`permissions: null`.
+
+As migrations idempotentes rodam automaticamente no boot: backfill (09
+table-permissions, 10 field-permissions, 11 menu-visibility) e em seguida 12
+`drop-legacy-permission-fields`, que `$unset` permanente dos campos legados.
+`field.showInFilter` e **mantido** (nao e permissao — controla apenas a sidebar
+de filtros).
+
+### JWT
+
+Payload **inalterado** (`{ sub, email, role, type }`); `role` ainda e derivado
+do grupo **principal** (`user.group`, singular) só para compat. **Não é usado
+para autorizar**: o privilégio (acesso total MASTER/ADMINISTRATOR) é resolvido
+pelo **fecho de grupos** via `GroupResolverContractService.isPrivileged(user)`
+(`{group} ∪ groups` seguindo `encompasses`) — assim um usuário MASTER/ADMIN por
+grupo **adicional** também é reconhecido. Substituiu as comparações espalhadas
+`role === E_ROLE.MASTER/ADMINISTRATOR` (menu/list, pages/show, permission e
+field-visibility services). Os grupos sao resolvidos server-side a cada request.
 
 ## Convencoes de Nomenclatura
 
@@ -233,11 +300,11 @@ Impl)` e chamado para cada par encontrado.
 
 - Repositorios: User, UserGroup, Permission, Table, Field, Storage,
   ValidationToken, Menu, Reaction, Evaluation, Setting, Logger, Notification,
-  Extension
+  Extension, Row
 - Servicos: Email, EmailQueue (use-cases injetam este, nao Email diretamente),
   CsvImportQueue, StorageMigrationQueue, Password, Permission, RowPassword,
   ScriptExecution, Notification, KanbanCommentMention, RowMemberNotification,
-  Storage
+  Storage, Llm, Table, FieldValidation (regras de `field.validations[]`)
 - Builders de tabela dinamica (`services/table/`): SchemaBuilder, ModelBuilder,
   QueryBuilder, PopulateBuilder, RowContextBuilder
 
@@ -273,17 +340,16 @@ Em container Docker, o `docker-entrypoint.sh` roda ANTES do servidor:
 2. `npm run seed` (idempotente — upsert)
 3. Inicia o servidor
 
-kernel.ts registra 9 plugins em ordem:
+kernel.ts registra 8 plugins em ordem:
 
 1. CORS (origens dinamicas + fixas de ALLOWED_ORIGINS)
 2. Cookie (signed com COOKIE_SECRET)
 3. JWT (RS256 com chaves base64, expiry 24h)
 4. Multipart (limite 5MB)
-5. Static files (local) OU HTTP proxy (S3) - baseado em STORAGE_DRIVER
-6. Swagger/OpenAPI
-7. Scalar API reference (/documentation)
-8. WebSocket
-9. fastify-decorators bootstrap (carrega controllers)
+5. Swagger/OpenAPI
+6. Scalar API reference (/documentation)
+7. WebSocket
+8. fastify-decorators bootstrap (carrega controllers)
 
 Global error handler: HTTPException -> ZodError -> FST_ERR_VALIDATION -> fallback 500
 
@@ -459,7 +525,7 @@ o campo `location` em docs Storage existentes (idempotente via marker
 | Runner | threads | forks |
 
 Helpers (`test/helpers/auth.helper.ts`):
-- `createAuthenticatedUser(overrides?)` - cria user + grupo Master + 12 permissoes, faz sign-in, retorna cookies + user
+- `createAuthenticatedUser(overrides?)` - cria user + grupo Master + 18 permissoes (12 de tabela + 6 capacidades de area, sem MANAGE_CHAT), faz sign-in, retorna cookies + user
 - `cleanDatabase()` - deleta User e UserGroup
 
 ## Build & Deploy
@@ -537,7 +603,7 @@ Comando: `npm run seed`
 
 | Seeder | Dados |
 |--------|-------|
-| 1720448435-permissions.seed.ts | 12 permissoes (CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW). Upsert por `slug` com `$set` |
+| 1720448435-permissions.seed.ts | 19 permissoes: 12 de tabela (CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW) + 7 capacidades de area (E_AREA_CAPABILITY, inclui MANAGE_CHAT). Upsert por `slug` com `$set` |
 | 1720448445-user-group.seed.ts | 4 grupos (MASTER, ADMINISTRATOR, MANAGER, REGISTERED). Metadados via `$set`; `permissions` via `$setOnInsert` (preserva customizacoes manuais) |
 | 1720465893-settings.seed.ts | Setting singleton. Marca SETUP_COMPLETED=true se ja existe MASTER; caso contrario, `$setOnInsert: {}` |
 | 1778025600-demo-users.seed.ts | Gated por `DEMO_MODE=true`. Cria/atualiza `admin@admin.com` (ADMINISTRATOR) e `registered@registered.com` (REGISTERED). `$set` em todos os campos, password re-hashado a cada `npm run seed`. No-op silencioso fora de demo |
@@ -576,3 +642,34 @@ Comandos:
 Marcadores persistidos no Setting:
 - `MIGRATION_DUAL_CONNECTION_AT` — timestamp da copia bem-sucedida
 - `MIGRATION_DUAL_CONNECTION_DROPPED_AT` — timestamp do drop bem-sucedido
+
+### Migrations de relacionamento (cardinalidade)
+
+No boot Docker, `docker-entry-point.sh` loopa `scripts/migrations/*.sh` em ordem
+alfabetica; as de relacionamento sao 14→15→16 (lift-out-of-groups →
+embedded-to-links → backfill-endpoint-flags), idempotentes via marker no Setting.
+Em **dev local** (`npm run dev`, sem Docker) elas nao rodam — use os npm scripts:
+
+- `npm run migrate:relationship` — roda as 3 em ordem (14→15→16)
+- `npm run migrate:relationship-lift-out-of-groups` / `-embedded-to-links` /
+  `-endpoint-flags` — avulsas (mesma ordem se rodadas a mao)
+- Cada uma aceita `-- --force` p/ reexecutar ignorando o marker
+
+### Migration 19 — validações de campo
+
+`19-field-validations.sh` → `migrate-field-validations.ts`: backfill de
+`validations: []` em Field docs sem a propriedade (marker
+`MIGRATION_FIELD_VALIDATIONS_AT`). Roda no boot Docker pelo mesmo loop; **sem npm
+script** (convenção do projeto). Não deriva regras do `format` (legado segue
+validando) — evita validação dupla.
+
+Pos-migracao **todo** campo `RELATIONSHIP` fica top-level e materializado
+(`relationship.relationshipId` + campo-espelho); o passo 16 falha alto (nao grava
+marker) se sobrar campo sem `relationshipId`. Os links sao a unica fonte de
+verdade — nao ha fallback embedded.
+
+**Remodel manual (one-off, fora do boot):**
+`npm run migrate:fieldgroup-to-relationship -- --table=<slug> --group=<id|slug> --i-have-backup`
+converte um `FIELD_GROUP` usado como falso-relacionamento (subdoc embedded) numa
+tabela independente + `RelationshipDefinition` + links. Destrutivo, exige backup,
+nao idempotente-por-marker (depende de decisao humana por tabela).

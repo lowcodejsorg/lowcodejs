@@ -7,12 +7,14 @@ import { z } from 'zod';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
+  buildDefaultTablePermissions,
+  buildFieldPermissions,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
+  E_ROLE,
+  E_TABLE_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   FIELD_NATIVE_LIST,
   type FieldCreatePayload,
   type IField,
@@ -22,6 +24,7 @@ import HTTPException from '@application/core/exception.core';
 import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
 import type {
@@ -62,6 +65,7 @@ export default class SchemaImportUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly userGroupRepository: UserGroupContractRepository,
     private readonly schemaBuilder: SchemaBuilderContractService,
   ) {}
 
@@ -227,16 +231,19 @@ export default class SchemaImportUseCase {
     const allFieldIds = allFields.map((f) => f._id);
     const _schema = this.schemaBuilder.build(allFields);
 
+    const registeredGroup = await this.userGroupRepository.findBySlug(
+      E_ROLE.REGISTERED,
+    );
+
     const tableRecord = await this.tableRepository.create({
       _schema,
       name: tableDef.name,
       slug,
       type: E_TABLE_TYPE.TABLE,
       owner: ownerId,
-      administrators: [],
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      permissions: buildDefaultTablePermissions(registeredGroup?._id ?? null),
+      members: [{ user: ownerId, profile: E_TABLE_PROFILE.OWNER }],
       style: tableDef.style ?? E_TABLE_STYLE.LIST,
-      visibility: tableDef.visibility ?? E_TABLE_VISIBILITY.RESTRICTED,
       fields: allFieldIds,
       fieldOrderList: allFieldIds,
       fieldOrderForm: allFieldIds,
@@ -336,9 +343,11 @@ export default class SchemaImportUseCase {
       multiple: fieldDef.multiple,
       format: fieldDef.format as ValueOf<typeof E_FIELD_FORMAT> | null,
       showInFilter: fieldDef.showInFilter,
-      showInForm: fieldDef.showInForm,
-      showInDetail: fieldDef.showInDetail,
-      showInList: fieldDef.showInList,
+      permissions: buildFieldPermissions(
+        fieldDef.showInList,
+        fieldDef.showInForm,
+        fieldDef.showInDetail,
+      ),
       widthInForm: 50,
       widthInList: 10,
       widthInDetail: 50,
@@ -395,9 +404,6 @@ export default class SchemaImportUseCase {
       }
       if (last === 'style') {
         return `${location}: style de tabela inválido. Válidos: LIST, GALLERY, DOCUMENT, CARD, MOSAIC, KANBAN, FORUM, CALENDAR, GANTT.`;
-      }
-      if (last === 'visibility') {
-        return `${location}: visibility inválida. Válidas: PRIVATE, RESTRICTED, OPEN, FORM, PUBLIC.`;
       }
       if (last === 'format') {
         return `${location}: format inválido. Para TEXT_SHORT: ALPHA_NUMERIC, INTEGER, DECIMAL, URL, EMAIL, PASSWORD, PHONE, CNPJ, CPF. Para TEXT_LONG: RICH_TEXT, PLAIN_TEXT. Para DATE: DD_MM_YYYY, MM_DD_YYYY, YYYY_MM_DD (e variações com HH_MM_SS / DASH).`;

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
   E_USER_STATUS,
   type IField,
@@ -26,9 +27,7 @@ function makeField(
     required: partial.required ?? false,
     multiple: partial.multiple ?? false,
     format: partial.format ?? null,
-    showInList: false,
-    showInForm: true,
-    showInDetail: true,
+    permissions: buildFieldPermissions(false, true, true),
     showInFilter: false,
     defaultValue: null,
     locked: true,
@@ -80,9 +79,8 @@ function makeKanbanTable(): ITable {
     logo: null,
     type: 'TABLE',
     style: 'KANBAN',
-    visibility: 'RESTRICTED',
-    collaboration: 'RESTRICTED',
-    administrators: [],
+    permissions: null,
+    members: [],
     owner: { _id: 'owner-1' } as IUser,
     fields: [titulo],
     groups: [commentsGroup],

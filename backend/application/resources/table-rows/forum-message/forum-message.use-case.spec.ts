@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
   type IField,
   type IGroupConfiguration,
 } from '@application/core/entity.core';
@@ -25,9 +24,7 @@ function makeField(
     multiple: false,
     format: null,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
-    showInList: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: null,
     widthInDetail: null,
@@ -87,10 +84,7 @@ const FORUM_TABLE_PAYLOAD = {
   _schema: {},
   fields: [MESSAGES_FIELD._id],
   owner: 'owner-id',
-  administrators: [],
   style: E_TABLE_STYLE.FORUM,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
   fieldOrderList: [],
   fieldOrderForm: [],
   groups: [GROUP_CONFIG],

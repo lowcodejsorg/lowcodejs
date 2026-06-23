@@ -31,7 +31,7 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
       where.trashed = false;
     }
 
-    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
+    if (payload?.hideMaster) {
       where.slug = { $ne: E_ROLE.MASTER };
     }
 

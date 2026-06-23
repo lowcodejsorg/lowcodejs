@@ -20,6 +20,7 @@ export function TableRowDateCell({
   if (value) {
     if (
       field.type === E_FIELD_TYPE.CREATED_AT ||
+      field.type === E_FIELD_TYPE.UPDATED_AT ||
       field.type === E_FIELD_TYPE.TRASHED_AT
     ) {
       displayValue = formatDate(value);

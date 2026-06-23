@@ -11,15 +11,57 @@ import type {
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
+import { E_PERMISSION_TARGET } from '@/lib/constant';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
+import type { FieldContext } from '@/lib/permission';
+import { isFieldShownInContext } from '@/lib/permission';
+
+// Chave de visibilidade do toggle -> contexto do binding. `showInFilter` não é
+// permissão (config de filtro), então não mapeia.
+const CONTEXT_BY_VISIBILITY_KEY: Partial<Record<VisibilityKey, FieldContext>> =
+  {
+    showInList: 'list',
+    showInForm: 'form',
+    showInDetail: 'detail',
+  };
+
+// Traduz o toggle (mostrar/ocultar) para o override do payload: `showInFilter`
+// continua booleano; list/form/detail viram binding PUBLIC (visível) ou NOBODY
+// (oculto) no mapa `permissions`.
+function buildVisibilityOverride(
+  field: IField,
+  visibilityKey: VisibilityKey,
+  newValue: boolean,
+): Record<string, unknown> {
+  if (visibilityKey === 'showInFilter') {
+    return { showInFilter: newValue };
+  }
+
+  const context = CONTEXT_BY_VISIBILITY_KEY[visibilityKey];
+  if (!context) return {};
+
+  const publicBinding = { kind: E_PERMISSION_TARGET.PUBLIC, group: null };
+  const nobodyBinding = { kind: E_PERMISSION_TARGET.NOBODY, group: null };
+
+  const base = field.permissions ?? {
+    list: publicBinding,
+    form: publicBinding,
+    detail: publicBinding,
+  };
+
+  let nextBinding = nobodyBinding;
+  if (newValue) nextBinding = publicBinding;
+
+  return { permissions: { ...base, [context]: nextBinding } };
+}
 
 function buildFieldPayload(
   field: IField,
   overrides: Partial<IField>,
 ): Record<string, unknown> {
   const hasRelationship = field.relationship !== null;
-  const hasDropdown = field.dropdown.length > 0;
-  const hasCategory = field.category.length > 0;
+  const hasDropdown = (field.dropdown?.length ?? 0) > 0;
+  const hasCategory = (field.category?.length ?? 0) > 0;
   let group: { slug: string; _id?: string } | null = null;
   if (field.group) {
     group = { slug: field.group.slug };
@@ -34,9 +76,7 @@ function buildFieldPayload(
     required: field.required,
     multiple: field.multiple,
     showInFilter: field.showInFilter,
-    showInForm: field.showInForm,
-    showInDetail: field.showInDetail,
-    showInList: field.showInList,
+    permissions: field.permissions ?? null,
     widthInForm: field.widthInForm,
     widthInList: field.widthInList,
     widthInDetail: field.widthInDetail,
@@ -150,7 +190,10 @@ export function useTableFieldManagement(
       const route = `/tables/${tableSlug}/fields/${field._id}`;
       const response = await API.put<IField>(
         route,
-        buildFieldPayload(field, { [visibilityKey]: newValue }),
+        buildFieldPayload(
+          field,
+          buildVisibilityOverride(field, visibilityKey, newValue),
+        ),
       );
       return { data: response.data, visibilityKey };
     },
@@ -160,7 +203,12 @@ export function useTableFieldManagement(
     onSuccess: ({ data: response, visibilityKey }) => {
       updateFieldInTableCache(queryClient, tableSlug, response);
       const label = VISIBILITY_LABELS[visibilityKey];
-      if (response[visibilityKey]) {
+      let shown = Boolean(response.showInFilter);
+      const context = CONTEXT_BY_VISIBILITY_KEY[visibilityKey];
+      if (context) {
+        shown = isFieldShownInContext(response, context);
+      }
+      if (shown) {
         toast.success(`Campo visível em ${label}`);
       } else {
         toast.success(`Campo oculto em ${label}`);
@@ -306,11 +354,8 @@ export function useTableFieldManagement(
       name: table.name,
       description: table.description,
       logo: table.logo?._id ?? null,
-      visibility: table.visibility,
       style: table.style,
-      collaboration: table.collaboration,
       ...orderPayload,
-      administrators: table.administrators.flatMap((admin) => admin._id),
       fields: table.fields.flatMap((f) => f._id),
       methods: {
         ...table.methods,

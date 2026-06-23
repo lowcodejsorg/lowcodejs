@@ -1,14 +1,14 @@
 /* eslint-disable no-unused-vars */
 import type {
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   FindOptions,
   IGroupConfiguration,
   ILayoutFields,
   ITable,
+  ITableMember,
   ITableMethod,
+  ITablePermissions,
   ITableSchema,
   Merge,
   ValueOf,
@@ -23,10 +23,9 @@ export type TableCreatePayload = Merge<
     fields?: string[];
     type?: ValueOf<typeof E_TABLE_TYPE>;
     style?: ValueOf<typeof E_TABLE_STYLE>;
-    visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
-    collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
-    administrators?: string[];
     owner: string;
+    permissions?: ITablePermissions | null;
+    members?: ITableMember[];
     fieldOrderList?: string[];
     fieldOrderForm?: string[];
     fieldOrderFilter?: string[];
@@ -57,7 +56,6 @@ export type TableQueryPayload = {
   owner?: string[];
   trashed?: boolean;
   _ids?: string[];
-  visibility?: Array<ValueOf<typeof E_TABLE_VISIBILITY>>;
   sort?: Record<string, 'asc' | 'desc'>;
 };
 
@@ -67,8 +65,6 @@ export type TableUpdateManyPayload = {
   filterTrashed?: boolean;
   data: {
     style?: ValueOf<typeof E_TABLE_STYLE>;
-    visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
-    collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
     trashed?: boolean;
     trashedAt?: Date | null;
   };

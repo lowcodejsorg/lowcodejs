@@ -4,6 +4,9 @@ Espelho UI do `backend/extensions/core/`. Contém os entries React (componentes)
 das extensões oficiais. Vive separado de `frontend/src/` mas é incluído no
 projeto TypeScript via `tsconfig.json` (`"include": ["**/*.ts", "**/*.tsx"]`).
 
+> As extensões **opcionais** de configuração de formulários (cascade-dropdown,
+> conditional-fields) ficam no pacote irmão `forms/` — ver `../forms/CLAUDE.md`.
+
 ## Estrutura
 
 ```

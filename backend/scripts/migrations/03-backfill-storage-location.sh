@@ -20,7 +20,6 @@ runas() {
   fi
 }
 
-echo "📦 Verificando backfill de storage.location..."
 # if [ -f "$MIGRATION_DIR/migrate-backfill-storage-location.ts" ]; then
 #   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-backfill-storage-location.ts"
 # else

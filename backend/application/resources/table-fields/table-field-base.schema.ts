@@ -1,6 +1,31 @@
 import z from 'zod';
 
-import { E_FIELD_FORMAT } from '@application/core/entity.core';
+import {
+  E_FIELD_FORMAT,
+  E_FIELD_VALIDATION,
+  E_PERMISSION_TARGET,
+  E_RELATIONSHIP_ON_DELETE,
+} from '@application/core/entity.core';
+
+// Binding de visibilidade do campo num contexto (Grupo|Public|Nobody).
+const FieldPermissionBindingSchema = z.object({
+  kind: z.enum([
+    E_PERMISSION_TARGET.PUBLIC,
+    E_PERMISSION_TARGET.NOBODY,
+    E_PERMISSION_TARGET.GROUP,
+  ]),
+  group: z.string().trim().nullable().default(null),
+});
+
+// Visibilidade do campo por contexto (lista/formulario/detalhe).
+export const FieldPermissionsSchema = z
+  .object({
+    list: FieldPermissionBindingSchema,
+    form: FieldPermissionBindingSchema,
+    detail: FieldPermissionBindingSchema,
+  })
+  .nullable()
+  .optional();
 
 const Category = z.object({
   id: z.string().trim(),
@@ -26,13 +51,47 @@ const Relationship = z.object({
   customLabel: z.boolean().optional(),
   labelParts: z.array(RelationshipLabelPart).optional(),
   labelSeparator: z.string().optional(),
+  // Config por lado (pivô): onDelete + visibilidade do source + lado espelho.
+  visible: z.boolean().optional(),
+  onDelete: z.enum(E_RELATIONSHIP_ON_DELETE).optional(),
+  mirror: z
+    .object({
+      multiple: z.boolean().default(false),
+      visible: z.boolean().default(false),
+      label: z.string().trim().optional(),
+    })
+    .optional(),
+  // Back-pointer para a RelationshipDefinition (pivô) e lado deste endpoint.
+  // Materializados no backend (born-pivot); expostos para a UI saber gerir o vínculo.
+  relationshipId: z.string().trim().nullable().optional(),
+  side: z.enum(['source', 'target']).nullable().optional(),
+  // Modo no formulário: select (multi-select) | manage (tabelas internas).
+  formMode: z.enum(['select', 'manage']).optional(),
 });
 
 const Dropdown = z.object({
   id: z.string().trim(),
   label: z.string().trim(),
   color: z.string().nullable().optional(),
+  sortField: z.string().nullable().optional(),
+  sortDirection: z.enum(['asc', 'desc']).nullable().optional(),
 });
+
+// Regra de validacao configurada no campo: { rule, config }. `config` carrega os
+// parametros da regra (range → { min, max }; is-not → { values }); vazio para
+// regras sem parametro.
+const Validation = z.object({
+  rule: z.enum(E_FIELD_VALIDATION),
+  config: z
+    .record(z.string(), z.unknown())
+    .nullish()
+    .transform((value) => value ?? {}),
+});
+// Aceita null/undefined (clientes que reenviam o campo cru do GET) → [].
+export const FieldValidationsSchema = z
+  .array(Validation)
+  .nullish()
+  .transform((value) => value ?? []);
 
 // Propriedades flat do campo (não aninhadas em configuration)
 export const FieldRequiredSchema = z.boolean().default(false);
@@ -41,10 +100,8 @@ export const FieldFormatSchema = z
   .enum(E_FIELD_FORMAT)
   .nullable()
   .default(null);
+// Exibe o campo na barra de filtros (config de UX, nao e permissao).
 export const FieldShowInFilterSchema = z.boolean().default(false);
-export const FieldShowInFormSchema = z.boolean().default(false);
-export const FieldShowInDetailSchema = z.boolean().default(false);
-export const FieldShowInListSchema = z.boolean().default(false);
 export const FieldWidthInFormSchema = z.number().min(0).nullable().default(50);
 export const FieldWidthInListSchema = z.number().min(0).nullable().default(10);
 export const FieldWidthInDetailSchema = z
@@ -65,12 +122,20 @@ export const FieldDefaultValueSchema = z
   .nullable()
   .default(null);
 export const FieldRelationshipSchema = Relationship.nullable().default(null);
-export const FieldDropdownSchema = z.array(Dropdown).default([]);
+// Aceita null além de undefined: alguns clientes (ex.: Kanban) reenviam o campo
+// cru do GET, onde dropdown/category vêm como null, e normaliza para [].
+export const FieldDropdownSchema = z
+  .array(Dropdown)
+  .nullish()
+  .transform((value) => value ?? []);
 export const FieldAllowCustomDropdownOptionsSchema = z.boolean().default(false);
 export const FieldAllowCreateRelationshipRecordsSchema = z
   .boolean()
   .default(false);
-export const FieldCategorySchema = z.array(Category).default([]);
+export const FieldCategorySchema = z
+  .array(Category)
+  .nullish()
+  .transform((value) => value ?? []);
 // For API input: can be just a slug string or the full object
 export const FieldGroupSchema = z
   .union([
@@ -156,10 +221,9 @@ export const TableFieldBaseSchema = z.object({
   required: FieldRequiredSchema,
   multiple: FieldMultipleSchema,
   format: FieldFormatSchema,
+  validations: FieldValidationsSchema,
   showInFilter: FieldShowInFilterSchema,
-  showInForm: FieldShowInFormSchema,
-  showInDetail: FieldShowInDetailSchema,
-  showInList: FieldShowInListSchema,
+  permissions: FieldPermissionsSchema,
   widthInForm: FieldWidthInFormSchema,
   widthInList: FieldWidthInListSchema,
   widthInDetail: FieldWidthInDetailSchema,

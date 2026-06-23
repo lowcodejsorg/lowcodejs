@@ -22,11 +22,13 @@ import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { userListOptions } from '@/hooks/tanstack-query/_query-options';
+import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
 import { useUserEmptyTrash } from '@/hooks/tanstack-query/use-user-empty-trash';
 import { useUsersExportCsv } from '@/hooks/tanstack-query/use-users-export-csv';
 import { E_FIELD_TYPE, E_ROLE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
+import { isMaster, isPrivileged } from '@/lib/permission';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/users/')({
@@ -56,9 +58,12 @@ function RouteComponent(): React.JSX.Element {
     }),
   );
 
-  const isMaster = auth.user?.group?.slug === E_ROLE.MASTER;
-  const isAdmin = auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
-  const canExportCsv = isMaster || isAdmin;
+  // Empty-trash/hard-delete é MASTER-only (gate intencional). Export/CSV libera
+  // para qualquer privilegiado (MASTER/ADMINISTRATOR pelo fecho de grupos).
+  // Ambos resolvidos pelo fecho de grupos (não apenas o grupo principal).
+  const groups = useGroupReadList();
+  const master = isMaster(auth.user, groups.data ?? []);
+  const canExportCsv = isPrivileged(auth.user, groups.data ?? []);
   const isTrashView = search.trashed === true;
 
   const [emptyTrashOpen, setEmptyTrashOpen] = React.useState(false);
@@ -139,7 +144,7 @@ function RouteComponent(): React.JSX.Element {
               onClick={() => exportCsv.mutate(search)}
             />
           )}
-          {isTrashView && isMaster && (
+          {isTrashView && master && (
             <Button
               data-test-id="empty-trash-users-btn"
               variant="destructive"

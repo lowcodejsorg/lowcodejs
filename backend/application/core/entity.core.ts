@@ -44,6 +44,8 @@ export const E_FIELD_TYPE = {
   CREATOR: 'CREATOR',
   IDENTIFIER: 'IDENTIFIER',
   CREATED_AT: 'CREATED_AT',
+  UPDATED_AT: 'UPDATED_AT',
+  UPDATER: 'UPDATER',
   TRASHED_AT: 'TRASHED_AT',
   STATUS: 'STATUS',
 } as const;
@@ -84,12 +86,46 @@ export const E_FIELD_FORMAT = {
   YYYY_MM_DD_HH_MM_SS_DASH: 'yyyy-MM-dd HH:mm:ss',
 } as const;
 
+// Regras de validacao de valor aplicaveis a um campo. Cada chave tem uma
+// subpasta em `core/validations/<regra>`. Regras puras validam no front e no
+// back; as marcadas async (IS_UNIQUE, ARE_UNIQUE_VALUES, EMAIL_EXISTS,
+// USER_EXISTS) consultam o banco e validam so no back (autoritativo).
+export const E_FIELD_VALIDATION = {
+  // Puras (sincronas)
+  NOT_EMPTY: 'NOT_EMPTY',
+  IS_EMAIL: 'IS_EMAIL',
+  IS_NUMERIC: 'IS_NUMERIC',
+  IS_ALPHA_NUMERIC: 'IS_ALPHA_NUMERIC',
+  IS_IN_RANGE: 'IS_IN_RANGE',
+  IS_IBAN: 'IS_IBAN',
+  IS_NOT: 'IS_NOT',
+  // Migradas do format (puras)
+  IS_URL: 'IS_URL',
+  IS_PHONE: 'IS_PHONE',
+  IS_CPF: 'IS_CPF',
+  IS_CNPJ: 'IS_CNPJ',
+  // Async (consultam o banco)
+  IS_UNIQUE: 'IS_UNIQUE',
+  ARE_UNIQUE_VALUES: 'ARE_UNIQUE_VALUES',
+  EMAIL_EXISTS: 'EMAIL_EXISTS',
+  USER_EXISTS: 'USER_EXISTS',
+} as const;
+
 export const E_ROLE = {
   MASTER: 'MASTER',
   ADMINISTRATOR: 'ADMINISTRATOR',
   MANAGER: 'MANAGER',
   REGISTERED: 'REGISTERED',
 } as const;
+
+// Slugs dos grupos do sistema. Grupos com esses slugs nao podem ser
+// editados nem removidos (protecao unica reutilizada pelos use-cases).
+export const SYSTEM_GROUP_SLUGS: ReadonlySet<string> = new Set<string>([
+  E_ROLE.MASTER,
+  E_ROLE.ADMINISTRATOR,
+  E_ROLE.MANAGER,
+  E_ROLE.REGISTERED,
+]);
 
 export const E_MENU_ITEM_TYPE = {
   TABLE: 'TABLE',
@@ -115,19 +151,6 @@ export const E_TABLE_STYLE = {
   FORUM: 'FORUM',
   CALENDAR: 'CALENDAR',
   GANTT: 'GANTT',
-} as const;
-
-export const E_TABLE_VISIBILITY = {
-  PUBLIC: 'PUBLIC',
-  RESTRICTED: 'RESTRICTED',
-  OPEN: 'OPEN',
-  FORM: 'FORM',
-  PRIVATE: 'PRIVATE',
-} as const;
-
-export const E_TABLE_COLLABORATION = {
-  OPEN: 'OPEN',
-  RESTRICTED: 'RESTRICTED',
 } as const;
 
 export const E_JWT_TYPE = {
@@ -253,6 +276,10 @@ export type IGroup = Merge<
     slug: string;
     description: string | null;
     permissions: IPermission[];
+    // Ids dos grupos englobados (multi-link). Quem pertence a este grupo herda
+    // o acesso liberado a eles (fecho transitivo). Ex.: Manager engloba
+    // Registered. Mantido como ids (nao populado) — referencia, nao agregado.
+    encompasses: string[];
   }
 >;
 
@@ -268,7 +295,12 @@ export type IUser = Merge<
     email: string;
     password: string;
     status: ValueOf<typeof E_USER_STATUS>;
+    // Grupo principal: define o `role` no JWT e a compatibilidade com o RBAC
+    // legado. Continua obrigatorio.
     group: IGroup;
+    // Grupos adicionais: o usuario tambem pertence a estes. O acesso efetivo e
+    // o fecho de `{group} ∪ groups` seguindo `encompasses`.
+    groups: IGroup[];
     notificationsEnabled: boolean;
   }
 >;
@@ -352,10 +384,12 @@ export type ITable = Merge<
     fields: IField[];
     type: ValueOf<typeof E_TABLE_TYPE>;
     style: ValueOf<typeof E_TABLE_STYLE>;
-    visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
-    collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
-    administrators: IUser[];
     owner: IUser;
+    // Cada acao aponta para um binding (Grupo|Public|Nobody). null apenas em
+    // documentos ainda nao backfillados (migration 09).
+    permissions: ITablePermissions | null;
+    // Convidados da tabela com seu perfil (owner/admin/editor/contributor/viewer).
+    members: ITableMember[];
     fieldOrderList: string[];
     fieldOrderForm: string[];
     fieldOrderFilter: string[];
@@ -378,6 +412,10 @@ export type IDropdown = {
   id: string;
   label: string;
   color?: string | null;
+  /** Slug do campo usado para ordenar os cards desta lista no Kanban. */
+  sortField?: string | null;
+  /** Direção da ordenação dos cards desta lista no Kanban. */
+  sortDirection?: 'asc' | 'desc' | null;
 };
 
 export type IRelationshipLabelPart = {
@@ -403,11 +441,61 @@ export type IFieldConfigurationRelationship = {
   labelParts?: IRelationshipLabelPart[];
   /** Separador usado entre os `labelParts`. Default: " - ". */
   labelSeparator?: string;
+  /**
+   * Mostra a tabela interna de gestao deste lado na tela de detalhe. Controle
+   * de apresentacao independente de `multiple`. Default true.
+   */
+  visible?: boolean;
+  /** Back-pointer para a RelationshipDefinition que e a fonte de verdade. */
+  relationshipId?: string | null;
+  /**
+   * Qual lado da `RelationshipDefinition` este campo representa. Persistido para
+   * a tela de detalhe saber qual `side` passar aos endpoints `/links` sem
+   * precisar carregar a definition. `source` = campo declarante; `target` =
+   * campo-espelho.
+   */
+  side?: 'source' | 'target' | null;
+  /**
+   * Como o relacionamento aparece no formulario: `select` (multi-select de
+   * vinculo direto, padrao historico) ou `manage` (tabelas internas / cards +
+   * Sheet). Ausencia = `select`.
+   */
+  formMode?: 'select' | 'manage';
+  /**
+   * Comportamento ao excluir (§9). Config do lado source na criacao/edicao do
+   * campo; a fonte de verdade efetiva e `RelationshipDefinition.onDelete`.
+   */
+  onDelete?: ValueOf<typeof E_RELATIONSHIP_ON_DELETE>;
+  /**
+   * Config do lado espelho (target) coletada na tela do campo source.
+   * `multiple` deriva a cardinalidade; `visible`/`label` controlam o endpoint.
+   */
+  mirror?: {
+    multiple: boolean;
+    visible: boolean;
+    label?: string;
+  };
 };
 
 export type IFieldConfigurationGroup = {
   _id?: string;
   slug: string;
+};
+
+// Visibilidade do campo por contexto: cada contexto aponta para um binding
+// (Grupo|Public|Nobody). Nobody = oculto.
+export type IFieldPermissions = {
+  list: IPermissionBinding;
+  form: IPermissionBinding;
+  detail: IPermissionBinding;
+};
+
+// Uma regra de validacao configurada num campo. `config` carrega os parametros
+// da regra (ex.: IS_IN_RANGE → { min, max }; IS_NOT → { values }). Regras sem
+// parametro usam `{}`.
+export type IFieldValidation = {
+  rule: ValueOf<typeof E_FIELD_VALIDATION>;
+  config: Record<string, unknown>;
 };
 
 export type IField = Merge<
@@ -419,10 +507,15 @@ export type IField = Merge<
     required: boolean;
     multiple: boolean;
     format: ValueOf<typeof E_FIELD_FORMAT> | null;
+    // Regras de validacao de valor do campo (camada unica de validacao).
+    // Opcional no tipo; em runtime sempre presente ([] por default do
+    // mongoose/zod + migration 19).
+    validations?: IFieldValidation[];
+    // Exibe o campo na barra de filtros (config de UX, nao e permissao).
     showInFilter: boolean;
-    showInForm: boolean;
-    showInDetail: boolean;
-    showInList: boolean;
+    // Visibilidade por contexto (list/form/detail). null apenas em documentos
+    // ainda nao backfillados (migration 10).
+    permissions?: IFieldPermissions | null;
     widthInForm: number | null;
     widthInList: number | null;
     widthInDetail: number | null;
@@ -439,6 +532,72 @@ export type IField = Merge<
   }
 >;
 
+// Comportamento ao excluir um registro que participa de um relacionamento.
+// Semantica de delete cascade do relacional (ver spec §9).
+export const E_RELATIONSHIP_ON_DELETE = {
+  CASCADE: 'CASCADE',
+  SET_NULL: 'SET_NULL',
+  RESTRICT: 'RESTRICT',
+} as const;
+
+// Um lado do relacionamento. O campo `RELATIONSHIP` daquele lado e a fonte de
+// "aceita multiplos" (field.multiple) e "obrigatorio" (field.required); aqui
+// guardamos apenas o que e exclusivo do endpoint: visibilidade e rotulo.
+export type IRelationshipEndpoint = {
+  table: Pick<ITable, '_id' | 'slug'>;
+  field: Pick<IField, '_id' | 'slug'>;
+  // Mostra a tabela interna de gestao neste lado (apresentacao/interacao).
+  visible: boolean;
+  // Rotulo exibido na UI deste lado (independente do outro).
+  label: string;
+};
+
+// Fonte de verdade do vinculo entre duas tabelas, independente delas.
+export type IRelationshipDefinition = Merge<
+  Base,
+  {
+    // Rotulo administrativo; default derivado dos dois lados ("A ↔ B").
+    name: string;
+    source: IRelationshipEndpoint;
+    target: IRelationshipEndpoint;
+    onDelete: ValueOf<typeof E_RELATIONSHIP_ON_DELETE>;
+  }
+>;
+
+// Par (sourceId, targetId) na colecao de juncao (pivo). Vale para 1:1, 1:N e N:N.
+export type IRelationshipLink = {
+  _id: string;
+  relationshipId: string;
+  sourceId: string;
+  targetId: string;
+  // Posicao do vinculo na lista do lado multiplo.
+  order: number;
+  // Extensivel (papel, etc.).
+  metadata: Record<string, unknown> | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+};
+
+// Cardinalidade derivada dos dois `field.multiple` (nao persistida).
+export const E_RELATIONSHIP_CARDINALITY = {
+  ONE_TO_ONE: '1:1',
+  ONE_TO_MANY: '1:N',
+  MANY_TO_MANY: 'N:N',
+} as const;
+
+// Papel de armazenamento de cada lado, derivado da cardinalidade + side (nao
+// persistido). Modelo relacional FK-inline:
+//   - OWNS_FK: grava a FK (single ObjectId) na propria row; populate nativo.
+//             (lado N do 1:N; lado source do 1:1)
+//   - REVERSE: nao grava nada; resolvido por query reversa na colecao do lado
+//             OWNS_FK (`ownerFieldSlug == meuId`). (lado 1 do 1:N; target do 1:1)
+//   - PIVOT: N:N, via colecao de juncao `RelationshipLink`.
+export const E_RELATIONSHIP_STORAGE = {
+  OWNS_FK: 'OWNS_FK',
+  REVERSE: 'REVERSE',
+  PIVOT: 'PIVOT',
+} as const;
+
 export type FieldCreatePayload = Pick<
   IField,
   | 'name'
@@ -447,10 +606,9 @@ export type FieldCreatePayload = Pick<
   | 'required'
   | 'multiple'
   | 'format'
+  | 'validations'
   | 'showInFilter'
-  | 'showInForm'
-  | 'showInDetail'
-  | 'showInList'
+  | 'permissions'
   | 'widthInForm'
   | 'widthInList'
   | 'widthInDetail'
@@ -564,6 +722,8 @@ export type IMenu = Merge<
     isInitial: boolean;
     /** Referência a uma extensão (apenas para type=EXTENSION_MODULE). */
     extension: IMenuExtensionRef | null;
+    // Visibilidade da opção de menu (Grupo|Public|Nobody). null em menus legados.
+    visibility?: IPermissionBinding | null;
   }
 >;
 
@@ -664,6 +824,12 @@ export type ILogger = Merge<
       | null;
     object_id: string | null;
     content: Record<string, unknown> | null;
+    // Dados do registro referenciado por object_id (nao do log). Null quando o
+    // objeto referenciado nao for uma ROW de tabela dinamica.
+    creator: IUser | null;
+    updater: IUser | null;
+    objectCreatedAt: Date | null;
+    objectUpdatedAt: Date | null;
   }
 >;
 
@@ -718,6 +884,8 @@ export type IExtension = Merge<
     available: boolean;
     /** Configuração de escopo por tabela (relevante para PLUGIN). */
     tableScope: IExtensionTableScope;
+    /** Settings por tabela: mapa tableId -> settings da extensão (campo Mixed). */
+    tableSettings: Record<string, Record<string, unknown>>;
     /** Manifesto completo, para auditoria/diagnóstico. */
     manifestSnapshot: Record<string, unknown>;
     requires: IExtensionRequires;
@@ -745,6 +913,212 @@ export const E_TABLE_PERMISSION = {
   VIEW_ROW: 'VIEW_ROW',
 } as const;
 
+// Capacidades de area do sistema. Antes eram gateadas por role fixo
+// (RoleMiddleware); agora viram permissoes atribuiveis a qualquer grupo, como
+// pede a especificacao (colunas Usuarios, Menu, Grupos, Configuracoes,
+// Ferramentas, Plugins). As acoes de tabela (Ver/Criar/Editar/Remover Tabelas)
+// continuam em E_TABLE_PERMISSION. Persistidas como Permission (mesmo slug).
+export const E_AREA_CAPABILITY = {
+  MANAGE_USERS: 'MANAGE_USERS',
+  MANAGE_MENU: 'MANAGE_MENU',
+  MANAGE_USER_GROUPS: 'MANAGE_USER_GROUPS',
+  MANAGE_SETTINGS: 'MANAGE_SETTINGS',
+  MANAGE_TOOLS: 'MANAGE_TOOLS',
+  MANAGE_PLUGINS: 'MANAGE_PLUGINS',
+  MANAGE_CHAT: 'MANAGE_CHAT',
+} as const;
+
+// Alvo de uma permissao de acao da tabela: um grupo especifico, todos (Public,
+// inclui visitante) ou ninguem (Nobody).
+export const E_PERMISSION_TARGET = {
+  PUBLIC: 'PUBLIC',
+  NOBODY: 'NOBODY',
+  GROUP: 'GROUP',
+} as const;
+
+// Vinculo de uma acao a quem pode realiza-la. `group` so e usado quando
+// kind === GROUP (id do grupo).
+export type IPermissionBinding = {
+  kind: ValueOf<typeof E_PERMISSION_TARGET>;
+  group: string | null;
+};
+
+// As 10 acoes da tabela vinculaveis por binding (Create/Remove TABLE continuam
+// sendo capacidades de grupo, nao por-tabela).
+export const TABLE_PERMISSION_ACTIONS = [
+  E_TABLE_PERMISSION.VIEW_TABLE,
+  E_TABLE_PERMISSION.UPDATE_TABLE,
+  E_TABLE_PERMISSION.CREATE_FIELD,
+  E_TABLE_PERMISSION.UPDATE_FIELD,
+  E_TABLE_PERMISSION.REMOVE_FIELD,
+  E_TABLE_PERMISSION.VIEW_FIELD,
+  E_TABLE_PERMISSION.CREATE_ROW,
+  E_TABLE_PERMISSION.UPDATE_ROW,
+  E_TABLE_PERMISSION.REMOVE_ROW,
+  E_TABLE_PERMISSION.VIEW_ROW,
+] as const;
+
+// Mapa acao -> binding. Parcial: documentos ainda nao backfillados (migration
+// 09) podem nao ter o mapa.
+export type ITablePermissions = Partial<
+  Record<ValueOf<typeof E_TABLE_PERMISSION>, IPermissionBinding>
+>;
+
+// Permissoes padrao de uma tabela nova (equivalente ao preset RESTRICTED:
+// usuarios logados — grupo Registered — podem ver a tabela e as rows; demais
+// acoes ficam restritas ao dono e convidados). Espelha o backfill da migration
+// 09 para que nenhuma tabela nasca com `permissions: null`.
+export function buildDefaultTablePermissions(
+  registeredGroupId: string | null,
+): ITablePermissions {
+  function nobody(): IPermissionBinding {
+    return { kind: E_PERMISSION_TARGET.NOBODY, group: null };
+  }
+
+  function loggedView(): IPermissionBinding {
+    if (registeredGroupId) {
+      return { kind: E_PERMISSION_TARGET.GROUP, group: registeredGroupId };
+    }
+    return nobody();
+  }
+
+  return {
+    [E_TABLE_PERMISSION.VIEW_TABLE]: loggedView(),
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: nobody(),
+    [E_TABLE_PERMISSION.CREATE_FIELD]: nobody(),
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: nobody(),
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: nobody(),
+    [E_TABLE_PERMISSION.VIEW_FIELD]: nobody(),
+    [E_TABLE_PERMISSION.CREATE_ROW]: nobody(),
+    [E_TABLE_PERMISSION.UPDATE_ROW]: nobody(),
+    [E_TABLE_PERMISSION.REMOVE_ROW]: nobody(),
+    [E_TABLE_PERMISSION.VIEW_ROW]: loggedView(),
+  };
+}
+
+// Perfis fixos de convidados da tabela (colaboracao).
+export const E_TABLE_PROFILE = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  EDITOR: 'EDITOR',
+  CONTRIBUTOR: 'CONTRIBUTOR',
+  VIEWER: 'VIEWER',
+} as const;
+
+export type ITableMember = {
+  user: string;
+  profile: ValueOf<typeof E_TABLE_PROFILE>;
+};
+
+// Nivel de acesso de um perfil a uma acao: libera, nega ou libera apenas para os
+// proprios registros (apenas a sua).
+export const E_PROFILE_ACCESS = {
+  ALLOW: 'ALLOW',
+  DENY: 'DENY',
+  OWN: 'OWN',
+} as const;
+
+// Matriz fixa de perfis x acoes, conforme a especificacao (aba 060226-Oficial).
+// Observacao: View field aparece como "nao" para editor/contributor/viewer —
+// mantido fiel ao documento (controla a tela de gestao de campos, nao o valor da
+// row). VIEWER segue a planilha literal: cria/edita/remove rows
+// (CREATE/UPDATE/REMOVE_ROW = ALLOW), ficando funcionalmente igual ao EDITOR.
+export const TABLE_PROFILE_MATRIX: Record<
+  ValueOf<typeof E_TABLE_PROFILE>,
+  Record<ValueOf<typeof E_TABLE_PERMISSION>, ValueOf<typeof E_PROFILE_ACCESS>>
+> = {
+  [E_TABLE_PROFILE.OWNER]: {
+    [E_TABLE_PERMISSION.CREATE_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.CREATE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
+  },
+  [E_TABLE_PROFILE.ADMIN]: {
+    [E_TABLE_PERMISSION.CREATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
+  },
+  [E_TABLE_PROFILE.EDITOR]: {
+    [E_TABLE_PERMISSION.CREATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
+  },
+  [E_TABLE_PROFILE.CONTRIBUTOR]: {
+    [E_TABLE_PERMISSION.CREATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.OWN,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.OWN,
+    [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
+  },
+  [E_TABLE_PROFILE.VIEWER]: {
+    [E_TABLE_PERMISSION.CREATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_TABLE]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_TABLE]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.UPDATE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.REMOVE_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.VIEW_FIELD]: E_PROFILE_ACCESS.DENY,
+    [E_TABLE_PERMISSION.CREATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.UPDATE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.REMOVE_ROW]: E_PROFILE_ACCESS.ALLOW,
+    [E_TABLE_PERMISSION.VIEW_ROW]: E_PROFILE_ACCESS.ALLOW,
+  },
+};
+
+// Binding de visibilidade de um campo: visivel = PUBLIC, oculto = NOBODY.
+function fieldVisibilityBinding(visible: boolean): IPermissionBinding {
+  if (visible) return { kind: E_PERMISSION_TARGET.PUBLIC, group: null };
+  return { kind: E_PERMISSION_TARGET.NOBODY, group: null };
+}
+
+// Monta o mapa de permissoes de campo por contexto a partir de flags booleanas
+// (compat com a configuracao antiga list/form/detail = visivel/oculto).
+export function buildFieldPermissions(
+  list: boolean,
+  form: boolean,
+  detail: boolean,
+): IFieldPermissions {
+  return {
+    list: fieldVisibilityBinding(list),
+    form: fieldVisibilityBinding(form),
+    detail: fieldVisibilityBinding(detail),
+  };
+}
+
 export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
   {
     name: 'ID',
@@ -755,10 +1129,8 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -777,10 +1149,8 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: true,
     showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    permissions: buildFieldPermissions(true, false, true),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -799,10 +1169,48 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
-    showInList: true,
     showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    permissions: buildFieldPermissions(true, false, true),
+    widthInForm: null,
+    widthInList: 10,
+    widthInDetail: null,
+    defaultValue: null,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+  },
+  {
+    name: 'Modificado em',
+    slug: 'updatedAt',
+    type: E_FIELD_TYPE.UPDATED_AT,
+    native: true,
+    locked: true,
+    required: false,
+    multiple: false,
+    format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
+    showInFilter: true,
+    permissions: buildFieldPermissions(true, false, true),
+    widthInForm: null,
+    widthInList: 10,
+    widthInDetail: null,
+    defaultValue: null,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+  },
+  {
+    name: 'Modificado por',
+    slug: 'updater',
+    type: E_FIELD_TYPE.UPDATER,
+    native: true,
+    locked: true,
+    required: false,
+    multiple: false,
+    format: null,
+    showInFilter: true,
+    permissions: buildFieldPermissions(true, false, true),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -821,10 +1229,8 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -843,10 +1249,8 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -868,10 +1272,8 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -890,10 +1292,8 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: true,
     showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    permissions: buildFieldPermissions(true, false, true),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -912,10 +1312,48 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
-    showInList: true,
     showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    permissions: buildFieldPermissions(true, false, true),
+    widthInForm: null,
+    widthInList: 10,
+    widthInDetail: null,
+    defaultValue: null,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+  },
+  {
+    name: 'Modificado em',
+    slug: 'updatedAt',
+    type: E_FIELD_TYPE.UPDATED_AT,
+    native: true,
+    locked: true,
+    required: false,
+    multiple: false,
+    format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
+    showInFilter: true,
+    permissions: buildFieldPermissions(true, false, true),
+    widthInForm: null,
+    widthInList: 10,
+    widthInDetail: null,
+    defaultValue: null,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+  },
+  {
+    name: 'Modificado por',
+    slug: 'updater',
+    type: E_FIELD_TYPE.UPDATER,
+    native: true,
+    locked: true,
+    required: false,
+    multiple: false,
+    format: null,
+    showInFilter: true,
+    permissions: buildFieldPermissions(true, false, true),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -934,10 +1372,8 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -956,10 +1392,8 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
     showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    permissions: buildFieldPermissions(false, false, false),
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,

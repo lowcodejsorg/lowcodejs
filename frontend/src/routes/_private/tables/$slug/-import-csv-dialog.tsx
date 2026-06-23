@@ -4,7 +4,6 @@ import {
   CheckCircleIcon,
   DownloadIcon,
   LoaderCircleIcon,
-  UploadIcon,
 } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
@@ -17,7 +16,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,14 +29,19 @@ type Phase = 'idle' | 'uploading' | 'processing' | 'done' | 'error';
 
 type Props = {
   slug: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 };
 
 const rootApi = getRouteApi('__root__');
 
-export function ImportCsvDialog({ slug }: Props): React.JSX.Element {
+export function ImportCsvDialog({
+  slug,
+  open,
+  onOpenChange,
+}: Props): React.JSX.Element {
   const { baseUrl } = rootApi.useLoaderData();
 
-  const [open, setOpen] = React.useState<boolean>(false);
   const [file, setFile] = React.useState<File | null>(null);
   const [phase, setPhase] = React.useState<Phase>('idle');
   const [jobId, setJobId] = React.useState<string | null>(null);
@@ -89,12 +92,16 @@ export function ImportCsvDialog({ slug }: Props): React.JSX.Element {
     }
   }
 
-  function handleReset(): void {
-    setOpen(false);
+  function resetState(): void {
     setFile(null);
     setPhase('idle');
     setJobId(null);
     setErrorMsg(null);
+  }
+
+  function handleOpenChange(next: boolean): void {
+    if (!next) resetState();
+    onOpenChange(next);
   }
 
   function handleDownloadTemplate(): void {
@@ -126,18 +133,8 @@ export function ImportCsvDialog({ slug }: Props): React.JSX.Element {
   return (
     <Dialog
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={handleOpenChange}
     >
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-        >
-          <UploadIcon className="size-4 mr-1" />
-          Importar CSV
-        </Button>
-      </DialogTrigger>
-
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Importar CSV</DialogTitle>
@@ -224,7 +221,9 @@ export function ImportCsvDialog({ slug }: Props): React.JSX.Element {
             </Button>
           )}
 
-          {isDone && <Button onClick={handleReset}>Fechar</Button>}
+          {isDone && (
+            <Button onClick={() => handleOpenChange(false)}>Fechar</Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

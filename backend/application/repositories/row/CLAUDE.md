@@ -20,6 +20,11 @@ Mongoose são gerados em runtime com base nos campos configurados na tabela.
   `updateGroupItem`, `deleteGroupItem`
 - Campo atomicamente: `setFieldAndSave()` — usado por reactions e evaluations
 - Relacionamentos: `buildPopulate()` — popula campos do tipo RELATIONSHIP
+- Unicidade: `countFieldValue(table, fieldSlug, value, excludeRowId?)` — conta
+  rows (não-trashed) com match **exato** do valor na coluna, ignorando
+  `excludeRowId` (própria row no update). Usado pela validação IS_UNIQUE /
+  ARE_UNIQUE_VALUES. Difere de `count` (passa pelo QueryBuilder; TEXT vira
+  `$regex` parcial).
 
 ## Contexto Dinâmico (`RowTableContext`)
 

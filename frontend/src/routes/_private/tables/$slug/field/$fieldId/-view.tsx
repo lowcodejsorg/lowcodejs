@@ -9,6 +9,7 @@ import {
   TEXT_LONG_FORMAT_OPTIONS,
 } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
+import { isFieldShownInContext } from '@/lib/permission';
 
 interface FieldViewProps {
   data: IField;
@@ -102,42 +103,43 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
             {data.required ? 'Obrigatório' : 'Opcional'}
           </Badge>
           {data.multiple && <Badge variant="outline">Múltiplos valores</Badge>}
-          {data.showInList && (
+          {isFieldShownInContext(data, 'list') && (
             <Badge variant="outline">Exibir em listagem</Badge>
           )}
           {data.showInFilter && (
             <Badge variant="outline">Permitir filtro</Badge>
           )}
-          {data.showInForm && (
+          {isFieldShownInContext(data, 'form') && (
             <Badge variant="outline">Exibir em formulários</Badge>
           )}
-          {data.showInDetail && (
+          {isFieldShownInContext(data, 'detail') && (
             <Badge variant="outline">Exibir em detalhes</Badge>
           )}
         </div>
       </div>
 
       {/* Dropdown options (se for dropdown) */}
-      {data.type === E_FIELD_TYPE.DROPDOWN && data.dropdown.length > 0 && (
-        <div className="space-y-1">
-          <p className="text-sm font-medium">Opções do Dropdown</p>
-          <div className="flex flex-wrap gap-1">
-            {data.dropdown.map((opt) => {
-              const colorStyle = getDropdownContrastStyle(opt.color);
-              return (
-                <Badge
-                  key={opt.id}
-                  variant="outline"
-                  className={colorStyle ? undefined : 'text-muted-foreground'}
-                  style={colorStyle}
-                >
-                  {opt.label}
-                </Badge>
-              );
-            })}
+      {data.type === E_FIELD_TYPE.DROPDOWN &&
+        (data.dropdown?.length ?? 0) > 0 && (
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Opções do Dropdown</p>
+            <div className="flex flex-wrap gap-1">
+              {data.dropdown.map((opt) => {
+                const colorStyle = getDropdownContrastStyle(opt.color);
+                return (
+                  <Badge
+                    key={opt.id}
+                    variant="outline"
+                    className={colorStyle ? undefined : 'text-muted-foreground'}
+                    style={colorStyle}
+                  >
+                    {opt.label}
+                  </Badge>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Relacionamento (se for relationship) */}
       {data.type === E_FIELD_TYPE.RELATIONSHIP && data.relationship && (
@@ -166,14 +168,15 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
       )}
 
       {/* Categorias (se for category) */}
-      {data.type === E_FIELD_TYPE.CATEGORY && data.category.length > 0 && (
-        <div className="space-y-1">
-          <p className="text-sm font-medium">Categorias</p>
-          <p className="text-sm text-muted-foreground">
-            {data.category.length} categoria(s) configurada(s)
-          </p>
-        </div>
-      )}
+      {data.type === E_FIELD_TYPE.CATEGORY &&
+        (data.category?.length ?? 0) > 0 && (
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Categorias</p>
+            <p className="text-sm text-muted-foreground">
+              {data.category.length} categoria(s) configurada(s)
+            </p>
+          </div>
+        )}
 
       {/* Grupo de campos */}
       {data.type === E_FIELD_TYPE.FIELD_GROUP && data.group && (

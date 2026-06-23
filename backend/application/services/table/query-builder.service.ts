@@ -10,7 +10,10 @@ import type {
 } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 
+import { FieldGroupBuilderContractService } from './field-group-builder-contract.service';
 import { QueryBuilderContractService } from './query-builder-contract.service';
+import { RelationshipBuilderContractService } from './relationship-builder-contract.service';
+import { SearchNormalizer } from './search-normalizer';
 
 export type Query = Record<string, unknown>;
 
@@ -27,16 +30,13 @@ export type QueryOrder = Record<
 
 @Service()
 export default class MongooseQueryBuilder implements QueryBuilderContractService {
+  constructor(
+    private readonly fieldGroup: FieldGroupBuilderContractService,
+    private readonly relationship: RelationshipBuilderContractService,
+  ) {}
+
   normalize(search: string): string {
-    const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return escapedSearch
-      .replace(/a/gi, '[aáàâãä]')
-      .replace(/e/gi, '[eéèêë]')
-      .replace(/i/gi, '[iíìîï]')
-      .replace(/o/gi, '[oóòôõö]')
-      .replace(/u/gi, '[uúùûü]')
-      .replace(/c/gi, '[cç]')
-      .replace(/n/gi, '[nñ]');
+    return SearchNormalizer.normalize(search);
   }
 
   async build(
@@ -64,6 +64,10 @@ export default class MongooseQueryBuilder implements QueryBuilderContractService
       };
     }
 
+    // Fragmentos de filtro de relacionamento por subquery (REVERSE/PIVOT) — viram
+    // `{ _id: { $in } }` e sao ANDados na query (sem path proprio na row).
+    const relationshipFilters: Query[] = [];
+
     for (const field of fields.filter(
       (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP,
     )) {
@@ -80,12 +84,29 @@ export default class MongooseQueryBuilder implements QueryBuilderContractService
         };
       }
 
+      if (field.type === E_FIELD_TYPE.RELATIONSHIP && payload[slug]) {
+        const ids = String(payload[slug]).split(',');
+        const fragment = await this.relationship.resolveRelationshipFilter(
+          field,
+          ids,
+        );
+
+        // OWNS_FK (fragment null): FK na propria row — filtra direto (mongoose
+        // converte para ObjectId pelo schema). REVERSE/PIVOT: subquery -> _id.
+        if (!fragment) {
+          query[slug] = { $in: ids };
+        }
+        if (fragment) {
+          relationshipFilters.push(fragment);
+        }
+      }
+
       if (
-        (field.type === E_FIELD_TYPE.RELATIONSHIP ||
-          field.type === E_FIELD_TYPE.DROPDOWN ||
+        (field.type === E_FIELD_TYPE.DROPDOWN ||
           field.type === E_FIELD_TYPE.CATEGORY ||
           field.type === E_FIELD_TYPE.USER ||
-          field.type === E_FIELD_TYPE.CREATOR) &&
+          field.type === E_FIELD_TYPE.CREATOR ||
+          field.type === E_FIELD_TYPE.UPDATER) &&
         payload[slug]
       ) {
         query[slug] = {
@@ -95,7 +116,8 @@ export default class MongooseQueryBuilder implements QueryBuilderContractService
 
       if (
         field.type === E_FIELD_TYPE.DATE ||
-        field.type === E_FIELD_TYPE.CREATED_AT
+        field.type === E_FIELD_TYPE.CREATED_AT ||
+        field.type === E_FIELD_TYPE.UPDATED_AT
       ) {
         const initialKey = `${slug}-initial`;
         const finalKey = `${slug}-final`;
@@ -117,73 +139,16 @@ export default class MongooseQueryBuilder implements QueryBuilderContractService
       }
     }
 
-    // Query em campos FIELD_GROUP usando dot notation (embedded documents)
-    const hasFieldGroupQuery = fields.some((f) => {
-      if (f.type !== E_FIELD_TYPE.FIELD_GROUP) return false;
-      const groupPrefix = f.slug.concat('-');
-      return Object.keys(payload).some((key) => key.startsWith(groupPrefix));
-    });
+    // Filtros sobre campos dentro de FIELD_GROUP (dot notation, embedded docs)
+    // sao montados pelo seam dedicado e mesclados na query principal.
+    Object.assign(query, this.fieldGroup.buildFilter(payload, fields, groups));
 
-    if (hasFieldGroupQuery && groups) {
-      for (const field of fields.filter(
-        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
-      )) {
-        const groupSlug = field?.group?.slug;
-        const group = groups.find((g) => g.slug === groupSlug);
-
-        if (!group) continue;
-
-        const groupFields = group.fields || [];
-
-        for (const groupField of groupFields) {
-          const payloadKey = `${field.slug}-${groupField.slug}`;
-          const embeddedPath = `${field.slug}.${groupField.slug}`;
-
-          if (!(payloadKey in payload)) continue;
-
-          if (
-            groupField.type === E_FIELD_TYPE.TEXT_SHORT ||
-            groupField.type === E_FIELD_TYPE.TEXT_LONG
-          ) {
-            query[embeddedPath] = {
-              $regex: this.normalize(String(payload[payloadKey])),
-              $options: 'i',
-            };
-          }
-
-          if (
-            groupField.type === E_FIELD_TYPE.RELATIONSHIP ||
-            groupField.type === E_FIELD_TYPE.DROPDOWN ||
-            groupField.type === E_FIELD_TYPE.CATEGORY ||
-            groupField.type === E_FIELD_TYPE.USER ||
-            groupField.type === E_FIELD_TYPE.CREATOR
-          ) {
-            query[embeddedPath] = {
-              $in: String(payload[payloadKey]).split(','),
-            };
-          }
-
-          if (groupField.type === E_FIELD_TYPE.DATE) {
-            const initialKey = `${payloadKey}-initial`;
-            const finalKey = `${payloadKey}-final`;
-            const dateFilter: { $gte?: Date; $lte?: Date } = {};
-
-            if (payload[initialKey]) {
-              const initial = new Date(String(payload[initialKey]));
-              dateFilter.$gte = new Date(initial.setUTCHours(0, 0, 0, 0));
-            }
-
-            if (payload[finalKey]) {
-              const final = new Date(String(payload[finalKey]));
-              dateFilter.$lte = new Date(final.setUTCHours(23, 59, 59, 999));
-            }
-
-            if (dateFilter.$gte || dateFilter.$lte) {
-              query[embeddedPath] = dateFilter;
-            }
-          }
-        }
-      }
+    // ANDa os filtros REVERSE/PIVOT (cada um e um `{ _id: { $in } }`) preservando
+    // `trashedAt` e os demais predicados ja montados.
+    if (relationshipFilters.length > 0) {
+      query = {
+        $and: [{ ...query }, ...relationshipFilters],
+      };
     }
 
     if (search) {
@@ -207,31 +172,9 @@ export default class MongooseQueryBuilder implements QueryBuilderContractService
         }
       }
 
-      if (groups) {
-        for (const field of fields.filter(
-          (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
-        )) {
-          const groupSlug = field?.group?.slug;
-          const group = groups.find((g) => g.slug === groupSlug);
-
-          if (!group) continue;
-
-          for (const groupField of group.fields || []) {
-            if (
-              groupField.type === E_FIELD_TYPE.TEXT_LONG ||
-              groupField.type === E_FIELD_TYPE.TEXT_SHORT
-            ) {
-              const embeddedPath = `${field.slug}.${groupField.slug}`;
-              searchQuery.push({
-                [embeddedPath]: {
-                  $regex: this.normalize(searchStr),
-                  $options: 'i',
-                },
-              });
-            }
-          }
-        }
-      }
+      searchQuery.push(
+        ...this.fieldGroup.buildSearch(searchStr, fields, groups),
+      );
 
       if (searchQuery.length > 0) {
         query = {

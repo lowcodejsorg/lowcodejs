@@ -1,11 +1,19 @@
 import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
+import { useEffect } from 'react';
 import z from 'zod';
 
+import { TableFieldRelationshipCardinality } from '@/components/common/dynamic-table/table-config/table-field-relationship-cardinality';
 import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import { ExtensionSlot } from '@/components/common/extension-slot';
+import { Switch } from '@/components/ui/switch';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
+import {
+  E_FIELD_FORMAT,
+  E_FIELD_TYPE,
+  E_PERMISSION_TARGET,
+} from '@/lib/constant';
 import {
   FIELD_NAME_MAX_LENGTH,
   FIELD_SLUG_MAX_LENGTH,
@@ -16,9 +24,38 @@ import type {
   ICategory,
   IDropdown,
   IField,
+  IFieldValidation,
   IRelationshipLabelPart,
   ITable,
 } from '@/lib/interfaces';
+
+// Campo da tabela relacionada usado como rótulo das opções. Derivado
+// automaticamente (não há mais seletor manual): rowSlug, senão 1º texto, senão
+// 1º campo não-nativo, senão fallback.
+function pickLabelField(table: ITable): { id: string; slug: string } {
+  const fields = table.fields ?? [];
+  if (table.rowSlugFieldId) {
+    const slugField = fields.find((f) => f._id === table.rowSlugFieldId);
+    if (slugField) return { id: slugField._id, slug: slugField.slug };
+  }
+  const textField = fields.find(
+    (f: IField) =>
+      !f.native && !f.trashed && f.type === E_FIELD_TYPE.TEXT_SHORT,
+  );
+  if (textField) return { id: textField._id, slug: textField.slug };
+  const anyField = fields.find((f: IField) => !f.native && !f.trashed);
+  if (anyField) return { id: anyField._id, slug: anyField.slug };
+  return { id: '', slug: 'nome' };
+}
+
+const FieldPermissionBindingSchema = z.object({
+  kind: z.enum([
+    E_PERMISSION_TARGET.PUBLIC,
+    E_PERMISSION_TARGET.NOBODY,
+    E_PERMISSION_TARGET.GROUP,
+  ]),
+  group: z.string().nullable().default(null),
+});
 
 export const FieldUpdateSchema = z.object({
   name: z
@@ -44,6 +81,7 @@ export const FieldUpdateSchema = z.object({
     .default(''),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
+  validations: z.array(z.custom<IFieldValidation>()).default([]),
   defaultValue: z.string().default(''),
   dropdown: z.array(z.custom<IDropdown>()).default([]),
   allowCustomDropdownOptions: z.boolean().default(false),
@@ -57,13 +95,27 @@ export const FieldUpdateSchema = z.object({
     customLabel: z.boolean().default(false),
     labelParts: z.array(z.custom<IRelationshipLabelPart>()).default([]),
     labelSeparator: z.string().default(' - '),
+    sourceVisible: z.boolean().default(true),
+    mirrorMultiple: z.boolean().default(false),
+    mirrorVisible: z.boolean().default(false),
+    mirrorLabel: z.string().default(''),
+    onDelete: z.string().default('SET_NULL'),
+    formMode: z.enum(['select', 'manage']).default('select'),
   }),
   category: z.array(z.custom<ICategory>()).default([]),
   multiple: z.boolean().default(false),
   showInFilter: z.boolean().default(false),
-  showInForm: z.boolean().default(false),
-  showInDetail: z.boolean().default(false),
-  showInList: z.boolean().default(false),
+  permissions: z
+    .object({
+      list: FieldPermissionBindingSchema,
+      form: FieldPermissionBindingSchema,
+      detail: FieldPermissionBindingSchema,
+    })
+    .default({
+      list: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+      form: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+      detail: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+    }),
   required: z.boolean().default(false),
   trashed: z.boolean().default(false),
   widthInForm: z.number().default(50),
@@ -78,6 +130,7 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   tip: '',
   type: '',
   format: '',
+  validations: [],
   defaultValue: '',
   dropdown: [],
   allowCustomDropdownOptions: false,
@@ -91,13 +144,21 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
     customLabel: false,
     labelParts: [],
     labelSeparator: ' - ',
+    sourceVisible: true,
+    mirrorMultiple: false,
+    mirrorVisible: false,
+    mirrorLabel: '',
+    onDelete: 'SET_NULL',
+    formMode: 'select',
   },
   category: [],
   multiple: false,
   showInFilter: false,
-  showInForm: false,
-  showInDetail: false,
-  showInList: false,
+  permissions: {
+    list: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+    form: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+    detail: { kind: E_PERMISSION_TARGET.PUBLIC, group: null },
+  },
   required: false,
   trashed: false,
   widthInForm: 50,
@@ -157,6 +218,18 @@ export const UpdateFieldFormFields = withForm({
       form.store,
       (state) => state.values.relationship.fieldSlug,
     );
+    const fieldMultiple = useStore(
+      form.store,
+      (state) => state.values.multiple,
+    );
+    const relationshipMirrorMultiple = useStore(
+      form.store,
+      (state) => state.values.relationship.mirrorMultiple,
+    );
+    const relationshipFormMode = useStore(
+      form.store,
+      (state) => state.values.relationship.formMode,
+    );
     const relationshipCustomLabel = useStore(
       form.store,
       (state) => state.values.relationship.customLabel,
@@ -171,25 +244,39 @@ export const UpdateFieldFormFields = withForm({
     );
     const isTrashed = useStore(form.store, (state) => state.values.trashed);
 
+    // Modo 'manage' (repetidor via /links) só faz sentido em N:N (os dois lados
+    // múltiplos). 1:1/1:N são geridos via FK no payload da row.
+    const isManyToMany = fieldMultiple && relationshipMirrorMultiple;
+
+    const relatedTable = useReadTable({ slug: relationshipTableSlug });
+    const tabelaAtual = table?.name ?? 'esta tabela';
+    const tabelaRelacionada = relatedTable.data?.name ?? 'a tabela relacionada';
+
     const showMultiple =
-      isDropdown ||
-      isFile ||
-      isRelationship ||
-      isFieldGroup ||
-      isCategory ||
-      isUser;
+      isDropdown || isFile || isFieldGroup || isCategory || isUser;
     const showRequired = !isReaction && !isEvaluation;
 
     const isDisabled = mode === 'show' || isPending;
     const lockAllControls = isLocked && !isDropdown;
     const lockNonOptions = isLocked && isDropdown;
 
+    // Rótulo auto-derivado: ao escolher a tabela alvo, define qual campo dela
+    // vira o rótulo das opções (sem seletor manual). Só preenche se vazio.
+    useEffect(() => {
+      if (!isRelationship) return;
+      if (!relatedTable.data) return;
+      if (relationshipFieldSlug) return;
+      const picked = pickLabelField(relatedTable.data);
+      form.setFieldValue('relationship.fieldId', picked.id);
+      form.setFieldValue('relationship.fieldSlug', picked.slug);
+      // @ts-expect-error TanStack Form type depth issue with nested configuration
+    }, [isRelationship, relatedTable.data, relationshipFieldSlug, form]);
+
     return (
       <section
         data-test-id="field-update-form-fields"
         className="space-y-4 p-2"
       >
-        {/* @ts-expect-error TanStack Form type depth issue with nested configuration */}
         <form.AppField
           name="name"
           validators={{
@@ -475,34 +562,6 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Campo de Relacionamento (coluna) */}
-        {isRelationship && relationshipTableSlug && (
-          <form.AppField
-            name="relationship.fieldId"
-            validators={{
-              onChange: ({ value }) => {
-                if (!value || value.trim() === '') {
-                  return 'Campo é obrigatório';
-                }
-                return undefined;
-              },
-            }}
-          >
-            {(field) => (
-              <field.TableFieldRelationshipFieldSelect
-                label="Campo de relacionamento"
-                placeholder="Selecione um campo"
-                disabled={isDisabled || lockAllControls}
-                tableSlug={relationshipTableSlug}
-                onFieldChange={(slug) => {
-                  form.setFieldValue('relationship.fieldSlug', slug);
-                }}
-                required
-              />
-            )}
-          </form.AppField>
-        )}
-
         {/* Campo Ordem (Relacionamento) */}
         {isRelationship && (
           <form.AppField
@@ -527,45 +586,137 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Personalização do label (relacionamento) */}
+        {/* Modo de vínculo no formulário (relacionamento) — só N:N */}
+        {isRelationship && relationshipTableSlug && isManyToMany && (
+          <div className="flex items-center justify-between gap-4 rounded-md border p-3">
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium">
+                Gerenciar registros internamente
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Ligado: tabelas internas (lado A/B), cards e Sheet para
+                criar/editar registros. Desligado: vínculo simples por
+                multi-select (selecionar/criar e vincular).
+              </p>
+            </div>
+            <Switch
+              checked={relationshipFormMode === 'manage'}
+              disabled={isDisabled || lockAllControls}
+              onCheckedChange={(checked: boolean): void => {
+                let nextMode: 'select' | 'manage' = 'select';
+                if (checked) nextMode = 'manage';
+                form.setFieldValue('relationship.formMode', nextMode);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Configuração de cardinalidade e vínculo (relacionamento) */}
         {isRelationship && relationshipTableSlug && (
-          <form.AppField name="relationship.customLabel">
-            {(field) => (
-              <field.FieldBooleanSwitch
-                label="Personalizar exibição das opções"
-                description="Por padrão a opção exibe apenas o campo principal. Ative para compor o label com um ou mais campos (inclusive de tabelas relacionadas) e escolher o separador."
-                disabled={isDisabled || lockAllControls}
-              />
-            )}
-          </form.AppField>
-        )}
+          <>
+            <form.AppField name="multiple">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label={`Um registro de ${tabelaAtual} pode ter vários de ${tabelaRelacionada}?`}
+                  description={`Se ligado, cada registro de ${tabelaAtual} pode se vincular a vários de ${tabelaRelacionada}.`}
+                  disabled={isDisabled || lockNonOptions}
+                />
+              )}
+            </form.AppField>
 
-        {/* Compositor de label (relacionamento) */}
-        {isRelationship && relationshipTableSlug && relationshipCustomLabel && (
-          <TableFieldRelationshipLabelComposer
-            rootTableSlug={relationshipTableSlug}
-            parts={relationshipLabelParts}
-            separator={relationshipLabelSeparator}
-            disabled={isDisabled || lockAllControls}
-            onChange={(parts, separator) => {
-              form.setFieldValue('relationship.labelParts', parts);
-              form.setFieldValue('relationship.labelSeparator', separator);
-            }}
-          />
-        )}
+            <form.AppField name="relationship.mirrorMultiple">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label={`Um registro de ${tabelaRelacionada} pode ter vários de ${tabelaAtual}?`}
+                  description={`Se ligado, cada registro de ${tabelaRelacionada} pode se vincular a vários de ${tabelaAtual}.`}
+                  disabled={isDisabled || lockAllControls}
+                />
+              )}
+            </form.AppField>
 
-        {/* Campo Valor Padrão (RELATIONSHIP) */}
-        {isRelationship && relationshipTableSlug && relationshipFieldSlug && (
-          <form.AppField name="defaultValue">
-            {(field) => (
-              <field.TableFieldRelationshipDefaultValue
-                label="Valor padrão"
-                disabled={isDisabled || lockAllControls}
-                tableSlug={relationshipTableSlug}
-                fieldSlug={relationshipFieldSlug}
-              />
+            {isManyToMany && relationshipFormMode === 'manage' && (
+              <>
+                <form.AppField name="relationship.sourceVisible">
+                  {(field) => (
+                    <field.FieldBooleanSwitch
+                      label={`Gerenciar a relação pela tabela ${tabelaAtual}`}
+                      description={`Mostra a tabela de vínculos ao abrir um registro de ${tabelaAtual}.`}
+                      disabled={isDisabled || lockAllControls}
+                    />
+                  )}
+                </form.AppField>
+
+                <form.AppField name="relationship.mirrorVisible">
+                  {(field) => (
+                    <field.FieldBooleanSwitch
+                      label={`Gerenciar a relação pela tabela ${tabelaRelacionada}`}
+                      description={`Mostra a tabela de vínculos ao abrir um registro de ${tabelaRelacionada}.`}
+                      disabled={isDisabled || lockAllControls}
+                    />
+                  )}
+                </form.AppField>
+              </>
             )}
-          </form.AppField>
+
+            <form.AppField name="relationship.onDelete">
+              {(field) => (
+                <field.TableFieldRelationshipOnDeleteSelect
+                  label="Comportamento ao excluir"
+                  required
+                  disabled={isDisabled || lockAllControls}
+                />
+              )}
+            </form.AppField>
+
+            <TableFieldRelationshipCardinality
+              sourceMultiple={fieldMultiple}
+              mirrorMultiple={relationshipMirrorMultiple}
+            />
+
+            {relationshipFormMode === 'select' && (
+              <>
+                <form.AppField name="relationship.fieldId">
+                  {(field) => (
+                    <field.TableFieldRelationshipFieldSelect
+                      label="Rótulo"
+                      placeholder="Selecione o campo de exibição"
+                      disabled={isDisabled || lockAllControls}
+                      tableSlug={relationshipTableSlug}
+                      onFieldChange={(slug) => {
+                        form.setFieldValue('relationship.fieldSlug', slug);
+                      }}
+                    />
+                  )}
+                </form.AppField>
+
+                <form.AppField name="relationship.customLabel">
+                  {(field) => (
+                    <field.FieldBooleanSwitch
+                      label="Personalizar exibição das opções"
+                      description="Por padrão a opção exibe apenas o campo principal. Ative para compor o label com um ou mais campos (inclusive de tabelas relacionadas) e escolher o separador."
+                      disabled={isDisabled || lockAllControls}
+                    />
+                  )}
+                </form.AppField>
+
+                {relationshipCustomLabel && (
+                  <TableFieldRelationshipLabelComposer
+                    rootTableSlug={relationshipTableSlug}
+                    parts={relationshipLabelParts}
+                    separator={relationshipLabelSeparator}
+                    disabled={isDisabled || lockAllControls}
+                    onChange={(parts, separator) => {
+                      form.setFieldValue('relationship.labelParts', parts);
+                      form.setFieldValue(
+                        'relationship.labelSeparator',
+                        separator,
+                      );
+                    }}
+                  />
+                )}
+              </>
+            )}
+          </>
         )}
 
         {isRelationship &&
@@ -650,29 +801,50 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Exibição do grupo de campos: formulário e/ou detalhes */}
-        {isFieldGroup && (
-          <>
-            <form.AppField name="showInForm">
-              {(field) => (
-                <field.FieldBooleanSwitch
-                  label="Exibir no formulário"
-                  description="Exibir este grupo no formulário de adicionar/editar registro?"
-                  disabled={isDisabled}
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="showInDetail">
-              {(field) => (
-                <field.FieldBooleanSwitch
-                  label="Exibir nos detalhes"
-                  description="Exibir este grupo na página de detalhes do registro?"
-                  disabled={isDisabled}
-                />
-              )}
-            </form.AppField>
-          </>
+        {/* Validações do campo */}
+        {(isTextShort || isTextLong || isUser) && (
+          <form.AppField name="validations">
+            {(field) => (
+              <field.TableFieldValidationsField
+                label="Validações"
+                fieldType={fieldType}
+                multiple={fieldMultiple}
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
         )}
+
+        {/* Visibilidade do campo por grupo (Lista / Formulário / Detalhes) */}
+        <div className="space-y-3 rounded-lg border p-3">
+          <p className="text-sm font-medium text-muted-foreground">
+            Visibilidade por grupo
+          </p>
+          <form.AppField name="permissions.list">
+            {(field) => (
+              <field.FieldPermissionBinding
+                label="Lista"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="permissions.form">
+            {(field) => (
+              <field.FieldPermissionBinding
+                label="Formulário"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="permissions.detail">
+            {(field) => (
+              <field.FieldPermissionBinding
+                label="Detalhes"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+        </div>
 
         {/* Campo Obrigatoriedade */}
         {showRequired && (

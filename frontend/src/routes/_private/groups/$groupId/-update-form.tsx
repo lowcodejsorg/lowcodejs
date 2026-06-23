@@ -22,12 +22,14 @@ export type GroupUpdateFormValues = {
   name: string;
   description: string;
   permissions: Array<string>;
+  encompasses: Array<string>;
 };
 
 export const groupUpdateFormDefaultValues: GroupUpdateFormValues = {
   name: '',
   description: '',
   permissions: [],
+  encompasses: [],
 };
 
 export const UpdateGroupFormFields = withForm({
@@ -36,8 +38,9 @@ export const UpdateGroupFormFields = withForm({
     isPending: false,
     mode: 'show' as 'show' | 'edit',
     slug: '',
+    groupId: '',
   },
-  render: function Render({ form, isPending, mode, slug }) {
+  render: function Render({ form, isPending, mode, slug, groupId }) {
     const isDisabled = mode === 'show' || isPending;
 
     return (
@@ -127,6 +130,18 @@ export const UpdateGroupFormFields = withForm({
               placeholder="Selecione as permissões..."
               disabled={isDisabled}
               required
+            />
+          )}
+        </form.AppField>
+
+        {/* Campo Grupos englobados (hierarquia) */}
+        <form.AppField name="encompasses">
+          {(field) => (
+            <field.FieldGroupMultiSelect
+              label="Grupos englobados"
+              placeholder="Selecione grupos que este engloba..."
+              disabled={isDisabled}
+              excludeId={groupId}
             />
           )}
         </form.AppField>

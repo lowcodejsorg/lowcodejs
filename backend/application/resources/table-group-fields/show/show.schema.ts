@@ -1,23 +1,23 @@
 import type { FastifySchema } from 'fastify';
 
 export const GroupFieldShowSchema: FastifySchema = {
-  tags: ['Group Fields'],
-  summary: 'Get field in group',
-  description: 'Retrieves a specific field by ID from a FIELD_GROUP.',
+  tags: ['Campos de Grupo'],
+  summary: 'Obter campo do grupo',
+  description: 'Recupera um campo específico por ID de um FIELD_GROUP.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
     required: ['slug', 'groupSlug', 'fieldId'],
     properties: {
-      slug: { type: 'string', description: 'Table slug' },
-      groupSlug: { type: 'string', description: 'Group slug' },
-      fieldId: { type: 'string', description: 'Field ID' },
+      slug: { type: 'string', description: 'Slug da tabela' },
+      groupSlug: { type: 'string', description: 'Slug do grupo' },
+      fieldId: { type: 'string', description: 'ID do campo' },
     },
     additionalProperties: false,
   },
   response: {
     200: {
-      description: 'Field retrieved successfully',
+      description: 'Campo recuperado com sucesso',
       type: 'object',
       properties: {
         _id: { type: 'string' },
@@ -27,9 +27,6 @@ export const GroupFieldShowSchema: FastifySchema = {
         required: { type: 'boolean' },
         multiple: { type: 'boolean' },
         showInFilter: { type: 'boolean' },
-        showInForm: { type: 'boolean' },
-        showInDetail: { type: 'boolean' },
-        showInList: { type: 'boolean' },
         widthInForm: { type: 'number', nullable: true },
         widthInList: { type: 'number', nullable: true },
         widthInDetail: { type: 'number', nullable: true },
@@ -117,8 +114,62 @@ export const GroupFieldShowSchema: FastifySchema = {
         updatedAt: { type: 'string', format: 'date-time' },
       },
     },
+    400: {
+      description: 'Requisição inválida - parâmetros inválidos',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [400] },
+        cause: {
+          type: 'string',
+          enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    401: {
+      description: 'Não autorizado - autenticação necessária',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [401] },
+        cause: {
+          type: 'string',
+          enum: ['AUTHENTICATION_REQUIRED', 'USER_NOT_AUTHENTICATED'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    403: {
+      description: 'Proibido - permissões insuficientes',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [403] },
+        cause: {
+          type: 'string',
+          enum: [
+            'USER_NOT_FOUND',
+            'USER_NOT_ACTIVE',
+            'PERMISSIONS_NOT_FOUND',
+            'INSUFFICIENT_PERMISSIONS',
+            'OWNER_OR_ADMIN_REQUIRED',
+          ],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
     404: {
-      description: 'Table, group, or field not found',
+      description: 'Tabela, grupo ou campo não encontrado',
       type: 'object',
       properties: {
         message: { type: 'string' },
@@ -134,7 +185,7 @@ export const GroupFieldShowSchema: FastifySchema = {
       },
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
         message: { type: 'string' },

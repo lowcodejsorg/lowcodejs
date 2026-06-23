@@ -10,13 +10,19 @@ import type {
 
 export type UserCreatePayload = Merge<
   Pick<IUser, 'name' | 'email' | 'password'>,
-  { group: string; status?: ValueOf<typeof E_USER_STATUS> }
+  {
+    group: string;
+    // Grupos adicionais (multi-grupo). Opcional: default [].
+    groups?: string[];
+    status?: ValueOf<typeof E_USER_STATUS>;
+  }
 >;
 
 export type UserUpdatePayload = Merge<
   Merge<Pick<IUser, '_id'>, Partial<UserCreatePayload>>,
   {
     group?: string;
+    groups?: string[];
     status?: ValueOf<typeof E_USER_STATUS>;
     trashed?: boolean;
     trashedAt?: Date | null;
@@ -33,6 +39,9 @@ export type UserQueryPayload = {
   group?: string;
   status?: ValueOf<typeof E_USER_STATUS>;
   role?: ValueOf<typeof E_ROLE>;
+  // Oculta usuarios do grupo MASTER da listagem. Resolvido pelo use-case via
+  // fecho de grupos do ator (privilegiado, porem nao MASTER).
+  hideMaster?: boolean;
   trashed?: boolean;
   sort?: Record<string, 'asc' | 'desc'>;
 };

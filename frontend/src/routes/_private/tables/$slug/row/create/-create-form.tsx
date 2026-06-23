@@ -1,6 +1,6 @@
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IStorage } from '@/lib/interfaces';
-import { buildFieldValidator } from '@/lib/table';
+import { buildFieldValidator, isManagedRelationship } from '@/lib/table';
 
 type SearchableOption = {
   value: string;
@@ -236,12 +236,18 @@ export function RowFormFields({
         // Skip native fields (_id, creator, createdAt)
         if (field.native) return null;
 
-        // Skip non-editable field types
+        // Skip non-editable field types. RELATIONSHIP em modo 'manage' é
+        // renderizado pelo repetidor (RelationshipRowsInline); em modo 'select'
+        // (padrão) cai no switch abaixo como combobox de vínculo direto.
         if (
           field.type === E_FIELD_TYPE.REACTION ||
           field.type === E_FIELD_TYPE.EVALUATION ||
           field.type === E_FIELD_TYPE.FIELD_GROUP
         ) {
+          return null;
+        }
+        // Só N:N 'manage' é renderizado pelo repetidor; 1:1/1:N caem no combobox.
+        if (isManagedRelationship(field)) {
           return null;
         }
 

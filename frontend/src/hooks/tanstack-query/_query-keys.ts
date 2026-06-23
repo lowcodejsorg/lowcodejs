@@ -34,6 +34,25 @@ export const queryKeys = {
         tableSlug,
         search,
       ] as const,
+    links: (relationshipId: string, side: string, recordId: string) =>
+      [
+        ...queryKeys.relationships.all,
+        'links',
+        relationshipId,
+        side,
+        recordId,
+      ] as const,
+    linksPaginated: (
+      relationshipId: string,
+      side: string,
+      recordId: string,
+      params: Record<string, unknown>,
+    ) =>
+      [
+        ...queryKeys.relationships.links(relationshipId, side, recordId),
+        'paginated',
+        params,
+      ] as const,
   },
   fields: {
     all: (tableSlug: string) => ['tables', tableSlug, 'fields'] as const,

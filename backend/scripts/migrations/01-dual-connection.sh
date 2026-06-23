@@ -20,7 +20,6 @@ runas() {
   fi
 }
 
-echo "🔀 Verificando migração dual-connection..."
 if [ -f "$MIGRATION_DIR/migrate-dual-connection.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-dual-connection.ts"
 else

@@ -40,7 +40,12 @@ export default class {
     const params = BulkDeleteParamsValidator.parse(request.params);
     const body = BulkDeleteBodyValidator.parse(request.body);
 
-    const result = await this.useCase.execute({ ...params, ...body });
+    const result = await this.useCase.execute({
+      ...params,
+      ...body,
+      ...(request?.user?.sub && { __actorUserId: request.user.sub }),
+      ...(request.ownership?.ownOnly && { __ownOnly: true }),
+    });
 
     if (result.isLeft()) {
       const error = result.value;

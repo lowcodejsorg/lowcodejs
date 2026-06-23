@@ -20,7 +20,6 @@ runas() {
   fi
 }
 
-echo "🔑 Verificando backfill de relationship.table._id..."
 if [ -f "$MIGRATION_DIR/migrate-relationship-table-id.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-relationship-table-id.ts"
 else

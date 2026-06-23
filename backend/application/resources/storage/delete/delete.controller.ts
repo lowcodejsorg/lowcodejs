@@ -46,7 +46,7 @@ export default class {
     }
 
     return response.status(200).send({
-      message: 'File deleted successfully',
+      message: 'Arquivo deletado com sucesso',
       deletedAt: new Date().toISOString(),
     });
   }

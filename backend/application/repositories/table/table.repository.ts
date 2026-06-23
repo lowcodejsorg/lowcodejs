@@ -29,7 +29,6 @@ export default class TableMongooseRepository implements TableContractRepository 
     { path: 'logo' },
     { path: 'fields' },
     { path: 'owner' },
-    { path: 'administrators' },
     { path: 'groups.fields' },
   ];
 
@@ -51,10 +50,6 @@ export default class TableMongooseRepository implements TableContractRepository 
     if (payload?.type) where.type = payload.type;
     if (payload?.owner?.length) {
       where['owner'] = { $in: payload.owner };
-    }
-
-    if (payload?.visibility?.length) {
-      where.visibility = { $in: payload.visibility };
     }
 
     if (payload?.search) {
@@ -204,9 +199,7 @@ export default class TableMongooseRepository implements TableContractRepository 
     if (filterTrashed !== undefined) where.trashed = filterTrashed;
 
     const updateData: Record<string, unknown> = {};
-    if (data.visibility) updateData['visibility'] = data.visibility;
     if (data.style) updateData['style'] = data.style;
-    if (data.collaboration) updateData['collaboration'] = data.collaboration;
     if (data.trashed !== undefined) updateData['trashed'] = data.trashed;
     if (data.trashedAt !== undefined) updateData['trashedAt'] = data.trashedAt;
 

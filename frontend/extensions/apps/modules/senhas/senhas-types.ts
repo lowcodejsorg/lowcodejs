@@ -1,0 +1,55 @@
+// Espelho dos tipos do backend (apps/modules/senhas).
+
+export interface IPasswordUserRef {
+  _id: string;
+  name: string;
+  email: string;
+}
+
+export interface IPasswordChannel {
+  _id: string;
+  name: string;
+  description: string | null;
+  private: boolean;
+  owner: IPasswordUserRef | string;
+  members: Array<IPasswordUserRef | string>;
+  entriesCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IPasswordEntry {
+  _id: string;
+  channel: string;
+  title: string;
+  username: string | null;
+  url: string | null;
+  secret: string;
+  notes: string | null;
+  author: IPasswordUserRef | string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChannelFormValues {
+  name: string;
+  description: string;
+  private: boolean;
+  members: Array<string>;
+}
+
+export interface EntryFormValues {
+  title: string;
+  username: string;
+  url: string;
+  secret: string;
+  notes: string;
+}
+
+export function refId(ref: IPasswordUserRef | string): string {
+  return typeof ref === 'string' ? ref : ref._id;
+}
+
+export function refName(ref: IPasswordUserRef | string): string {
+  return typeof ref === 'string' ? ref : ref.name;
+}

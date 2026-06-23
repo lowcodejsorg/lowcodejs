@@ -35,6 +35,7 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
       _id: crypto.randomUUID(),
       description: payload.description ?? null,
       permissions: payload.permissions.map((p) => ({ _id: p }) as IPermission),
+      encompasses: payload.encompasses ?? [],
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -77,7 +78,9 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
       filtered = filtered.filter((g) => !g.trashed);
     }
 
-    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
+    // Esconde o grupo MASTER pela flag resolvida pelo fecho de grupos
+    // (shouldHideMaster), nao mais pelo role do JWT — alinhado ao repo mongoose.
+    if (payload?.hideMaster) {
       filtered = filtered.filter((g) => g.slug !== E_ROLE.MASTER);
     }
 

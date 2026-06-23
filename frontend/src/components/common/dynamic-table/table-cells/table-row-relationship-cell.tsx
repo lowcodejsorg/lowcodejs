@@ -1,8 +1,10 @@
 import { TableRowBadgeList } from './table-row-badge-list';
 
+import { Badge } from '@/components/ui/badge';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import type { IField, IRow } from '@/lib/interfaces';
 import { resolveRelationshipLabel } from '@/lib/relationship-label';
+import { isManagedRelationship } from '@/lib/table';
 
 interface RelationshipItem {
   _id: string;
@@ -15,27 +17,39 @@ interface TableRowRelationshipCellProps {
   field: IField;
 }
 
+// Modo 'manage' (tabelas internas): badge de contagem. Modo 'select' (padrão,
+// multi-select): rótulos (chips) dos vinculados, via "Rótulo"/compositor.
 export function TableRowRelationshipCell({
   field,
   row,
 }: TableRowRelationshipCellProps): React.JSX.Element {
   const relConfig = field.relationship;
-  // Carrega a tabela relacionada para resolver labels de DROPDOWN (id → label)
-  // e títulos compostos. Cacheado por slug, sem custo por linha.
+  const isManage = isManagedRelationship(field);
   const relatedTable = useReadTable({ slug: relConfig?.table?.slug ?? '' });
 
-  if (!relConfig?.field?.slug) {
+  const raw = row[field.slug];
+  let total = 0;
+  if (Array.isArray(raw)) total = raw.length;
+
+  if (isManage) {
+    if (total === 0) {
+      return <span className="text-muted-foreground text-sm">-</span>;
+    }
     return (
-      <TableRowBadgeList
-        values={[]}
-        renderLabel={(v) => v}
-      />
+      <Badge
+        data-slot="table-row-relationship-cell"
+        data-test-id="relationship-cell"
+        variant="secondary"
+      >
+        {total} {total === 1 && 'registro'}
+        {total !== 1 && 'registros'}
+      </Badge>
     );
   }
-  const tableSlug = relConfig.table?.slug ?? null;
-  const relatedFields = relatedTable.data?.fields;
 
-  const rawValues = Array.from(row[field.slug] ?? []);
+  const tableSlug = relConfig?.table?.slug ?? null;
+  const relatedFields = relatedTable.data?.fields;
+  const rawValues = Array.from(raw ?? []);
 
   const values = rawValues.map<RelationshipItem>((item) => {
     if (typeof item === 'object' && item !== null) {

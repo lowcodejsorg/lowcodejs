@@ -19,6 +19,7 @@ import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { groupRowListPaginatedOptions } from '@/hooks/tanstack-query/_query-options';
+import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type {
   IField,
@@ -61,6 +62,8 @@ export function GroupRowsDataTable({
   const [managementOpen, setManagementOpen] = React.useState(false);
   const [page, setPage] = React.useState(1);
   const [perPage, setPerPage] = React.useState(6);
+
+  const { isFieldVisible } = useFieldVisibility();
 
   const { data, status } = useQuery(
     groupRowListPaginatedOptions(tableSlug, rowId, groupSlug ?? '', {
@@ -106,11 +109,11 @@ export function GroupRowsDataTable({
   );
 
   const columnFields = React.useMemo(() => {
-    const visible = displayableFields.filter((f) => f.showInList);
+    const visible = displayableFields.filter((f) => isFieldVisible(f, 'list'));
     const hasAnyUserField = displayableFields.some((f) => !f.native);
     if (hasAnyUserField) return visible;
     return formFields;
-  }, [displayableFields, formFields]);
+  }, [displayableFields, formFields, isFieldVisible]);
 
   if (!groupSlug || !group) {
     return <span className="text-muted-foreground text-sm">-</span>;
@@ -357,6 +360,7 @@ function RenderGroupCell({
       );
     case E_FIELD_TYPE.USER:
     case E_FIELD_TYPE.CREATOR:
+    case E_FIELD_TYPE.UPDATER:
       return (
         <TableRowUserCell
           field={field}
@@ -371,6 +375,7 @@ function RenderGroupCell({
         />
       );
     case E_FIELD_TYPE.CREATED_AT:
+    case E_FIELD_TYPE.UPDATED_AT:
       return (
         <TableRowDateCell
           field={field}

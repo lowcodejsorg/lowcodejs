@@ -16,7 +16,11 @@ import {
 export default class LoggerMongooseRepository implements LoggerContractRepository {
   constructor(private readonly query: QueryBuilderContractService) {}
 
-  private readonly populateOptions = [{ path: 'user' }];
+  private readonly populateOptions = [
+    { path: 'user' },
+    { path: 'creator' },
+    { path: 'updater' },
+  ];
 
   private buildWhereClause(
     payload?: LoggerQueryPayload,
@@ -63,10 +67,21 @@ export default class LoggerMongooseRepository implements LoggerContractRepositor
   }
 
   async create(payload: LoggerCreatePayload): Promise<ILogger> {
-    const { user_id, ...rest } = payload;
+    const {
+      user_id,
+      creator,
+      updater,
+      objectCreatedAt,
+      objectUpdatedAt,
+      ...rest
+    } = payload;
     const created = await Model.create({
       ...rest,
       user: user_id ?? null,
+      creator: creator ?? null,
+      updater: updater ?? null,
+      objectCreatedAt: objectCreatedAt ?? null,
+      objectUpdatedAt: objectUpdatedAt ?? null,
     });
     const populated = await created.populate(this.populateOptions);
     return this.transform(populated);

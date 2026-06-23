@@ -20,7 +20,6 @@ runas() {
   fi
 }
 
-echo "🗂️  Verificando backfill de status/trashedAt das rows..."
 if [ -f "$MIGRATION_DIR/migrate-row-status-trashed.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-row-status-trashed.ts"
 else

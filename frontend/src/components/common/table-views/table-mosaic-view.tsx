@@ -18,11 +18,12 @@ import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/
 import { FieldTitle } from '@/components/common/field-title';
 import { Badge } from '@/components/ui/badge';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
 import { resolveLayoutField } from '@/lib/layout-field-resolver';
-import { HeaderFilter, HeaderSorter } from '@/lib/layout-pickers';
+import { HeaderSorter } from '@/lib/layout-pickers';
 
 interface Props {
   data: Array<IRow>;
@@ -144,6 +145,7 @@ function RenderMosaicCell({
           />
         );
       case E_FIELD_TYPE.CREATOR:
+      case E_FIELD_TYPE.UPDATER:
         return (
           <TableRowUserCell
             field={field}
@@ -151,6 +153,7 @@ function RenderMosaicCell({
           />
         );
       case E_FIELD_TYPE.CREATED_AT:
+      case E_FIELD_TYPE.UPDATED_AT:
       case E_FIELD_TYPE.TRASHED_AT:
         return (
           <TableRowDateCell
@@ -184,8 +187,11 @@ export function TableMosaicView({
   const table = useReadTable({ slug });
   const permission = useTablePermission(table.data);
   const canSelect = permission.can('UPDATE_ROW');
+  const { isFieldVisible } = useFieldVisibility();
 
-  const visibleHeaders = headers.filter(HeaderFilter).sort(HeaderSorter(order));
+  const visibleHeaders = headers
+    .filter((header) => isFieldVisible(header, 'list') && !header.trashed)
+    .sort(HeaderSorter(order));
 
   const thumbField = resolveLayoutField(
     visibleHeaders,

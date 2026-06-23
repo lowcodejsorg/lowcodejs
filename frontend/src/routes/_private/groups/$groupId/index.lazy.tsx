@@ -130,6 +130,7 @@ function GroupUpdateContent({
       name: data.name,
       description: data.description ?? '',
       permissions: data.permissions.map((p) => p._id),
+      encompasses: data.encompasses ?? [],
     } satisfies GroupUpdateFormValues,
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: GroupUpdateSchema, onSubmit: GroupUpdateSchema },
@@ -187,6 +188,7 @@ function GroupUpdateContent({
               isPending={isPending}
               mode={mode}
               slug={data.slug}
+              groupId={data._id}
             />
           </form>
         </PageShell.Content>

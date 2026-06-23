@@ -17,4 +17,9 @@ export const BulkUpdateBodyValidator = z.object({
 export type BulkUpdatePayload = z.infer<typeof BulkUpdateParamsValidator> &
   z.infer<typeof BulkUpdateBodyValidator> & {
     __actorUserId?: string;
+    // Convidado contributor: só atualiza os próprios registros.
+    __ownOnly?: boolean;
+    // Sinais do solicitante para a visibilidade de campo no formulario.
+    __isOwner?: boolean;
+    __isAdministrator?: boolean;
   };

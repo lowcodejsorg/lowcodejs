@@ -20,15 +20,18 @@ runas() {
   fi
 }
 
-echo "🚀 Rodando migrations..."
+echo "🚀 Preparando o banco de dados"
+echo ""
+echo "Migrations"
 for script in "$SCRIPT_DIR/scripts/migrations"/*.sh; do
   sh "$script"
 done
-echo "✅ Migrations concluídas."
+echo "✓ Migrations concluídas"
+echo ""
 
-echo "🌱 Rodando seeders..."
+echo "Seeders"
 if [ -f "$SCRIPT_DIR/database/seeders/main.ts" ]; then
-  runas npm run seed
+  runas npm run --silent seed
 else
   runas node "$SCRIPT_DIR/database/seeders/main.js"
 fi

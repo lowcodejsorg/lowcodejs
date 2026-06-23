@@ -1,9 +1,7 @@
 /* eslint-disable no-unused-vars */
 import type {
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   FindOptions,
   IField,
   IStorage,
@@ -49,16 +47,9 @@ export default class TableInMemoryRepository implements TableContractRepository 
       ),
       type: payload.type ?? ('TABLE' as typeof E_TABLE_TYPE.TABLE),
       style: payload.style ?? ('LIST' as typeof E_TABLE_STYLE.LIST),
-      visibility:
-        payload.visibility ??
-        ('RESTRICTED' as typeof E_TABLE_VISIBILITY.RESTRICTED),
-      collaboration:
-        payload.collaboration ??
-        ('RESTRICTED' as typeof E_TABLE_COLLABORATION.RESTRICTED),
-      administrators: (payload.administrators ?? []).map(
-        (a) => ({ _id: a }) as IUser,
-      ),
       owner: { _id: payload.owner } as IUser,
+      permissions: payload.permissions ?? null,
+      members: payload.members ?? [],
       fieldOrderList: payload.fieldOrderList ?? [],
       fieldOrderForm: payload.fieldOrderForm ?? [],
       fieldOrderFilter: payload.fieldOrderFilter ?? [],
@@ -146,12 +137,6 @@ export default class TableInMemoryRepository implements TableContractRepository 
       );
     }
 
-    if (payload?.visibility?.length) {
-      filtered = filtered.filter((t) =>
-        payload.visibility!.includes(t.visibility),
-      );
-    }
-
     filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
 
     if (payload?.page && payload?.perPage) {
@@ -174,22 +159,17 @@ export default class TableInMemoryRepository implements TableContractRepository 
     if (payload.fields !== undefined) {
       table.fields = payload.fields.map((f) => ({ _id: f }) as IField);
     }
-    if (payload.administrators !== undefined) {
-      table.administrators = payload.administrators.map(
-        (a) => ({ _id: a }) as IUser,
-      );
-    }
     if (payload.owner !== undefined) {
       table.owner = { _id: payload.owner } as IUser;
     }
+    if (payload.permissions !== undefined) {
+      table.permissions = payload.permissions;
+    }
+    if (payload.members !== undefined) {
+      table.members = payload.members;
+    }
     if (payload.style !== undefined) {
       table.style = payload.style;
-    }
-    if (payload.visibility !== undefined) {
-      table.visibility = payload.visibility;
-    }
-    if (payload.collaboration !== undefined) {
-      table.collaboration = payload.collaboration;
     }
     if (payload.fieldOrderList !== undefined) {
       table.fieldOrderList = payload.fieldOrderList;
@@ -240,9 +220,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
     }
 
     for (const table of filtered) {
-      if (data.visibility) table.visibility = data.visibility;
       if (data.style) table.style = data.style;
-      if (data.collaboration) table.collaboration = data.collaboration;
       if (data.trashed !== undefined) table.trashed = data.trashed;
       if (data.trashedAt !== undefined) table.trashedAt = data.trashedAt;
       table.updatedAt = new Date();

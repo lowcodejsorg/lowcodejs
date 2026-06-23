@@ -54,6 +54,7 @@ function RouteComponent(): React.JSX.Element {
 
   const signInMutation = useAuthenticationSignIn({
     async onSuccess(response) {
+      queryClient.clear();
       const role = response.group.slug.toUpperCase();
       const fallbackRoute = ROLE_DEFAULT_ROUTE[role] ?? '/tables';
       const menus = await queryClient.fetchQuery(menuAllOptions());

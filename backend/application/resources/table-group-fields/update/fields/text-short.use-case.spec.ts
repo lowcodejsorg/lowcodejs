@@ -1,11 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
@@ -24,10 +23,7 @@ const TABLE_DEFAULTS = {
   _schema: {},
   fields: [],
   owner: 'owner-id',
-  administrators: [],
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
   fieldOrderList: [],
   fieldOrderForm: [],
 };
@@ -36,9 +32,7 @@ const FIELD_CREATE_PAYLOAD = {
   name: 'Codigo',
   slug: 'codigo',
   type: E_FIELD_TYPE.TEXT_SHORT,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
+  permissions: buildFieldPermissions(true, true, true),
   showInFilter: true,
   locked: false,
   allowCreateRelationshipRecords: false,
@@ -110,9 +104,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
       type: E_FIELD_TYPE.TEXT_SHORT,
       format: E_FIELD_FORMAT.EMAIL,
       required: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       widthInForm: 50,
       widthInList: 10,
@@ -152,9 +144,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
       type: E_FIELD_TYPE.TEXT_SHORT,
       format: E_FIELD_FORMAT.PASSWORD,
       required: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       widthInForm: 50,
       widthInList: 10,
@@ -190,9 +180,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
       type: E_FIELD_TYPE.TEXT_SHORT,
       format: E_FIELD_FORMAT.ALPHA_NUMERIC,
       required: true,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       widthInForm: 50,
       widthInList: 10,
@@ -204,7 +192,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
     expect(result.value.required).toBe(true);
   });
 
-  it('deve mudar visibilidade showInList de true para false', async () => {
+  it('deve mudar visibilidade de lista de PUBLIC para NOBODY', async () => {
     const field = await fieldInMemoryRepository.create(FIELD_CREATE_PAYLOAD);
 
     await tableInMemoryRepository.create({
@@ -228,9 +216,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
       type: E_FIELD_TYPE.TEXT_SHORT,
       format: E_FIELD_FORMAT.ALPHA_NUMERIC,
       required: false,
-      showInList: false,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(false, true, true),
       showInFilter: true,
       widthInForm: 50,
       widthInList: 10,
@@ -239,7 +225,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(false);
+    expect(result.value.permissions?.list.kind).toBe('NOBODY');
   });
 
   it('deve mudar widths', async () => {
@@ -266,9 +252,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
       type: E_FIELD_TYPE.TEXT_SHORT,
       format: E_FIELD_FORMAT.ALPHA_NUMERIC,
       required: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       widthInForm: 100,
       widthInList: 25,
@@ -306,9 +290,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
       type: E_FIELD_TYPE.TEXT_SHORT,
       format: E_FIELD_FORMAT.ALPHA_NUMERIC,
       required: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       widthInForm: 50,
       widthInList: 10,
@@ -345,9 +327,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
       type: E_FIELD_TYPE.TEXT_SHORT,
       format: E_FIELD_FORMAT.ALPHA_NUMERIC,
       required: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       widthInForm: 50,
       widthInList: 10,
@@ -393,9 +373,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
       dropdown: field.dropdown,
       category: field.category,
       group: field.group,
-      showInList: false,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(false, true, true),
       showInFilter: true,
       widthInForm: 50,
       widthInList: 10,
@@ -404,7 +382,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(false);
+    expect(result.value.permissions?.list.kind).toBe('NOBODY');
   });
 
   it('deve ignorar mudanca de name em campo NATIVE e preservar o nome original', async () => {
@@ -440,9 +418,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
       dropdown: field.dropdown,
       category: field.category,
       group: field.group,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       widthInForm: 50,
       widthInList: 10,
@@ -488,9 +464,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
       dropdown: field.dropdown,
       category: field.category,
       group: field.group,
-      showInList: false,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(false, true, true),
       showInFilter: true,
       widthInForm: 50,
       widthInList: 10,
@@ -499,7 +473,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(false);
+    expect(result.value.permissions?.list.kind).toBe('NOBODY');
   });
 
   it('deve rejeitar mudar name de campo LOCKED com FIELD_LOCKED', async () => {
@@ -536,9 +510,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
       dropdown: field.dropdown,
       category: field.category,
       group: field.group,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       widthInForm: 50,
       widthInList: 10,

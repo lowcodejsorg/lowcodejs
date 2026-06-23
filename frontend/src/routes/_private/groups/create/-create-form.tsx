@@ -11,6 +11,7 @@ export const groupFormDefaultValues: GroupFormType = {
   name: '',
   description: '',
   permissions: [],
+  encompasses: [],
 };
 
 export const CreateGroupFormFields = withForm({
@@ -88,6 +89,17 @@ export const CreateGroupFormFields = withForm({
               placeholder="Selecione as permissões..."
               disabled={isPending}
               required
+            />
+          )}
+        </form.AppField>
+
+        {/* Campo Grupos englobados (hierarquia) */}
+        <form.AppField name="encompasses">
+          {(field) => (
+            <field.FieldGroupMultiSelect
+              label="Grupos englobados"
+              placeholder="Selecione grupos que este engloba..."
+              disabled={isPending}
             />
           )}
         </form.AppField>

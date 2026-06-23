@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  E_TABLE_COLLABORATION,
+  buildFieldPermissions,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
@@ -29,8 +28,6 @@ const baseStructure = {
   slug: 'clientes',
   description: null,
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
   fields: [
     {
       name: 'Nome',
@@ -40,9 +37,7 @@ const baseStructure = {
       multiple: false,
       format: 'ALPHA_NUMERIC',
       showInFilter: true,
-      showInForm: true,
-      showInDetail: true,
-      showInList: true,
+      permissions: buildFieldPermissions(true, true, true),
       widthInForm: null,
       widthInList: null,
       widthInDetail: null,
@@ -141,6 +136,45 @@ describe('Import Table Use Case', () => {
     expect(result.value.slug).toBe('clientes');
   });
 
+  it('deve normalizar slugs de campo legados invalidos e remapear referencias', async () => {
+    const legacyStructure = {
+      ...baseStructure,
+      slug: 'clientes-legado',
+      fields: [
+        {
+          ...baseStructure.fields[0],
+          name: 'Telefone',
+          slug: 'Telefone', // legado: maiuscula → invalido no padrao estrito
+        },
+      ],
+      fieldOrderList: ['Telefone'],
+      fieldOrderForm: ['Telefone'],
+      layoutFields: { title: 'Telefone' },
+    };
+
+    const result = await sut.execute({
+      name: null,
+      fileContent: {
+        header: { ...v2FileContent.header, tableSlug: 'clientes-legado' },
+        tables: [{ structure: legacyStructure }],
+        menus: [],
+      },
+      ownerId: 'owner-id',
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.importedFields).toBe(1);
+
+    // O campo foi criado com o slug normalizado, nao com o slug invalido.
+    expect(await fieldInMemoryRepository.findBySlug('telefone')).toBeTruthy();
+
+    const table = await tableInMemoryRepository.findBySlug('clientes-legado');
+    expect(table).toBeTruthy();
+    expect(table!.fields.some((f) => f.slug === 'telefone')).toBe(true);
+    expect(table!.fields.some((f) => f.slug === 'Telefone')).toBe(false);
+  });
+
   it('deve retornar erro OWNER_ID_REQUIRED quando ownerId nao fornecido', async () => {
     const result = await sut.execute({
       name: 'Clientes',
@@ -182,10 +216,7 @@ describe('Import Table Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -209,10 +240,7 @@ describe('Import Table Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -241,10 +269,7 @@ describe('Import Table Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -420,10 +445,7 @@ describe('Import Table Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -449,9 +471,7 @@ describe('Import Table Use Case', () => {
       multiple: false,
       format: 'ALPHA_NUMERIC',
       showInFilter: true,
-      showInForm: true,
-      showInDetail: true,
-      showInList: true,
+      permissions: buildFieldPermissions(true, true, true),
       widthInForm: null,
       widthInList: null,
       widthInDetail: null,
@@ -469,9 +489,7 @@ describe('Import Table Use Case', () => {
       multiple: true,
       format: null,
       showInFilter: false,
-      showInForm: true,
-      showInDetail: true,
-      showInList: true,
+      permissions: buildFieldPermissions(true, true, true),
       widthInForm: null,
       widthInList: null,
       widthInDetail: null,
@@ -590,9 +608,7 @@ describe('Import Table Use Case', () => {
       multiple: true,
       format: null,
       showInFilter: false,
-      showInForm: true,
-      showInDetail: true,
-      showInList: true,
+      permissions: buildFieldPermissions(true, true, true),
       widthInForm: null,
       widthInList: null,
       widthInDetail: null,
@@ -707,6 +723,96 @@ describe('Import Table Use Case', () => {
     if (!result.isLeft()) throw new Error('Expected left');
     expect(result.value.code).toBe(400);
     expect(result.value.cause).toBe('STRUCTURE_REQUIRED');
+  });
+
+  it('deve importar somente dados em tabela existente (casa por slug)', async () => {
+    const produtos = await tableInMemoryRepository.create({
+      name: 'Produtos',
+      slug: 'produtos',
+      _schema: {},
+      fields: [
+        { ...baseStructure.fields[0], name: 'Nome', slug: 'nome' },
+      ] as unknown as string[],
+      owner: 'owner-id',
+      style: E_TABLE_STYLE.LIST,
+      fieldOrderList: ['nome'],
+      fieldOrderForm: ['nome'],
+    });
+
+    const result = await sut.execute({
+      ownerId: 'owner-id',
+      fileContent: {
+        header: {
+          version: '2.0',
+          platform: 'lowcodejs',
+          tableName: 'Produtos',
+          tableSlug: 'produtos',
+          exportedBy: 'Admin',
+          exportedAt: '2024-01-01T00:00:00.000Z',
+          exportType: 'data',
+          tablesCount: 1,
+          menusCount: 0,
+        },
+        tables: [
+          {
+            tableSlug: 'produtos',
+            tableName: 'Produtos',
+            data: {
+              totalRows: 2,
+              rows: [
+                { _originalId: 'p1', nome: 'Cadeira' },
+                { _originalId: 'p2', nome: 'Mesa' },
+              ],
+            },
+          },
+        ],
+        menus: [],
+      },
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.importedRows).toBe(2);
+    expect(result.value.importedFields).toBe(0);
+    expect(result.value.importedMenus).toBe(0);
+    expect(result.value.slug).toBe('produtos');
+
+    const rows = await rowInMemoryRepository.findAllRaw(produtos);
+    expect(rows).toHaveLength(2);
+    expect(rows.map((r) => r.nome).sort()).toEqual(['Cadeira', 'Mesa']);
+  });
+
+  it('deve retornar IMPORT_TABLES_NOT_FOUND quando a tabela alvo nao existe', async () => {
+    const result = await sut.execute({
+      ownerId: 'owner-id',
+      fileContent: {
+        header: {
+          version: '2.0',
+          platform: 'lowcodejs',
+          tableName: 'Inexistente',
+          tableSlug: 'inexistente',
+          exportedBy: 'Admin',
+          exportedAt: '2024-01-01T00:00:00.000Z',
+          exportType: 'data',
+          tablesCount: 1,
+          menusCount: 0,
+        },
+        tables: [
+          {
+            tableSlug: 'inexistente',
+            tableName: 'Inexistente',
+            data: { totalRows: 1, rows: [{ _originalId: 'x1', nome: 'A' }] },
+          },
+        ],
+        menus: [],
+      },
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(400);
+    expect(result.value.cause).toBe('IMPORT_TABLES_NOT_FOUND');
+    expect(result.value.errors?.tables).toBe('inexistente');
   });
 
   it('deve retornar erro INVALID_PLATFORM quando header ausente', async () => {

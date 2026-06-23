@@ -29,8 +29,8 @@ categorias no subdiretorio `fields/`:
 | -------------------------- | ------------------------ | -------------- |
 | Campos basicos             | `fields/base.ts`         | 14 componentes |
 | Campos pesados (rich)      | `fields/rich.ts`         | 2 componentes  |
-| Configuracao de tabela     | `fields/table-config.ts` | 14 componentes |
-| Input de dados de registro | `fields/table-row.ts`    | 10 componentes |
+| Configuracao de tabela     | `fields/table-config.ts` | 18 componentes |
+| Input de dados de registro | `fields/table-row.ts`    | 9 componentes  |
 
 ## Padrao de Validacao
 

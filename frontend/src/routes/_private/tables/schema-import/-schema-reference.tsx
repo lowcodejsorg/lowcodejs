@@ -87,12 +87,10 @@ const SECTIONS: Array<Section> = [
     items: [
       { name: 'required: true', hint: 'Campo obrigatório no formulário' },
       { name: 'multiple: true', hint: 'Permite múltiplos valores' },
-      { name: 'showInList: true', hint: 'Mostra na listagem (default)' },
-      { name: 'showInForm: true', hint: 'Mostra no formulário (default)' },
       { name: 'showInFilter: true', hint: 'Permite filtrar por este campo' },
       {
-        name: 'showInDetail: true',
-        hint: 'Mostra na tela de detalhe (default)',
+        name: 'permissions: { list, form, detail }',
+        hint: 'Visibilidade por contexto. Cada um: { kind: PUBLIC | NOBODY | GROUP, group }',
       },
       { name: 'defaultValue: "..."', hint: 'Valor inicial (string ou lista)' },
     ],

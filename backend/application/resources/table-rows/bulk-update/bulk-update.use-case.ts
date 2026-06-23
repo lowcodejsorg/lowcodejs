@@ -6,7 +6,10 @@ import HTTPException from '@application/core/exception.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { FieldValidationContractService } from '@application/services/field-validation/field-validation-contract.service';
+import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
 import { KanbanCommentMentionContractService } from '@application/services/kanban-comment-mention/kanban-comment-mention-contract.service';
+import { RowAccessGuardContractService } from '@application/services/row-access-guard/row-access-guard-contract.service';
 import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
@@ -40,6 +43,9 @@ export default class BulkUpdateUseCase {
     private readonly scriptExecutionService: ScriptExecutionContractService,
     private readonly kanbanCommentMentionService: KanbanCommentMentionContractService,
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
+    private readonly fieldVisibility: FieldVisibilityContractService,
+    private readonly fieldValidation: FieldValidationContractService,
+    private readonly rowAccessGuard: RowAccessGuardContractService,
   ) {
     this.updateUseCase = new TableRowUpdateUseCase(
       tableRepository,
@@ -49,6 +55,9 @@ export default class BulkUpdateUseCase {
       scriptExecutionService,
       kanbanCommentMentionService,
       rowMemberNotificationService,
+      fieldVisibility,
+      fieldValidation,
+      rowAccessGuard,
     );
   }
 
@@ -74,11 +83,16 @@ export default class BulkUpdateUseCase {
           ...(payload.__actorUserId && {
             __actorUserId: payload.__actorUserId,
           }),
+          ...(payload.__ownOnly && { __ownOnly: true }),
+          __isOwner: payload.__isOwner,
+          __isAdministrator: payload.__isAdministrator,
         });
 
         if (result.isRight()) {
           modified += 1;
-        } else {
+        } else if (result.value.cause !== 'OWN_ROW_ONLY') {
+          // Convidado contributor: registros de outros donos são ignorados
+          // silenciosamente (escopo "apenas a sua"), não viram erro do lote.
           errors[_id] = result.value.cause;
         }
       }

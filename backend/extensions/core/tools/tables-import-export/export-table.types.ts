@@ -1,4 +1,8 @@
 import type { Either } from '@application/core/either.core';
+import type {
+  IFieldPermissions,
+  IFieldValidation,
+} from '@application/core/entity.core';
 import type HTTPException from '@application/core/exception.core';
 
 import type { ExportTablePayload } from './export-table.validator';
@@ -15,10 +19,9 @@ export type ExportedField = {
   required: boolean;
   multiple: boolean;
   format: string | null;
+  validations?: IFieldValidation[];
   showInFilter: boolean;
-  showInForm: boolean;
-  showInDetail: boolean;
-  showInList: boolean;
+  permissions?: IFieldPermissions | null;
   widthInForm: number | null;
   widthInList: number | null;
   widthInDetail: number | null;
@@ -45,8 +48,6 @@ export type ExportedStructure = {
   slug: string;
   description: string | null;
   style: string;
-  visibility: string;
-  collaboration: string;
   fields: ExportedField[];
   groups: ExportedGroup[];
   fieldOrderList: string[];
@@ -68,6 +69,13 @@ export type ExportedRow = Record<string, unknown> & {
 };
 
 export type ExportedTable = {
+  /**
+   * Identidade da tabela. Sempre presente — é o que permite a importação
+   * "somente dados" casar com a tabela existente no destino (no export de
+   * estrutura/completo o slug também vem em `structure.slug`).
+   */
+  tableSlug?: string;
+  tableName?: string;
   structure?: ExportedStructure;
   data?: {
     totalRows: number;

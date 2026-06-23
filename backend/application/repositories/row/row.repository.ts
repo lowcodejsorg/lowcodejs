@@ -1,10 +1,12 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
-import type { IRow } from '@application/core/entity.core';
+import type { IField, IRow } from '@application/core/entity.core';
 import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
 import { PopulateBuilderContractService } from '@application/services/table/populate-builder-contract.service';
 import { QueryBuilderContractService } from '@application/services/table/query-builder-contract.service';
+import { RelationshipBuilderContractService } from '@application/services/table/relationship-builder-contract.service';
+import type { RelationshipHydratableDoc } from '@application/services/table/relationship-builder-contract.service';
 import { getDataConnection } from '@config/database.config';
 
 interface SubdocArray<T = unknown> extends Array<T> {
@@ -22,6 +24,7 @@ import type {
   RowGroupItemPayload,
   RowSetFieldPayload,
   RowTableContext,
+  RowUpdateManyPayload,
   RowUpdatePayload,
 } from './row-contract.repository';
 import { RowContractRepository } from './row-contract.repository';
@@ -58,7 +61,17 @@ export default class RowMongooseRepository implements RowContractRepository {
     private readonly model: ModelBuilderContractService,
     private readonly query: QueryBuilderContractService,
     private readonly populate: PopulateBuilderContractService,
+    private readonly relationship: RelationshipBuilderContractService,
   ) {}
+
+  // Hidrata os paths RELATIONSHIP geridos por links nos docs antes do populate,
+  // para que o populate padrao resolva como no modelo embedded legado.
+  private async hydrateRelationships(
+    fields: IField[],
+    docs: RelationshipHydratableDoc[],
+  ): Promise<void> {
+    await this.relationship.hydrate(fields, docs);
+  }
 
   private async getModel(
     table: RowTableContext,
@@ -72,7 +85,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     return this.populate.build(table.fields, table.groups, getDataConnection());
   }
 
-  private transformRow(doc: unknown): IRow {
+  private transformRow(doc: unknown, fields: IField[] = []): IRow {
     let json: Record<string, unknown>;
 
     if (hasToJSON(doc)) {
@@ -89,6 +102,8 @@ export default class RowMongooseRepository implements RowContractRepository {
     }
 
     json['_id'] = id;
+    // Read-compat: embrulha em array a FK single dos campos OWNS_FK.
+    this.relationship.normalizeReadProjection(fields, json);
     assertIRow(json);
     return json;
   }
@@ -99,10 +114,24 @@ export default class RowMongooseRepository implements RowContractRepository {
     const model = await this.getModel(payload.table);
     const populate = await this.getPopulate(payload.table);
 
-    const created = await model.create(payload.data);
+    const fields = payload.table.fields ?? [];
+    const { data, pending } = this.relationship.extract(fields, payload.data);
+
+    const created = await model.create(data);
+
+    // Fallback compensatorio (Mongo standalone, sem transacao): persiste os
+    // links apos a row; em falha de cardinalidade, desfaz a row e propaga.
+    try {
+      await this.relationship.persist(fields, created._id.toString(), pending);
+    } catch (error) {
+      await model.findOneAndDelete({ _id: created._id });
+      throw error;
+    }
+
+    await this.hydrateRelationships(fields, [created]);
     const populated = await created.populate(populate);
 
-    return this.transformRow(populated);
+    return this.transformRow(populated, fields);
   }
 
   async findOne(payload: RowFindOnePayload): Promise<IRow | null> {
@@ -114,10 +143,11 @@ export default class RowMongooseRepository implements RowContractRepository {
     const shouldPopulate = payload.populate !== false;
     if (shouldPopulate) {
       const populate = await this.getPopulate(payload.table);
+      await this.hydrateRelationships(payload.table.fields ?? [], [row]);
       await row.populate(populate);
     }
 
-    return this.transformRow(row);
+    return this.transformRow(row, payload.table.fields ?? []);
   }
 
   async findMany(payload: RowFindManyPayload): Promise<IRow[]> {
@@ -125,13 +155,22 @@ export default class RowMongooseRepository implements RowContractRepository {
     const populate = await this.getPopulate(payload.table);
 
     const conn = getDataConnection();
-    const query = await this.query.build(
+    const baseQuery = await this.query.build(
       payload.rawFilters ?? {},
       payload.table.fields ?? [],
       payload.table.groups,
       payload.table.slug,
       conn,
     );
+
+    // Mescla fragmento do guardQuery via $and para que o row-access-guard
+    // possa restringir a listagem sem conhecer a query base.
+    const query: Record<string, unknown> =
+      payload.guardQuery && Object.keys(payload.guardQuery).length > 0
+        ? {
+            $and: [baseQuery, payload.guardQuery],
+          }
+        : baseQuery;
 
     const sort = this.query.order(
       payload.rawFilters ?? {},
@@ -141,48 +180,94 @@ export default class RowMongooseRepository implements RowContractRepository {
 
     const rows = await model
       .find(query)
-      .populate(populate)
       .skip(payload.skip)
       .limit(payload.limit)
       .sort(sort);
 
-    return rows.map((row) => this.transformRow(row));
+    await this.hydrateRelationships(payload.table.fields ?? [], rows);
+    await model.populate(rows, populate);
+
+    const fields = payload.table.fields ?? [];
+    return rows.map((row) => this.transformRow(row, fields));
   }
 
   async count(
     table: RowTableContext,
     rawFilters?: Record<string, unknown>,
+    guardQuery?: Record<string, unknown>,
   ): Promise<number> {
     const model = await this.getModel(table);
-    const query = await this.query.build(
+    const baseQuery = await this.query.build(
       rawFilters ?? {},
       table.fields ?? [],
       table.groups,
       table.slug,
       getDataConnection(),
     );
+    const query: Record<string, unknown> =
+      guardQuery && Object.keys(guardQuery).length > 0
+        ? { $and: [baseQuery, guardQuery] }
+        : baseQuery;
     return model.countDocuments(query);
+  }
+
+  async countFieldValue(
+    table: RowTableContext,
+    fieldSlug: string,
+    value: unknown,
+    excludeRowId: string | null = null,
+  ): Promise<number> {
+    const model = await this.getModel(table);
+    const filter: Record<string, unknown> = {
+      [fieldSlug]: value,
+      trashedAt: null,
+    };
+    if (excludeRowId) filter._id = { $ne: excludeRowId };
+    return model.countDocuments(filter);
   }
 
   async update(payload: RowUpdatePayload): Promise<IRow> {
     const model = await this.getModel(payload.table);
     const populate = await this.getPopulate(payload.table);
 
-    const row = await model
-      .findOneAndUpdate(
-        { _id: payload._id },
-        { $set: payload.data },
-        { new: true },
-      )
-      .populate(populate);
+    const fields = payload.table.fields ?? [];
+    const { data, pending } = this.relationship.extract(fields, payload.data);
 
-    return this.transformRow(row);
+    // Links primeiro: reconcilia (e valida cardinalidade) antes de tocar a row,
+    // evitando atualizacao parcial em caso de violacao.
+    await this.relationship.persist(fields, payload._id, pending);
+
+    const row = await model.findOneAndUpdate(
+      { _id: payload._id },
+      { $set: data },
+      { new: true },
+    );
+    if (!row) throw new Error('Row not found');
+
+    await this.hydrateRelationships(fields, [row]);
+    await row.populate(populate);
+
+    return this.transformRow(row, fields);
   }
 
   async deleteOne(table: RowTableContext, _id: string): Promise<boolean> {
     const model = await this.getModel(table);
     const result = await model.findOneAndDelete({ _id });
     return result !== null;
+  }
+
+  async clearFieldValue(
+    table: RowTableContext,
+    fieldSlug: string,
+    value: string,
+  ): Promise<number> {
+    const model = await this.getModel(table);
+    // mongoose converte `value` (string) para ObjectId pelo tipo do path FK.
+    const result = await model.updateMany(
+      { [fieldSlug]: value },
+      { $set: { [fieldSlug]: null } },
+    );
+    return result.modifiedCount;
   }
 
   async listSlugs(
@@ -206,7 +291,11 @@ export default class RowMongooseRepository implements RowContractRepository {
   async bulkTrash(payload: RowBulkUpdatePayload): Promise<number> {
     const model = await this.getModel(payload.table);
     const result = await model.updateMany(
-      { _id: { $in: payload.ids }, trashedAt: null },
+      {
+        _id: { $in: payload.ids },
+        trashedAt: null,
+        ...(payload.creatorId && { creator: payload.creatorId }),
+      },
       { $set: { trashedAt: new Date() } },
     );
     return result.modifiedCount;
@@ -215,7 +304,11 @@ export default class RowMongooseRepository implements RowContractRepository {
   async bulkRestore(payload: RowBulkUpdatePayload): Promise<number> {
     const model = await this.getModel(payload.table);
     const result = await model.updateMany(
-      { _id: { $in: payload.ids }, trashedAt: { $ne: null } },
+      {
+        _id: { $in: payload.ids },
+        trashedAt: { $ne: null },
+        ...(payload.creatorId && { creator: payload.creatorId }),
+      },
       { $set: { trashedAt: null } },
     );
     return result.modifiedCount;
@@ -226,13 +319,20 @@ export default class RowMongooseRepository implements RowContractRepository {
     const result = await model.deleteMany({
       _id: { $in: payload.ids },
       trashedAt: { $ne: null },
+      ...(payload.creatorId && { creator: payload.creatorId }),
     });
     return result.deletedCount;
   }
 
-  async emptyTrash(table: RowTableContext): Promise<number> {
+  async emptyTrash(
+    table: RowTableContext,
+    creatorId?: string,
+  ): Promise<number> {
     const model = await this.getModel(table);
-    const result = await model.deleteMany({ trashedAt: { $ne: null } });
+    const result = await model.deleteMany({
+      trashedAt: { $ne: null },
+      ...(creatorId && { creator: creatorId }),
+    });
     return result.deletedCount;
   }
 
@@ -242,13 +342,21 @@ export default class RowMongooseRepository implements RowContractRepository {
     const model = await this.getModel(payload.table);
     const populate = await this.getPopulate(payload.table);
 
-    const row = await model.findOne({ _id: payload._id });
+    // Update atomico do unico campo (reaction/evaluation): findOneAndUpdate nao
+    // roda validators por padrao, evitando revalidar campos required nao
+    // relacionados que estejam null em rows legadas/draft (full-doc .save()
+    // quebrava com "Path X is required").
+    const row = await model.findOneAndUpdate(
+      { _id: payload._id },
+      { $set: { [payload.field]: payload.value } },
+      { new: true },
+    );
     if (!row) throw new Error('Row not found');
 
-    await row.set(payload.field, payload.value).save();
+    await this.hydrateRelationships(payload.table.fields ?? [], [row]);
     await row.populate(populate);
 
-    return this.transformRow(row);
+    return this.transformRow(row, payload.table.fields ?? []);
   }
 
   // ── Group rows (subdocumentos) ────────────────────────────
@@ -268,9 +376,10 @@ export default class RowMongooseRepository implements RowContractRepository {
 
     row.set(payload.groupFieldSlug, groupData);
     await row.save();
+    await this.hydrateRelationships(payload.table.fields ?? [], [row]);
     await row.populate(populate);
 
-    return this.transformRow(row);
+    return this.transformRow(row, payload.table.fields ?? []);
   }
 
   async updateGroupItem(
@@ -296,9 +405,10 @@ export default class RowMongooseRepository implements RowContractRepository {
 
     subdoc.set(payload.data);
     await row.save();
+    await this.hydrateRelationships(payload.table.fields ?? [], [row]);
     await row.populate(populate);
 
-    return this.transformRow(row);
+    return this.transformRow(row, payload.table.fields ?? []);
   }
 
   async deleteGroupItem(
@@ -334,9 +444,10 @@ export default class RowMongooseRepository implements RowContractRepository {
     const row = await model.findOneAndUpdate(filter, update, { new: true });
     if (!row) return null;
 
+    await this.hydrateRelationships(table.fields ?? [], [row]);
     await row.populate(populate);
 
-    return this.transformRow(row);
+    return this.transformRow(row, table.fields ?? []);
   }
 
   // ── Infrastructure-level ops (table/import/export tools) ──
@@ -390,7 +501,16 @@ export default class RowMongooseRepository implements RowContractRepository {
 
     const docs = await model.find({ $or: orClauses, trashedAt: null }).lean();
 
-    return docs.map((doc) => this.transformRow(doc));
+    const fields = table.fields ?? [];
+    return docs.map((doc) => this.transformRow(doc, fields));
+  }
+
+  // ── updateMany (backfill / guard) ─────────────────────────
+
+  async updateMany(payload: RowUpdateManyPayload): Promise<number> {
+    const model = await this.getModel(payload.table);
+    const result = await model.updateMany(payload.filter, payload.update);
+    return result.modifiedCount;
   }
 
   // ── Category cleanup (delete-category) ────────────────────

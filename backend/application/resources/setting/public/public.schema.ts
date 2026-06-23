@@ -83,7 +83,7 @@ export const SettingPublicSchema: FastifySchema = {
       description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Erro ao buscar configurações'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['SETTINGS_READ_ERROR'] },
         errors: {

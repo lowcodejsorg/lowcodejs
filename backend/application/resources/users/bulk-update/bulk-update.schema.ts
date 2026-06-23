@@ -1,10 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
 export const UserBulkUpdateSchema: FastifySchema = {
-  tags: ['Users'],
-  summary: 'Bulk update user status',
+  tags: ['Usuários'],
+  summary: 'Alterar status de múltiplos usuários',
   description:
-    'Sets the same status (ACTIVE/INACTIVE) on multiple users at once. The acting user is always excluded (cannot change own status). Returns the number of users modified.',
+    'Define o mesmo status (ACTIVE/INACTIVE) em vários usuários de uma vez. O próprio usuário é sempre excluído (não pode alterar o próprio status). Retorna o número de usuários modificados.',
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
@@ -15,39 +15,39 @@ export const UserBulkUpdateSchema: FastifySchema = {
         items: { type: 'string' },
         minItems: 1,
         maxItems: 500,
-        description: 'Array of user IDs to update',
+        description: 'Lista de IDs de usuários a atualizar',
       },
       status: {
         type: 'string',
         enum: ['ACTIVE', 'INACTIVE'],
-        description: 'New status applied to all selected users',
+        description: 'Novo status aplicado a todos os usuários selecionados',
       },
     },
     additionalProperties: false,
   },
   response: {
     200: {
-      description: 'Users updated successfully',
+      description: 'Usuários atualizados com sucesso',
       type: 'object',
       properties: {
         modified: {
           type: 'number',
-          description: 'Number of users whose status was updated',
+          description: 'Número de usuários cujo status foi atualizado',
         },
       },
     },
     400: {
-      description: 'Bad request - Invalid parameters',
+      description: 'Requisição inválida - Parâmetros inválidos',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string' },
+        cause: { type: 'string', enum: ['INVALID_PAYLOAD_FORMAT'] },
         errors: { type: 'object', additionalProperties: { type: 'string' } },
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
         message: { type: 'string' },
@@ -57,17 +57,17 @@ export const UserBulkUpdateSchema: FastifySchema = {
       },
     },
     403: {
-      description: 'Forbidden - Insufficient role',
+      description: 'Proibido - Permissão insuficiente',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [403] },
-        cause: { type: 'string' },
+        cause: { type: 'string', enum: ['FORBIDDEN'] },
         errors: { type: 'object', additionalProperties: { type: 'string' } },
       },
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
         message: { type: 'string' },

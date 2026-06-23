@@ -8,6 +8,26 @@ import { useAuthStore } from '@/stores/authentication';
 let resolvedBaseUrl: string | null = null;
 let baseUrlPromise: Promise<string> | null = null;
 
+const ACTIVE_ACCOUNT_COOKIE = 'activeAccountId';
+
+// Fonte de verdade da conta ativa no client: o cookie `activeAccountId` (setado
+// pelo backend com httpOnly:false, logo legível por JS). O store/localStorage
+// pode dessincronizar dos cookies (id stale -> 401 -> logout no refresh), então
+// o header X-Auth-Account-Id deve derivar do cookie, não do Zustand.
+function readActiveAccountCookie(): string | null {
+  if (typeof document === 'undefined') return null;
+
+  for (const part of document.cookie.split(';')) {
+    const [rawKey, ...rest] = part.trim().split('=');
+    if (rawKey === ACTIVE_ACCOUNT_COOKIE) {
+      const value = rest.join('=').trim();
+      if (value) return decodeURIComponent(value);
+    }
+  }
+
+  return null;
+}
+
 export const API = axios.create({
   withCredentials: true,
   headers: {
@@ -27,6 +47,20 @@ API.interceptors.request.use(async (config) => {
     resolvedBaseUrl = await baseUrlPromise;
   }
   config.baseURL = resolvedBaseUrl;
+
+  // Só injeta o activeAccountId do store se a request NÃO trouxe um
+  // X-Auth-Account-Id explícito. Fluxos de transição (add/switch) passam um
+  // header próprio (vazio = usar cookie) para não serem poluídos pelo store
+  // ainda stale.
+  if (
+    typeof window !== 'undefined' &&
+    !config.headers.has('X-Auth-Account-Id')
+  ) {
+    const activeAccountId = readActiveAccountCookie();
+    if (activeAccountId) {
+      config.headers.set('X-Auth-Account-Id', activeAccountId);
+    }
+  }
 
   if (typeof window === 'undefined') {
     try {
@@ -51,6 +85,8 @@ const AUTH_ENDPOINTS = [
   '/authentication/sign-up',
   '/authentication/sign-out',
   '/authentication/refresh-token',
+  '/authentication/accounts',
+  '/authentication/switch-account',
 ];
 
 const isAuthEndpoint = (url: string | undefined): boolean => {
@@ -60,16 +96,25 @@ const isAuthEndpoint = (url: string | undefined): boolean => {
 
 type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean };
 
-let refreshPromise: Promise<void> | null = null;
+const refreshPromises = new Map<string, Promise<void>>();
 
-const performRefresh = (): Promise<void> => {
-  if (!refreshPromise) {
-    refreshPromise = API.post('/authentication/refresh-token')
-      .then(() => undefined)
-      .finally(() => {
-        refreshPromise = null;
-      });
-  }
+const performRefresh = (accountId: string | null): Promise<void> => {
+  const refreshKey = accountId ?? 'legacy';
+  const existingPromise = refreshPromises.get(refreshKey);
+  if (existingPromise) return existingPromise;
+
+  const headers: Record<string, string> = {};
+  if (accountId) headers['X-Auth-Account-Id'] = accountId;
+
+  const refreshPromise = API.post('/authentication/refresh-token', undefined, {
+    headers,
+  })
+    .then(() => undefined)
+    .finally(() => {
+      refreshPromises.delete(refreshKey);
+    });
+
+  refreshPromises.set(refreshKey, refreshPromise);
   return refreshPromise;
 };
 
@@ -77,7 +122,13 @@ const handleSessionLost = (): void => {
   if (typeof window === 'undefined') return;
   const currentPath = window.location.pathname;
   if (isPublicPath(currentPath)) return;
-  useAuthStore.getState().clear();
+  const activeAccountId =
+    readActiveAccountCookie() ?? useAuthStore.getState().activeAccountId;
+  if (activeAccountId) {
+    useAuthStore.getState().removeAccount(activeAccountId);
+  } else {
+    useAuthStore.getState().clear();
+  }
   window.location.href = '/';
 };
 
@@ -85,7 +136,7 @@ API.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const status = error.response?.status;
-    const config = error.config as RetriableConfig | undefined;
+    const config: RetriableConfig | undefined = error.config;
 
     if (status !== 401 || !config) {
       return Promise.reject(error);
@@ -103,9 +154,11 @@ API.interceptors.response.use(
     }
 
     config._retried = true;
+    const activeAccountId =
+      readActiveAccountCookie() ?? useAuthStore.getState().activeAccountId;
 
     try {
-      await performRefresh();
+      await performRefresh(activeAccountId);
       return API.request(config);
     } catch (refreshError) {
       handleSessionLost();

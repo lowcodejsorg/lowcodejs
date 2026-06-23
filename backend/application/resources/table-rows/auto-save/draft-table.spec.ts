@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
   E_SCHEMA_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import type { ITable } from '@application/core/entity.core';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
@@ -17,10 +16,7 @@ let tableRepository: TableInMemoryRepository;
 
 const TABLE_DEFAULTS = {
   owner: 'owner-id',
-  administrators: [],
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
   fieldOrderList: [],
   fieldOrderForm: [],
   fields: [],
@@ -63,9 +59,7 @@ async function makeTable(): Promise<ITable> {
             multiple: false,
             format: E_FIELD_FORMAT.ALPHA_NUMERIC,
             showInFilter: false,
-            showInForm: true,
-            showInDetail: true,
-            showInList: true,
+            permissions: buildFieldPermissions(true, true, true),
             widthInForm: 50,
             widthInList: 10,
             widthInDetail: null,

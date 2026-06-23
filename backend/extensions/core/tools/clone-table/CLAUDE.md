@@ -29,6 +29,7 @@ referência canônica do modelo de tools.
 - Templates built-in criam tabelas predefinidas sem necessidade de tabela base no banco
 - Para clone de tabela existente: duplica campos, grupos, schema, fieldOrder, methods e layoutFields
 - Campos nativos sao recriados (novos IDs), nao copiados
+- As `validations` (regras de validação) dos campos **são preservadas** no clone
 - fieldIdMap mapeia IDs antigos para novos (usado pelo frontend)
 - Nome tem restricao de 40 caracteres e caracteres especiais limitados
 - A resposta do controller retorna { tableId, slug, fieldIdMap }

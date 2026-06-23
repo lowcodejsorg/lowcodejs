@@ -1,6 +1,6 @@
 # Resources
 
-15 recursos REST organizados por dominio. Cada recurso possui subdiretorios por operacao.
+20 recursos REST organizados por dominio. Cada recurso possui subdiretorios por operacao.
 
 > **Nota**: o recurso `tools/` foi totalmente migrado para extensões em
 > `backend/extensions/core/`: `clone-table` virou TOOL, `export-table` e
@@ -38,6 +38,11 @@ Cada operacao (ex: `users/create/`) contem:
 | `pages/` | `/pages` | show | Sim | Menu (type=PAGE) |
 | `storage/` | `/storage` | upload (POST), delete | Sim | Storage |
 | `chat/` | `/chat` | upload | Sim | - (WebSocket) |
+| `extensions/` | `/extensions` | list, toggle, active, configure-table-scope | Sim (MASTER) | Extension |
+| `logs/` | `/logs` | paginated | Sim | Logger |
+| `notifications/` | `/notifications` | paginated, unread-count, mark-as-read, mark-all-as-read, delete | Sim | Notification |
+| `setup/` | `/setup` | status, admin, name, logos, paging, email, storage, upload | Misto | Setting, User, Storage |
+| `storage-migration/` | `/storage/migration` | status, start, cleanup | Sim (MASTER) | Storage |
 
 ## Middleware Stack Padrao
 

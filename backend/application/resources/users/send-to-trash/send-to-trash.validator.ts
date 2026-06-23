@@ -11,5 +11,4 @@ export type UserSendToTrashPayload = z.infer<
   typeof UserSendToTrashParamValidator
 > & {
   actorId: string;
-  actorRole: string;
 };

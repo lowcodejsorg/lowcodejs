@@ -1,18 +1,33 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import type {
-  IEmbeddedSchema,
   IField,
   IGroupConfiguration,
   ITableSchema,
   ValueOf,
 } from '@application/core/entity.core';
-import { E_FIELD_TYPE, E_SCHEMA_TYPE } from '@application/core/entity.core';
+import {
+  E_FIELD_TYPE,
+  E_RELATIONSHIP_STORAGE,
+  E_SCHEMA_TYPE,
+} from '@application/core/entity.core';
+import { RelationshipStorage } from '@application/services/relationship/relationship.service';
 
+import { FieldGroupBuilderContractService } from './field-group-builder-contract.service';
+import MongooseFieldGroupBuilder from './field-group-builder.service';
 import { SchemaBuilderContractService } from './schema-builder-contract.service';
 
 @Service()
 export default class MongooseSchemaBuilder implements SchemaBuilderContractService {
+  // Seam puro/stateless da fatia FIELD_GROUP. Em producao o DI injeta o impl
+  // registrado; o default mantem a construcao manual (e2e specs) funcionando sem
+  // wiring extra. Como o seam nao tem estado nem dependencias, ambos sao
+  // equivalentes em comportamento.
+  constructor(
+    private readonly fieldGroup: FieldGroupBuilderContractService = new MongooseFieldGroupBuilder(),
+  ) {}
+
   private static readonly FieldTypeMapper: Record<
     keyof typeof E_FIELD_TYPE,
     ValueOf<typeof E_SCHEMA_TYPE>
@@ -33,9 +48,41 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
     [E_FIELD_TYPE.IDENTIFIER]: E_SCHEMA_TYPE.OBJECT_ID,
     [E_FIELD_TYPE.CREATOR]: E_SCHEMA_TYPE.OBJECT_ID,
     [E_FIELD_TYPE.CREATED_AT]: E_SCHEMA_TYPE.DATE,
+    [E_FIELD_TYPE.UPDATED_AT]: E_SCHEMA_TYPE.DATE,
+    [E_FIELD_TYPE.UPDATER]: E_SCHEMA_TYPE.OBJECT_ID,
     [E_FIELD_TYPE.TRASHED_AT]: E_SCHEMA_TYPE.DATE,
     [E_FIELD_TYPE.STATUS]: E_SCHEMA_TYPE.STRING,
   };
+
+  // Schema do path RELATIONSHIP por role. OWNS_FK grava FK single na propria row
+  // (populate nativo). REVERSE/PIVOT (e fallback legado) declaram array
+  // transiente — vazio em disco, preenchido so pelo hydrate na leitura. O role e
+  // derivado do proprio `field.relationship` (sem lookup no DB).
+  private relationshipSchema(field: IField): ITableSchema {
+    const FieldTypeMapper = MongooseSchemaBuilder.FieldTypeMapper;
+    const ref = field?.relationship?.table?._id?.toString() ?? undefined;
+    const role = RelationshipStorage.roleOfField(field);
+
+    if (role === E_RELATIONSHIP_STORAGE.OWNS_FK) {
+      return {
+        [field.slug]: {
+          type: FieldTypeMapper[field.type] || 'String',
+          required: false,
+          ref,
+        },
+      };
+    }
+
+    return {
+      [field.slug]: [
+        {
+          type: FieldTypeMapper[field.type] || 'String',
+          required: false,
+          ref,
+        },
+      ],
+    };
+  }
 
   private mapperSchema(
     field: IField,
@@ -77,29 +124,15 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
         ],
       },
 
-      [E_FIELD_TYPE.RELATIONSHIP]: {
-        [field.slug]: [
-          {
-            type: FieldTypeMapper[field.type] || 'String',
-            required: Boolean(field.required || false),
-            ref: field?.relationship?.table?._id?.toString() ?? undefined,
-          },
-        ],
-      },
+      // RELATIONSHIP nao usa `required` no schema: a obrigatoriedade por endpoint
+      // e enforcada no use-case via RowPayloadValidator. A forma do path depende
+      // do storage role (FK single para OWNS_FK; array transiente p/ REVERSE/PIVOT).
+      [E_FIELD_TYPE.RELATIONSHIP]: this.relationshipSchema(field),
 
-      [E_FIELD_TYPE.FIELD_GROUP]: ((): Record<string, IEmbeddedSchema[]> => {
-        const groupSlug = field?.group?.slug;
-        const group = groups?.find((g) => g.slug === groupSlug);
-        return {
-          [field.slug]: [
-            {
-              type: 'Embedded' as const,
-              schema: group?._schema || {},
-              required: Boolean(field.required || false),
-            },
-          ],
-        };
-      })(),
+      [E_FIELD_TYPE.FIELD_GROUP]: this.fieldGroup.buildEmbeddedSchema(
+        field,
+        groups,
+      ),
 
       [E_FIELD_TYPE.DATE]: {
         [field.slug]: {
@@ -170,6 +203,21 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
         },
       },
 
+      [E_FIELD_TYPE.UPDATED_AT]: {
+        [field.slug]: {
+          type: FieldTypeMapper[field.type] || 'Date',
+          required: Boolean(field.required || false),
+        },
+      },
+
+      [E_FIELD_TYPE.UPDATER]: {
+        [field.slug]: {
+          type: FieldTypeMapper[field.type] || 'String',
+          required: Boolean(field.required || false),
+          ref: 'User',
+        },
+      },
+
       [E_FIELD_TYPE.STATUS]: {
         [field.slug]: {
           type: FieldTypeMapper[field.type] || 'String',
@@ -216,7 +264,8 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
     for (const field of fields) {
       if (
         field.type === E_FIELD_TYPE.IDENTIFIER ||
-        field.type === E_FIELD_TYPE.CREATED_AT
+        field.type === E_FIELD_TYPE.CREATED_AT ||
+        field.type === E_FIELD_TYPE.UPDATED_AT
       ) {
         continue;
       }

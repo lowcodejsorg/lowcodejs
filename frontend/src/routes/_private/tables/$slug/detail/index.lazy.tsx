@@ -7,7 +7,11 @@ import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
+import {
+  TableUpdateSchema,
+  UpdateTableFormFields,
+  buildDefaultPermissions,
+} from './-update-form';
 import { UpdateTableFormSkeleton } from './-update-form-skeleton';
 import { TableView } from './-view';
 
@@ -130,13 +134,15 @@ function TableUpdateContent({
       slug: data.slug,
       description: data.description ?? '',
       style: data.style,
-      visibility: data.visibility,
-      collaboration: data.collaboration,
       logo: data.logo?._id ?? null,
       logoFile: [] as Array<File>,
-      administrators: data.administrators.map((admin) =>
-        typeof admin === 'string' ? admin : admin._id,
-      ),
+      // Garante as 10 chaves (default Ninguém) e sobrepõe com o que a tabela tem.
+      permissions: {
+        ...buildDefaultPermissions(),
+        ...(data.permissions ?? {}),
+      },
+      members: data.members ?? [],
+      owner: data.owner?._id ?? '',
       order:
         data.order?.field && data.order?.direction
           ? `${data.order.field}:${data.order.direction}`
@@ -175,14 +181,14 @@ function TableUpdateContent({
         name: value.name || data.name,
         description: value.description || null,
         logo: value.logo || data.logo?._id || null,
-        visibility: value.visibility,
         style: value.style,
-        collaboration: value.collaboration,
         fieldOrderList: data.fieldOrderList,
         fieldOrderForm: data.fieldOrderForm,
         fieldOrderFilter: data.fieldOrderFilter,
         fieldOrderDetail: data.fieldOrderDetail,
-        administrators: value.administrators,
+        permissions: value.permissions,
+        members: value.members,
+        owner: value.owner || undefined,
         methods: {
           ...data.methods,
         },

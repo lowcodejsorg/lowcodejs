@@ -11,6 +11,12 @@ import type { BulkRestorePayload } from './bulk-restore.validator';
 
 type Response = Either<HTTPException, { modified: number }>;
 
+type Payload = BulkRestorePayload & {
+  __actorUserId?: string;
+  // Convidado contributor: só restaura os próprios registros.
+  __ownOnly?: boolean;
+};
+
 @Service()
 export default class BulkRestoreUseCase {
   constructor(
@@ -18,7 +24,7 @@ export default class BulkRestoreUseCase {
     private readonly rowRepository: RowContractRepository,
   ) {}
 
-  async execute(payload: BulkRestorePayload): Promise<Response> {
+  async execute(payload: Payload): Promise<Response> {
     try {
       const table = await this.tableRepository.findBySlug(payload.slug);
 
@@ -28,9 +34,13 @@ export default class BulkRestoreUseCase {
         );
       }
 
+      let creatorId: string | undefined = undefined;
+      if (payload.__ownOnly) creatorId = payload.__actorUserId;
+
       const modified = await this.rowRepository.bulkRestore({
         table,
         ids: payload.ids,
+        ...(creatorId && { creatorId }),
       });
 
       return right({ modified });

@@ -3,30 +3,33 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import {
-  E_FIELD_TYPE,
-  E_TABLE_TYPE,
-  E_USER_STATUS,
-  type ITable as Entity,
-} from '@application/core/entity.core';
+import { type ITable as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { GroupResolverContractService } from '@application/services/group-resolver/group-resolver-contract.service';
 import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
 
 import type { TableUpdatePayload } from './update.validator';
 
 type Response = Either<HTTPException, Entity>;
-type Payload = TableUpdatePayload;
+
+// Identidade do ator (resolvida no controller a partir de request.user +
+// request.ownership) usada para autorizar a troca de dono.
+type Payload = TableUpdatePayload & {
+  actorId?: string;
+  actorIsOwner?: boolean;
+};
 
 @Service()
 export default class TableUpdateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
-    private readonly userRepository: UserContractRepository,
     private readonly fieldRepository: FieldContractRepository,
     private readonly modelBuilder: ModelBuilderContractService,
+    private readonly userRepository: UserContractRepository,
+    private readonly groupResolver: GroupResolverContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -38,27 +41,30 @@ export default class TableUpdateUseCase {
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
-      // Validar que apenas usuários ativos podem ser administradores
-      if (payload.administrators && payload.administrators.length > 0) {
-        const adminIds = payload.administrators;
-        const activeAdmins = await this.userRepository.findMany({
-          _ids: adminIds,
-          status: E_USER_STATUS.ACTIVE,
-          trashed: false,
-        });
+      // Troca de dono so e permitida ao dono atual ou a um privilegiado
+      // (MASTER/ADMINISTRATOR resolvido pelo fecho de grupos, nao pelo role do
+      // JWT — assim um privilegiado por grupo adicional/englobado tambem vale).
+      const isOwnerChange =
+        payload.owner !== undefined &&
+        payload.owner !== table.owner._id.toString();
 
-        if (activeAdmins.length !== adminIds.length) {
+      if (isOwnerChange) {
+        let actorIsPrivileged = false;
+        if (payload.actorId) {
+          const actor = await this.userRepository.findById(payload.actorId);
+          actorIsPrivileged = await this.groupResolver.isPrivileged(actor);
+        }
+
+        const canReassignOwner =
+          actorIsPrivileged || payload.actorIsOwner === true;
+
+        if (!canReassignOwner)
           return left(
-            HTTPException.BadRequest(
-              'Todos os administradores devem ser usuários ativos',
-              'INACTIVE_ADMINISTRATORS',
-              {
-                administrators:
-                  'Todos os administradores devem ser usuários ativos',
-              },
+            HTTPException.Forbidden(
+              'Apenas o dono atual ou um administrador pode trocar o dono da tabela',
+              'OWNER_CHANGE_FORBIDDEN',
             ),
           );
-        }
       }
 
       const oldSlug = table.slug;
@@ -93,46 +99,29 @@ export default class TableUpdateUseCase {
       }
 
       // Mapear propriedades populadas para strings (IDs)
+      let order = table.order;
+      if (payload.order !== undefined) {
+        order = payload.order;
+      }
+
       const updated = await this.tableRepository.update({
         _id: table._id,
         ...payload,
         slug: newSlug,
-        owner: table.owner._id,
+        // Troca de dono: aceita payload.owner; caso contrario preserva o atual.
+        owner: payload.owner ?? table.owner._id,
+        // Permissoes/convidados: preserva o existente quando o cliente nao envia.
+        permissions: payload.permissions ?? table.permissions,
+        members: payload.members ?? table.members,
         rowSlugFieldId,
         style: payload.style ?? table.style,
-        visibility: payload.visibility ?? table.visibility,
-        collaboration: payload.collaboration ?? table.collaboration,
         fieldOrderList: payload.fieldOrderList ?? table.fieldOrderList,
         fieldOrderForm: payload.fieldOrderForm ?? table.fieldOrderForm,
         fieldOrderFilter: payload.fieldOrderFilter ?? table.fieldOrderFilter,
         fieldOrderDetail: payload.fieldOrderDetail ?? table.fieldOrderDetail,
-        administrators:
-          payload.administrators ?? table.administrators.flatMap((a) => a._id),
-        order: payload.order !== undefined ? payload.order : table.order,
+        order,
         layoutFields: payload.layoutFields ?? table.layoutFields,
       });
-
-      // Propagar visibilidade para grupos de campos (FIELD_GROUP)
-      if (payload.visibility) {
-        const fieldIds = table.fields?.flatMap((f) => f._id) ?? [];
-
-        const fieldGroupFields = await this.fieldRepository.findMany({
-          _ids: fieldIds,
-          type: E_FIELD_TYPE.FIELD_GROUP,
-        });
-
-        const groupIds = fieldGroupFields
-          .map((f) => f.group?._id)
-          .filter((id): id is string => Boolean(id));
-
-        if (groupIds.length > 0) {
-          await this.tableRepository.updateMany({
-            _ids: groupIds,
-            type: E_TABLE_TYPE.FIELD_GROUP,
-            data: { visibility: payload.visibility },
-          });
-        }
-      }
 
       await this.modelBuilder.build(updated);
 

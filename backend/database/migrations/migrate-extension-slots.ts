@@ -20,11 +20,14 @@
 import { config } from 'dotenv';
 import mongoose from 'mongoose';
 
-config({ path: '.env' });
+import { TaskLogger } from '../shared/task-logger';
+
+config({ path: '.env', quiet: true });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const DB_DATABASE = process.env.DB_DATABASE || 'lowcodejs';
 const FORCE = process.argv.includes('--force');
+const TITLE = 'Renomear slot → slots (extensões)';
 
 type SettingMarkerDoc = {
   MIGRATION_EXTENSION_SLOTS_AT?: Date | null;
@@ -36,12 +39,7 @@ async function renameSlotField(
   const collection = db.collection('extensions');
   const total = await collection.countDocuments();
 
-  if (total === 0) {
-    console.info('Nenhum documento de extension encontrado. Nada a migrar.');
-    return { withSlot: 0, withoutSlot: 0, total: 0 };
-  }
-
-  console.info(`Encontrado(s) ${total} documento(s) de extension.`);
+  if (total === 0) return { withSlot: 0, withoutSlot: 0, total: 0 };
 
   // 1) slot string → slots = [slot] (e remove slot)
   const cursorWithString = collection.find({
@@ -74,10 +72,6 @@ async function renameSlotField(
     },
   );
 
-  console.info(
-    `Migrado(s): ${withSlot} com slot string, ${resultRest.modifiedCount} sem slot.`,
-  );
-
   return {
     withSlot,
     withoutSlot: resultRest.modifiedCount,
@@ -86,14 +80,12 @@ async function renameSlotField(
 }
 
 async function migrate(): Promise<void> {
+  const logger = new TaskLogger(TITLE);
+
   if (!DATABASE_URL) {
-    console.error('DATABASE_URL é obrigatório');
+    logger.failed('DATABASE_URL não configurada');
     process.exit(1);
   }
-
-  console.info(`Database: ${DB_DATABASE}`);
-  if (FORCE) console.info('Force: true (ignorando marker)');
-  console.info('---');
 
   const conn = mongoose.createConnection(DATABASE_URL, {
     dbName: DB_DATABASE,
@@ -116,17 +108,16 @@ async function migrate(): Promise<void> {
   const setting = await SettingMarker.findOne({}).lean();
 
   try {
-    if (setting?.MIGRATION_EXTENSION_SLOTS_AT && !FORCE) {
-      console.info(
-        `Já migrado em ${setting.MIGRATION_EXTENSION_SLOTS_AT.toISOString()}, pulando (use --force para re-executar).`,
-      );
+    const appliedAt = setting?.MIGRATION_EXTENSION_SLOTS_AT;
+    if (appliedAt && !FORCE) {
+      logger.skipped(appliedAt);
       return;
     }
 
+    logger.running();
     const result = await renameSlotField(db);
-    console.info('---');
-    console.info(
-      `Concluído. Total: ${result.total}, com slot: ${result.withSlot}, sem slot: ${result.withoutSlot}.`,
+    logger.done(
+      `${result.total} extensões — ${result.withSlot} com slot, ${result.withoutSlot} sem`,
     );
 
     await SettingMarker.findOneAndUpdate(
@@ -134,13 +125,12 @@ async function migrate(): Promise<void> {
       { $set: { MIGRATION_EXTENSION_SLOTS_AT: new Date() } },
       { upsert: true, setDefaultsOnInsert: true },
     );
-    console.info('Marker MIGRATION_EXTENSION_SLOTS_AT registrado.');
   } finally {
     await conn.close();
   }
 }
 
 migrate().catch((error: unknown): void => {
-  console.error('Migration falhou:', error);
+  new TaskLogger(TITLE).failed(error);
   process.exit(1);
 });

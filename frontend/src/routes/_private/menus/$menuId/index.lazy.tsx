@@ -28,6 +28,7 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { API } from '@/lib/api';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
+import { E_PERMISSION_TARGET } from '@/lib/constant';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IMenu, ValueOf } from '@/lib/interfaces';
@@ -134,6 +135,10 @@ function MenuUpdateContent({
       isInitial: data.isInitial ?? false,
       extension: data.extension ?? null,
       iconFile: [] as Array<File>,
+      visibility: data.visibility ?? {
+        kind: E_PERMISSION_TARGET.PUBLIC,
+        group: null,
+      },
     } satisfies MenuUpdateFormValues,
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: MenuUpdateSchema, onSubmit: MenuUpdateSchema },
@@ -155,6 +160,7 @@ function MenuUpdateContent({
         order,
         isInitial: value.type === 'SEPARATOR' ? false : value.isInitial,
         extension: value.extension ?? null,
+        visibility: value.visibility,
       });
     },
   });

@@ -116,6 +116,7 @@ function UserUpdateContent({
       password: '',
       status: data.status,
       group: data.group._id,
+      groups: data.groups?.map((group) => group._id) ?? [],
     } satisfies UserUpdateFormValues,
     validators: {
       onChange: UserUpdateSchema,

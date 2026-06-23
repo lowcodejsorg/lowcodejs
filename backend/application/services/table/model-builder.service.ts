@@ -87,6 +87,7 @@ export default class MongooseModelBuilder implements ModelBuilderContractService
 
     delete schemaDefinition['_id'];
     delete schemaDefinition['createdAt'];
+    delete schemaDefinition['updatedAt'];
 
     // Slug nativo do registro (link de compartilhamento amigavel). Igual a
     // trashed/createdAt: propriedade-base injetada em toda build, sem migracao.
@@ -95,6 +96,32 @@ export default class MongooseModelBuilder implements ModelBuilderContractService
       default: null,
       index: true,
     };
+
+    // Creator nativo: garante que o dono da row seja sempre persistido, mesmo
+    // quando o _schema nao traz o campo CREATOR explicito. Sem isso o strict
+    // mode do Mongoose descarta `creator` e o enforcement de OWN (contributor
+    // edita apenas as suas rows) nunca casa. Nao sobrescreve definicao vinda do
+    // _schema (campo nativo CREATOR ja traz ref User).
+    if (!schemaDefinition['creator']) {
+      schemaDefinition['creator'] = {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+      };
+    }
+
+    // Auditoria nativa: quem fez a ultima alteracao (UPDATER). Propriedade-base
+    // injetada em toda build (como creator) — garante o path mesmo em tabelas
+    // criadas antes do recurso, sem migracao de _schema. Sem isso o Mongoose
+    // (strict) descartaria o updater no $set de tabelas antigas. updatedAt ja e
+    // gerado automaticamente pelo timestamps abaixo.
+    if (!schemaDefinition['updater']) {
+      schemaDefinition['updater'] = {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+      };
+    }
 
     const schema = new mongoose.Schema(schemaDefinition, {
       timestamps: true,

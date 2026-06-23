@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouterState } from '@tanstack/react-router';
+import { useStore } from '@tanstack/react-store';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
@@ -39,13 +40,17 @@ import type { IField, IRow, ITable } from '@/lib/interfaces';
 import {
   ORDER_FIELD_NAME,
   ORDER_FIELD_SLUG,
+  SORTABLE_FIELD_TYPES,
   TEMPLATE_FIELD_SLUGS,
+  buildListFieldPayload,
+  compareRowsByField,
   getFieldBySlug,
   getFirstFieldByType,
   normalizeRowValue,
   parseOrderValue,
 } from '@/lib/kanban-helpers';
 import type { FieldMap } from '@/lib/kanban-types';
+import { buildFieldPermissions } from '@/lib/permission';
 import {
   buildDefaultValues,
   buildPayload,
@@ -78,13 +83,6 @@ export function TableKanbanView({
   const [activeDragCardId, setActiveDragCardId] = React.useState<string | null>(
     null,
   );
-  const [editingColumnId, setEditingColumnId] = React.useState<string | null>(
-    null,
-  );
-  const [editingColumnLabel, setEditingColumnLabel] = React.useState('');
-  const [editingColumnColor, setEditingColumnColor] = React.useState<
-    string | null
-  >(null);
   const [rowEditTarget, setRowEditTarget] = React.useState<
     'members' | 'start' | 'due' | 'list' | null
   >(null);
@@ -170,6 +168,20 @@ export function TableKanbanView({
     () => headers.filter((field) => !field.trashed && !field.native),
     [headers],
   );
+  // Campos disponíveis para ordenar os cards de uma lista (exclui o campo de
+  // lista e o campo interno de ordem manual do Kanban).
+  const sortFieldOptions = React.useMemo(
+    () =>
+      activeFields
+        .filter(
+          (field) =>
+            field.slug !== ORDER_FIELD_SLUG &&
+            field.slug !== fields.list?.slug &&
+            SORTABLE_FIELD_TYPES.has(field.type),
+        )
+        .map((field) => ({ label: field.name, value: field.slug })),
+    [activeFields, fields.list?.slug],
+  );
   const createDialogExtraFields = React.useMemo(() => {
     return table.fields.filter(
       (field) =>
@@ -205,10 +217,10 @@ export function TableKanbanView({
           color: payload.color ?? null,
         },
       ];
-      const response = await API.put<IField>(route, {
-        ...fields.list,
-        dropdown,
-      });
+      const response = await API.put<IField>(
+        route,
+        buildListFieldPayload(fields.list, dropdown),
+      );
       return response.data;
     },
     onSuccess(updatedField) {
@@ -264,21 +276,26 @@ export function TableKanbanView({
       optionId: string;
       label: string;
       color: string | null;
+      sortField: string | null;
+      sortDirection: 'asc' | 'desc' | null;
     }) => {
       if (!fields.list) {
         throw new Error('Campo de lista não encontrado');
       }
       const dropdown = fields.list.dropdown.map((opt) =>
         opt.id === payload.optionId
-          ? { ...opt, label: payload.label, color: payload.color }
+          ? {
+              ...opt,
+              label: payload.label,
+              color: payload.color,
+              sortField: payload.sortField,
+              sortDirection: payload.sortDirection,
+            }
           : opt,
       );
       const response = await API.put<IField>(
         '/tables/'.concat(tableSlug).concat('/fields/').concat(fields.list._id),
-        {
-          ...fields.list,
-          dropdown,
-        },
+        buildListFieldPayload(fields.list, dropdown),
       );
       return response.data;
     },
@@ -295,16 +312,13 @@ export function TableKanbanView({
           };
         },
       );
-      setEditingColumnId(null);
-      setEditingColumnLabel('');
-      setEditingColumnColor(null);
       toast.success('Lista atualizada', {
         description: 'A lista foi atualizada',
       });
     },
     onError() {
       toast.error('Erro ao atualizar lista', {
-        description: 'Nao foi possivel atualizar o nome',
+        description: 'Nao foi possivel atualizar a lista',
       });
     },
   });
@@ -331,28 +345,57 @@ export function TableKanbanView({
       }
     });
 
-    if (orderFieldSlug) {
-      Object.keys(byStatus).forEach((key) => {
-        byStatus[key].sort((a, b) => {
-          const aOrder = parseOrderValue(a[orderFieldSlug]);
-          const bOrder = parseOrderValue(b[orderFieldSlug]);
-          if (aOrder === null && bOrder === null) {
-            return (
-              (rowOrderIndex.get(a._id) ?? 0) - (rowOrderIndex.get(b._id) ?? 0)
-            );
-          }
-          if (aOrder === null) return 1;
-          if (bOrder === null) return -1;
-          return aOrder - bOrder;
-        });
+    const optionById = new Map(
+      orderedListOptions.map((opt) => [opt.id, opt] as const),
+    );
+
+    const sortByManualOrder = (rows: Array<IRow>): void => {
+      if (!orderFieldSlug) return;
+      rows.sort((a, b) => {
+        const aOrder = parseOrderValue(a[orderFieldSlug]);
+        const bOrder = parseOrderValue(b[orderFieldSlug]);
+        if (aOrder === null && bOrder === null) {
+          return (
+            (rowOrderIndex.get(a._id) ?? 0) - (rowOrderIndex.get(b._id) ?? 0)
+          );
+        }
+        if (aOrder === null) return 1;
+        if (bOrder === null) return -1;
+        return aOrder - bOrder;
       });
-    }
+    };
+
+    Object.keys(byStatus).forEach((key) => {
+      const option = optionById.get(key);
+      const sortField = option?.sortField;
+      // Ordenação por campo configurada na lista tem prioridade sobre a ordem
+      // manual de drag-drop. Se o campo configurado foi removido, cai na ordem
+      // manual.
+      if (sortField) {
+        const field = getFieldBySlug(activeFields, sortField);
+        if (field) {
+          let direction: 'asc' | 'desc' = 'asc';
+          if (option?.sortDirection === 'desc') direction = 'desc';
+          byStatus[key].sort((a, b) =>
+            compareRowsByField(a, b, field, direction),
+          );
+          return;
+        }
+      }
+      sortByManualOrder(byStatus[key]);
+    });
 
     return {
       byStatus,
       unassigned,
     };
-  }, [fields.list, orderedListOptions, orderFieldSlug, rowsState]);
+  }, [
+    activeFields,
+    fields.list,
+    orderedListOptions,
+    orderFieldSlug,
+    rowsState,
+  ]);
 
   React.useEffect(() => {
     if (!activeRowId) return;
@@ -405,9 +448,7 @@ export function TableKanbanView({
       multiple: false,
       format: E_FIELD_FORMAT.DD_MM_YYYY,
       showInFilter: true,
-      showInForm: true,
-      showInDetail: true,
-      showInList: true,
+      permissions: buildFieldPermissions(true, true, true),
       defaultValue: null,
       locked: true,
       relationship: null,
@@ -509,6 +550,40 @@ export function TableKanbanView({
     }
   }, [activeFields, createColumnId, createForm, fields.list, isCreateCardOpen]);
 
+  // Auto-preenche o Título a partir do item escolhido num campo de origem
+  // (Chamado / Caso de Uso / Caso de Teste / qualquer relacionamento). O valor
+  // selecionado guarda { value, label }, onde label é o nome do item.
+  const relationshipFieldSlugs = React.useMemo(
+    () =>
+      createDialogExtraFields
+        .filter((field) => field.type === E_FIELD_TYPE.RELATIONSHIP)
+        .map((field) => field.slug),
+    [createDialogExtraFields],
+  );
+
+  // Nome do primeiro relacionamento selecionado, candidato a semear o título.
+  const relationshipSeedLabel = useStore(createForm.store, (state) => {
+    const values = state.values as Record<string, unknown>;
+    for (const slug of relationshipFieldSlugs) {
+      const value = values[slug];
+      if (Array.isArray(value) && value.length > 0) {
+        const label = (value[0] as { label?: unknown }).label;
+        if (typeof label === 'string' && label.trim()) return label.trim();
+      }
+    }
+    return '';
+  });
+
+  React.useEffect(() => {
+    if (!isCreateCardOpen || !fields.title || !relationshipSeedLabel) return;
+    const titleSlug = fields.title.slug;
+    const values = createForm.store.state.values as Record<string, unknown>;
+    const currentTitle = String(values[titleSlug] ?? '').trim();
+    // Só preenche quando vazio; se já houver texto, não sobrescreve.
+    if (currentTitle) return;
+    createForm.setFieldValue(titleSlug, relationshipSeedLabel);
+  }, [createForm, fields.title, isCreateCardOpen, relationshipSeedLabel]);
+
   const ensureOrderField = React.useCallback(async (): Promise<
     string | null
   > => {
@@ -557,9 +632,7 @@ export function TableKanbanView({
           multiple: false,
           format: E_FIELD_FORMAT.INTEGER,
           showInFilter: false,
-          showInForm: false,
-          showInDetail: false,
-          showInList: false,
+          permissions: buildFieldPermissions(false, false, false),
           defaultValue: null,
           locked: true,
           relationship: null,
@@ -834,27 +907,10 @@ export function TableKanbanView({
               key={option.id}
               option={option}
               count={columns.byStatus[option.id].length}
-              editingColumnId={editingColumnId}
-              editingColumnLabel={editingColumnLabel}
-              editingColumnColor={editingColumnColor}
-              onEditStart={(opt) => {
-                setEditingColumnId(opt.id);
-                setEditingColumnLabel(opt.label);
-                setEditingColumnColor(opt.color ?? '#64748b');
-              }}
-              onEditChange={(value) => setEditingColumnLabel(value)}
-              onEditColorChange={(value) => setEditingColumnColor(value)}
-              onEditCancel={() => {
-                setEditingColumnId(null);
-                setEditingColumnLabel('');
-                setEditingColumnColor(null);
-              }}
-              onEditCommit={(optionId, nextLabel, nextColor) => {
-                updateListOption.mutate({
-                  optionId,
-                  label: nextLabel,
-                  color: nextColor,
-                });
+              sortFieldOptions={sortFieldOptions}
+              isUpdating={updateListOption.status === 'pending'}
+              onUpdate={(optionId, update) => {
+                updateListOption.mutate({ optionId, ...update });
               }}
             >
               <SortableContext

@@ -1,10 +1,9 @@
-/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import type { IField } from '@application/core/entity.core';
 import type { FindOptions } from '@application/core/entity.core';
 import { Field as Model } from '@application/model/field.model';
-import { QueryBuilderContractService } from '@application/services/table/query-builder-contract.service';
+import { SearchNormalizer } from '@application/services/table/search-normalizer';
 
 import type {
   FieldContractRepository,
@@ -15,8 +14,6 @@ import type {
 
 @Service()
 export default class FieldMongooseRepository implements FieldContractRepository {
-  constructor(private readonly query: QueryBuilderContractService) {}
-
   private buildWhereClause(
     payload?: FieldQueryPayload,
   ): Record<string, unknown> {
@@ -30,7 +27,7 @@ export default class FieldMongooseRepository implements FieldContractRepository 
 
     if (payload?.search) {
       where.name = {
-        $regex: this.query.normalize(payload.search),
+        $regex: SearchNormalizer.normalize(payload.search),
         $options: 'i',
       };
     }

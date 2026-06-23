@@ -13,6 +13,7 @@ import { Storage } from '@application/model/storage.model';
 import { Table } from '@application/model/table.model';
 import { User } from '@application/model/user.model';
 
+import { FieldGroupBuilderContractService } from './field-group-builder-contract.service';
 import { ModelBuilderContractService } from './model-builder-contract.service';
 import { PopulateBuilderContractService } from './populate-builder-contract.service';
 
@@ -26,7 +27,10 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
    */
   private static readonly MAX_RELATIONSHIP_DEPTH = 5;
 
-  constructor(private readonly model: ModelBuilderContractService) {}
+  constructor(
+    private readonly model: ModelBuilderContractService,
+    private readonly fieldGroup: FieldGroupBuilderContractService,
+  ) {}
 
   getRelationships(fields: IField[] = []): IField[] {
     const types = [
@@ -36,6 +40,7 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
       E_FIELD_TYPE.EVALUATION,
       E_FIELD_TYPE.USER,
       E_FIELD_TYPE.CREATOR,
+      E_FIELD_TYPE.UPDATER,
     ];
 
     return fields.filter(
@@ -69,6 +74,14 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
       }
 
       if (field.type === E_FIELD_TYPE.CREATOR) {
+        populate.push({
+          path: field.slug,
+          model: User,
+          select: 'name email _id',
+        });
+      }
+
+      if (field.type === E_FIELD_TYPE.UPDATER) {
         populate.push({
           path: field.slug,
           model: User,
@@ -142,69 +155,7 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
     }
 
     if (groups) {
-      for (const field of fields ?? []) {
-        if (field.type !== E_FIELD_TYPE.FIELD_GROUP) continue;
-
-        const groupSlug = field?.group?.slug;
-        const group = groups.find((g) => g.slug === groupSlug);
-        if (!group) continue;
-
-        for (const groupField of group.fields || []) {
-          if (groupField.type === E_FIELD_TYPE.USER) {
-            populate.push({
-              path: `${field.slug}.${groupField.slug}`,
-              model: User,
-              select: 'name email _id',
-            });
-          }
-
-          if (groupField.type === E_FIELD_TYPE.CREATOR) {
-            populate.push({
-              path: `${field.slug}.${groupField.slug}`,
-              model: User,
-              select: 'name email _id',
-            });
-          }
-
-          if (groupField.type === E_FIELD_TYPE.FILE) {
-            populate.push({
-              path: `${field.slug}.${groupField.slug}`,
-              model: Storage,
-            });
-          }
-
-          if (groupField.type === E_FIELD_TYPE.RELATIONSHIP) {
-            const relationshipTableId =
-              groupField?.relationship?.table?._id?.toString();
-            const relationshipTableSlug = groupField?.relationship?.table?.slug;
-
-            let groupRelationshipTable;
-            if (relationshipTableId) {
-              groupRelationshipTable = await Table.findOne({
-                _id: relationshipTableId,
-                trashed: { $ne: true },
-              });
-            } else if (relationshipTableSlug) {
-              groupRelationshipTable = await Table.findOne({
-                slug: relationshipTableSlug,
-                trashed: { $ne: true },
-              });
-            }
-
-            if (groupRelationshipTable && conn) {
-              const relModel = await this.model.build({
-                ...groupRelationshipTable.toJSON({ flattenObjectIds: true }),
-                _id: groupRelationshipTable._id.toString(),
-              });
-
-              populate.push({
-                path: `${field.slug}.${groupField.slug}`,
-                model: relModel,
-              });
-            }
-          }
-        }
-      }
+      populate.push(...this.fieldGroup.buildPopulate(fields ?? [], groups));
     }
 
     return [...populate];

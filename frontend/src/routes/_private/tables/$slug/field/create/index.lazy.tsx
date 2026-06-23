@@ -137,8 +137,8 @@ function RouteComponent(): React.JSX.Element {
         return;
 
       const hasRelationship = value.relationship.tableId !== '';
-      const hasDropdown = value.dropdown.length > 0;
-      const hasCategory = value.category.length > 0;
+      const hasDropdown = (value.dropdown?.length ?? 0) > 0;
+      const hasCategory = (value.category?.length ?? 0) > 0;
 
       const payload: Partial<IField> = {
         name: value.name,
@@ -148,14 +148,13 @@ function RouteComponent(): React.JSX.Element {
         required: value.required,
         multiple: value.multiple,
         showInFilter: value.showInFilter,
-        showInForm: value.showInForm,
-        showInDetail: value.showInDetail,
-        showInList: value.showInList,
+        permissions: value.permissions,
         widthInForm: value.widthInForm,
         widthInList: value.widthInList,
         format: value.format
           ? (value.format as ValueOf<typeof E_FIELD_FORMAT>)
           : null,
+        validations: value.validations,
         defaultValue: normalizeDefaultValue(value.type, value.defaultValue),
         dropdown: hasDropdown ? value.dropdown.map((item) => item) : [],
         allowCustomDropdownOptions:
@@ -182,6 +181,17 @@ function RouteComponent(): React.JSX.Element {
                 ? value.relationship.labelParts
                 : [],
               labelSeparator: value.relationship.labelSeparator || ' - ',
+              visible: value.relationship.sourceVisible,
+              onDelete: value.relationship.onDelete as
+                | 'CASCADE'
+                | 'SET_NULL'
+                | 'RESTRICT',
+              mirror: {
+                multiple: value.relationship.mirrorMultiple,
+                visible: value.relationship.mirrorVisible,
+                label: value.relationship.mirrorLabel || undefined,
+              },
+              formMode: value.relationship.formMode,
             }
           : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],
@@ -222,6 +232,7 @@ function RouteComponent(): React.JSX.Element {
           E_FIELD_TYPE.FIELD_GROUP,
           E_FIELD_TYPE.REACTION,
           E_FIELD_TYPE.EVALUATION,
+          E_FIELD_TYPE.RELATIONSHIP,
         ]
       : [];
 

@@ -1,16 +1,17 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
   type IField,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RelationshipDefinitionInMemoryRepository from '@application/repositories/relationship-definition/relationship-definition-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import RelationshipMaterializationService from '@application/services/relationship/relationship-materialization.service';
 import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
 import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
@@ -26,9 +27,7 @@ let sut: TableFieldUpdateUseCase;
 const FIELD_DEFAULTS = {
   slug: 'nome',
   type: E_FIELD_TYPE.TEXT_SHORT,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
+  permissions: buildFieldPermissions(true, true, true),
   showInFilter: true,
   locked: false,
   allowCreateRelationshipRecords: false,
@@ -64,10 +63,7 @@ async function createFieldAndTable(
     _schema: {},
     fields: [field._id],
     owner: 'owner-id',
-    administrators: [],
     style: E_TABLE_STYLE.LIST,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-    collaboration: E_TABLE_COLLABORATION.RESTRICTED,
     fieldOrderList: [],
     fieldOrderForm: [],
   });
@@ -99,9 +95,7 @@ function buildUpdatePayload(
     trashedAt: null,
     locked: false,
     allowCreateRelationshipRecords: false,
-    showInList: field.showInList,
-    showInForm: field.showInForm,
-    showInDetail: field.showInDetail,
+    permissions: field.permissions,
     showInFilter: field.showInFilter,
     widthInForm: field.widthInForm,
     widthInList: field.widthInList,
@@ -125,6 +119,13 @@ describe('Table Field Update - TEXT_SHORT', () => {
       rowInMemoryRepository,
       schemaBuilder,
       modelBuilder,
+      new RelationshipMaterializationService(
+        fieldInMemoryRepository,
+        tableInMemoryRepository,
+        new RelationshipDefinitionInMemoryRepository(),
+        schemaBuilder,
+        modelBuilder,
+      ),
     );
   });
 
@@ -314,21 +315,23 @@ describe('Table Field Update - TEXT_SHORT', () => {
     expect(result.value.required).toBe(true);
   });
 
-  it('deve mudar visibilidade showInList false para true e showInForm true para false', async () => {
+  it('deve mudar visibilidade de lista para visivel e de formulario para oculto', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
-      { showInList: false, showInForm: true },
+      { permissions: buildFieldPermissions(false, true, true) },
     );
 
     const result = await sut.execute(
-      buildUpdatePayload(field, { showInList: true, showInForm: false }),
+      buildUpdatePayload(field, {
+        permissions: buildFieldPermissions(true, false, true),
+      }),
     );
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(true);
-    expect(result.value.showInForm).toBe(false);
+    expect(result.value.permissions?.list.kind).toBe('PUBLIC');
+    expect(result.value.permissions?.form.kind).toBe('NOBODY');
   });
 
   it('deve mudar widthInForm 50 para 75 e widthInList 10 para 30', async () => {
@@ -380,7 +383,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
 
   // --- CAMPO NATIVE ---
 
-  it('campo NATIVE deve permitir mudar showInList e widthInList', async () => {
+  it('campo NATIVE deve permitir mudar visibilidade de lista e widthInList', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
@@ -404,9 +407,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashedAt: null,
       locked: false,
       allowCreateRelationshipRecords: false,
-      showInList: false,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(false, true, true),
       showInFilter: true,
       widthInForm: 50,
       widthInList: 30,
@@ -415,7 +416,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(false);
+    expect(result.value.permissions?.list.kind).toBe('NOBODY');
     expect(result.value.widthInList).toBe(30);
   });
 
@@ -443,9 +444,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashedAt: null,
       locked: false,
       allowCreateRelationshipRecords: false,
-      showInList: field.showInList,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
+      permissions: field.permissions,
       showInFilter: field.showInFilter,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
@@ -481,9 +480,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashedAt: null,
       locked: false,
       allowCreateRelationshipRecords: false,
-      showInList: field.showInList,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
+      permissions: field.permissions,
       showInFilter: field.showInFilter,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
@@ -519,9 +516,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashedAt: null,
       locked: false,
       allowCreateRelationshipRecords: false,
-      showInList: field.showInList,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
+      permissions: field.permissions,
       showInFilter: field.showInFilter,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
@@ -536,7 +531,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
 
   // --- CAMPO LOCKED ---
 
-  it('campo LOCKED deve permitir mudar showInList', async () => {
+  it('campo LOCKED deve permitir mudar visibilidade de lista', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
@@ -560,9 +555,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashedAt: null,
       locked: true,
       allowCreateRelationshipRecords: false,
-      showInList: false,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
+      permissions: buildFieldPermissions(false, true, true),
       showInFilter: field.showInFilter,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
@@ -571,7 +564,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(false);
+    expect(result.value.permissions?.list.kind).toBe('NOBODY');
   });
 
   it('campo LOCKED deve rejeitar mudar name com FIELD_LOCKED', async () => {
@@ -598,9 +591,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashedAt: null,
       locked: true,
       allowCreateRelationshipRecords: false,
-      showInList: field.showInList,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
+      permissions: field.permissions,
       showInFilter: field.showInFilter,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
@@ -637,9 +628,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashedAt: null,
       locked: true,
       allowCreateRelationshipRecords: false,
-      showInList: field.showInList,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
+      permissions: field.permissions,
       showInFilter: field.showInFilter,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,

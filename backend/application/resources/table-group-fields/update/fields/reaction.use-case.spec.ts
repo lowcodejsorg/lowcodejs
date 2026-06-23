@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
@@ -23,10 +22,7 @@ const TABLE_DEFAULTS = {
   _schema: {},
   fields: [],
   owner: 'owner-id',
-  administrators: [],
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
   fieldOrderList: [],
   fieldOrderForm: [],
 };
@@ -35,9 +31,7 @@ const FIELD_CREATE_PAYLOAD = {
   name: 'Curtida',
   slug: 'curtida',
   type: E_FIELD_TYPE.REACTION,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
+  permissions: buildFieldPermissions(true, true, true),
   showInFilter: false,
   locked: false,
   allowCreateRelationshipRecords: false,
@@ -86,7 +80,7 @@ describe('Group Field Update - REACTION', () => {
     );
   });
 
-  it('deve mudar visibilidade showInList de true para false', async () => {
+  it('deve mudar visibilidade de lista de PUBLIC para NOBODY', async () => {
     const field = await fieldInMemoryRepository.create(FIELD_CREATE_PAYLOAD);
 
     await tableInMemoryRepository.create({
@@ -109,9 +103,7 @@ describe('Group Field Update - REACTION', () => {
       name: 'Curtida',
       type: E_FIELD_TYPE.REACTION,
       required: false,
-      showInList: false,
-      showInForm: false,
-      showInDetail: true,
+      permissions: buildFieldPermissions(false, false, true),
       showInFilter: false,
       widthInForm: 50,
       widthInList: 10,
@@ -120,8 +112,8 @@ describe('Group Field Update - REACTION', () => {
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(false);
-    expect(result.value.showInForm).toBe(false);
+    expect(result.value.permissions?.list.kind).toBe('NOBODY');
+    expect(result.value.permissions?.form.kind).toBe('NOBODY');
     expect(result.value.type).toBe(E_FIELD_TYPE.REACTION);
   });
 });

@@ -371,7 +371,15 @@ export const SettingUpdateSchema: FastifySchema = {
         SETUP_CURRENT_STEP: {
           type: 'string',
           nullable: true,
-          enum: ['admin', 'name', 'logos', 'upload', 'paging', 'email'],
+          enum: [
+            'admin',
+            'name',
+            'storage',
+            'logos',
+            'upload',
+            'paging',
+            'email',
+          ],
           description: 'Etapa atual do setup wizard (null se concluído)',
         },
         LOGO_SMALL_URL: {
@@ -436,7 +444,7 @@ export const SettingUpdateSchema: FastifySchema = {
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['INVALID_PAYLOAD_FORMAT', 'VALIDATION_ERROR'],
+          enum: ['INVALID_PAYLOAD_FORMAT'],
         },
         errors: {
           type: 'object',
@@ -449,25 +457,9 @@ export const SettingUpdateSchema: FastifySchema = {
       description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Não autorizado'] },
+        message: { type: 'string' },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
-        errors: {
-          type: 'object',
-          additionalProperties: { type: 'string' },
-        },
-      },
-    },
-    404: {
-      description: 'Arquivo de configurações não encontrado',
-      type: 'object',
-      properties: {
-        message: {
-          type: 'string',
-          enum: ['Arquivo de configurações não encontrado'],
-        },
-        code: { type: 'number', enum: [404] },
-        cause: { type: 'string', enum: ['SETTINGS_FILE_NOT_FOUND'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -478,14 +470,11 @@ export const SettingUpdateSchema: FastifySchema = {
       description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: {
-          type: 'string',
-          enum: ['Erro interno do servidor ao atualizar configurações'],
-        },
+        message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: {
           type: 'string',
-          enum: ['SETTINGS_UPDATE_ERROR', 'FILE_WRITE_ERROR'],
+          enum: ['SETTINGS_UPDATE_ERROR'],
         },
         errors: {
           type: 'object',

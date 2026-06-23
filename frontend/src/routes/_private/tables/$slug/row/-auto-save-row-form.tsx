@@ -8,6 +8,7 @@ import { AutoSaveStatusIndicator } from './-auto-save-status';
 import { RowFormFields } from './create/-create-form';
 
 import { GroupRowsInline } from '@/components/common/dynamic-table/group-rows';
+import { RelationshipRowsInline } from '@/components/common/dynamic-table/relationship-management/relationship-rows-inline';
 import { ExtensionSlot } from '@/components/common/extension-slot';
 import {
   UploadingProvider,
@@ -32,6 +33,7 @@ import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useDeleteTableRow } from '@/hooks/tanstack-query/use-table-row-delete';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useAutoSave } from '@/hooks/use-auto-save';
+import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
@@ -49,6 +51,7 @@ import {
   buildCreateRowDefaultValues,
   buildRowPayload,
   buildUpdateRowDefaultValues,
+  isManagedRelationship,
 } from '@/lib/table';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -124,13 +127,24 @@ function AutoSaveRowFormContent({
   // então o isDirty do form principal não os reflete; sem isso, um rascunho com
   // filhos seria oferecido para descarte ao sair.
   const childAddedRef = React.useRef<boolean>(false);
+  // Contagem de vínculos por campo RELATIONSHIP, reportada pelo repetidor. Usada
+  // para validar o required do lado sem ler o form (links vivem fora dele).
+  const relationshipLinkCountRef = React.useRef<Record<string, number>>({});
+  const handleLinkCountChange = React.useCallback(
+    (fieldSlug: string, count: number): void => {
+      relationshipLinkCountRef.current[fieldSlug] = count;
+    },
+    [],
+  );
 
   const slug = table.slug;
+
+  const { isFieldVisible } = useFieldVisibility();
 
   const fields = React.useMemo((): Array<IField> => {
     const order = table.fieldOrderForm;
     return table.fields
-      .filter((f) => !f.trashed && f.showInForm)
+      .filter((f) => !f.trashed && isFieldVisible(f, 'form'))
       .sort((a: IField, b: IField): number => {
         const idxA = order.indexOf(a._id);
         const idxB = order.indexOf(b._id);
@@ -140,19 +154,46 @@ function AutoSaveRowFormContent({
         if (idxB === -1) sortB = Infinity;
         return sortA - sortB;
       });
-  }, [table.fields, table.fieldOrderForm]);
+  }, [table.fields, table.fieldOrderForm, isFieldVisible]);
 
+  // Relationship em modo 'manage' fica fora dos obrigatórios genéricos: seus
+  // valores não vivem no form (geridos pelo repetidor via /links); o required é
+  // validado por contagem de vínculos. Em modo 'select' o valor vive no form
+  // (combobox) e segue o caminho de required normal.
   const requiredFields = React.useMemo((): Array<IField> => {
-    return fields.filter((f) => f.required && !f.native);
+    return fields.filter((f) => {
+      if (!f.required || f.native) return false;
+      // Só N:N 'manage' fica fora (vínculos via /links); 1:1/1:N viram select.
+      if (isManagedRelationship(f)) return false;
+      return true;
+    });
   }, [fields]);
 
   // Grupos de campos exibidos no formulário. Salvos à parte via endpoints
   // group-rows (precisam de rowId), não no payload do registro principal.
   const formGroupFields = React.useMemo((): Array<IField> => {
     return table.fields.filter(
-      (f) => f.type === E_FIELD_TYPE.FIELD_GROUP && f.showInForm && !f.trashed,
+      (f) =>
+        f.type === E_FIELD_TYPE.FIELD_GROUP &&
+        isFieldVisible(f, 'form') &&
+        !f.trashed,
     );
-  }, [table.fields]);
+  }, [table.fields, isFieldVisible]);
+
+  // Campos RELATIONSHIP em modo 'manage' (repetidor): persistidos via /links,
+  // fora do payload. Modo 'select' é renderizado por RowFormFields (combobox) e
+  // entra no payload (dual-write). Ausência de formMode = 'select'.
+  const formRelationshipFields = React.useMemo((): Array<IField> => {
+    return table.fields.filter(
+      (f) =>
+        isManagedRelationship(f) && isFieldVisible(f, 'form') && !f.trashed,
+    );
+  }, [table.fields, isFieldVisible]);
+
+  // Apenas os slugs de modo 'manage' saem do payload (select fica no dual-write).
+  const relationshipSlugs = React.useMemo((): Set<string> => {
+    return new Set(formRelationshipFields.map((f) => f.slug));
+  }, [formRelationshipFields]);
 
   const categoryOverride = React.useMemo(():
     | CreateRowDefaultValue
@@ -208,6 +249,11 @@ function AutoSaveRowFormContent({
       (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
     );
   }, [formGroupFields, conditionalVisibility.hiddenFieldIds]);
+  const visibleFormRelationshipFields = React.useMemo((): Array<IField> => {
+    return formRelationshipFields.filter(
+      (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
+    );
+  }, [formRelationshipFields, conditionalVisibility.hiddenFieldIds]);
 
   const _autoSave = useAutoSaveTableRow({
     onSuccess(data: IRow): void {
@@ -274,7 +320,10 @@ function AutoSaveRowFormContent({
       fields,
       conditionalVisibility.hiddenFieldIds,
     );
-    const payload = buildRowPayload(values, visibleFields);
+    const payload = buildRowPayload(
+      values,
+      visibleFields.filter((f) => !relationshipSlugs.has(f.slug)),
+    );
 
     await _autoSave.mutateAsync({
       slug,
@@ -286,6 +335,7 @@ function AutoSaveRowFormContent({
     form,
     fields,
     visibleFields,
+    relationshipSlugs,
     conditionalVisibility.hiddenFieldIds,
     slug,
     isUploading,
@@ -364,8 +414,21 @@ function AutoSaveRowFormContent({
     // Grava os erros no slot `onServer` do errorMap — o único que a UI lê
     // (getFieldInvalidState) e que useApiErrorAutoClear limpa ao digitar.
     applyApiFieldErrors(form, missing);
-    return Object.keys(missing).length === 0;
-  }, [form, requiredFields, conditionalVisibility.hiddenFieldIds]);
+    // Required por lado de relacionamento: exige ≥1 vínculo (contagem reportada
+    // pelo repetidor), já que o valor não está no form.
+    let relationshipMissing = false;
+    for (const relField of visibleFormRelationshipFields) {
+      if (!relField.required) continue;
+      const count = relationshipLinkCountRef.current[relField.slug] ?? 0;
+      if (count === 0) relationshipMissing = true;
+    }
+    return Object.keys(missing).length === 0 && !relationshipMissing;
+  }, [
+    form,
+    requiredFields,
+    visibleFormRelationshipFields,
+    conditionalVisibility.hiddenFieldIds,
+  ]);
 
   // Rascunho novo é descartável ao sair quando o usuário não adicionou conteúdo
   // real: nenhum item de grupo e — sem obrigatórios, form intocado; com
@@ -412,7 +475,10 @@ function AutoSaveRowFormContent({
     }
     setMissingRequired(false);
 
-    const payload = buildRowPayload(form.state.values, fields);
+    const payload = buildRowPayload(
+      form.state.values,
+      fields.filter((f) => !relationshipSlugs.has(f.slug)),
+    );
 
     try {
       // Autenticado: garante o rascunho (caso o eager-create ainda esteja
@@ -556,6 +622,30 @@ function AutoSaveRowFormContent({
                     onChildAdded={(): void => {
                       childAddedRef.current = true;
                     }}
+                  />
+                ),
+              )}
+            </div>
+          )}
+
+        {conditionalConfig.status !== 'pending' &&
+          visibleFormRelationshipFields.length > 0 && (
+            <div className="flex flex-col gap-6 px-2 pb-4 pt-2 border-t mt-2">
+              {visibleFormRelationshipFields.map(
+                (relField): React.JSX.Element => (
+                  <RelationshipRowsInline
+                    key={relField._id}
+                    field={relField}
+                    parentTableSlug={slug}
+                    rowId={persistedRowId}
+                    canEdit={true}
+                    onEnsureParentRow={ensureParentRow}
+                    onChildAdded={(): void => {
+                      childAddedRef.current = true;
+                    }}
+                    onLinkCountChange={(count: number): void =>
+                      handleLinkCountChange(relField.slug, count)
+                    }
                   />
                 ),
               )}

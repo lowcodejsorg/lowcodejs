@@ -1,11 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
@@ -24,10 +23,7 @@ const TABLE_DEFAULTS = {
   _schema: {},
   fields: [],
   owner: 'owner-id',
-  administrators: [],
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
   fieldOrderList: [],
   fieldOrderForm: [],
 };
@@ -36,9 +32,7 @@ const FIELD_CREATE_PAYLOAD = {
   name: 'Data Entrega',
   slug: 'data-entrega',
   type: E_FIELD_TYPE.DATE,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
+  permissions: buildFieldPermissions(true, true, true),
   showInFilter: false,
   locked: false,
   allowCreateRelationshipRecords: false,
@@ -110,9 +104,7 @@ describe('Group Field Update - DATE', () => {
       type: E_FIELD_TYPE.DATE,
       format: E_FIELD_FORMAT.YYYY_MM_DD_HH_MM_SS,
       required: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: false,
       widthInForm: 50,
       widthInList: 10,
@@ -149,9 +141,7 @@ describe('Group Field Update - DATE', () => {
       type: E_FIELD_TYPE.DATE,
       format: E_FIELD_FORMAT.DD_MM_YYYY,
       required: true,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: false,
       widthInForm: 50,
       widthInList: 10,

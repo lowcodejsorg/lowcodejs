@@ -30,12 +30,15 @@
 import { config } from 'dotenv';
 import mongoose from 'mongoose';
 
-config({ path: '.env' });
+import { TaskLogger } from '../shared/task-logger';
+
+config({ path: '.env', quiet: true });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const DB_DATABASE = process.env.DB_DATABASE ?? 'lowcodejs';
 const DB_DATA_DATABASE = process.env.DB_DATA_DATABASE ?? 'lowcodejs_data';
 const FORCE = process.argv.includes('--force');
+const TITLE = 'Status/lixeira das rows';
 
 type SettingMarkerDoc = {
   MIGRATION_ROW_STATUS_TRASHED_AT?: Date | null;
@@ -123,15 +126,12 @@ async function backfillCollection(
 }
 
 async function migrate(): Promise<void> {
+  const logger = new TaskLogger(TITLE);
+
   if (!DATABASE_URL) {
-    console.error('DATABASE_URL is required');
+    logger.failed('DATABASE_URL não configurada');
     process.exit(1);
   }
-
-  console.info(`System DB: ${DB_DATABASE}`);
-  console.info(`Data DB: ${DB_DATA_DATABASE}`);
-  if (FORCE) console.info('Force: true (bypassing marker)');
-  console.info('---');
 
   const systemConn = mongoose.createConnection(DATABASE_URL, {
     dbName: DB_DATABASE,
@@ -158,21 +158,18 @@ async function migrate(): Promise<void> {
   const setting = await SettingMarker.findOne({}).lean();
 
   try {
-    if (setting?.MIGRATION_ROW_STATUS_TRASHED_AT && !FORCE) {
-      console.info(
-        `Already migrated at ${setting.MIGRATION_ROW_STATUS_TRASHED_AT.toISOString()}, skipping (use --force to re-run).`,
-      );
+    const appliedAt = setting?.MIGRATION_ROW_STATUS_TRASHED_AT;
+    if (appliedAt && !FORCE) {
+      logger.skipped(appliedAt);
       return;
     }
+
+    logger.running();
 
     const tablesCol = systemDb.collection('tables');
     const fieldsCol = systemDb.collection('fields');
 
     const tables = await tablesCol.find({}).toArray();
-
-    if (tables.length === 0) {
-      console.info('No tables found. Nothing to migrate.');
-    }
 
     const stats: MigrationStats = {
       collectionsProcessed: 0,
@@ -187,7 +184,8 @@ async function migrate(): Promise<void> {
       const exists = await dataDb.listCollections({ name: slug }).hasNext();
       if (!exists) continue;
 
-      const fieldIds = Array.isArray(table.fields) ? table.fields : [];
+      let fieldIds = [];
+      if (Array.isArray(table.fields)) fieldIds = table.fields;
       const groupFields = await fieldsCol
         .find({ _id: { $in: fieldIds }, type: 'FIELD_GROUP' })
         .project({ slug: 1 })
@@ -202,14 +200,13 @@ async function migrate(): Promise<void> {
       stats.rowsUpdated += result.rowsUpdated;
       stats.groupFieldsBackfilled += result.groupFieldsBackfilled;
 
-      console.info(
-        `  [ok] ${slug} — status backfilled in ${result.rowsUpdated} row(s), ${result.groupFieldsBackfilled} group field(s) processed`,
+      logger.item(
+        `${slug} — ${result.rowsUpdated} rows, ${result.groupFieldsBackfilled} grupos`,
       );
     }
 
-    console.info('---');
-    console.info(
-      `Done. Collections: ${stats.collectionsProcessed}, rows status-backfilled: ${stats.rowsUpdated}, group fields: ${stats.groupFieldsBackfilled}`,
+    logger.done(
+      `${stats.collectionsProcessed} tabelas, ${stats.rowsUpdated} rows, ${stats.groupFieldsBackfilled} grupos`,
     );
 
     await SettingMarker.findOneAndUpdate(
@@ -217,7 +214,6 @@ async function migrate(): Promise<void> {
       { $set: { MIGRATION_ROW_STATUS_TRASHED_AT: new Date() } },
       { upsert: true, setDefaultsOnInsert: true },
     );
-    console.info('Marker MIGRATION_ROW_STATUS_TRASHED_AT recorded.');
   } finally {
     await systemConn.close();
     await dataConn.close();
@@ -225,6 +221,6 @@ async function migrate(): Promise<void> {
 }
 
 migrate().catch((error: unknown): void => {
-  console.error('Migration failed:', error);
+  new TaskLogger(TITLE).failed(error);
   process.exit(1);
 });

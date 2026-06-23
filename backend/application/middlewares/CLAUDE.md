@@ -15,23 +15,55 @@ Extrai e valida JWT do request:
 onRequest: [AuthenticationMiddleware({ optional: false })]
 ```
 
+## `permission.middleware.ts`
+
+`PermissionMiddleware(capability)` - guarda das **areas do sistema** (Usuarios,
+Menu, Grupos, Configuracoes, Ferramentas, Plugins). Substitui o RoleMiddleware:
+em vez de exigir um role fixo, exige uma **capacidade de area**
+(`E_AREA_CAPABILITY`) atribuivel a qualquer grupo.
+
+1. Exige usuario autenticado
+2. MASTER bypassa — resolvido pelo **fecho de grupos** (`GroupResolver.isMaster`),
+   nao pelo `role` do JWT (que reflete so o grupo principal)
+3. Resolve as capacidades do usuario pelo **fecho de grupos** (grupo principal +
+   adicionais + englobados via `encompasses[]`) com o `GroupResolverContractService`
+4. Lanca Forbidden se a capacidade nao estiver presente
+
+## `role.middleware.ts`
+
+`RoleMiddleware([MASTER|ADMINISTRATOR])` — guarda por papel de sistema resolvida
+pelo **fecho de grupos** (carrega o usuario e usa `GroupResolver.isMaster` /
+`isPrivileged`), nao pelo `role` do JWT. `[MASTER]` exige `isMaster`; conjuntos
+que incluem ADMINISTRATOR exigem `isPrivileged`. Usado por storage-migration,
+setup e o export cross-tabela (`table-base/export-csv`).
+
+**Uso:**
+```typescript
+onRequest: [
+  AuthenticationMiddleware({ optional: false }),
+  PermissionMiddleware(E_AREA_CAPABILITY.MANAGE_USERS)
+]
+```
+
 ## `table-access.middleware.ts`
 
-Verifica permissoes de acesso a tabela (RBAC + visibilidade):
-1. Busca tabela por slug (params)
-2. Popula `request.table` com dados da tabela
-3. Determina `request.ownership` (se usuario e owner/admin)
-4. Verifica permissoes baseado em:
+Verifica acesso a tabela. Faz parsing do request e delega ao
+`PermissionContractService`:
+1. Busca tabela por slug (params) e popula `request.table`
+2. Busca usuario autenticado
+3. Verifica acesso publico (visitante sem auth) via `isPublicAccess`
+4. Verificacao completa via `checkTableAccess`, baseada em:
    - Role do usuario (MASTER bypassa tudo, ADMINISTRATOR tem acesso total)
-   - Ownership da tabela
-   - Visibilidade da tabela (PUBLIC, FORM, OPEN, RESTRICTED, PRIVATE)
-   - Permission requerida pelo endpoint
+   - Dono da tabela (`table.owner` ou membro com perfil OWNER)
+   - Perfil de membro (`table.members` + `TABLE_PROFILE_MATRIX`) + binding por
+     acao (`table.permissions`, PUBLIC/NOBODY/GROUP). Nao ha fallback legado.
+5. Popula `request.ownership` (inclui `ownOnly` quando o perfil so permite as
+   proprias rows — ex: contributor)
 
 **Parametro `requiredPermission`:** string do `E_TABLE_PERMISSION`
 
 **Excecoes de acesso para visitantes:**
-- Tabelas PUBLIC: GET view sem auth
-- Tabelas FORM: POST create sem auth
+- Acao com binding PUBLIC
 
 **Uso:**
 ```typescript

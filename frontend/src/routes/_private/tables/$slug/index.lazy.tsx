@@ -16,8 +16,8 @@ import { TableConfigurationDropdown } from './-table-configuration';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
+import { CsvDropdown } from '@/components/common/csv-dropdown';
 import { TableStyleViewDropdown } from '@/components/common/dynamic-table/table-selectors/table-style-view';
-import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { ExtensionSlot } from '@/components/common/extension-slot';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/empty';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
@@ -58,8 +59,10 @@ import { useTableRowsExportCsv } from '@/hooks/tanstack-query/use-table-rows-exp
 import { useChatSidebar } from '@/hooks/use-chat-sidebar';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import { useTablePermission } from '@/hooks/use-table-permission';
-import { E_ROLE, E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
+import { E_AREA_CAPABILITY, E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
+import { hasAreaCapability } from '@/lib/menu/menu-access-permissions';
+import { isPrivileged } from '@/lib/permission';
 import { useAuthStore } from '@/stores/authentication';
 
 const rootApi = getRouteApi('__root__');
@@ -207,14 +210,28 @@ function RouteComponent(): React.JSX.Element {
   const selectionResetKey = `${slug}:${search.page}:${search.perPage}:${search.trashed ?? false}:${tableStyle ?? ''}`;
 
   const auth = useAuthStore();
-  const canExportCsv =
-    auth.user?.group?.slug === E_ROLE.MASTER ||
-    auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+  const groups = useGroupReadList();
+  const privileged = isPrivileged(auth.user, groups.data ?? []);
+  // Export/import de CSV espelha o backend (Fase C): quem vê linhas exporta
+  // (VIEW_ROW); quem cria linhas importa (CREATE_ROW). A interseção é avaliada
+  // por `useTablePermission`.
+  const canExportCsv = permission.can('VIEW_ROW');
+  const canImportCsv = permission.can('CREATE_ROW');
+  // Chat exige o toggle global E a capacidade MANAGE_CHAT (MASTER/ADMINISTRATOR
+  // bypassam a capacidade). Espelha o gate do socket no backend.
+  const canUseChat =
+    aiAssistantEnabled &&
+    (privileged ||
+      hasAreaCapability(
+        auth.user?.capabilities,
+        E_AREA_CAPABILITY.MANAGE_CHAT,
+      ));
   const exportCsv = useTableRowsExportCsv({
     onError(error) {
       handleApiError(error, { context: 'Erro ao exportar CSV' });
     },
   });
+  const [importCsvOpen, setImportCsvOpen] = React.useState(false);
 
   const router = useRouter();
   const sidebar = useSidebar();
@@ -299,10 +316,11 @@ function RouteComponent(): React.JSX.Element {
 
             <TableStyleViewDropdown slug={slug} />
             {canExportCsv && (
-              <ExportCsvButton
-                testId="export-table-rows-csv-btn"
-                isPending={exportCsv.isPending}
-                onClick={() =>
+              <CsvDropdown
+                testId="table-rows-csv"
+                exportPending={exportCsv.isPending}
+                onImport={() => setImportCsvOpen(true)}
+                onExport={() =>
                   exportCsv.mutate({
                     slug,
                     ...(search as Record<string, unknown>),
@@ -310,9 +328,15 @@ function RouteComponent(): React.JSX.Element {
                 }
               />
             )}
-            {canExportCsv && <ImportCsvDialog slug={slug} />}
+            {canImportCsv && (
+              <ImportCsvDialog
+                slug={slug}
+                open={importCsvOpen}
+                onOpenChange={setImportCsvOpen}
+              />
+            )}
             <TableConfigurationDropdown tableSlug={slug} />
-            {aiAssistantEnabled && (
+            {canUseChat && (
               <ChatTrigger
                 onClick={() => handleChatOpenChange(!chatOpen)}
                 isOpen={chatOpen}
@@ -336,7 +360,6 @@ function RouteComponent(): React.JSX.Element {
                     sidebar.setOpen(false);
                     router.navigate({
                       to: '/tables/$slug/row',
-                      replace: true,
                       params: { slug },
                     });
                   }}
@@ -354,7 +377,6 @@ function RouteComponent(): React.JSX.Element {
               fields={filterFields}
               open={filterOpen}
               onOpenChange={handleFilterOpenChange}
-              table={table.data}
             />
           )}
           <PageShell.Content>
@@ -451,7 +473,7 @@ function RouteComponent(): React.JSX.Element {
               isTrashView={search.trashed === true}
             />
           </PageShell.Content>
-          {aiAssistantEnabled && (
+          {canUseChat && (
             <ChatSidebar
               open={chatOpen}
               onOpenChange={handleChatOpenChange}

@@ -17,7 +17,9 @@ export function TableRowDropdownCell({
 }: TableRowDropdownCellProps): React.JSX.Element {
   const values = Array.from<string>(row[field.slug] ?? []);
 
-  const items = values.map((value) => getDropdownItem(field.dropdown, value));
+  const items = values.map((value) =>
+    getDropdownItem(field.dropdown ?? [], value),
+  );
 
   if (items.length === 0) {
     return <span className="text-muted-foreground text-sm">-</span>;

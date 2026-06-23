@@ -15,6 +15,7 @@ import { EmailContractService } from '@application/services/email/email-contract
 import NodemailerEmailService from '@application/services/email/email.service';
 import { startStorageMigrationWorker } from '@application/services/storage-migration/worker';
 import { initCsvImportSocket } from '@application/resources/table-rows/import-csv/import-csv.socket';
+import { initTableImportSocket } from '@extensions/core/tools/tables-import-export/import-table.socket';
 import { startCsvImportWorker } from '@application/services/csv-import/worker';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import RowMongooseRepository from '@application/repositories/row/row.repository';
@@ -102,6 +103,9 @@ async function start(): Promise<void> {
     initNotificationsSocket(io, jwtDecode);
     console.info('Socket.IO notifications namespace initialized');
 
+    initTableImportSocket(io, jwtDecode);
+    console.info('Socket.IO table-import namespace initialized');
+
     await sweepStaleMigrations();
 
     const storageRepository = getInstanceByToken<StorageContractRepository>(
@@ -143,6 +147,11 @@ async function start(): Promise<void> {
       rowPasswordService: csvRowPasswordService,
     });
     console.info('CSV import worker started');
+
+    // RowAccessGuard: deps e registro do guard fluem por DI (@Service +
+    // di-registry). O RowAccessControlGuard recebe repos/builders por
+    // constructor injection e o RowAccessGuardService o registra ao ser
+    // instanciado — sem wiring manual aqui.
   } catch (err) {
     console.error('Error starting server:', err);
     process.exit(1);

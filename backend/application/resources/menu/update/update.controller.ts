@@ -2,8 +2,11 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, PATCH } from 'fastify-decorators';
 
+import { E_AREA_CAPABILITY } from '@application/core/entity.core';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import { PermissionMiddleware } from '@application/middlewares/permission.middleware';
 
+import { MenuUpdateSchema } from './update.schema';
 import MenuUpdateUseCase from './update.use-case';
 import {
   MenuUpdateBodyValidator,
@@ -25,8 +28,9 @@ export default class {
         AuthenticationMiddleware({
           optional: false,
         }),
+        PermissionMiddleware(E_AREA_CAPABILITY.MANAGE_MENU),
       ],
-      // schema: MenuUpdateSchema,
+      schema: MenuUpdateSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

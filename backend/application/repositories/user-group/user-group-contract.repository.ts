@@ -13,6 +13,8 @@ export type UserGroupCreatePayload = Merge<
   {
     description?: string | null;
     permissions: string[];
+    // Ids dos grupos englobados. Opcional: grupos sem hierarquia ficam [].
+    encompasses?: string[];
   }
 >;
 
@@ -29,6 +31,9 @@ export type UserGroupQueryPayload = {
   perPage?: number;
   search?: string;
   user?: Merge<Pick<IUser, '_id'>, { role: ValueOf<typeof E_ROLE> }>;
+  // Oculta o grupo MASTER da listagem. Resolvido pelo use-case via fecho de
+  // grupos do ator (privilegiado, porem nao MASTER) — nao mais pelo role do JWT.
+  hideMaster?: boolean;
   trashed?: boolean;
   sort?: Record<string, 'asc' | 'desc'>;
 };

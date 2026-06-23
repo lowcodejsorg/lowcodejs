@@ -1,8 +1,9 @@
 #!/bin/sh
-# Migration: group-native-fields
-# Garante que cada Field do tipo FIELD_GROUP tenha os 5 campos nativos
-# (_id, creator, createdAt, trashed, trashedAt) em sua subtabela.
-# Idempotente: verifica presença dos campos antes de inserir.
+# Migration: native-fields (tabela + grupos)
+# Garante os campos nativos no nivel raiz da tabela (FIELD_NATIVE_LIST) e em cada
+# subtabela FIELD_GROUP (FIELD_GROUP_NATIVE_LIST), incluindo os de auditoria
+# updatedAt e updater. Marker versionado MIGRATION_NATIVE_FIELDS_AT.
+# Idempotente: verifica presença por slug antes de inserir.
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -20,7 +21,6 @@ runas() {
   fi
 }
 
-echo "🧩 Verificando nativos dos grupos de campos..."
 if [ -f "$MIGRATION_DIR/migrate-group-native-fields.ts" ]; then
   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-group-native-fields.ts"
 else

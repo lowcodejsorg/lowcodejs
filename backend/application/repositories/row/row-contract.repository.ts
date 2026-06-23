@@ -31,6 +31,8 @@ export type RowFindManyPayload = {
   limit: number;
   sortField?: string;
   sortDirection?: 'asc' | 'desc';
+  /** Fragmento extra de query Mongo (e.g. do row-access-guard). Mesclado via $and no filtro final. */
+  guardQuery?: Record<string, unknown>;
 };
 
 export type RowUpdatePayload = {
@@ -49,11 +51,23 @@ export type RowSetFieldPayload = {
 export type RowBulkUpdatePayload = {
   table: RowTableContext;
   ids: string[];
+  // Convidado contributor ("apenas a sua"): escopa a operacao apenas aos
+  // registros criados por este usuario. Ausente = sem escopo de dono.
+  creatorId?: string;
 };
 
 export type RowBulkDeletePayload = {
   table: RowTableContext;
   ids: string[];
+  // Convidado contributor ("apenas a sua"): escopa a operacao apenas aos
+  // registros criados por este usuario. Ausente = sem escopo de dono.
+  creatorId?: string;
+};
+
+export type RowUpdateManyPayload = {
+  table: RowTableContext;
+  filter: Record<string, unknown>;
+  update: Record<string, unknown>;
 };
 
 export type RowGroupItemPayload = {
@@ -76,6 +90,20 @@ export abstract class RowContractRepository {
   abstract count(
     table: RowTableContext,
     rawFilters?: Record<string, unknown>,
+    guardQuery?: Record<string, unknown>,
+  ): Promise<number>;
+
+  /**
+   * Conta rows (nao-trashed) cujo campo `fieldSlug` seja exatamente `value`,
+   * ignorando `excludeRowId` (a propria row no update). Match exato — usada pela
+   * validacao de unicidade (IS_UNIQUE / ARE_UNIQUE_VALUES). Difere de `count`,
+   * que passa pelo QueryBuilder e trata TEXT como `$regex` parcial.
+   */
+  abstract countFieldValue(
+    table: RowTableContext,
+    fieldSlug: string,
+    value: unknown,
+    excludeRowId?: string | null,
   ): Promise<number>;
 
   abstract update(payload: RowUpdatePayload): Promise<IRow | null>;
@@ -96,7 +124,10 @@ export abstract class RowContractRepository {
 
   abstract bulkDelete(payload: RowBulkDeletePayload): Promise<number>;
 
-  abstract emptyTrash(table: RowTableContext): Promise<number>;
+  abstract emptyTrash(
+    table: RowTableContext,
+    creatorId?: string,
+  ): Promise<number>;
 
   // ── Field-level (reaction / evaluation) ───────────────────
 
@@ -119,13 +150,20 @@ export abstract class RowContractRepository {
     payload: RowGroupItemPayload & { itemId: string },
   ): Promise<boolean>;
 
-  // ── Atomic update (forum-message) ─────────────────────────
+  // ── Atomic update (forum-message / backfill) ──────────────
 
   abstract findOneAndUpdate(
     table: RowTableContext,
     filter: Record<string, unknown>,
     update: Record<string, unknown>,
   ): Promise<IRow | null>;
+
+  /**
+   * Atualiza TODAS as rows que correspondam ao filtro.
+   * Usado pelo RowAccessGuard para backfill de rows sem o campo de visibilidade.
+   * Idempotente: nenhum efeito se nenhuma row corresponder.
+   */
+  abstract updateMany(payload: RowUpdateManyPayload): Promise<number>;
 
   // ── Infrastructure-level ops (table/import/export tools) ──
 
@@ -171,5 +209,18 @@ export abstract class RowContractRepository {
     table: RowTableContext,
     fieldSlug: string,
     ids: string[],
+  ): Promise<number>;
+
+  // ── Relationship FK (cascade/SET_NULL) ────────────────────
+
+  /**
+   * Zera (`null`) o campo `fieldSlug` em todas as rows cujo valor seja `value`.
+   * Usada no SET_NULL de relacionamento FK (1:1/1:N): orfana os filhos que
+   * apontavam para o pai removido. Retorna a quantidade de rows modificadas.
+   */
+  abstract clearFieldValue(
+    table: RowTableContext,
+    fieldSlug: string,
+    value: string,
   ): Promise<number>;
 }

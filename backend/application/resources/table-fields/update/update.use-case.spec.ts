@@ -1,15 +1,16 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  buildFieldPermissions,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RelationshipDefinitionInMemoryRepository from '@application/repositories/relationship-definition/relationship-definition-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import RelationshipMaterializationService from '@application/services/relationship/relationship-materialization.service';
 import InMemoryModelBuilder from '@application/services/table/in-memory-model-builder.service';
 import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
@@ -37,6 +38,13 @@ describe('Table Field Update Use Case', () => {
       rowInMemoryRepository,
       schemaBuilder,
       modelBuilder,
+      new RelationshipMaterializationService(
+        fieldInMemoryRepository,
+        tableInMemoryRepository,
+        new RelationshipDefinitionInMemoryRepository(),
+        schemaBuilder,
+        modelBuilder,
+      ),
     );
   });
 
@@ -45,9 +53,7 @@ describe('Table Field Update Use Case', () => {
       name: 'Nome',
       slug: 'nome',
       type: E_FIELD_TYPE.TEXT_SHORT,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       locked: false,
       allowCreateRelationshipRecords: false,
@@ -71,10 +77,7 @@ describe('Table Field Update Use Case', () => {
       _schema: {},
       fields: [field._id],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -84,9 +87,7 @@ describe('Table Field Update Use Case', () => {
       _id: field._id,
       name: 'Nome Atualizado',
       type: E_FIELD_TYPE.TEXT_SHORT,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       locked: false,
       allowCreateRelationshipRecords: false,
@@ -119,9 +120,7 @@ describe('Table Field Update Use Case', () => {
       _id: 'field-id',
       name: 'Nome',
       type: E_FIELD_TYPE.TEXT_SHORT,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       locked: false,
       allowCreateRelationshipRecords: false,
@@ -148,6 +147,49 @@ describe('Table Field Update Use Case', () => {
     expect(result.value.message).toBe('Tabela não encontrada');
   });
 
+  it('deve rejeitar RELATIONSHIP dentro de grupo (RELATIONSHIP_IN_FIELD_GROUP)', async () => {
+    await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      style: E_TABLE_STYLE.LIST,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+
+    const result = await sut.execute({
+      slug: 'clientes',
+      _id: 'field-id',
+      name: 'Pedidos',
+      type: E_FIELD_TYPE.RELATIONSHIP,
+      permissions: buildFieldPermissions(true, true, true),
+      showInFilter: false,
+      locked: false,
+      allowCreateRelationshipRecords: false,
+      required: false,
+      dropdown: [],
+      category: [],
+      defaultValue: null,
+      format: null,
+      group: 'algum-grupo',
+      multiple: true,
+      relationship: null,
+      trashed: false,
+      trashedAt: null,
+      widthInForm: null,
+      widthInList: null,
+      widthInDetail: null,
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(400);
+    expect(result.value.cause).toBe('RELATIONSHIP_IN_FIELD_GROUP');
+  });
+
   it('deve retornar erro FIELD_NOT_FOUND quando campo nao existir', async () => {
     await tableInMemoryRepository.create({
       name: 'Clientes',
@@ -155,10 +197,7 @@ describe('Table Field Update Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -168,9 +207,7 @@ describe('Table Field Update Use Case', () => {
       _id: 'non-existent-field',
       name: 'Nome',
       type: E_FIELD_TYPE.TEXT_SHORT,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       locked: false,
       allowCreateRelationshipRecords: false,
@@ -202,9 +239,7 @@ describe('Table Field Update Use Case', () => {
       name: 'Nome',
       slug: 'nome',
       type: E_FIELD_TYPE.TEXT_SHORT,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       locked: false,
       allowCreateRelationshipRecords: false,
@@ -228,10 +263,7 @@ describe('Table Field Update Use Case', () => {
       _schema: {},
       fields: [field._id],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
     });
@@ -242,9 +274,7 @@ describe('Table Field Update Use Case', () => {
       name: 'Nome',
       type: E_FIELD_TYPE.TEXT_SHORT,
       trashed: true,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       locked: false,
       allowCreateRelationshipRecords: false,
@@ -283,9 +313,7 @@ describe('Table Field Update Use Case', () => {
       _id: 'field-id',
       name: 'Nome',
       type: E_FIELD_TYPE.TEXT_SHORT,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
+      permissions: buildFieldPermissions(true, true, true),
       showInFilter: true,
       locked: false,
       allowCreateRelationshipRecords: false,

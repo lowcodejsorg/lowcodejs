@@ -25,14 +25,14 @@ import {
   ComboboxValue,
   useComboboxAnchor,
 } from '@/components/ui/combobox';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Field, FieldError } from '@/components/ui/field';
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import {
@@ -56,6 +56,7 @@ import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow, ITable, SearchableOption } from '@/lib/interfaces';
+import { isFieldShownInContext } from '@/lib/permission';
 import { resolveRelationshipLabel } from '@/lib/relationship-label';
 import {
   buildCreateRowDefaultValues,
@@ -80,7 +81,7 @@ interface RelatedRowCreateDialogProps {
 function getFormFields(table: ITable): Array<IField> {
   const order = table.fieldOrderForm;
   return table.fields
-    .filter((field) => !field.trashed && field.showInForm)
+    .filter((field) => !field.trashed && isFieldShownInContext(field, 'form'))
     .sort((a, b) => {
       const rawA = order.indexOf(a._id);
       const rawB = order.indexOf(b._id);
@@ -90,128 +91,6 @@ function getFormFields(table: ITable): Array<IField> {
       if (rawB === -1) sortB = Infinity;
       return sortA - sortB;
     });
-}
-
-type AppFormInstance = ReturnType<typeof useAppForm>;
-
-function RelatedRowFormFields({
-  form,
-  fields,
-  disabled,
-  tableSlug,
-}: {
-  form: AppFormInstance;
-  fields: Array<IField>;
-  disabled: boolean;
-  tableSlug: string;
-}): React.JSX.Element {
-  return (
-    <section className="flex flex-wrap gap-4 p-1">
-      {fields.map((rowField) => {
-        if (rowField.native) return null;
-
-        if (
-          rowField.type === E_FIELD_TYPE.REACTION ||
-          rowField.type === E_FIELD_TYPE.EVALUATION ||
-          rowField.type === E_FIELD_TYPE.FIELD_GROUP
-        ) {
-          return null;
-        }
-
-        return (
-          <div
-            key={rowField._id}
-            className="min-w-[200px]"
-            style={{ width: `calc(${rowField.widthInForm ?? 50}% - 1rem)` }}
-          >
-            <form.AppField
-              name={rowField.slug}
-              validators={{
-                onChange: ({
-                  value,
-                }: {
-                  value: Parameters<typeof buildFieldValidator>[1];
-                }) => buildFieldValidator(rowField, value),
-              }}
-            >
-              {(formRowField) => {
-                switch (rowField.type) {
-                  case E_FIELD_TYPE.TEXT_SHORT:
-                    return (
-                      <formRowField.TableRowTextField
-                        field={rowField}
-                        disabled={disabled}
-                      />
-                    );
-                  case E_FIELD_TYPE.TEXT_LONG:
-                    if (rowField.format === E_FIELD_FORMAT.RICH_TEXT) {
-                      return (
-                        <formRowField.TableRowRichTextField
-                          field={rowField}
-                          disabled={disabled}
-                        />
-                      );
-                    }
-                    return (
-                      <formRowField.TableRowTextareaField
-                        field={rowField}
-                        disabled={disabled}
-                      />
-                    );
-                  case E_FIELD_TYPE.DROPDOWN:
-                    return (
-                      <formRowField.TableRowDropdownField
-                        field={rowField}
-                        disabled={disabled}
-                        tableSlug={tableSlug}
-                      />
-                    );
-                  case E_FIELD_TYPE.DATE:
-                    return (
-                      <formRowField.TableRowDateField
-                        field={rowField}
-                        disabled={disabled}
-                      />
-                    );
-                  case E_FIELD_TYPE.FILE:
-                    return (
-                      <formRowField.TableRowFileField
-                        field={rowField}
-                        disabled={disabled}
-                      />
-                    );
-                  case E_FIELD_TYPE.RELATIONSHIP:
-                    return (
-                      <formRowField.TableRowRelationshipField
-                        field={rowField}
-                        disabled={disabled}
-                        tableSlug={tableSlug}
-                      />
-                    );
-                  case E_FIELD_TYPE.CATEGORY:
-                    return (
-                      <formRowField.TableRowCategoryField
-                        field={rowField}
-                        disabled={disabled}
-                      />
-                    );
-                  case E_FIELD_TYPE.USER:
-                    return (
-                      <formRowField.TableRowUserField
-                        field={rowField}
-                        disabled={disabled}
-                      />
-                    );
-                  default:
-                    return null;
-                }
-              }}
-            </form.AppField>
-          </div>
-        );
-      })}
-    </section>
-  );
 }
 
 function RelatedRowCreateDialogContent({
@@ -270,11 +149,11 @@ function RelatedRowCreateDialogContent({
 
   return (
     <React.Fragment>
-      <DialogHeader>
-        <DialogTitle>Novo registro em {table.name}</DialogTitle>
-      </DialogHeader>
+      <SheetHeader>
+        <SheetTitle>Novo registro em {table.name}</SheetTitle>
+      </SheetHeader>
       <form
-        className="max-h-[65vh] overflow-auto"
+        className="flex-1 overflow-auto px-4"
         onSubmit={(event) => {
           event.preventDefault();
           form.handleSubmit();
@@ -287,23 +166,112 @@ function RelatedRowCreateDialogContent({
         )}
 
         {conditionalConfig.status !== 'pending' && (
-          <RelatedRowFormFields
-            form={form}
-            fields={conditionalVisibility.visibleFields}
-            disabled={create.status === 'pending'}
-            tableSlug={table.slug}
-          />
+          // Campos renderizados inline: o form concreto (useAppForm) deixa o
+          // form.AppField inferir tipos (sem any) sem precisar de withForm — que
+          // num field component registrado reabriria o ciclo com o form-hook.
+          <section className="flex flex-wrap gap-4 p-1">
+            {conditionalVisibility.visibleFields.map((rowField) => {
+              if (rowField.native) return null;
+
+              // Sub-form não exibe RELATIONSHIP (sem relacionamento-de-
+              // relacionamento), nem REACTION/EVALUATION/grupo.
+              if (
+                rowField.type === E_FIELD_TYPE.REACTION ||
+                rowField.type === E_FIELD_TYPE.EVALUATION ||
+                rowField.type === E_FIELD_TYPE.FIELD_GROUP ||
+                rowField.type === E_FIELD_TYPE.RELATIONSHIP
+              ) {
+                return null;
+              }
+
+              return (
+                <div
+                  key={rowField._id}
+                  className="min-w-[200px]"
+                  style={{
+                    width: `calc(${rowField.widthInForm ?? 50}% - 1rem)`,
+                  }}
+                >
+                  <form.AppField
+                    name={rowField.slug}
+                    validators={{
+                      onChange: ({ value }) =>
+                        buildFieldValidator(rowField, value),
+                    }}
+                  >
+                    {(formRowField) => {
+                      const disabled = create.status === 'pending';
+                      switch (rowField.type) {
+                        case E_FIELD_TYPE.TEXT_SHORT:
+                          return (
+                            <formRowField.TableRowTextField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        case E_FIELD_TYPE.TEXT_LONG:
+                          if (rowField.format === E_FIELD_FORMAT.RICH_TEXT) {
+                            return (
+                              <formRowField.TableRowRichTextField
+                                field={rowField}
+                                disabled={disabled}
+                              />
+                            );
+                          }
+                          return (
+                            <formRowField.TableRowTextareaField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        case E_FIELD_TYPE.DROPDOWN:
+                          return (
+                            <formRowField.TableRowDropdownField
+                              field={rowField}
+                              disabled={disabled}
+                              tableSlug={table.slug}
+                            />
+                          );
+                        case E_FIELD_TYPE.DATE:
+                          return (
+                            <formRowField.TableRowDateField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        case E_FIELD_TYPE.FILE:
+                          return (
+                            <formRowField.TableRowFileField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        case E_FIELD_TYPE.CATEGORY:
+                          return (
+                            <formRowField.TableRowCategoryField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        case E_FIELD_TYPE.USER:
+                          return (
+                            <formRowField.TableRowUserField
+                              field={rowField}
+                              disabled={disabled}
+                            />
+                          );
+                        default:
+                          return null;
+                      }
+                    }}
+                  </form.AppField>
+                </div>
+              );
+            })}
+          </section>
         )}
       </form>
-      <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={create.status === 'pending'}
-          onClick={() => onOpenChange(false)}
-        >
-          Cancelar
-        </Button>
+      <SheetFooter>
         <Button
           type="button"
           disabled={create.status === 'pending' || isUploading}
@@ -312,26 +280,37 @@ function RelatedRowCreateDialogContent({
           {create.status === 'pending' && <Spinner />}
           Salvar
         </Button>
-      </DialogFooter>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={create.status === 'pending'}
+          onClick={() => onOpenChange(false)}
+        >
+          Cancelar
+        </Button>
+      </SheetFooter>
     </React.Fragment>
   );
 }
 
-function RelatedRowCreateDialog(
+export function RelatedRowCreateDialog(
   props: RelatedRowCreateDialogProps,
 ): React.JSX.Element {
   return (
-    <Dialog
+    <Sheet
       modal={false}
       open={props.open}
       onOpenChange={props.onOpenChange}
     >
-      <DialogContent className="sm:max-w-3xl">
+      <SheetContent
+        side="right"
+        className="w-full gap-0 p-0 sm:max-w-2xl [&>button]:hidden"
+      >
         <UploadingProvider>
           <RelatedRowCreateDialogContent {...props} />
         </UploadingProvider>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -899,6 +878,9 @@ function DefaultRelationshipField({
   const singleInputValue = searchQuery;
 
   if (isMultiple) {
+    // Modo select múltiplo: combobox com chips integrados no input (vinculados
+    // viram chips, primeiros 2 + "+N"; digitar busca; criar inline). Os ids vão
+    // no payload e viram links no backend (persist/dual-write).
     return (
       <React.Fragment>
         <Field
@@ -912,9 +894,9 @@ function DefaultRelationshipField({
           />
           <div className="relative">
             <Combobox
+              multiple
               data-test-id="table-row-relationship"
               items={items}
-              multiple
               value={selectedItems}
               onValueChange={handleValueChange}
               inputValue={searchQuery}
@@ -927,31 +909,27 @@ function DefaultRelationshipField({
                 className={cn(isInvalid && 'border-destructive')}
               >
                 <ComboboxValue>
-                  {(values: Array<IRow>): React.ReactNode => {
-                    let chipsPlaceholder = `Selecione ${field.name.toLowerCase()}`;
-                    if (values.length > 0) {
-                      chipsPlaceholder = '';
-                    }
-                    return (
-                      <React.Fragment>
-                        {values.slice(0, 2).map((row) => (
-                          <ComboboxChip
-                            key={row._id}
-                            aria-label={getRowLabel(row)}
-                          >
-                            {getRowLabel(row)}
-                          </ComboboxChip>
-                        ))}
-                        {values.length > 2 && (
-                          <span className="text-muted-foreground text-xs">
-                            +{values.length - 2}
-                          </span>
-                        )}
-                        <ComboboxChipsInput placeholder={chipsPlaceholder} />
-                      </React.Fragment>
-                    );
-                  }}
+                  {(values: Array<IRow>): React.ReactNode => (
+                    <React.Fragment>
+                      {values.slice(0, 2).map((row) => (
+                        <ComboboxChip
+                          key={row._id}
+                          aria-label={getRowLabel(row)}
+                        >
+                          {getRowLabel(row)}
+                        </ComboboxChip>
+                      ))}
+                      {values.length > 2 && (
+                        <span className="text-muted-foreground text-sm">
+                          +{values.length - 2}
+                        </span>
+                      )}
+                    </React.Fragment>
+                  )}
                 </ComboboxValue>
+                <ComboboxChipsInput
+                  placeholder={`Adicionar ${field.name.toLowerCase()}`}
+                />
               </ComboboxChips>
               <ComboboxContent anchor={anchorRef}>
                 <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>

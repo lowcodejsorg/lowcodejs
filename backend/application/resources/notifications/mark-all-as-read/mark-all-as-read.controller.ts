@@ -8,6 +8,8 @@ import { NotificationContractRepository } from '@application/repositories/notifi
 import NotificationMongooseRepository from '@application/repositories/notification/notification.repository';
 import { getNotificationsNamespace } from '@application/resources/notifications/notifications.socket';
 
+import { NotificationMarkAllAsReadSchema } from './mark-all-as-read.schema';
+
 @Controller({
   route: '/notifications',
 })
@@ -22,6 +24,7 @@ export default class {
     url: '/read-all',
     options: {
       onRequest: [AuthenticationMiddleware({ optional: false })],
+      schema: NotificationMarkAllAsReadSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
