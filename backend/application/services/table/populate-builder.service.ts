@@ -21,11 +21,14 @@ import { PopulateBuilderContractService } from './populate-builder-contract.serv
 export default class MongoosePopulateBuilder implements PopulateBuilderContractService {
   /**
    * Profundidade maxima de populate aninhado de relacionamentos.
-   * Limita o quanto navegamos em relacionamentos-de-relacionamentos ao montar
-   * labels customizados (paths como `fornecedor.cidade.uf`) e, principalmente,
-   * evita recursao infinita em esquemas ciclicos (ex: localizacao.pai -> localizacao).
+   * 1 = popula apenas o relacionamento direto (sem relacionamento-de-
+   * relacionamento). Esquemas com muitos mirrors cruzados explodem em
+   * O(branching^depth) ao recompilar models dinamicos por nivel/ramo
+   * (o `visited` e por-caminho, nao global), travando o populate antes da
+   * query rodar. Manter raso elimina a explosao; o relacionamento direto
+   * continua sendo populado normalmente.
    */
-  private static readonly MAX_RELATIONSHIP_DEPTH = 5;
+  private static readonly MAX_RELATIONSHIP_DEPTH = 1;
 
   constructor(
     private readonly model: ModelBuilderContractService,
