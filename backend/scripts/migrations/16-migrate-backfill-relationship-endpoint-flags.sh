@@ -20,8 +20,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-backfill-relationship-endpoint-flags.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-backfill-relationship-endpoint-flags.ts"
+if [ -f "$MIGRATION_DIR/16-migrate-backfill-relationship-endpoint-flags.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/16-migrate-backfill-relationship-endpoint-flags.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-backfill-relationship-endpoint-flags.js"
+  runas node "$MIGRATION_DIR/16-migrate-backfill-relationship-endpoint-flags.js" "$@"
 fi

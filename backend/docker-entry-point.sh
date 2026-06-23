@@ -20,11 +20,20 @@ runas() {
   fi
 }
 
+# `./docker-entry-point.sh --force` reexecuta TODAS as migrations ignorando o
+# marker; sem o argumento, roda normal. O --force é consumido aqui (shift) para
+# não poluir o CMD do server no `exec "$@"` final. Cada .sh repassa "$@" ao node.
+FORCE_FLAG=""
+if [ "$1" = "--force" ]; then
+  FORCE_FLAG="--force"
+  shift
+fi
+
 echo "🚀 Preparando o banco de dados"
 echo ""
 echo "Migrations"
 for script in "$SCRIPT_DIR/scripts/migrations"/*.sh; do
-  sh "$script"
+  sh "$script" $FORCE_FLAG
 done
 echo "✓ Migrations concluídas"
 echo ""
@@ -34,6 +43,12 @@ if [ -f "$SCRIPT_DIR/database/seeders/main.ts" ]; then
   runas npm run --silent seed
 else
   runas node "$SCRIPT_DIR/database/seeders/main.js"
+fi
+
+# Sem CMD (ex.: rodou só `./docker-entry-point.sh --force` para migrar): nada a
+# subir, sai limpo após migrations + seeders.
+if [ "$#" -eq 0 ]; then
+  exit 0
 fi
 
 if command -v su-exec >/dev/null 2>&1; then

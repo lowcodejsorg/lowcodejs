@@ -21,8 +21,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-backfill-extension-table-settings.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-backfill-extension-table-settings.ts"
+if [ -f "$MIGRATION_DIR/20-migrate-backfill-extension-table-settings.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/20-migrate-backfill-extension-table-settings.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-backfill-extension-table-settings.js"
+  runas node "$MIGRATION_DIR/20-migrate-backfill-extension-table-settings.js" "$@"
 fi

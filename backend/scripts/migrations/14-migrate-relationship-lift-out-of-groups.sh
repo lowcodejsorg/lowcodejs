@@ -21,8 +21,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-relationship-lift-out-of-groups.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-relationship-lift-out-of-groups.ts"
+if [ -f "$MIGRATION_DIR/14-migrate-relationship-lift-out-of-groups.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/14-migrate-relationship-lift-out-of-groups.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-relationship-lift-out-of-groups.js"
+  runas node "$MIGRATION_DIR/14-migrate-relationship-lift-out-of-groups.js" "$@"
 fi

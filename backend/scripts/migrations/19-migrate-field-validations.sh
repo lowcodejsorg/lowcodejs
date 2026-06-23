@@ -21,8 +21,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-field-validations.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-field-validations.ts"
+if [ -f "$MIGRATION_DIR/19-migrate-field-validations.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/19-migrate-field-validations.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-field-validations.js"
+  runas node "$MIGRATION_DIR/19-migrate-field-validations.js" "$@"
 fi

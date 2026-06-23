@@ -20,8 +20,8 @@ runas() {
   fi
 }
 
-# if [ -f "$MIGRATION_DIR/migrate-backfill-storage-location.ts" ]; then
-#   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-backfill-storage-location.ts"
+# if [ -f "$MIGRATION_DIR/03-migrate-backfill-storage-location.ts" ]; then
+#   runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/03-migrate-backfill-storage-location.ts"
 # else
-#   runas node "$MIGRATION_DIR/migrate-backfill-storage-location.js"
+#   runas node "$MIGRATION_DIR/03-migrate-backfill-storage-location.js"
 # fi

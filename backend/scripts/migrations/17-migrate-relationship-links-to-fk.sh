@@ -21,8 +21,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-relationship-links-to-fk.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-relationship-links-to-fk.ts"
+if [ -f "$MIGRATION_DIR/17-migrate-relationship-links-to-fk.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/17-migrate-relationship-links-to-fk.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-relationship-links-to-fk.js"
+  runas node "$MIGRATION_DIR/17-migrate-relationship-links-to-fk.js" "$@"
 fi

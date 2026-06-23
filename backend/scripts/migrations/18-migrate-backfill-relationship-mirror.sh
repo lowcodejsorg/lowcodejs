@@ -22,8 +22,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-backfill-relationship-mirror.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-backfill-relationship-mirror.ts"
+if [ -f "$MIGRATION_DIR/18-migrate-backfill-relationship-mirror.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/18-migrate-backfill-relationship-mirror.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-backfill-relationship-mirror.js"
+  runas node "$MIGRATION_DIR/18-migrate-backfill-relationship-mirror.js" "$@"
 fi

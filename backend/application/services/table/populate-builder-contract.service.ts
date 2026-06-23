@@ -12,6 +12,7 @@ export abstract class PopulateBuilderContractService {
     groups?: IGroupConfiguration[],
     conn?: mongoose.Connection,
     depth?: number,
+    visited?: Set<string>,
   ): Promise<mongoose.PopulateOptions[]>;
 
   abstract getRelationships(fields?: IField[]): IField[];

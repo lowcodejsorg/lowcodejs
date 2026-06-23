@@ -19,8 +19,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-table-permissions.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-table-permissions.ts"
+if [ -f "$MIGRATION_DIR/09-migrate-table-permissions.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/09-migrate-table-permissions.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-table-permissions.js"
+  runas node "$MIGRATION_DIR/09-migrate-table-permissions.js" "$@"
 fi

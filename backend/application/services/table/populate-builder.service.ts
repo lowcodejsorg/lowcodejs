@@ -53,6 +53,7 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
     groups?: IGroupConfiguration[],
     conn?: mongoose.Connection,
     depth: number = MongoosePopulateBuilder.MAX_RELATIONSHIP_DEPTH,
+    visited: Set<string> = new Set(),
   ): Promise<mongoose.PopulateOptions[]> {
     const relacionamentos = this.getRelationships(fields);
     const populate = [];
@@ -106,6 +107,12 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
       }
 
       if (field.type === E_FIELD_TYPE.RELATIONSHIP) {
+        // Campo não-materializado (sem relationshipId) não tem ref válida para
+        // expandir aqui; segui-lo recompila model dinâmico por nível e recursa
+        // em esquema cíclico, estourando o heap. A hidratação real é por links
+        // (relationship-builder). Pula.
+        if (!field?.relationship?.relationshipId) continue;
+
         const relationshipTableId = field?.relationship?.table?._id?.toString();
         const relationshipTableSlug = field?.relationship?.table?.slug;
 
@@ -131,15 +138,21 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
           });
 
           let relationshipPopulate: mongoose.PopulateOptions[] = [];
-          if (depth > 1) {
+          const nextTableId = relationshipTable._id.toString();
+          // Guard de ciclo: só aprofunda se o alvo ainda não está na cadeia
+          // ancestral (evita A→B→A expandir N níveis recompilando models).
+          if (depth > 1 && !visited.has(nextTableId)) {
             const relationshipFields = this.getRelationships(
               relationshipTable?.fields ?? [],
             );
+            const nextVisited = new Set(visited);
+            nextVisited.add(nextTableId);
             relationshipPopulate = await this.build(
               relationshipFields,
               relationshipTable?.groups ?? [],
               conn,
               depth - 1,
+              nextVisited,
             );
           }
 

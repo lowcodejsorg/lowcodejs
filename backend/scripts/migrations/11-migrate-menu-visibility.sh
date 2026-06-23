@@ -19,8 +19,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-menu-visibility.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-menu-visibility.ts"
+if [ -f "$MIGRATION_DIR/11-migrate-menu-visibility.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/11-migrate-menu-visibility.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-menu-visibility.js"
+  runas node "$MIGRATION_DIR/11-migrate-menu-visibility.js" "$@"
 fi

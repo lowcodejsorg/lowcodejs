@@ -20,8 +20,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-dual-connection.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-dual-connection.ts"
+if [ -f "$MIGRATION_DIR/01-migrate-dual-connection.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/01-migrate-dual-connection.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-dual-connection.js"
+  runas node "$MIGRATION_DIR/01-migrate-dual-connection.js" "$@"
 fi

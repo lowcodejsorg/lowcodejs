@@ -20,8 +20,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-row-status-trashed.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-row-status-trashed.ts"
+if [ -f "$MIGRATION_DIR/07-migrate-row-status-trashed.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/07-migrate-row-status-trashed.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-row-status-trashed.js"
+  runas node "$MIGRATION_DIR/07-migrate-row-status-trashed.js" "$@"
 fi

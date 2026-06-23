@@ -21,8 +21,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-group-native-fields.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-group-native-fields.ts"
+if [ -f "$MIGRATION_DIR/02-migrate-group-native-fields.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/02-migrate-group-native-fields.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-group-native-fields.js"
+  runas node "$MIGRATION_DIR/02-migrate-group-native-fields.js" "$@"
 fi

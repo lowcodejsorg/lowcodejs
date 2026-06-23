@@ -20,8 +20,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-relationship-table-id.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-relationship-table-id.ts"
+if [ -f "$MIGRATION_DIR/06-migrate-relationship-table-id.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/06-migrate-relationship-table-id.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-relationship-table-id.js"
+  runas node "$MIGRATION_DIR/06-migrate-relationship-table-id.js" "$@"
 fi

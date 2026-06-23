@@ -20,8 +20,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-backfill-logger-audit.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-backfill-logger-audit.ts"
+if [ -f "$MIGRATION_DIR/13-migrate-backfill-logger-audit.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/13-migrate-backfill-logger-audit.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-backfill-logger-audit.js"
+  runas node "$MIGRATION_DIR/13-migrate-backfill-logger-audit.js" "$@"
 fi

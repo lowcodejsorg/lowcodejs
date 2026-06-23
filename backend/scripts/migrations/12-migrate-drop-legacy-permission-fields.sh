@@ -20,8 +20,8 @@ runas() {
   fi
 }
 
-if [ -f "$MIGRATION_DIR/migrate-drop-legacy-permission-fields.ts" ]; then
-  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/migrate-drop-legacy-permission-fields.ts"
+if [ -f "$MIGRATION_DIR/12-migrate-drop-legacy-permission-fields.ts" ]; then
+  runas node --import @swc-node/register/esm-register "$MIGRATION_DIR/12-migrate-drop-legacy-permission-fields.ts" "$@"
 else
-  runas node "$MIGRATION_DIR/migrate-drop-legacy-permission-fields.js"
+  runas node "$MIGRATION_DIR/12-migrate-drop-legacy-permission-fields.js" "$@"
 fi
