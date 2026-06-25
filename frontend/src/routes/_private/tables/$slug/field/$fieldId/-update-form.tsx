@@ -13,6 +13,7 @@ import {
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
   E_PERMISSION_TARGET,
+  NATIVE_FIELD_LABEL_DEFAULTS,
 } from '@/lib/constant';
 import {
   FIELD_NAME_MAX_LENGTH,
@@ -79,6 +80,11 @@ export const FieldUpdateSchema = z.object({
     .string()
     .max(500, 'A dica deve ter no máximo 500 caracteres')
     .default(''),
+  // Rótulo customizado de exibição (vazio = usa o name original).
+  label: z
+    .string()
+    .max(120, 'O rótulo deve ter no máximo 120 caracteres')
+    .default(''),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
   validations: z.array(z.custom<IFieldValidation>()).default([]),
@@ -128,6 +134,7 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   name: '',
   slug: '',
   tip: '',
+  label: '',
   type: '',
   format: '',
   validations: [],
@@ -174,6 +181,7 @@ export const UpdateFieldFormFields = withForm({
     table: undefined as ITable | undefined,
     targetField: undefined as IField | undefined,
     isLocked: false,
+    isNative: false,
     isGroupField: false,
   },
   render: function Render({
@@ -184,6 +192,7 @@ export const UpdateFieldFormFields = withForm({
     table,
     targetField,
     isLocked,
+    isNative,
     isGroupField,
   }) {
     // useStore para valores reativos do form
@@ -271,6 +280,31 @@ export const UpdateFieldFormFields = withForm({
       form.setFieldValue('relationship.fieldSlug', picked.slug);
       // @ts-expect-error TanStack Form type depth issue with nested configuration
     }, [isRelationship, relatedTable.data, relationshipFieldSlug, form]);
+
+    // Campo nativo: name/slug são fixos. Só permitimos customizar o rótulo de
+    // exibição (label). Demais controles ficam ocultos.
+    if (isNative) {
+      const nativePlaceholder =
+        NATIVE_FIELD_LABEL_DEFAULTS[targetField?.slug ?? ''] ??
+        targetField?.name ??
+        '';
+      return (
+        <section
+          data-test-id="field-update-form-fields"
+          className="space-y-4 p-2"
+        >
+          <form.AppField name="label">
+            {(field) => (
+              <field.FieldText
+                label="Rótulo"
+                placeholder={nativePlaceholder}
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+        </section>
+      );
+    }
 
     return (
       <section

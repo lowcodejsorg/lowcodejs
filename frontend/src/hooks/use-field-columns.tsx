@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow } from '@/lib/interfaces';
+import { resolveFieldLabel } from '@/lib/table';
 
 const ROUTE_ID = '/_private/tables/$slug/';
 
@@ -184,11 +185,11 @@ export function useFieldColumns({
       (field, index): ColumnDef<IRow, any> => ({
         id: field._id,
         accessorFn: (row) => row[field.slug],
-        meta: { label: field.name, field },
+        meta: { label: resolveFieldLabel(field), field },
         size: field.widthInList ?? undefined,
         header: () => (
           <DataTableColumnHeader
-            title={field.name}
+            title={resolveFieldLabel(field)}
             orderKey={
               field.type !== E_FIELD_TYPE.FIELD_GROUP
                 ? 'order-'.concat(field.slug)

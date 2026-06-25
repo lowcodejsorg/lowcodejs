@@ -54,6 +54,7 @@ import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 import type { FieldContext } from '@/lib/permission';
 import { isFieldShownInContext } from '@/lib/permission';
+import { resolveFieldLabel } from '@/lib/table';
 import { cn } from '@/lib/utils';
 
 // Chave do toggle -> contexto do binding. `showInFilter` não é permissão.
@@ -142,7 +143,6 @@ function SortableManagementItem({
   if (widthKey) {
     currentWidth = field[widthKey] ?? 50;
   }
-  const isNative = !!field.native;
 
   const [localWidth, setLocalWidth] = useState<string>(
     String(currentWidth ?? 0),
@@ -173,7 +173,7 @@ function SortableManagementItem({
       )}
     >
       <FieldTitle
-        value={field.name}
+        value={resolveFieldLabel(field)}
         className="text-sm font-medium"
       />
       <div className="flex items-center gap-1">
@@ -209,16 +209,14 @@ function SortableManagementItem({
             <EyeOffIcon className="h-4 w-4 text-muted-foreground" />
           )}
         </Button>
-        {!isNative && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={onEdit}
-          >
-            <PencilIcon className="h-4 w-4" />
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={onEdit}
+        >
+          <PencilIcon className="h-4 w-4" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
@@ -255,7 +253,7 @@ function TrashedItem({
   return (
     <div className="flex items-center justify-between gap-2 rounded-lg border bg-muted/50 p-3">
       <FieldTitle
-        value={field.name}
+        value={resolveFieldLabel(field)}
         className="text-sm text-muted-foreground"
       />
       <div className="flex items-center gap-1">

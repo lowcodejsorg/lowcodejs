@@ -43,6 +43,18 @@ export const E_FIELD_TYPE = {
   STATUS: 'STATUS',
 } as const;
 
+// Rotulos default dos campos nativos (espelha o backend). Usado como placeholder
+// no editor de rotulo de campo nativo. Chave = slug do campo nativo.
+export const NATIVE_FIELD_LABEL_DEFAULTS: Record<string, string> = {
+  _id: 'ID',
+  creator: 'Criador',
+  createdAt: 'Criado em',
+  updatedAt: 'Modificado em',
+  updater: 'Modificado por',
+  status: 'Status',
+  trashedAt: 'Enviado para lixeira em',
+};
+
 export const E_RELATIONSHIP_ON_DELETE = {
   CASCADE: 'CASCADE',
   SET_NULL: 'SET_NULL',

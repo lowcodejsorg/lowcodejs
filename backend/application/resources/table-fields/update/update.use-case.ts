@@ -141,6 +141,11 @@ export default class TableFieldUpdateUseCase {
           widthInList: payload.widthInList,
           widthInDetail: payload.widthInDetail,
           tip: payload.tip,
+          // Rotulo customizado (so o texto, nunca o slug). Incluido apenas quando
+          // enviado: callers que omitem nao apagam o label.
+          ...(payload.label !== undefined && {
+            label: payload.label,
+          }),
         });
 
         const fields = table.fields.map((f) =>

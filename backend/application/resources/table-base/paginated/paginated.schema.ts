@@ -186,6 +186,11 @@ export const TablePaginatedSchema: FastifySchema = {
                       type: 'boolean',
                       description: 'O campo é nativo',
                     },
+                    label: {
+                      type: 'string',
+                      nullable: true,
+                      description: 'Rótulo customizado de exibição do campo',
+                    },
                     defaultValue: {
                       anyOf: [
                         { type: 'string' },
@@ -402,6 +407,7 @@ export const TablePaginatedSchema: FastifySchema = {
                           tip: { type: 'string', nullable: true },
                           locked: { type: 'boolean' },
                           native: { type: 'boolean' },
+                          label: { type: 'string', nullable: true },
                           defaultValue: {
                             anyOf: [
                               { type: 'string' },

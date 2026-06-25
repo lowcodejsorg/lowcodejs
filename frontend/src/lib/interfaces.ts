@@ -304,6 +304,9 @@ export type IField = Merge<
     defaultValue: string | Array<string> | null;
     locked?: boolean;
     native?: boolean;
+    // Rotulo customizado de exibicao. `name` continua original (controla o slug);
+    // `label`, quando definido, e o texto mostrado na UI. null = usa o name.
+    label?: string | null;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: Array<IDropdown>;
     allowCustomDropdownOptions?: boolean;

@@ -41,6 +41,7 @@ import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
+import { resolveFieldLabel } from '@/lib/table';
 
 interface RowDetailViewProps {
   table: ITable;
@@ -367,7 +368,9 @@ export function RowDetailView({
                 key={field._id}
                 className="space-y-1"
               >
-                <p className="text-sm font-medium">{field.name}</p>
+                <p className="text-sm font-medium">
+                  {resolveFieldLabel(field)}
+                </p>
                 {renderCell(field, data, slug)}
               </div>
             ),
@@ -395,7 +398,7 @@ export function RowDetailView({
                       key={field._id}
                       value={field._id}
                     >
-                      {field.name}
+                      {resolveFieldLabel(field)}
                     </TabsTrigger>
                   ),
                 )}
@@ -428,7 +431,7 @@ export function RowDetailView({
                       key={field._id}
                       value={field._id}
                     >
-                      {field.name}
+                      {resolveFieldLabel(field)}
                     </TabsTrigger>
                   ),
                 )}

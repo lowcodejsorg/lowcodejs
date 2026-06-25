@@ -12,6 +12,16 @@ import type {
 import { resolveRelationshipLabel } from './relationship-label';
 
 // N:N (muitos-para-muitos): os dois lados múltiplos. Só N:N usa o pivô/links.
+// Rótulo de exibição do campo: `label` customizado tem prioridade sobre `name`
+// (que continua sendo o nome original que controla o slug). Nunca toca o slug.
+export function resolveFieldLabel(
+  field: Pick<IField, 'name' | 'label'>,
+): string {
+  const label = field.label?.trim();
+  if (label) return label;
+  return field.name;
+}
+
 export function isManyToManyRelationship(field: IField): boolean {
   if (field.type !== E_FIELD_TYPE.RELATIONSHIP) return false;
   if (!field.multiple) return false;

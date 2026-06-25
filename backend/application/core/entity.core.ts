@@ -523,6 +523,10 @@ export type IField = Merge<
     defaultValue: string | string[] | null;
     locked?: boolean;
     native?: boolean;
+    // Rotulo customizado de exibicao do campo. `name` continua sendo o nome
+    // original (controla o slug); `label`, quando definido, e o texto mostrado na
+    // UI no lugar do name. null = usa o name. Nunca afeta o slug.
+    label?: string | null;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: IDropdown[];
     allowCustomDropdownOptions?: boolean;
@@ -615,6 +619,7 @@ export type FieldCreatePayload = Pick<
   | 'tip'
   | 'locked'
   | 'native'
+  | 'label'
   | 'defaultValue'
   | 'relationship'
   | 'dropdown'
@@ -1119,9 +1124,21 @@ export function buildFieldPermissions(
   };
 }
 
+// Rotulos default dos campos nativos (fonte unica). Os `name` das listas nativas
+// referenciam este mapa; o frontend tambem o espelha para o placeholder do editor.
+export const NATIVE_FIELD_LABEL_DEFAULTS: Record<string, string> = {
+  _id: 'ID',
+  creator: 'Criador',
+  createdAt: 'Criado em',
+  updatedAt: 'Modificado em',
+  updater: 'Modificado por',
+  status: 'Status',
+  trashedAt: 'Enviado para lixeira em',
+};
+
 export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
   {
-    name: 'ID',
+    name: NATIVE_FIELD_LABEL_DEFAULTS._id,
     slug: '_id',
     type: E_FIELD_TYPE.IDENTIFIER,
     native: true,
@@ -1141,7 +1158,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Criador',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.creator,
     slug: 'creator',
     type: E_FIELD_TYPE.CREATOR,
     native: true,
@@ -1161,7 +1178,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Criado em',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.createdAt,
     slug: 'createdAt',
     type: E_FIELD_TYPE.CREATED_AT,
     native: true,
@@ -1181,7 +1198,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Modificado em',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.updatedAt,
     slug: 'updatedAt',
     type: E_FIELD_TYPE.UPDATED_AT,
     native: true,
@@ -1201,7 +1218,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Modificado por',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.updater,
     slug: 'updater',
     type: E_FIELD_TYPE.UPDATER,
     native: true,
@@ -1221,7 +1238,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Status',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.status,
     slug: 'status',
     type: E_FIELD_TYPE.STATUS,
     native: true,
@@ -1241,7 +1258,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Enviado para lixeira em',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.trashedAt,
     slug: 'trashedAt',
     type: E_FIELD_TYPE.TRASHED_AT,
     native: true,
@@ -1264,7 +1281,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
 
 export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
   {
-    name: 'ID',
+    name: NATIVE_FIELD_LABEL_DEFAULTS._id,
     slug: '_id',
     type: E_FIELD_TYPE.IDENTIFIER,
     native: true,
@@ -1284,7 +1301,7 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Criador',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.creator,
     slug: 'creator',
     type: E_FIELD_TYPE.CREATOR,
     native: true,
@@ -1304,7 +1321,7 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Criado em',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.createdAt,
     slug: 'createdAt',
     type: E_FIELD_TYPE.CREATED_AT,
     native: true,
@@ -1324,7 +1341,7 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Modificado em',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.updatedAt,
     slug: 'updatedAt',
     type: E_FIELD_TYPE.UPDATED_AT,
     native: true,
@@ -1344,7 +1361,7 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Modificado por',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.updater,
     slug: 'updater',
     type: E_FIELD_TYPE.UPDATER,
     native: true,
@@ -1364,7 +1381,7 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Status',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.status,
     slug: 'status',
     type: E_FIELD_TYPE.STATUS,
     native: true,
@@ -1384,7 +1401,7 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Enviado para lixeira em',
+    name: NATIVE_FIELD_LABEL_DEFAULTS.trashedAt,
     slug: 'trashedAt',
     type: E_FIELD_TYPE.TRASHED_AT,
     native: true,

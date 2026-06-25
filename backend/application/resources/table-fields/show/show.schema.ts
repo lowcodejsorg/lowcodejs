@@ -115,6 +115,11 @@ export const TableFieldShowSchema: FastifySchema = {
           description: 'Campo está bloqueado e não pode ser modificado',
         },
         native: { type: 'boolean', description: 'Campo é nativo' },
+        label: {
+          type: 'string',
+          nullable: true,
+          description: 'Rótulo customizado de exibição do campo',
+        },
         format: {
           type: 'string',
           nullable: true,

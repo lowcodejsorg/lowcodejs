@@ -117,6 +117,19 @@ export const FieldTipSchema = z
   .default(null)
   .transform((value) => (value && value.length > 0 ? value : null));
 export const FieldLockedSchema = z.boolean().default(false);
+// Rotulo customizado de exibicao. SEM default: ausente permanece `undefined` para
+// que callers que reenviam o campo sem `label` (toggles de visibilidade/largura)
+// nunca apaguem o label. Presente vazio → null (limpa, volta ao name).
+export const FieldLabelSchema = z
+  .string()
+  .trim()
+  .max(120)
+  .nullable()
+  .transform((value) => {
+    if (value && value.length > 0) return value;
+    return null;
+  })
+  .optional();
 export const FieldDefaultValueSchema = z
   .union([z.string(), z.array(z.string())])
   .nullable()
@@ -229,6 +242,7 @@ export const TableFieldBaseSchema = z.object({
   widthInDetail: FieldWidthInDetailSchema,
   tip: FieldTipSchema,
   locked: FieldLockedSchema,
+  label: FieldLabelSchema,
   defaultValue: FieldDefaultValueSchema,
   relationship: FieldRelationshipSchema,
   dropdown: FieldDropdownSchema,

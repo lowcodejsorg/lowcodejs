@@ -137,6 +137,7 @@ function RouteComponent(): React.JSX.Element {
             permission.can('UPDATE_FIELD') &&
             !(_read.data as IField & { trashed?: boolean }).trashed &&
             (!_read.data.locked ||
+              _read.data.native ||
               _read.data.type === E_FIELD_TYPE.DROPDOWN) && (
               <Button
                 type="button"
@@ -161,10 +162,18 @@ function RouteComponent(): React.JSX.Element {
             campos".
           </p>
         )}
-      {_read.status === 'success' && _read.data.locked && (
-        <p className="text-sm text-amber-600 px-2 pb-2">
-          Este campo faz parte de uma predefinição e não pode ser alterado ou
-          removido.
+      {_read.status === 'success' &&
+        _read.data.locked &&
+        !_read.data.native && (
+          <p className="text-sm text-amber-600 px-2 pb-2">
+            Este campo faz parte de uma predefinição e não pode ser alterado ou
+            removido.
+          </p>
+        )}
+      {_read.status === 'success' && _read.data.native && (
+        <p className="text-sm text-muted-foreground px-2 pb-2">
+          Campo nativo: você pode personalizar apenas o rótulo de exibição. O
+          nome interno e o identificador permanecem fixos.
         </p>
       )}
 
@@ -329,6 +338,7 @@ function FieldUpdateContent({
       name: data.name,
       slug: data.slug,
       tip: data.tip ?? '',
+      label: data.label ?? '',
       type: data.type,
       format: data.format ?? '',
       validations: data.validations ?? [],
@@ -381,6 +391,11 @@ function FieldUpdateContent({
       const hasDropdown = (value.dropdown?.length ?? 0) > 0;
       const hasCategory = (value.category?.length ?? 0) > 0;
 
+      // Rótulo customizado: vazio → null (volta ao name).
+      const trimmedLabel = value.label?.trim();
+      let nextLabel: string | null = null;
+      if (trimmedLabel) nextLabel = trimmedLabel;
+
       const payload: Partial<IField> & {
         trashed?: boolean;
         trashedAt?: string | null;
@@ -388,6 +403,7 @@ function FieldUpdateContent({
         name: value.name,
         slug: value.slug,
         tip: normalizeTip(value.tip),
+        label: nextLabel,
         type: value.type,
         required: value.trashed ? false : value.required,
         multiple: value.multiple,
@@ -500,6 +516,7 @@ function FieldUpdateContent({
             table={table}
             targetField={data}
             isLocked={data.locked ?? false}
+            isNative={data.native ?? false}
             isGroupField={Boolean(groupSlug)}
           />
         </form>

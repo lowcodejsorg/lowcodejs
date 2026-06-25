@@ -339,4 +339,141 @@ describe('Table Field Update Use Case', () => {
     expect(result.value.cause).toBe('UPDATE_FIELD_TABLE_ERROR');
     expect(result.value.message).toBe('Erro interno do servidor');
   });
+
+  it('deve aplicar label customizado em campo nativo preservando name e slug originais', async () => {
+    const field = await fieldInMemoryRepository.create({
+      name: 'Criado em',
+      slug: 'createdAt',
+      type: E_FIELD_TYPE.CREATED_AT,
+      permissions: buildFieldPermissions(true, false, true),
+      showInFilter: true,
+      locked: true,
+      allowCreateRelationshipRecords: false,
+      native: true,
+      required: false,
+      category: [],
+      dropdown: [],
+      defaultValue: null,
+      format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
+      group: null,
+      multiple: false,
+      relationship: null,
+      widthInForm: null,
+      widthInList: 10,
+      widthInDetail: null,
+    });
+
+    await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [field._id],
+      owner: 'owner-id',
+      style: E_TABLE_STYLE.LIST,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+
+    const result = await sut.execute({
+      slug: 'clientes',
+      _id: field._id,
+      // Tentativa de mudar name/type/slug deve ser ignorada em campo nativo.
+      name: 'Tentativa de renomear',
+      type: E_FIELD_TYPE.TEXT_SHORT,
+      permissions: buildFieldPermissions(true, false, true),
+      showInFilter: true,
+      locked: true,
+      allowCreateRelationshipRecords: false,
+      required: false,
+      dropdown: [],
+      category: [],
+      defaultValue: null,
+      format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
+      group: null,
+      multiple: false,
+      relationship: null,
+      trashed: false,
+      trashedAt: null,
+      widthInForm: null,
+      widthInList: 10,
+      widthInDetail: null,
+      label: 'Data de início',
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+
+    // label customizado salvo; name e slug originais preservados.
+    expect(result.value.label).toBe('Data de início');
+    expect(result.value.name).toBe('Criado em');
+    expect(result.value.slug).toBe('createdAt');
+    expect(result.value.type).toBe(E_FIELD_TYPE.CREATED_AT);
+  });
+
+  it('deve limpar label (volta ao name) quando enviado vazio', async () => {
+    const field = await fieldInMemoryRepository.create({
+      name: 'Criado em',
+      slug: 'createdAt',
+      type: E_FIELD_TYPE.CREATED_AT,
+      permissions: buildFieldPermissions(true, false, true),
+      showInFilter: true,
+      locked: true,
+      allowCreateRelationshipRecords: false,
+      native: true,
+      label: 'Data de início',
+      required: false,
+      category: [],
+      dropdown: [],
+      defaultValue: null,
+      format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
+      group: null,
+      multiple: false,
+      relationship: null,
+      widthInForm: null,
+      widthInList: 10,
+      widthInDetail: null,
+    });
+
+    await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [field._id],
+      owner: 'owner-id',
+      style: E_TABLE_STYLE.LIST,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+
+    const result = await sut.execute({
+      slug: 'clientes',
+      _id: field._id,
+      name: 'Criado em',
+      type: E_FIELD_TYPE.CREATED_AT,
+      permissions: buildFieldPermissions(true, false, true),
+      showInFilter: true,
+      locked: true,
+      allowCreateRelationshipRecords: false,
+      required: false,
+      dropdown: [],
+      category: [],
+      defaultValue: null,
+      format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
+      group: null,
+      multiple: false,
+      relationship: null,
+      trashed: false,
+      trashedAt: null,
+      widthInForm: null,
+      widthInList: 10,
+      widthInDetail: null,
+      label: null,
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.label).toBeNull();
+    expect(result.value.name).toBe('Criado em');
+  });
 });

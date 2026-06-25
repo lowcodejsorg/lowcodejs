@@ -278,6 +278,12 @@ export const Schema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Rotulo customizado de exibicao. `name` continua original (controla o slug);
+    // `label`, quando definido, e o texto mostrado na UI. null = usa o name.
+    label: {
+      type: String,
+      default: null,
+    },
     defaultValue: {
       type: mongoose.Schema.Types.Mixed,
       default: null,

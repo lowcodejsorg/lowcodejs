@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import type { IField } from '@/lib/interfaces';
+import { resolveFieldLabel } from '@/lib/table';
 import { cn } from '@/lib/utils';
 
 interface TableRowFieldLabelProps {
@@ -21,6 +22,7 @@ export function TableRowFieldLabel({
   className,
 }: TableRowFieldLabelProps): React.JSX.Element {
   const tip = field.tip?.trim();
+  const displayLabel = resolveFieldLabel(field);
 
   return (
     <div className="flex items-center justify-between gap-2">
@@ -28,7 +30,7 @@ export function TableRowFieldLabel({
         htmlFor={htmlFor}
         className={className}
       >
-        {field.name}
+        {displayLabel}
         {field.required && <span className="text-destructive"> *</span>}
       </FieldLabel>
 
@@ -37,7 +39,7 @@ export function TableRowFieldLabel({
           <TooltipTrigger asChild>
             <button
               type="button"
-              aria-label={`Dica de ${field.name}`}
+              aria-label={`Dica de ${displayLabel}`}
               className={cn(
                 'text-muted-foreground hover:text-foreground focus-visible:ring-ring',
                 'inline-flex size-5 items-center justify-center rounded-sm',
