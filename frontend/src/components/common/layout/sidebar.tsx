@@ -16,6 +16,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -125,6 +126,83 @@ function SidebarMenuItemRecursive({
 }): React.JSX.Element {
   // CollapsibleItem with sub-items
   if ('items' in item && item.items && item.items.length > 0) {
+    const testId = `sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`;
+    const hasUrl = Boolean(item.url);
+
+    // Pai com url: rótulo navega (Link/a) e o chevron, como ação separada,
+    // apenas alterna o collapsible. Pai sem url: a linha inteira alterna.
+    let header: React.ReactNode;
+
+    if (hasUrl) {
+      const collapsibleUrl = String(item.url?.toString() ?? '/').replace(
+        /\/$/,
+        '',
+      );
+      const isExternal =
+        'type' in item && item.type === E_MENU_ITEM_TYPE.EXTERNAL;
+
+      let headerLink: React.ReactNode;
+      if (isExternal) {
+        headerLink = (
+          <a
+            href={collapsibleUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-test-id={testId}
+            onClick={() => setOpenMobile(false)}
+          >
+            <SidebarItemIcon item={item} />
+            <span className="flex-1 truncate">{item.title}</span>
+          </a>
+        );
+      }
+      if (!isExternal) {
+        headerLink = (
+          <Link
+            to={collapsibleUrl}
+            data-test-id={testId}
+            onClick={() => setOpenMobile(false)}
+          >
+            <SidebarItemIcon item={item} />
+            <span className="flex-1 truncate">{item.title}</span>
+          </Link>
+        );
+      }
+
+      header = (
+        <>
+          <SidebarMenuButton
+            asChild
+            tooltip={{ children: item.title, hidden: false }}
+            style={{ paddingLeft: `${depth * INDENT_PX + 8}px` }}
+          >
+            {headerLink}
+          </SidebarMenuButton>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuAction aria-label={`Alternar ${item.title}`}>
+              <ChevronRightIcon className="shrink-0 size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+            </SidebarMenuAction>
+          </CollapsibleTrigger>
+        </>
+      );
+    }
+
+    if (!hasUrl) {
+      header = (
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton
+            data-test-id={testId}
+            tooltip={{ children: item.title, hidden: false }}
+            style={{ paddingLeft: `${depth * INDENT_PX + 8}px` }}
+          >
+            <SidebarItemIcon item={item} />
+            <span className="flex-1 truncate">{item.title}</span>
+            <ChevronRightIcon className="ml-auto shrink-0 size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+      );
+    }
+
     return (
       <Collapsible
         key={item.title}
@@ -132,17 +210,7 @@ function SidebarMenuItemRecursive({
         className="group/collapsible"
       >
         <SidebarMenuItem>
-          <CollapsibleTrigger asChild>
-            <SidebarMenuButton
-              data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-              tooltip={{ children: item.title, hidden: false }}
-              style={{ paddingLeft: `${depth * INDENT_PX + 8}px` }}
-            >
-              <SidebarItemIcon item={item} />
-              <span className="flex-1 truncate">{item.title}</span>
-              <ChevronRightIcon className="ml-auto shrink-0 size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-            </SidebarMenuButton>
-          </CollapsibleTrigger>
+          {header}
           <CollapsibleContent>
             <SidebarMenuSub className="mx-0 border-l-0 px-0 py-0 translate-x-0">
               {item.items.map((subItem) => {
@@ -186,7 +254,6 @@ function SidebarMenuItemRecursive({
                     >
                       <SidebarItemIcon item={subItem} />
                       <span className="flex-1 truncate">{subItem.title}</span>
-                      <ChevronRightIcon className="ml-auto shrink-0 size-4 text-sidebar-foreground/40" />
                     </a>
                   );
                 } else {
@@ -198,7 +265,6 @@ function SidebarMenuItemRecursive({
                     >
                       <SidebarItemIcon item={subItem} />
                       <span className="flex-1 truncate">{subItem.title}</span>
-                      <ChevronRightIcon className="ml-auto shrink-0 size-4 text-sidebar-foreground/40" />
                     </Link>
                   );
                 }
