@@ -404,7 +404,12 @@ describe('Table Field Update Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
 
     // label customizado salvo; name e slug originais preservados.
-    expect(result.value.label).toEqual({ list: 'Data de início', filter: null, form: null, detail: null });
+    expect(result.value.label).toEqual({
+      list: 'Data de início',
+      filter: null,
+      form: null,
+      detail: null,
+    });
     expect(result.value.name).toBe('Criado em');
     expect(result.value.slug).toBe('createdAt');
     expect(result.value.type).toBe(E_FIELD_TYPE.CREATED_AT);
