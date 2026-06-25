@@ -10,6 +10,7 @@ import {
 } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 import { isFieldShownInContext } from '@/lib/permission';
+import { resolveFieldLabel } from '@/lib/table';
 
 interface FieldViewProps {
   data: IField;
@@ -57,13 +58,36 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
         </p>
       </div>
 
-      {/* Rótulo customizado (sobrescreve o título exibido) */}
+      {/* Título efetivo na listagem (resolve label.list ou name) */}
+      <div className="space-y-1">
+        <p className="text-sm font-medium">Título na listagem</p>
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+          {resolveFieldLabel(data, 'list')}
+        </p>
+      </div>
+
+      {/* Rótulos por contexto */}
       {data.label && (
-        <div className="space-y-1">
-          <p className="text-sm font-medium">Rótulo</p>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
-            {data.label}
-          </p>
+        <div className="space-y-2 rounded-lg border p-3">
+          <p className="text-sm font-medium">Rótulos por contexto</p>
+          <div className="grid gap-2 text-sm">
+            <div className="flex justify-between gap-2">
+              <span className="text-muted-foreground">Listagem</span>
+              <span>{data.label.list ?? '-'}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-muted-foreground">Filtros</span>
+              <span>{data.label.filter ?? '-'}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-muted-foreground">Formulário</span>
+              <span>{data.label.form ?? '-'}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-muted-foreground">Detalhes</span>
+              <span>{data.label.detail ?? '-'}</span>
+            </div>
+          </div>
         </div>
       )}
 

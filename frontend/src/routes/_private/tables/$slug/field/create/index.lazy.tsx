@@ -140,12 +140,32 @@ function RouteComponent(): React.JSX.Element {
       const hasDropdown = (value.dropdown?.length ?? 0) > 0;
       const hasCategory = (value.category?.length ?? 0) > 0;
 
+      // Rótulo por contexto: vazio → null (volta ao name naquele contexto).
+      const labelList = value.label.list?.trim() || null;
+      const labelFilter = value.label.filter?.trim() || null;
+      const labelForm = value.label.form?.trim() || null;
+      const labelDetail = value.label.detail?.trim() || null;
+
+      let payloadLabel: {
+        list: string | null;
+        filter: string | null;
+        form: string | null;
+        detail: string | null;
+      } | null = null;
+      if (labelList || labelFilter || labelForm || labelDetail) {
+        payloadLabel = {
+          list: labelList,
+          filter: labelFilter,
+          form: labelForm,
+          detail: labelDetail,
+        };
+      }
+
       const payload: Partial<IField> = {
         name: value.name,
         slug: value.slug,
         tip: normalizeTip(value.tip),
-        // Rótulo customizado: vazio → null (volta ao name).
-        label: value.label?.trim() || null,
+        label: payloadLabel,
         type: value.type as keyof typeof E_FIELD_TYPE,
         required: value.required,
         multiple: value.multiple,

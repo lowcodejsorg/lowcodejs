@@ -78,11 +78,15 @@ export const FieldCreateSchema = z.object({
     .string()
     .max(500, 'A dica deve ter no máximo 500 caracteres')
     .default(''),
-  // Rótulo customizado de exibição (vazio = usa o name original).
+  // Rótulo customizado por contexto (vazio = usa o name original).
   label: z
-    .string()
-    .max(120, 'O rótulo deve ter no máximo 120 caracteres')
-    .default(''),
+    .object({
+      list: z.string().max(120, 'Máximo 120 caracteres').default(''),
+      filter: z.string().max(120, 'Máximo 120 caracteres').default(''),
+      form: z.string().max(120, 'Máximo 120 caracteres').default(''),
+      detail: z.string().max(120, 'Máximo 120 caracteres').default(''),
+    })
+    .default({ list: '', filter: '', form: '', detail: '' }),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
   validations: z.array(z.custom<IFieldValidation>()).default([]),
@@ -131,7 +135,7 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   name: '',
   slug: '',
   tip: '',
-  label: '',
+  label: { list: '', filter: '', form: '', detail: '' },
   type: '',
   format: '',
   validations: [],
@@ -300,15 +304,47 @@ export const CreateFieldFormFields = withForm({
           )}
         </form.AppField>
 
-        <form.AppField name="label">
-          {(field) => (
-            <field.FieldText
-              label="Rótulo"
-              placeholder="Sobrescreve o título exibido (vazio = usa o título exibido)"
-              disabled={isPending}
-            />
-          )}
-        </form.AppField>
+        <div className="space-y-3 rounded-lg border p-3">
+          <p className="text-sm font-medium text-muted-foreground">
+            Rótulos por contexto
+          </p>
+          <form.AppField name="label.list">
+            {(field) => (
+              <field.FieldText
+                label="Na listagem"
+                placeholder="Sobrescreve o título na listagem"
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="label.filter">
+            {(field) => (
+              <field.FieldText
+                label="Nos filtros"
+                placeholder="Sobrescreve o título nos filtros"
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="label.form">
+            {(field) => (
+              <field.FieldText
+                label="No formulário"
+                placeholder="Sobrescreve o título no formulário"
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="label.detail">
+            {(field) => (
+              <field.FieldText
+                label="Nos detalhes"
+                placeholder="Sobrescreve o título nos detalhes"
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+        </div>
 
         <form.AppField
           name="slug"

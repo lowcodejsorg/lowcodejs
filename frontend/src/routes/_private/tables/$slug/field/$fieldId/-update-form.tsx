@@ -80,11 +80,15 @@ export const FieldUpdateSchema = z.object({
     .string()
     .max(500, 'A dica deve ter no máximo 500 caracteres')
     .default(''),
-  // Rótulo customizado de exibição (vazio = usa o name original).
+  // Rótulo customizado por contexto (vazio = usa o name original).
   label: z
-    .string()
-    .max(120, 'O rótulo deve ter no máximo 120 caracteres')
-    .default(''),
+    .object({
+      list: z.string().max(120, 'Máximo 120 caracteres').default(''),
+      filter: z.string().max(120, 'Máximo 120 caracteres').default(''),
+      form: z.string().max(120, 'Máximo 120 caracteres').default(''),
+      detail: z.string().max(120, 'Máximo 120 caracteres').default(''),
+    })
+    .default({ list: '', filter: '', form: '', detail: '' }),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
   validations: z.array(z.custom<IFieldValidation>()).default([]),
@@ -137,9 +141,13 @@ export type FieldUpdateFormValues = z.infer<typeof FieldUpdateSchema>;
 export const FieldNativeUpdateSchema = z
   .object({
     label: z
-      .string()
-      .max(120, 'O rótulo deve ter no máximo 120 caracteres')
-      .default(''),
+      .object({
+        list: z.string().max(120, 'Máximo 120 caracteres').default(''),
+        filter: z.string().max(120, 'Máximo 120 caracteres').default(''),
+        form: z.string().max(120, 'Máximo 120 caracteres').default(''),
+        detail: z.string().max(120, 'Máximo 120 caracteres').default(''),
+      })
+      .default({ list: '', filter: '', form: '', detail: '' }),
   })
   .passthrough();
 
@@ -147,7 +155,7 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   name: '',
   slug: '',
   tip: '',
-  label: '',
+  label: { list: '', filter: '', form: '', detail: '' },
   type: '',
   format: '',
   validations: [],
@@ -306,15 +314,47 @@ export const UpdateFieldFormFields = withForm({
           data-test-id="field-update-form-fields"
           className="space-y-4 p-2"
         >
-          <form.AppField name="label">
-            {(field) => (
-              <field.FieldText
-                label="Rótulo"
-                placeholder={nativePlaceholder}
-                disabled={isDisabled}
-              />
-            )}
-          </form.AppField>
+          <div className="space-y-3 rounded-lg border p-3">
+            <p className="text-sm font-medium text-muted-foreground">
+              Rótulos por contexto
+            </p>
+            <form.AppField name="label.list">
+              {(field) => (
+                <field.FieldText
+                  label="Na listagem"
+                  placeholder={nativePlaceholder}
+                  disabled={isDisabled}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="label.filter">
+              {(field) => (
+                <field.FieldText
+                  label="Nos filtros"
+                  placeholder={nativePlaceholder}
+                  disabled={isDisabled}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="label.form">
+              {(field) => (
+                <field.FieldText
+                  label="No formulário"
+                  placeholder={nativePlaceholder}
+                  disabled={isDisabled}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="label.detail">
+              {(field) => (
+                <field.FieldText
+                  label="Nos detalhes"
+                  placeholder={nativePlaceholder}
+                  disabled={isDisabled}
+                />
+              )}
+            </form.AppField>
+          </div>
         </section>
       );
     }
@@ -349,15 +389,47 @@ export const UpdateFieldFormFields = withForm({
           )}
         </form.AppField>
 
-        <form.AppField name="label">
-          {(field) => (
-            <field.FieldText
-              label="Rótulo"
-              placeholder="Sobrescreve o título exibido (vazio = usa o título exibido)"
-              disabled={isDisabled || isLocked}
-            />
-          )}
-        </form.AppField>
+        <div className="space-y-3 rounded-lg border p-3">
+          <p className="text-sm font-medium text-muted-foreground">
+            Rótulos por contexto
+          </p>
+          <form.AppField name="label.list">
+            {(field) => (
+              <field.FieldText
+                label="Na listagem"
+                placeholder="Sobrescreve o título na listagem"
+                disabled={isDisabled || isLocked}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="label.filter">
+            {(field) => (
+              <field.FieldText
+                label="Nos filtros"
+                placeholder="Sobrescreve o título nos filtros"
+                disabled={isDisabled || isLocked}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="label.form">
+            {(field) => (
+              <field.FieldText
+                label="No formulário"
+                placeholder="Sobrescreve o título no formulário"
+                disabled={isDisabled || isLocked}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="label.detail">
+            {(field) => (
+              <field.FieldText
+                label="Nos detalhes"
+                placeholder="Sobrescreve o título nos detalhes"
+                disabled={isDisabled || isLocked}
+              />
+            )}
+          </form.AppField>
+        </div>
 
         <form.AppField
           name="slug"

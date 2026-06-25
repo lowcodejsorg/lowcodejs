@@ -348,7 +348,12 @@ function FieldUpdateContent({
       name: data.name,
       slug: data.slug,
       tip: data.tip ?? '',
-      label: data.label ?? '',
+      label: {
+        list: data.label?.list ?? '',
+        filter: data.label?.filter ?? '',
+        form: data.label?.form ?? '',
+        detail: data.label?.detail ?? '',
+      },
       type: data.type,
       format: data.format ?? '',
       validations: data.validations ?? [],
@@ -401,10 +406,26 @@ function FieldUpdateContent({
       const hasDropdown = (value.dropdown?.length ?? 0) > 0;
       const hasCategory = (value.category?.length ?? 0) > 0;
 
-      // Rótulo customizado: vazio → null (volta ao name).
-      const trimmedLabel = value.label?.trim();
-      let nextLabel: string | null = null;
-      if (trimmedLabel) nextLabel = trimmedLabel;
+      // Rótulo por contexto: vazio → null (volta ao name naquele contexto).
+      const labelList = value.label.list?.trim() || null;
+      const labelFilter = value.label.filter?.trim() || null;
+      const labelForm = value.label.form?.trim() || null;
+      const labelDetail = value.label.detail?.trim() || null;
+
+      let nextLabel: {
+        list: string | null;
+        filter: string | null;
+        form: string | null;
+        detail: string | null;
+      } | null = null;
+      if (labelList || labelFilter || labelForm || labelDetail) {
+        nextLabel = {
+          list: labelList,
+          filter: labelFilter,
+          form: labelForm,
+          detail: labelDetail,
+        };
+      }
 
       const payload: Partial<IField> & {
         trashed?: boolean;
