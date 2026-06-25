@@ -360,6 +360,11 @@ export const TableFieldUpdateSchema: FastifySchema = {
         },
         locked: { type: 'boolean', description: 'Campo está bloqueado' },
         native: { type: 'boolean', description: 'Campo é nativo' },
+        label: {
+          type: 'string',
+          nullable: true,
+          description: 'Rótulo customizado de exibição do campo',
+        },
         format: {
           type: 'string',
           nullable: true,

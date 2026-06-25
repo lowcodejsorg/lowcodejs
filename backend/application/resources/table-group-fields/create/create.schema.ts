@@ -123,6 +123,7 @@ export const GroupFieldCreateSchema: FastifySchema = {
         tip: { type: 'string', nullable: true },
         locked: { type: 'boolean' },
         native: { type: 'boolean' },
+        label: { type: 'string', nullable: true },
         format: { type: 'string', nullable: true },
         defaultValue: {
           anyOf: [
