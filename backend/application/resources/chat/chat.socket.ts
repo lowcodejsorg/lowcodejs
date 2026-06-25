@@ -27,6 +27,7 @@ import { resolveLlmConfig } from '@application/services/llm/ai-setting-fields';
 import type { LlmChatMessage } from '@application/services/llm/llm-chat.types';
 import { getLlmProviderLabel } from '@application/services/llm/llm-defaults';
 import { runChatCompletion } from '@application/services/llm/run-chat-completion';
+import { ACCESS_TOKEN_COOKIE } from '@application/utils/cookies.util';
 import { Env } from '@start/env';
 
 import { getChatSystemPrompt } from './system-prompt';
@@ -258,7 +259,7 @@ export function initChatSocket(
 
   io.on('connection', async (socket) => {
     const cookieHeader = socket.handshake.headers.cookie;
-    const accessToken = extractCookieValue(cookieHeader, 'accessToken');
+    const accessToken = extractCookieValue(cookieHeader, ACCESS_TOKEN_COOKIE);
 
     if (!accessToken) {
       socket.emit(E_CHAT_EVENT.ERROR, { message: 'Autenticação necessária.' });

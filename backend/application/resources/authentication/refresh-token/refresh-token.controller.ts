@@ -7,6 +7,7 @@ import { AuthenticationMiddleware } from '@application/middlewares/authenticatio
 import {
   getActiveAccountId,
   getRequestCookie,
+  REFRESH_TOKEN_COOKIE,
   setActiveSession,
 } from '@application/utils/cookies.util';
 import { createTokens } from '@application/utils/jwt.util';
@@ -37,7 +38,7 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     try {
-      const refreshToken = getRequestCookie(request, 'refreshToken');
+      const refreshToken = getRequestCookie(request, REFRESH_TOKEN_COOKIE);
 
       if (!refreshToken) {
         return response.status(401).send({

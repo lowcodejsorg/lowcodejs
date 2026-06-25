@@ -7,6 +7,7 @@ import {
   getRequestCookie,
   MAX_AUTH_ACCOUNTS,
   readAccountSessions,
+  REFRESH_TOKEN_COOKIE,
   setActiveSession,
   writeAccountSessions,
 } from '@application/utils/cookies.util';
@@ -65,7 +66,10 @@ export default class {
     // Preserva a sessão ativa atual (de outra conta) movendo-a para o mapa de
     // sessões inativas antes de promover a nova conta.
     if (currentActiveId && currentActiveId !== accountId) {
-      const currentRefreshToken = getRequestCookie(request, 'refreshToken');
+      const currentRefreshToken = getRequestCookie(
+        request,
+        REFRESH_TOKEN_COOKIE,
+      );
       if (currentRefreshToken) sessions[currentActiveId] = currentRefreshToken;
     }
 

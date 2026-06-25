@@ -59,22 +59,6 @@ API.interceptors.request.use(async (config) => {
     }
   }
 
-  // DEBUG temporário: mostra host/cookie do caminho SSR. Remover após diagnóstico.
-  if (typeof window === 'undefined') {
-    const rawCookie = config.headers.get('Cookie');
-    let cookieHeader = '';
-    if (typeof rawCookie === 'string') cookieHeader = rawCookie;
-    const names = [];
-    for (const part of cookieHeader.split(';')) {
-      const [name] = part.trim().split('=');
-      if (name) names.push(name);
-    }
-    console.info(
-      `[ssr-api] ${config.method?.toUpperCase()} ${config.baseURL}${config.url} ` +
-        `hasCookie=${Boolean(cookieHeader)} cookies=[${names.join(',')}]`,
-    );
-  }
-
   return config;
 });
 

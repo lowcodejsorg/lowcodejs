@@ -10,6 +10,7 @@ import {
   getActiveAccountId,
   getRequestCookie,
   readAccountSessions,
+  REFRESH_TOKEN_COOKIE,
   setActiveAccountCookie,
   writeAccountSessions,
 } from '@application/utils/cookies.util';
@@ -34,7 +35,7 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const activeId = getActiveAccountId(request);
-    const activeRefreshToken = getRequestCookie(request, 'refreshToken');
+    const activeRefreshToken = getRequestCookie(request, REFRESH_TOKEN_COOKIE);
     const sessions = readAccountSessions(request);
 
     // Mapa accountId -> refreshToken (conta ativa + inativas, sem duplicar).

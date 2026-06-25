@@ -7,8 +7,8 @@ import type { TokenPair } from './jwt.util';
 export const MAX_AUTH_ACCOUNTS = 2;
 export const ACTIVE_ACCOUNT_COOKIE = 'activeAccountId';
 
-const ACCESS_TOKEN_COOKIE = 'accessToken';
-const REFRESH_TOKEN_COOKIE = 'refreshToken';
+export const ACCESS_TOKEN_COOKIE = 'accessToken';
+export const REFRESH_TOKEN_COOKIE = 'refreshToken';
 const ACCOUNT_SESSIONS_COOKIE = 'accountSessions';
 
 const ACCESS_MAX_AGE = 60 * 60 * 24 * 1000; // 24h
