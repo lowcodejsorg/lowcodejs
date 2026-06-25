@@ -43,6 +43,18 @@ interface SidebarProps {
   menu: MenuRoute;
 }
 
+// Logo padrão do LowCodeJs (empacotada no frontend, em /public). Usada quando
+// nenhuma logo foi configurada (LOGO_LARGE_URL vazio) ou quando a URL salva não
+// carrega — garante que a marca nunca apareça quebrada, mesmo em instalação
+// limpa, storage vazio ou arquivo inválido.
+const FALLBACK_LOGO_URL = '/logo-lowcodejs.webp';
+
+function handleLogoError(event: React.SyntheticEvent<HTMLImageElement>): void {
+  const image = event.currentTarget;
+  if (image.src.endsWith(FALLBACK_LOGO_URL)) return;
+  image.src = FALLBACK_LOGO_URL;
+}
+
 const MAX_DEPTH = 4;
 const INDENT_PX = 16;
 
@@ -430,16 +442,18 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
             className="cursor-pointer border-0 bg-transparent p-0"
           >
             <img
-              src={setting.data.LOGO_LARGE_URL ?? ''}
+              src={setting.data.LOGO_LARGE_URL || FALLBACK_LOGO_URL}
+              onError={handleLogoError}
               alt="Logo"
               className="w-32 dark:hidden"
             />
             <img
               src={
-                setting.data.LOGO_LARGE_DARK_URL ??
-                setting.data.LOGO_LARGE_URL ??
-                ''
+                setting.data.LOGO_LARGE_DARK_URL ||
+                setting.data.LOGO_LARGE_URL ||
+                FALLBACK_LOGO_URL
               }
+              onError={handleLogoError}
               alt="Logo"
               className="hidden w-32 dark:block"
             />
