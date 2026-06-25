@@ -9,6 +9,7 @@ import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { E_FIELD_FORMAT } from '@/lib/constant';
 import { getMaskConfig } from '@/lib/field-masks';
 import type { IField } from '@/lib/interfaces';
+import { resolveFieldLabel } from '@/lib/table';
 
 interface TableRowMaskedTextFieldProps {
   field: IField;
@@ -65,7 +66,7 @@ export function TableRowMaskedTextField({
           disabled={disabled}
           id={formField.name}
           name={formField.name}
-          placeholder={`Digite ${field.name.toLowerCase()}`}
+          placeholder={`Digite ${resolveFieldLabel(field).toLowerCase()}`}
           data-slot="input-group-control"
           aria-invalid={isInvalid}
           aria-required={field.required || undefined}

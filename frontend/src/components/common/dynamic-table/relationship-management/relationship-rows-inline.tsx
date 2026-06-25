@@ -48,6 +48,7 @@ import {
   buildFieldValidator,
   buildRowPayload,
   buildUpdateRowDefaultValues,
+  resolveFieldLabel,
 } from '@/lib/table';
 import { AutoSaveStatusIndicator } from '@/routes/_private/tables/$slug/row/-auto-save-status';
 
@@ -300,7 +301,9 @@ export function RelationshipRowsInline(
         data-slot="relationship-rows-inline"
         className="space-y-2"
       >
-        <span className="text-sm font-medium ml-2">{field.name}</span>
+        <span className="text-sm font-medium ml-2">
+          {resolveFieldLabel(field)}
+        </span>
         <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
           Relacionamento ainda não materializado.
         </p>
@@ -315,9 +318,12 @@ export function RelationshipRowsInline(
         data-slot="relationship-rows-inline"
         className="space-y-2"
       >
-        <span className="text-sm font-medium ml-2">{field.name}</span>
+        <span className="text-sm font-medium ml-2">
+          {resolveFieldLabel(field)}
+        </span>
         <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-          Salve o registro para adicionar {field.name.toLowerCase()}.
+          Salve o registro para adicionar{' '}
+          {resolveFieldLabel(field).toLowerCase()}.
         </p>
       </div>
     );
@@ -335,7 +341,9 @@ export function RelationshipRowsInline(
       className="space-y-2"
     >
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium ml-2">{field.name}</span>
+        <span className="text-sm font-medium ml-2">
+          {resolveFieldLabel(field)}
+        </span>
         {showAdd && (
           <Button
             type="button"

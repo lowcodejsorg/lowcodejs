@@ -28,6 +28,7 @@ import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { API } from '@/lib/api';
 import { getNextDropdownOptionColor } from '@/lib/dropdown-colors';
 import type { IDropdown, IField, ITable, Paginated } from '@/lib/interfaces';
+import { resolveFieldLabel } from '@/lib/table';
 
 interface TableRowDropdownFieldProps {
   field: IField;
@@ -391,7 +392,7 @@ export function TableRowDropdownField({
           <ComboboxChips ref={anchorRef}>
             <ComboboxValue>
               {(values: Array<DropdownOption>): React.ReactNode => {
-                let chipsPlaceholder = `Selecione ${field.name.toLowerCase()}`;
+                let chipsPlaceholder = `Selecione ${resolveFieldLabel(field).toLowerCase()}`;
                 if (values.length > 0) {
                   chipsPlaceholder = '';
                 }
@@ -466,7 +467,8 @@ export function TableRowDropdownField({
       >
         <ComboboxInput
           placeholder={
-            selectedOptions[0]?.label || `Selecione ${field.name.toLowerCase()}`
+            selectedOptions[0]?.label ||
+            `Selecione ${resolveFieldLabel(field).toLowerCase()}`
           }
           showClear={selectedOptions.length > 0}
           onKeyDown={handleInputKeyDown}

@@ -22,6 +22,7 @@ import { useUserReadPaginatedInfinite } from '@/hooks/tanstack-query/use-user-re
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { E_USER_STATUS } from '@/lib/constant';
 import type { IField, IUser } from '@/lib/interfaces';
+import { resolveFieldLabel } from '@/lib/table';
 import { cn } from '@/lib/utils';
 
 interface TableRowUserFieldProps {
@@ -253,7 +254,7 @@ export function TableRowUserField({
             >
               <ComboboxValue>
                 {(selectedValues: Array<IUser>): React.ReactNode => {
-                  let chipsPlaceholder = `Selecione ${field.name.toLowerCase()}`;
+                  let chipsPlaceholder = `Selecione ${resolveFieldLabel(field).toLowerCase()}`;
                   if (selectedValues.length > 0) {
                     chipsPlaceholder = '';
                   }
@@ -350,7 +351,8 @@ export function TableRowUserField({
         >
           <ComboboxInput
             placeholder={
-              fieldValue[0]?.label || `Selecione ${field.name.toLowerCase()}`
+              fieldValue[0]?.label ||
+              `Selecione ${resolveFieldLabel(field).toLowerCase()}`
             }
             showClear={fieldValue.length > 0}
             className={cn(isInvalid && 'border-destructive')}

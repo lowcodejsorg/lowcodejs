@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/input-group';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { IField } from '@/lib/interfaces';
+import { resolveFieldLabel } from '@/lib/table';
 
 interface TableRowPasswordFieldProps {
   field: IField;
@@ -60,7 +61,7 @@ export function TableRowPasswordField({
           id={formField.name}
           name={formField.name}
           type={inputType}
-          placeholder={`Digite ${field.name.toLowerCase()}`}
+          placeholder={`Digite ${resolveFieldLabel(field).toLowerCase()}`}
           value={formField.state.value || ''}
           onBlur={formField.handleBlur}
           onChange={(e) => formField.handleChange(e.target.value)}

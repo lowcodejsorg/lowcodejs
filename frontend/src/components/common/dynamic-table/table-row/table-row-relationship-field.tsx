@@ -62,6 +62,7 @@ import {
   buildCreateRowDefaultValues,
   buildFieldValidator,
   buildRowPayload,
+  resolveFieldLabel,
 } from '@/lib/table';
 import { cn } from '@/lib/utils';
 
@@ -581,7 +582,7 @@ function CascadeRelationshipField({
               placeholder={
                 selectedSingleLabel ||
                 (parentValue
-                  ? `Selecione ${field.name.toLowerCase()}`
+                  ? `Selecione ${resolveFieldLabel(field).toLowerCase()}`
                   : `Selecione ${selectedParentLabel} primeiro`)
               }
               showClear={(formField.state.value ?? []).length > 0}
@@ -928,7 +929,7 @@ function DefaultRelationshipField({
                   )}
                 </ComboboxValue>
                 <ComboboxChipsInput
-                  placeholder={`Adicionar ${field.name.toLowerCase()}`}
+                  placeholder={`Adicionar ${resolveFieldLabel(field).toLowerCase()}`}
                 />
               </ComboboxChips>
               <ComboboxContent anchor={anchorRef}>
@@ -1002,7 +1003,8 @@ function DefaultRelationshipField({
           >
             <ComboboxInput
               placeholder={
-                selectedSingleLabel || `Selecione ${field.name.toLowerCase()}`
+                selectedSingleLabel ||
+                `Selecione ${resolveFieldLabel(field).toLowerCase()}`
               }
               showClear={(formField.state.value ?? []).length > 0}
               className={cn(

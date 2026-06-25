@@ -30,7 +30,7 @@ import type {
   IRow,
   ITable,
 } from '@/lib/interfaces';
-import { buildFieldValidator } from '@/lib/table';
+import { buildFieldValidator, resolveFieldLabel } from '@/lib/table';
 import { AutoSaveStatusIndicator } from '@/routes/_private/tables/$slug/row/-auto-save-status';
 
 interface GroupRowsInlineProps {
@@ -137,7 +137,9 @@ export function GroupRowsInline(
       className="space-y-2"
     >
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium ml-2">{field.name}</span>
+        <span className="text-sm font-medium ml-2">
+          {resolveFieldLabel(field)}
+        </span>
         <Button
           type="button"
           variant="outline"

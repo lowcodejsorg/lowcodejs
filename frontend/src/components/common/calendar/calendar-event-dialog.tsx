@@ -36,6 +36,7 @@ import type { IDropdown, IField, IRow, ITable } from '@/lib/interfaces';
 import {
   buildCreateRowDefaultValues,
   buildUpdateRowDefaultValues,
+  resolveFieldLabel,
 } from '@/lib/table';
 
 type CalendarEventFormValues = {
@@ -586,7 +587,7 @@ export function CalendarEventDialog({
                           return (
                             <div className="space-y-1">
                               <span className="text-sm font-medium ml-2">
-                                {field.name}
+                                {resolveFieldLabel(field)}
                               </span>
                               <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
                                 Salve o agendamento para adicionar itens a este

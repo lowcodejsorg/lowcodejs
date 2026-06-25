@@ -28,6 +28,7 @@ import { E_FIELD_TYPE } from '@/lib/constant';
 import type { DocBlock } from '@/lib/document-helpers';
 import { getRowLeafId, getStr, headerSorter } from '@/lib/document-helpers';
 import type { IField, IRow } from '@/lib/interfaces';
+import { resolveFieldLabel } from '@/lib/table';
 
 interface DocumentRowProps {
   row: IRow;
@@ -272,7 +273,7 @@ export function DocumentRow({
               return (
                 <div className="mt-2">
                   <span className="text-xs font-medium text-muted-foreground">
-                    {visibleExtra[0].name}
+                    {resolveFieldLabel(visibleExtra[0])}
                   </span>
                   {renderFieldCell(visibleExtra[0], row, slug)}
                 </div>
@@ -287,7 +288,7 @@ export function DocumentRow({
                   {visibleExtra.map((field) => (
                     <div key={field._id}>
                       <span className="text-xs font-medium text-muted-foreground">
-                        {field.name}
+                        {resolveFieldLabel(field)}
                       </span>
                       {renderFieldCell(field, row, slug)}
                     </div>

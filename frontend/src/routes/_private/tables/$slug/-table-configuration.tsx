@@ -36,6 +36,7 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE, E_TABLE_TYPE } from '@/lib/constant';
 import type { IField, ITable } from '@/lib/interfaces';
+import { resolveFieldLabel } from '@/lib/table';
 import { cn } from '@/lib/utils';
 
 interface FieldGroupSubMenuProps {
@@ -70,7 +71,7 @@ function FieldGroupSubMenu({
       <DropdownMenuSubTrigger>
         <span className="inline-flex min-w-0 gap-1">
           <span>Gerenciar</span>
-          <FieldTitle value={field.name} />
+          <FieldTitle value={resolveFieldLabel(field)} />
         </span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
@@ -124,7 +125,7 @@ function FieldGroupSubMenu({
                 <PencilIcon className="size-4" />
                 <span className="inline-flex min-w-0 gap-1">
                   <span>Editar</span>
-                  <FieldTitle value={groupField.name} />
+                  <FieldTitle value={resolveFieldLabel(groupField)} />
                 </span>
               </DropdownMenuItem>
             ))}
@@ -255,7 +256,7 @@ export function TableConfigurationDropdown({
                         <PencilIcon className="size-4" />
                         <span className="inline-flex min-w-0 gap-1">
                           <span>Editar</span>
-                          <FieldTitle value={field.name} />
+                          <FieldTitle value={resolveFieldLabel(field)} />
                         </span>
                       </DropdownMenuItem>
                     ))}

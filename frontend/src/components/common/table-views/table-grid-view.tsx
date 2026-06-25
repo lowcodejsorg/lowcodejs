@@ -27,6 +27,7 @@ import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
 import { resolveLayoutField } from '@/lib/layout-field-resolver';
 import { HeaderSorter } from '@/lib/layout-pickers';
+import { resolveFieldLabel } from '@/lib/table';
 
 interface TableGridViewProps {
   data: Array<IRow>;
@@ -52,7 +53,7 @@ function RenderGridCell({
     return (
       <div className="flex flex-col gap-0.5">
         <span className="text-xs font-medium text-muted-foreground">
-          <FieldTitle value={field.name} />
+          <FieldTitle value={resolveFieldLabel(field)} />
         </span>
         <span className="text-muted-foreground text-sm">-</span>
       </div>
@@ -151,7 +152,7 @@ function RenderGridCell({
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs font-medium text-muted-foreground">
-        <FieldTitle value={field.name} />
+        <FieldTitle value={resolveFieldLabel(field)} />
       </span>
       {renderContent()}
     </div>

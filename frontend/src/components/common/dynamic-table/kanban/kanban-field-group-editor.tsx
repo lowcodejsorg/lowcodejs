@@ -24,6 +24,7 @@ import type {
 } from '@/lib/interfaces';
 import { normalizeIdList } from '@/lib/kanban-helpers';
 import { getStorageDownloadUrl } from '@/lib/storage-url';
+import { resolveFieldLabel } from '@/lib/table';
 
 interface KanbanFieldGroupEditorProps {
   row: IRow;
@@ -266,7 +267,7 @@ export function KanbanFieldGroupEditor({
         className="space-y-2"
       >
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">{field.name}</h3>
+          <h3 className="text-sm font-semibold">{resolveFieldLabel(field)}</h3>
           <Button
             type="button"
             variant="outline"

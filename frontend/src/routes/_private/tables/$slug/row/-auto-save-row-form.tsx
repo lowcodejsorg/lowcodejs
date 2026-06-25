@@ -52,6 +52,7 @@ import {
   buildRowPayload,
   buildUpdateRowDefaultValues,
   isManagedRelationship,
+  resolveFieldLabel,
 } from '@/lib/table';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -408,7 +409,7 @@ function AutoSaveRowFormContent({
         }),
       );
       if (!hasValue(value)) {
-        missing[field.slug] = field.name + ' é obrigatório';
+        missing[field.slug] = resolveFieldLabel(field) + ' é obrigatório';
       }
     }
     // Grava os erros no slot `onServer` do errorMap — o único que a UI lê

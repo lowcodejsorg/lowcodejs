@@ -15,6 +15,7 @@ import { API } from '@/lib/api';
 import { E_PERMISSION_TARGET } from '@/lib/constant';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
 import type { FieldContext } from '@/lib/permission';
+import { resolveFieldLabel } from '@/lib/table';
 
 // Chave do toggle -> contexto do binding. `showInFilter` não é permissão.
 const CONTEXT_BY_VISIBILITY_KEY: Partial<Record<VisibilityKey, FieldContext>> =
@@ -210,7 +211,9 @@ export function useGroupFieldManagement(
         },
       );
 
-      toast.success(`Campo "${field.name}" excluído permanentemente`);
+      toast.success(
+        `Campo "${resolveFieldLabel(field)}" excluído permanentemente`,
+      );
     },
     onError: (error) => {
       console.error(error);

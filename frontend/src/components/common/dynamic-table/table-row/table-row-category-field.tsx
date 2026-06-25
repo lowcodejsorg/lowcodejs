@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/popover';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { ICategory, IField } from '@/lib/interfaces';
+import { resolveFieldLabel } from '@/lib/table';
 import { cn } from '@/lib/utils';
 
 interface TableRowCategoryFieldProps {
@@ -107,7 +108,8 @@ export function TableRowCategoryField({
               !selectedLabel && 'text-muted-foreground',
             )}
           >
-            {selectedLabel || `Selecione ${field.name.toLowerCase()}`}
+            {selectedLabel ||
+              `Selecione ${resolveFieldLabel(field).toLowerCase()}`}
           </Button>
         </PopoverTrigger>
         <PopoverContent

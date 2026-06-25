@@ -20,6 +20,7 @@ import {
   isPasswordFormat,
 } from '@/lib/field-masks';
 import type { IField } from '@/lib/interfaces';
+import { resolveFieldLabel } from '@/lib/table';
 
 interface TableRowTextFieldProps {
   field: IField;
@@ -108,7 +109,7 @@ function TableRowTextFieldDefault({
           inputMode={
             inputMode as React.HTMLAttributes<HTMLInputElement>['inputMode']
           }
-          placeholder={`Digite ${field.name.toLowerCase()}`}
+          placeholder={`Digite ${resolveFieldLabel(field).toLowerCase()}`}
           value={formField.state.value || ''}
           onBlur={formField.handleBlur}
           onChange={(e) => formField.handleChange(e.target.value)}

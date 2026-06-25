@@ -28,6 +28,7 @@ import {
   buildCreateRowDefaultValues,
   buildFieldValidator,
   buildRowPayload,
+  resolveFieldLabel,
 } from '@/lib/table';
 
 /**
@@ -133,7 +134,7 @@ export function BulkEditFieldDialog({
                       key={field._id}
                       value={field._id}
                     >
-                      {field.name}
+                      {resolveFieldLabel(field)}
                     </SelectItem>
                   ))}
                 </SelectContent>

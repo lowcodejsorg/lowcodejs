@@ -27,6 +27,7 @@ import type {
   IRow,
   ITable,
 } from '@/lib/interfaces';
+import { resolveFieldLabel } from '@/lib/table';
 
 // Largura da coluna a partir de widthInList (px), seguindo a mesma semântica do
 // `size` da lista normal. Sem valor → coluna dimensionada pelo conteúdo.
@@ -134,7 +135,9 @@ export function GroupRowsDataTable({
       className="space-y-2"
     >
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium ml-2">{field.name}</span>
+        <span className="text-sm font-medium ml-2">
+          {resolveFieldLabel(field)}
+        </span>
         <div className="inline-flex items-center gap-2">
           {canManage && (
             <Button

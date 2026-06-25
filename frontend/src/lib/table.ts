@@ -502,7 +502,8 @@ function validatePureRules(
   for (const { rule, config } of validations) {
     if (rule === E_FIELD_VALIDATION.NOT_EMPTY) {
       const blankString = typeof value === 'string' && value.trim() === '';
-      if (empty || blankString) return field.name + ' não pode ser vazio';
+      if (empty || blankString)
+        return resolveFieldLabel(field) + ' não pode ser vazio';
       continue;
     }
 
@@ -572,11 +573,11 @@ export function buildFieldValidator(
 
   if (isRequired) {
     if (!isMultiple && invalidValue) {
-      return field.name + ' é obrigatório';
+      return resolveFieldLabel(field) + ' é obrigatório';
     }
 
     if (isMultiple && invalidValue) {
-      return 'Adicione ao menos um item a ' + field.name;
+      return 'Adicione ao menos um item a ' + resolveFieldLabel(field);
     }
   }
 
