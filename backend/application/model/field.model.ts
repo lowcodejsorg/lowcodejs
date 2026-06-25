@@ -36,6 +36,16 @@ const FieldPermissions = new mongoose.Schema(
   { _id: false },
 );
 
+const FieldLabel = new mongoose.Schema(
+  {
+    list: { type: String, default: null },
+    filter: { type: String, default: null },
+    form: { type: String, default: null },
+    detail: { type: String, default: null },
+  },
+  { _id: false },
+);
+
 const RelationshipLabelPart = new mongoose.Schema(
   {
     path: { type: String, required: true },
@@ -278,10 +288,10 @@ export const Schema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    // Rotulo customizado de exibicao. `name` continua original (controla o slug);
-    // `label`, quando definido, e o texto mostrado na UI. null = usa o name.
+    // Rotulo customizado por contexto. `name` continua original (controla o slug).
+    // Cada contexto sobrescreve o name apenas naquele local; null = usa o name.
     label: {
-      type: String,
+      type: FieldLabel,
       default: null,
     },
     defaultValue: {

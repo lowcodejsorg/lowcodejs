@@ -490,6 +490,14 @@ export type IFieldPermissions = {
   detail: IPermissionBinding;
 };
 
+// Rotulo customizado por contexto de exibicao do campo.
+export type IFieldLabel = {
+  list: string | null;
+  filter: string | null;
+  form: string | null;
+  detail: string | null;
+};
+
 // Uma regra de validacao configurada num campo. `config` carrega os parametros
 // da regra (ex.: IS_IN_RANGE → { min, max }; IS_NOT → { values }). Regras sem
 // parametro usam `{}`.
@@ -523,10 +531,11 @@ export type IField = Merge<
     defaultValue: string | string[] | null;
     locked?: boolean;
     native?: boolean;
-    // Rotulo customizado de exibicao do campo. `name` continua sendo o nome
-    // original (controla o slug); `label`, quando definido, e o texto mostrado na
-    // UI no lugar do name. null = usa o name. Nunca afeta o slug.
-    label?: string | null;
+    // Rotulo customizado por contexto de exibicao. `name` continua sendo o nome
+    // original (controla o slug). Cada chave sobrescreve o name apenas no seu
+    // contexto especifico; null em qualquer chave = usa o name. null no objeto
+    // inteiro = sem rotulo customizado em nenhum contexto.
+    label?: IFieldLabel | null;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: IDropdown[];
     allowCustomDropdownOptions?: boolean;

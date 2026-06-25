@@ -117,18 +117,28 @@ export const FieldTipSchema = z
   .default(null)
   .transform((value) => (value && value.length > 0 ? value : null));
 export const FieldLockedSchema = z.boolean().default(false);
-// Rotulo customizado de exibicao. SEM default: ausente permanece `undefined` para
-// que callers que reenviam o campo sem `label` (toggles de visibilidade/largura)
-// nunca apaguem o label. Presente vazio → null (limpa, volta ao name).
-export const FieldLabelSchema = z
+// Rotulo customizado por contexto. SEM default no objeto: ausente permanece
+// `undefined` para que callers que omitem `label` (ex.: toggle de visibilidade)
+// nunca apaguem os rotulos existentes. Contexto vazio → null (usa o name).
+const FieldLabelContextSchema = z
   .string()
   .trim()
   .max(120)
   .nullable()
-  .transform((value) => {
-    if (value && value.length > 0) return value;
+  .optional()
+  .transform((v) => {
+    if (v && v.length > 0) return v;
     return null;
+  });
+
+export const FieldLabelSchema = z
+  .object({
+    list: FieldLabelContextSchema,
+    filter: FieldLabelContextSchema,
+    form: FieldLabelContextSchema,
+    detail: FieldLabelContextSchema,
   })
+  .nullable()
   .optional();
 export const FieldDefaultValueSchema = z
   .union([z.string(), z.array(z.string())])

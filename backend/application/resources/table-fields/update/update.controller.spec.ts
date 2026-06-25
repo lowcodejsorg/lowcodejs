@@ -177,7 +177,7 @@ describe('E2E Table Field Update Controller', () => {
         .send({
           name: 'Modificado em',
           type: E_FIELD_TYPE.UPDATED_AT,
-          label: 'Atualizado em',
+          label: { list: 'Atualizado em', filter: null, form: null, detail: null },
           showInFilter: true,
           permissions: buildFieldPermissions(true, true, true),
           widthInForm: 50,
@@ -186,10 +186,18 @@ describe('E2E Table Field Update Controller', () => {
         });
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.label).toBe('Atualizado em');
+      expect(response.body.label).toEqual({
+        list: 'Atualizado em',
+        filter: null,
+        form: null,
+        detail: null,
+      });
 
       const persisted = await Field.findById(field._id);
-      expect(persisted?.label).toBe('Atualizado em');
+      expect(persisted?.label?.list).toBe('Atualizado em');
+      expect(persisted?.label?.filter).toBeNull();
+      expect(persisted?.label?.form).toBeNull();
+      expect(persisted?.label?.detail).toBeNull();
     });
   });
 });

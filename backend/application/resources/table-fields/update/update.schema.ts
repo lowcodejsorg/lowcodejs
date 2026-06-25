@@ -141,10 +141,15 @@ export const TableFieldUpdateSchema: FastifySchema = {
         description: 'Texto de ajuda opcional exibido nos formulários',
       },
       label: {
-        type: 'string',
+        type: 'object',
         nullable: true,
-        description:
-          'Rótulo customizado de exibição do campo (apenas o texto, nunca o slug)',
+        description: 'Rótulo customizado por contexto de exibição do campo',
+        properties: {
+          list: { type: 'string', nullable: true },
+          filter: { type: 'string', nullable: true },
+          form: { type: 'string', nullable: true },
+          detail: { type: 'string', nullable: true },
+        },
       },
       locked: {
         type: 'boolean',
@@ -367,9 +372,15 @@ export const TableFieldUpdateSchema: FastifySchema = {
         locked: { type: 'boolean', description: 'Campo está bloqueado' },
         native: { type: 'boolean', description: 'Campo é nativo' },
         label: {
-          type: 'string',
+          type: 'object',
           nullable: true,
-          description: 'Rótulo customizado de exibição do campo',
+          description: 'Rótulo customizado por contexto de exibição do campo',
+          properties: {
+            list: { type: 'string', nullable: true },
+            filter: { type: 'string', nullable: true },
+            form: { type: 'string', nullable: true },
+            detail: { type: 'string', nullable: true },
+          },
         },
         format: {
           type: 'string',

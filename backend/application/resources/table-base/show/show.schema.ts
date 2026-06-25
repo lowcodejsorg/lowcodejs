@@ -452,7 +452,16 @@ export const TableShowSchema: FastifySchema = {
                     tip: { type: 'string', nullable: true },
                     locked: { type: 'boolean' },
                     native: { type: 'boolean' },
-                    label: { type: 'string', nullable: true },
+                    label: {
+                      type: 'object',
+                      nullable: true,
+                      properties: {
+                        list: { type: 'string', nullable: true },
+                        filter: { type: 'string', nullable: true },
+                        form: { type: 'string', nullable: true },
+                        detail: { type: 'string', nullable: true },
+                      },
+                    },
                     defaultValue: {
                       anyOf: [
                         { type: 'string' },

@@ -43,10 +43,15 @@ export const GroupFieldUpdateSchema: FastifySchema = {
       widthInDetail: { type: 'number', nullable: true, default: 50 },
       tip: { type: 'string', nullable: true, default: null },
       label: {
-        type: 'string',
+        type: 'object',
         nullable: true,
-        description:
-          'Rótulo customizado de exibição do campo (apenas o texto, nunca o slug)',
+        description: 'Rótulo customizado por contexto de exibição do campo',
+        properties: {
+          list: { type: 'string', nullable: true },
+          filter: { type: 'string', nullable: true },
+          form: { type: 'string', nullable: true },
+          detail: { type: 'string', nullable: true },
+        },
       },
       locked: { type: 'boolean', default: false },
       format: { type: 'string', nullable: true, default: null },
@@ -113,7 +118,17 @@ export const GroupFieldUpdateSchema: FastifySchema = {
         tip: { type: 'string', nullable: true },
         locked: { type: 'boolean' },
         native: { type: 'boolean' },
-        label: { type: 'string', nullable: true },
+        label: {
+          type: 'object',
+          nullable: true,
+          description: 'Rótulo customizado por contexto de exibição do campo',
+          properties: {
+            list: { type: 'string', nullable: true },
+            filter: { type: 'string', nullable: true },
+            form: { type: 'string', nullable: true },
+            detail: { type: 'string', nullable: true },
+          },
+        },
         format: { type: 'string', nullable: true },
         defaultValue: {
           anyOf: [
