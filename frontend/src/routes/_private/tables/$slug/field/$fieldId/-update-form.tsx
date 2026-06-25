@@ -349,6 +349,16 @@ export const UpdateFieldFormFields = withForm({
           )}
         </form.AppField>
 
+        <form.AppField name="label">
+          {(field) => (
+            <field.FieldText
+              label="Rótulo"
+              placeholder="Sobrescreve o título exibido (vazio = usa o título exibido)"
+              disabled={isDisabled || isLocked}
+            />
+          )}
+        </form.AppField>
+
         <form.AppField
           name="slug"
           validators={{

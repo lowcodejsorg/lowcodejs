@@ -78,6 +78,11 @@ export const FieldCreateSchema = z.object({
     .string()
     .max(500, 'A dica deve ter no máximo 500 caracteres')
     .default(''),
+  // Rótulo customizado de exibição (vazio = usa o name original).
+  label: z
+    .string()
+    .max(120, 'O rótulo deve ter no máximo 120 caracteres')
+    .default(''),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
   validations: z.array(z.custom<IFieldValidation>()).default([]),
@@ -126,6 +131,7 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   name: '',
   slug: '',
   tip: '',
+  label: '',
   type: '',
   format: '',
   validations: [],
@@ -290,6 +296,16 @@ export const CreateFieldFormFields = withForm({
               disabled={isPending}
               rows={3}
               required
+            />
+          )}
+        </form.AppField>
+
+        <form.AppField name="label">
+          {(field) => (
+            <field.FieldText
+              label="Rótulo"
+              placeholder="Sobrescreve o título exibido (vazio = usa o título exibido)"
+              disabled={isPending}
             />
           )}
         </form.AppField>

@@ -57,6 +57,16 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
         </p>
       </div>
 
+      {/* Rótulo customizado (sobrescreve o título exibido) */}
+      {data.label && (
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Rótulo</p>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+            {data.label}
+          </p>
+        </div>
+      )}
+
       <div className="space-y-1">
         <p className="text-sm font-medium">Slug</p>
         <p className="text-sm text-muted-foreground break-all">

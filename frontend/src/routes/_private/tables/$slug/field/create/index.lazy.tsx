@@ -144,6 +144,8 @@ function RouteComponent(): React.JSX.Element {
         name: value.name,
         slug: value.slug,
         tip: normalizeTip(value.tip),
+        // Rótulo customizado: vazio → null (volta ao name).
+        label: value.label?.trim() || null,
         type: value.type as keyof typeof E_FIELD_TYPE,
         required: value.required,
         multiple: value.multiple,
