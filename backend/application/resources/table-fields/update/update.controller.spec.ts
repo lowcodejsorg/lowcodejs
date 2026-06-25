@@ -177,7 +177,12 @@ describe('E2E Table Field Update Controller', () => {
         .send({
           name: 'Modificado em',
           type: E_FIELD_TYPE.UPDATED_AT,
-          label: { list: 'Atualizado em', filter: null, form: null, detail: null },
+          label: {
+            list: 'Atualizado em',
+            filter: null,
+            form: null,
+            detail: null,
+          },
           showInFilter: true,
           permissions: buildFieldPermissions(true, true, true),
           widthInForm: 50,

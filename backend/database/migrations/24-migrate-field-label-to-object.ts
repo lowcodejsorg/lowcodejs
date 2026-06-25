@@ -38,21 +38,18 @@ async function backfillFieldLabel(
 
   if (total === 0) return { updated: 0, total: 0 };
 
-  const result = await fields.updateMany(
-    { label: { $type: 'string' } },
-    [
-      {
-        $set: {
-          label: {
-            list: '$label',
-            filter: '$label',
-            form: '$label',
-            detail: '$label',
-          },
+  const result = await fields.updateMany({ label: { $type: 'string' } }, [
+    {
+      $set: {
+        label: {
+          list: '$label',
+          filter: '$label',
+          form: '$label',
+          detail: '$label',
         },
       },
-    ],
-  );
+    },
+  ]);
 
   return { updated: result.modifiedCount, total };
 }
