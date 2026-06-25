@@ -276,6 +276,13 @@ export type IFieldValidation = {
   config: Record<string, unknown>;
 };
 
+export type IFieldLabel = {
+  list: string | null;
+  filter: string | null;
+  form: string | null;
+  detail: string | null;
+};
+
 export type IField = Merge<
   Base,
   {
@@ -304,9 +311,10 @@ export type IField = Merge<
     defaultValue: string | Array<string> | null;
     locked?: boolean;
     native?: boolean;
-    // Rotulo customizado de exibicao. `name` continua original (controla o slug);
-    // `label`, quando definido, e o texto mostrado na UI. null = usa o name.
-    label?: string | null;
+    // Rotulo customizado por contexto de exibicao. `name` continua original
+    // (controla o slug). Cada chave sobrescreve o name apenas naquele contexto.
+    // null no objeto inteiro = sem rotulo customizado em nenhum contexto.
+    label?: IFieldLabel | null;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: Array<IDropdown>;
     allowCustomDropdownOptions?: boolean;
