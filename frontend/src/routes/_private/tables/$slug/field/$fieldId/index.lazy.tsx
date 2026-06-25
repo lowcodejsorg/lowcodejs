@@ -411,7 +411,6 @@ function FieldUpdateContent({
         trashedAt?: string | null;
       } = {
         name: value.name,
-        slug: value.slug,
         tip: normalizeTip(value.tip),
         label: nextLabel,
         type: value.type,
@@ -465,6 +464,11 @@ function FieldUpdateContent({
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,
       };
+
+      // slug e a "url"/chave tecnica, editavel so em campos nao-nativos. Campos
+      // nativos tem slug camelCase fixo (ignorado pelo backend) e nao deve ser
+      // enviado para nao reprovar na validacao kebab-case do update.
+      if (!data.native) payload.slug = value.slug;
 
       if (groupSlug) {
         await _updateGroupField.mutateAsync({

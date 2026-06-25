@@ -4,7 +4,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
   tags: ['Campos'],
   summary: 'Atualizar campo',
   description:
-    'Atualiza um campo existente em uma tabela. Alterar name muda apenas o título de exibição. O slug é a chave técnica segura e só muda quando enviado explicitamente.',
+    'Atualiza um campo existente em uma tabela. Em campos não-nativos o `slug` (chave técnica/url) é editável e, ao mudar, renomeia os dados armazenados. Campos nativos têm slug fixo e só aceitam o `label`.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -43,7 +43,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
         maxLength: 80,
         pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
         description:
-          'Chave técnica segura do campo. Alterá-la renomeia os dados armazenados do campo.',
+          'Chave técnica/url do campo (apenas não-nativos). Alterá-la renomeia os dados armazenados. Omitir em campos nativos.',
         examples: ['full-name', 'nome-slug-campo'],
       },
       type: {

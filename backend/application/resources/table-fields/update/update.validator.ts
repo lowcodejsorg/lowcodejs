@@ -9,6 +9,9 @@ import {
 
 import { TableFieldBaseSchema } from '../table-field-base.schema';
 
+// slug e opcional: campos nao-nativos podem editar a "url"/chave tecnica do
+// campo (honrado no use-case). Campos nativos nao enviam slug (slug camelCase
+// fixo) e o use-case os ignora.
 export const TableFieldUpdateBodyValidator = z
   .object({
     name: z.string().trim().min(1).max(FIELD_NAME_MAX_LENGTH),

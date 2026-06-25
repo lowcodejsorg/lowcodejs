@@ -186,15 +186,17 @@ export default class TableFieldUpdateUseCase {
         );
       }
 
+      // Slug e editavel em campos nao-nativos: honra o `payload.slug` (a
+      // "url"/chave tecnica) quando vem pela rota real (`tableSlug` presente).
+      // Sem slug, deriva do `name`. Mudanca de slug propaga rename dos dados
+      // mais abaixo (oldSlug !== slug). O guard `payload.tableSlug ? ...`
+      // espelha o create e evita confundir o slug do campo com o slug da tabela
+      // quando o caller passa apenas `slug` (= tabela).
       const oldSlug = field.slug;
-      const nameChanged = payload.name !== field.name;
-      let resolvedSlug: { slug: string; error: string | null } = {
-        slug: oldSlug,
-        error: null,
-      };
-      if (nameChanged) {
-        resolvedSlug = FieldSlug.resolve({ name: payload.name });
-      }
+      const resolvedSlug = FieldSlug.resolve({
+        name: payload.name,
+        slug: payload.tableSlug ? payload.slug : undefined,
+      });
 
       if (resolvedSlug.error) {
         return left(
