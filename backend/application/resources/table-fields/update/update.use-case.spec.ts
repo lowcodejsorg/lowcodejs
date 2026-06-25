@@ -397,14 +397,14 @@ describe('Table Field Update Use Case', () => {
       widthInForm: null,
       widthInList: 10,
       widthInDetail: null,
-      label: 'Data de início',
+      label: { list: 'Data de início', filter: null, form: null, detail: null },
     });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
 
     // label customizado salvo; name e slug originais preservados.
-    expect(result.value.label).toBe('Data de início');
+    expect(result.value.label).toEqual({ list: 'Data de início', filter: null, form: null, detail: null });
     expect(result.value.name).toBe('Criado em');
     expect(result.value.slug).toBe('createdAt');
     expect(result.value.type).toBe(E_FIELD_TYPE.CREATED_AT);
@@ -420,7 +420,7 @@ describe('Table Field Update Use Case', () => {
       locked: true,
       allowCreateRelationshipRecords: false,
       native: true,
-      label: 'Data de início',
+      label: { list: 'Data de início', filter: null, form: null, detail: null },
       required: false,
       category: [],
       dropdown: [],
