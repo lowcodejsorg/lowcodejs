@@ -29,6 +29,11 @@ export const TableFieldRemoveFromTrashSchema: FastifySchema = {
         _id: { type: 'string', description: 'ID do campo' },
         name: { type: 'string', description: 'Nome do campo' },
         slug: { type: 'string', description: 'Slug do campo' },
+        label: {
+          type: 'string',
+          nullable: true,
+          description: 'Rótulo customizado de exibição do campo',
+        },
         type: { type: 'string', description: 'Tipo do campo' },
         required: { type: 'boolean', description: 'Campo obrigatório' },
         multiple: {

@@ -79,6 +79,11 @@ export const TableCreateSchema: FastifySchema = {
                 type: 'string',
                 description: 'Slug do campo (gerado a partir do nome)',
               },
+              label: {
+                type: 'string',
+                nullable: true,
+                description: 'Rótulo customizado de exibição do campo',
+              },
               type: {
                 type: 'string',
                 description: 'Tipo do campo do enum FIELD_TYPE',
@@ -266,6 +271,7 @@ export const TableCreateSchema: FastifySchema = {
                     _id: { type: 'string' },
                     name: { type: 'string' },
                     slug: { type: 'string' },
+                    label: { type: 'string', nullable: true },
                     type: { type: 'string' },
                     required: { type: 'boolean' },
                     multiple: { type: 'boolean' },

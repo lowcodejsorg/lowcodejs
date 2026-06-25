@@ -189,6 +189,11 @@ export const TableUpdateSchema: FastifySchema = {
               _id: { type: 'string', description: 'ID do campo' },
               name: { type: 'string', description: 'Nome do campo' },
               slug: { type: 'string', description: 'Slug do campo' },
+              label: {
+                type: 'string',
+                nullable: true,
+                description: 'Rótulo customizado de exibição do campo',
+              },
               type: {
                 type: 'string',
                 enum: [
@@ -433,6 +438,7 @@ export const TableUpdateSchema: FastifySchema = {
                     _id: { type: 'string' },
                     name: { type: 'string' },
                     slug: { type: 'string' },
+                    label: { type: 'string', nullable: true },
                     type: { type: 'string' },
                     required: { type: 'boolean' },
                     multiple: { type: 'boolean' },
