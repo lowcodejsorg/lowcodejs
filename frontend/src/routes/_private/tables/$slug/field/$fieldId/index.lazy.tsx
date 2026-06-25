@@ -8,9 +8,14 @@ import {
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
+import type { z } from 'zod';
 
 import { FieldDetailSkeleton } from './-field-detail-skeleton';
-import { FieldUpdateSchema, UpdateFieldFormFields } from './-update-form';
+import {
+  FieldNativeUpdateSchema,
+  FieldUpdateSchema,
+  UpdateFieldFormFields,
+} from './-update-form';
 import { FieldView } from './-view';
 
 import { FormFooter } from '@/components/common/form-footer';
@@ -333,6 +338,11 @@ function FieldUpdateContent({
     onError: handleUpdateError,
   });
 
+  // Campo nativo valida só o rótulo; name/slug/type são fixos e não devem
+  // reprovar o form (slugs nativos não passam na regra de slug de usuário).
+  let validationSchema: z.ZodType = FieldUpdateSchema;
+  if (data.native) validationSchema = FieldNativeUpdateSchema;
+
   const form = useAppForm({
     defaultValues: {
       name: data.name,
@@ -383,7 +393,7 @@ function FieldUpdateContent({
       widthInList: data.widthInList ?? 10,
     },
     // @ts-expect-error Zod Standard Schema type inference
-    validators: { onChange: FieldUpdateSchema, onSubmit: FieldUpdateSchema },
+    validators: { onChange: validationSchema, onSubmit: validationSchema },
     onSubmit: async ({ value }) => {
       if (_update.status === 'pending' || _updateGroupField.isPending) return;
 

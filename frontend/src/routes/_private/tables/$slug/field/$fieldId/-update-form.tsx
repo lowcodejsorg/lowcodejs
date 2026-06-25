@@ -130,6 +130,19 @@ export const FieldUpdateSchema = z.object({
 
 export type FieldUpdateFormValues = z.infer<typeof FieldUpdateSchema>;
 
+// Validação para campos nativos: só o rótulo é editável. Os demais campos
+// (name/slug/type) são fixos e não devem reprovar o form — slugs nativos como
+// `createdAt`/`_id` não passam na regra de slug de usuário. `.passthrough()`
+// mantém os demais valores intactos para o submit.
+export const FieldNativeUpdateSchema = z
+  .object({
+    label: z
+      .string()
+      .max(120, 'O rótulo deve ter no máximo 120 caracteres')
+      .default(''),
+  })
+  .passthrough();
+
 export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   name: '',
   slug: '',
