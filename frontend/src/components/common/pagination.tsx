@@ -45,7 +45,7 @@ export function Pagination({
       <div className="inline-flex gap-2 items-center ">
         <span className="inline-flex flex-1">Itens por página: </span>
         <Select
-          defaultValue={String(perPage)}
+          value={String(perPage)}
           onValueChange={(value) => {
             onPerPageChange(Number(value));
           }}
