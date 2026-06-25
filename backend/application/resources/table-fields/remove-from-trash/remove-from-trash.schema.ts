@@ -30,9 +30,15 @@ export const TableFieldRemoveFromTrashSchema: FastifySchema = {
         name: { type: 'string', description: 'Nome do campo' },
         slug: { type: 'string', description: 'Slug do campo' },
         label: {
-          type: 'string',
+          type: 'object',
           nullable: true,
-          description: 'Rótulo customizado de exibição do campo',
+          description: 'Rótulo customizado por contexto de exibição do campo',
+          properties: {
+            list: { type: 'string', nullable: true },
+            filter: { type: 'string', nullable: true },
+            form: { type: 'string', nullable: true },
+            detail: { type: 'string', nullable: true },
+          },
         },
         type: { type: 'string', description: 'Tipo do campo' },
         required: { type: 'boolean', description: 'Campo obrigatório' },

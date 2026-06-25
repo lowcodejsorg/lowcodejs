@@ -37,7 +37,17 @@ export const TableFieldDeleteCategorySchema: FastifySchema = {
             _id: { type: 'string' },
             name: { type: 'string' },
             slug: { type: 'string' },
-            label: { type: 'string', nullable: true },
+            label: {
+              type: 'object',
+              nullable: true,
+              description: 'Rótulo customizado por contexto de exibição do campo',
+              properties: {
+                list: { type: 'string', nullable: true },
+                filter: { type: 'string', nullable: true },
+                form: { type: 'string', nullable: true },
+                detail: { type: 'string', nullable: true },
+              },
+            },
             type: { type: 'string' },
             required: { type: 'boolean' },
             multiple: { type: 'boolean' },
