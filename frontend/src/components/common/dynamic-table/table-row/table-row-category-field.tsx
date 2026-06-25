@@ -109,7 +109,7 @@ export function TableRowCategoryField({
             )}
           >
             {selectedLabel ||
-              `Selecione ${resolveFieldLabel(field).toLowerCase()}`}
+              `Selecione ${resolveFieldLabel(field, 'form').toLowerCase()}`}
           </Button>
         </PopoverTrigger>
         <PopoverContent

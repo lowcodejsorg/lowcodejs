@@ -273,7 +273,7 @@ export function DocumentRow({
               return (
                 <div className="mt-2">
                   <span className="text-xs font-medium text-muted-foreground">
-                    {resolveFieldLabel(visibleExtra[0])}
+                    {resolveFieldLabel(visibleExtra[0], 'detail')}
                   </span>
                   {renderFieldCell(visibleExtra[0], row, slug)}
                 </div>
@@ -288,7 +288,7 @@ export function DocumentRow({
                   {visibleExtra.map((field) => (
                     <div key={field._id}>
                       <span className="text-xs font-medium text-muted-foreground">
-                        {resolveFieldLabel(field)}
+                        {resolveFieldLabel(field, 'detail')}
                       </span>
                       {renderFieldCell(field, row, slug)}
                     </div>

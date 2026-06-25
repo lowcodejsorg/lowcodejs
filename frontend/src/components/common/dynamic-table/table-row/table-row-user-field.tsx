@@ -254,7 +254,7 @@ export function TableRowUserField({
             >
               <ComboboxValue>
                 {(selectedValues: Array<IUser>): React.ReactNode => {
-                  let chipsPlaceholder = `Selecione ${resolveFieldLabel(field).toLowerCase()}`;
+                  let chipsPlaceholder = `Selecione ${resolveFieldLabel(field, 'form').toLowerCase()}`;
                   if (selectedValues.length > 0) {
                     chipsPlaceholder = '';
                   }
@@ -352,7 +352,7 @@ export function TableRowUserField({
           <ComboboxInput
             placeholder={
               fieldValue[0]?.label ||
-              `Selecione ${resolveFieldLabel(field).toLowerCase()}`
+              `Selecione ${resolveFieldLabel(field, 'form').toLowerCase()}`
             }
             showClear={fieldValue.length > 0}
             className={cn(isInvalid && 'border-destructive')}

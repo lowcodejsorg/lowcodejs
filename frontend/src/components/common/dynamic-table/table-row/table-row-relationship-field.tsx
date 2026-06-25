@@ -582,7 +582,7 @@ function CascadeRelationshipField({
               placeholder={
                 selectedSingleLabel ||
                 (parentValue
-                  ? `Selecione ${resolveFieldLabel(field).toLowerCase()}`
+                  ? `Selecione ${resolveFieldLabel(field, 'form').toLowerCase()}`
                   : `Selecione ${selectedParentLabel} primeiro`)
               }
               showClear={(formField.state.value ?? []).length > 0}
@@ -929,7 +929,7 @@ function DefaultRelationshipField({
                   )}
                 </ComboboxValue>
                 <ComboboxChipsInput
-                  placeholder={`Adicionar ${resolveFieldLabel(field).toLowerCase()}`}
+                  placeholder={`Adicionar ${resolveFieldLabel(field, 'form').toLowerCase()}`}
                 />
               </ComboboxChips>
               <ComboboxContent anchor={anchorRef}>
@@ -1004,7 +1004,7 @@ function DefaultRelationshipField({
             <ComboboxInput
               placeholder={
                 selectedSingleLabel ||
-                `Selecione ${resolveFieldLabel(field).toLowerCase()}`
+                `Selecione ${resolveFieldLabel(field, 'form').toLowerCase()}`
               }
               showClear={(formField.state.value ?? []).length > 0}
               className={cn(

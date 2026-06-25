@@ -587,7 +587,7 @@ export function CalendarEventDialog({
                           return (
                             <div className="space-y-1">
                               <span className="text-sm font-medium ml-2">
-                                {resolveFieldLabel(field)}
+                                {resolveFieldLabel(field, 'detail')}
                               </span>
                               <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
                                 Salve o agendamento para adicionar itens a este

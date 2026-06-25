@@ -369,7 +369,7 @@ export function RowDetailView({
                 className="space-y-1"
               >
                 <p className="text-sm font-medium">
-                  {resolveFieldLabel(field)}
+                  {resolveFieldLabel(field, 'detail')}
                 </p>
                 {renderCell(field, data, slug)}
               </div>
@@ -398,7 +398,7 @@ export function RowDetailView({
                       key={field._id}
                       value={field._id}
                     >
-                      {resolveFieldLabel(field)}
+                      {resolveFieldLabel(field, 'detail')}
                     </TabsTrigger>
                   ),
                 )}
@@ -431,7 +431,7 @@ export function RowDetailView({
                       key={field._id}
                       value={field._id}
                     >
-                      {resolveFieldLabel(field)}
+                      {resolveFieldLabel(field, 'detail')}
                     </TabsTrigger>
                   ),
                 )}

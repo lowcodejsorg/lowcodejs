@@ -302,7 +302,7 @@ export function RelationshipRowsInline(
         className="space-y-2"
       >
         <span className="text-sm font-medium ml-2">
-          {resolveFieldLabel(field)}
+          {resolveFieldLabel(field, 'detail')}
         </span>
         <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
           Relacionamento ainda não materializado.
@@ -319,11 +319,11 @@ export function RelationshipRowsInline(
         className="space-y-2"
       >
         <span className="text-sm font-medium ml-2">
-          {resolveFieldLabel(field)}
+          {resolveFieldLabel(field, 'detail')}
         </span>
         <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
           Salve o registro para adicionar{' '}
-          {resolveFieldLabel(field).toLowerCase()}.
+          {resolveFieldLabel(field, 'detail').toLowerCase()}.
         </p>
       </div>
     );
@@ -342,7 +342,7 @@ export function RelationshipRowsInline(
     >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium ml-2">
-          {resolveFieldLabel(field)}
+          {resolveFieldLabel(field, 'detail')}
         </span>
         {showAdd && (
           <Button

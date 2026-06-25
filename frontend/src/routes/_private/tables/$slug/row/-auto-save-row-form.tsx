@@ -409,7 +409,7 @@ function AutoSaveRowFormContent({
         }),
       );
       if (!hasValue(value)) {
-        missing[field.slug] = resolveFieldLabel(field) + ' é obrigatório';
+        missing[field.slug] = resolveFieldLabel(field, 'form') + ' é obrigatório';
       }
     }
     // Grava os erros no slot `onServer` do errorMap — o único que a UI lê

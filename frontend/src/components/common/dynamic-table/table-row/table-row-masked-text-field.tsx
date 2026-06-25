@@ -66,7 +66,7 @@ export function TableRowMaskedTextField({
           disabled={disabled}
           id={formField.name}
           name={formField.name}
-          placeholder={`Digite ${resolveFieldLabel(field).toLowerCase()}`}
+          placeholder={`Digite ${resolveFieldLabel(field, 'form').toLowerCase()}`}
           data-slot="input-group-control"
           aria-invalid={isInvalid}
           aria-required={field.required || undefined}

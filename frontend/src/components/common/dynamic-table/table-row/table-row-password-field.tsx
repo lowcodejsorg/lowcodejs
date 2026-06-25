@@ -61,7 +61,7 @@ export function TableRowPasswordField({
           id={formField.name}
           name={formField.name}
           type={inputType}
-          placeholder={`Digite ${resolveFieldLabel(field).toLowerCase()}`}
+          placeholder={`Digite ${resolveFieldLabel(field, 'form').toLowerCase()}`}
           value={formField.state.value || ''}
           onBlur={formField.handleBlur}
           onChange={(e) => formField.handleChange(e.target.value)}

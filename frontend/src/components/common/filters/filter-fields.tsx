@@ -467,12 +467,12 @@ export function FilterTextShort({
 }): React.JSX.Element {
   return (
     <Field data-slot="filter-text-short">
-      <FieldLabel>{resolveFieldLabel(field)}</FieldLabel>
+      <FieldLabel>{resolveFieldLabel(field, 'filter')}</FieldLabel>
       <InputGroup>
         <InputGroupInput
           data-test-id={`filter-input-${field.slug}`}
           type="text"
-          placeholder={`Filtrar por ${resolveFieldLabel(field).toLowerCase()}`}
+          placeholder={`Filtrar por ${resolveFieldLabel(field, 'filter').toLowerCase()}`}
           value={value}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onChange(e.target.value)
@@ -485,7 +485,7 @@ export function FilterTextShort({
               onClick={onRemove}
               variant="ghost"
               size="icon-xs"
-              aria-label={`Limpar ${resolveFieldLabel(field)}`}
+              aria-label={`Limpar ${resolveFieldLabel(field, 'filter')}`}
             >
               <XIcon className="size-4" />
             </InputGroupButton>
@@ -531,7 +531,7 @@ export function FilterDropdown({
   if (field.multiple) {
     return (
       <Field>
-        <FieldLabel>{resolveFieldLabel(field)}</FieldLabel>
+        <FieldLabel>{resolveFieldLabel(field, 'filter')}</FieldLabel>
         <Combobox
           items={options}
           multiple
@@ -547,7 +547,7 @@ export function FilterDropdown({
           >
             <ComboboxValue>
               {(values: Array<DropdownOption>): React.ReactNode => {
-                let chipsPlaceholder = `Filtrar por ${resolveFieldLabel(field).toLowerCase()}`;
+                let chipsPlaceholder = `Filtrar por ${resolveFieldLabel(field, 'filter').toLowerCase()}`;
                 if (values.length > 0) {
                   chipsPlaceholder = '';
                 }
@@ -590,7 +590,7 @@ export function FilterDropdown({
 
   return (
     <Field>
-      <FieldLabel>{resolveFieldLabel(field)}</FieldLabel>
+      <FieldLabel>{resolveFieldLabel(field, 'filter')}</FieldLabel>
       <Select
         data-test-id={`filter-select-${field.slug}`}
         value={singleValue}
@@ -604,7 +604,7 @@ export function FilterDropdown({
       >
         <SelectTrigger className="w-full">
           <SelectValue
-            placeholder={`Filtrar por ${resolveFieldLabel(field).toLowerCase()}`}
+            placeholder={`Filtrar por ${resolveFieldLabel(field, 'filter').toLowerCase()}`}
           />
         </SelectTrigger>
         <SelectContent>
@@ -635,7 +635,7 @@ export function FilterDate({
 }): React.JSX.Element {
   return (
     <Field data-slot="filter-date">
-      <FieldLabel>{resolveFieldLabel(field)}</FieldLabel>
+      <FieldLabel>{resolveFieldLabel(field, 'filter')}</FieldLabel>
       <RangeDatepicker
         data-test-id={`filter-date-${field.slug}`}
         value={value}
@@ -672,7 +672,7 @@ export function FilterCategory({
 
   return (
     <Field>
-      <FieldLabel>{resolveFieldLabel(field)}</FieldLabel>
+      <FieldLabel>{resolveFieldLabel(field, 'filter')}</FieldLabel>
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -684,7 +684,7 @@ export function FilterCategory({
             )}
           >
             {selectedLabel ||
-              `Filtrar por ${resolveFieldLabel(field).toLowerCase()}`}
+              `Filtrar por ${resolveFieldLabel(field, 'filter').toLowerCase()}`}
           </Button>
         </PopoverTrigger>
         <PopoverContent
@@ -715,11 +715,11 @@ export function FilterUser({
 }): React.JSX.Element {
   return (
     <Field data-slot="filter-user">
-      <FieldLabel>{resolveFieldLabel(field)}</FieldLabel>
+      <FieldLabel>{resolveFieldLabel(field, 'filter')}</FieldLabel>
       <UserMultiSelect
         value={value}
         onValueChange={onChange}
-        placeholder={`Filtrar por ${resolveFieldLabel(field).toLowerCase()}`}
+        placeholder={`Filtrar por ${resolveFieldLabel(field, 'filter').toLowerCase()}`}
       />
     </Field>
   );
@@ -809,7 +809,7 @@ export function FilterRelationship({
   if (!relConfig || !relConfig.field || !relConfig.table) {
     return (
       <Field data-slot="filter-relationship">
-        <FieldLabel>{resolveFieldLabel(field)}</FieldLabel>
+        <FieldLabel>{resolveFieldLabel(field, 'filter')}</FieldLabel>
         <p className="text-muted-foreground text-sm">
           Relacionamento não configurado
         </p>
@@ -835,7 +835,7 @@ export function FilterRelationship({
 
   return (
     <Field data-slot="filter-relationship">
-      <FieldLabel>{resolveFieldLabel(field)}</FieldLabel>
+      <FieldLabel>{resolveFieldLabel(field, 'filter')}</FieldLabel>
       <div className="relative">
         <Combobox
           data-test-id={`filter-relationship-${field.slug}`}
@@ -853,7 +853,7 @@ export function FilterRelationship({
           >
             <ComboboxValue>
               {(values: Array<IRow>): React.ReactNode => {
-                let chipsPlaceholder = `Filtrar por ${resolveFieldLabel(field).toLowerCase()}`;
+                let chipsPlaceholder = `Filtrar por ${resolveFieldLabel(field, 'filter').toLowerCase()}`;
                 if (values.length > 0) {
                   chipsPlaceholder = '';
                 }

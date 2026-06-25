@@ -138,7 +138,7 @@ export function GroupRowsInline(
     >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium ml-2">
-          {resolveFieldLabel(field)}
+          {resolveFieldLabel(field, 'form')}
         </span>
         <Button
           type="button"

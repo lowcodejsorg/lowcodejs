@@ -267,7 +267,7 @@ export function KanbanFieldGroupEditor({
         className="space-y-2"
       >
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">{resolveFieldLabel(field)}</h3>
+          <h3 className="text-sm font-semibold">{resolveFieldLabel(field, 'detail')}</h3>
           <Button
             type="button"
             variant="outline"

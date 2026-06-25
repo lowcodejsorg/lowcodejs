@@ -392,7 +392,7 @@ export function TableRowDropdownField({
           <ComboboxChips ref={anchorRef}>
             <ComboboxValue>
               {(values: Array<DropdownOption>): React.ReactNode => {
-                let chipsPlaceholder = `Selecione ${resolveFieldLabel(field).toLowerCase()}`;
+                let chipsPlaceholder = `Selecione ${resolveFieldLabel(field, 'form').toLowerCase()}`;
                 if (values.length > 0) {
                   chipsPlaceholder = '';
                 }
@@ -468,7 +468,7 @@ export function TableRowDropdownField({
         <ComboboxInput
           placeholder={
             selectedOptions[0]?.label ||
-            `Selecione ${resolveFieldLabel(field).toLowerCase()}`
+            `Selecione ${resolveFieldLabel(field, 'form').toLowerCase()}`
           }
           showClear={selectedOptions.length > 0}
           onKeyDown={handleInputKeyDown}

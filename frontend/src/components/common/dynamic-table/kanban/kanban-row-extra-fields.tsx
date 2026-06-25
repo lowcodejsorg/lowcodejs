@@ -43,7 +43,7 @@ export function KanbanRowExtraFieldsSection({
             editingFieldSlug === field.slug && isExtraFieldEditable(field)
           ) && (
             <div className="text-xs text-muted-foreground">
-              {resolveFieldLabel(field)}
+              {resolveFieldLabel(field, 'detail')}
             </div>
           )}
           {((): React.ReactNode => {

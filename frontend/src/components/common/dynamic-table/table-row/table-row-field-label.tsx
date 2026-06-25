@@ -22,7 +22,7 @@ export function TableRowFieldLabel({
   className,
 }: TableRowFieldLabelProps): React.JSX.Element {
   const tip = field.tip?.trim();
-  const displayLabel = resolveFieldLabel(field);
+  const displayLabel = resolveFieldLabel(field, 'form');
 
   return (
     <div className="flex items-center justify-between gap-2">
