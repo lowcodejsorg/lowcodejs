@@ -217,6 +217,7 @@ export const UpdateFieldFormFields = withForm({
     isGroupField,
   }) {
     // useStore para valores reativos do form
+    const fieldName = useStore(form.store, (state) => state.values.name);
     const fieldType = useStore(form.store, (state) => state.values.type);
     const isTextShort = fieldType === E_FIELD_TYPE.TEXT_SHORT;
     const isTextLong = fieldType === E_FIELD_TYPE.TEXT_LONG;
@@ -397,7 +398,7 @@ export const UpdateFieldFormFields = withForm({
             {(field) => (
               <field.FieldText
                 label="Na listagem"
-                placeholder="Sobrescreve o título na listagem"
+                placeholder={fieldName || 'Igual ao título exibido'}
                 disabled={isDisabled || isLocked}
               />
             )}
@@ -406,7 +407,7 @@ export const UpdateFieldFormFields = withForm({
             {(field) => (
               <field.FieldText
                 label="Nos filtros"
-                placeholder="Sobrescreve o título nos filtros"
+                placeholder={fieldName || 'Igual ao título exibido'}
                 disabled={isDisabled || isLocked}
               />
             )}
@@ -415,7 +416,7 @@ export const UpdateFieldFormFields = withForm({
             {(field) => (
               <field.FieldText
                 label="No formulário"
-                placeholder="Sobrescreve o título no formulário"
+                placeholder={fieldName || 'Igual ao título exibido'}
                 disabled={isDisabled || isLocked}
               />
             )}
@@ -424,7 +425,7 @@ export const UpdateFieldFormFields = withForm({
             {(field) => (
               <field.FieldText
                 label="Nos detalhes"
-                placeholder="Sobrescreve o título nos detalhes"
+                placeholder={fieldName || 'Igual ao título exibido'}
                 disabled={isDisabled || isLocked}
               />
             )}

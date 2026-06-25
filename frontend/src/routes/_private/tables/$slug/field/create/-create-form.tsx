@@ -312,7 +312,7 @@ export const CreateFieldFormFields = withForm({
             {(field) => (
               <field.FieldText
                 label="Na listagem"
-                placeholder="Sobrescreve o título na listagem"
+                placeholder={fieldName || 'Igual ao título exibido'}
                 disabled={isPending}
               />
             )}
@@ -321,7 +321,7 @@ export const CreateFieldFormFields = withForm({
             {(field) => (
               <field.FieldText
                 label="Nos filtros"
-                placeholder="Sobrescreve o título nos filtros"
+                placeholder={fieldName || 'Igual ao título exibido'}
                 disabled={isPending}
               />
             )}
@@ -330,7 +330,7 @@ export const CreateFieldFormFields = withForm({
             {(field) => (
               <field.FieldText
                 label="No formulário"
-                placeholder="Sobrescreve o título no formulário"
+                placeholder={fieldName || 'Igual ao título exibido'}
                 disabled={isPending}
               />
             )}
@@ -339,7 +339,7 @@ export const CreateFieldFormFields = withForm({
             {(field) => (
               <field.FieldText
                 label="Nos detalhes"
-                placeholder="Sobrescreve o título nos detalhes"
+                placeholder={fieldName || 'Igual ao título exibido'}
                 disabled={isPending}
               />
             )}
