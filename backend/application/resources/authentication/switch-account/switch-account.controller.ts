@@ -8,6 +8,7 @@ import {
   getActiveAccountId,
   getRequestCookie,
   readAccountSessions,
+  REFRESH_TOKEN_COOKIE,
   setActiveSession,
   writeAccountSessions,
 } from '@application/utils/cookies.util';
@@ -86,7 +87,7 @@ export default class {
 
     // Alvo deixa de ser inativo; a conta ativa atual passa a inativa.
     delete sessions[accountId];
-    const currentRefreshToken = getRequestCookie(request, 'refreshToken');
+    const currentRefreshToken = getRequestCookie(request, REFRESH_TOKEN_COOKIE);
     if (currentActiveId && currentRefreshToken) {
       sessions[currentActiveId] = currentRefreshToken;
     }

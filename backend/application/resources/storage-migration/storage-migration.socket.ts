@@ -26,6 +26,7 @@ import { UserContractRepository } from '@application/repositories/user/user-cont
 import UserMongooseRepository from '@application/repositories/user/user.repository';
 import { GroupResolverContractService } from '@application/services/group-resolver/group-resolver-contract.service';
 import GroupResolverService from '@application/services/group-resolver/group-resolver.service';
+import { ACCESS_TOKEN_COOKIE } from '@application/utils/cookies.util';
 
 export const STORAGE_MIGRATION_NAMESPACE = '/storage-migration';
 
@@ -96,7 +97,7 @@ export function initStorageMigrationSocket(
 
   namespace.use(async (socket, next) => {
     const cookieHeader = socket.handshake.headers.cookie;
-    const accessToken = extractCookieValue(cookieHeader, 'accessToken');
+    const accessToken = extractCookieValue(cookieHeader, ACCESS_TOKEN_COOKIE);
 
     if (!accessToken) {
       next(new Error('Autenticação necessária.'));

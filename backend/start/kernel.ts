@@ -16,6 +16,7 @@ import z, { ZodError } from 'zod';
 import { loadControllers } from '@application/core/controllers';
 import { registerDependencies } from '@application/core/di-registry';
 import HTTPException from '@application/core/exception.core';
+import { ACCESS_TOKEN_COOKIE } from '@application/utils/cookies.util';
 import { StorageContentDispositionHook } from '@hooks/content-disposition.hook';
 import { LoadExtensionHook } from '@hooks/load-extensions.hook';
 import { LoggerUserActionHook } from '@hooks/logger.hook';
@@ -130,7 +131,7 @@ kernel.register(jwt, {
   verify: { algorithms: ['RS256'] },
   cookie: {
     signed: false,
-    cookieName: 'accessToken',
+    cookieName: ACCESS_TOKEN_COOKIE,
   },
 });
 
