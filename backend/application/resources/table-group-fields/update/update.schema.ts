@@ -42,6 +42,12 @@ export const GroupFieldUpdateSchema: FastifySchema = {
       widthInList: { type: 'number', nullable: true, default: 10 },
       widthInDetail: { type: 'number', nullable: true, default: 50 },
       tip: { type: 'string', nullable: true, default: null },
+      label: {
+        type: 'string',
+        nullable: true,
+        description:
+          'Rótulo customizado de exibição do campo (apenas o texto, nunca o slug)',
+      },
       locked: { type: 'boolean', default: false },
       format: { type: 'string', nullable: true, default: null },
       defaultValue: {

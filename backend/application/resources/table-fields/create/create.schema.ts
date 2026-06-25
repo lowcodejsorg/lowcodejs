@@ -128,6 +128,12 @@ export const TableFieldCreateSchema: FastifySchema = {
         default: null,
         description: 'Texto de ajuda opcional exibido nos formulários',
       },
+      label: {
+        type: 'string',
+        nullable: true,
+        description:
+          'Rótulo customizado de exibição do campo (apenas o texto, nunca o slug)',
+      },
       locked: {
         type: 'boolean',
         default: false,

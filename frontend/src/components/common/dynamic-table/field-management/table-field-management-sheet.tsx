@@ -37,7 +37,7 @@ export function TableFieldManagementSheet({
           <SheetTitle>Gerenciar campos</SheetTitle>
         </SheetHeader>
 
-        <div className="flex-1 overflow-auto p-4">
+        <div className="flex-1 min-h-0 flex flex-col">
           <FieldManagement.Root actions={actions}>
             <FieldManagement.Tabs />
           </FieldManagement.Root>

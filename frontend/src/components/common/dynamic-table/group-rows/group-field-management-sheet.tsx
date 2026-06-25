@@ -46,13 +46,13 @@ export function GroupFieldManagementSheet({
           <SheetTitle>Gerenciar campos - {groupName}</SheetTitle>
         </SheetHeader>
 
-        <div className="flex-1 overflow-auto p-4">
+        <div className="flex-1 min-h-0 flex flex-col">
           <FieldManagement.Root actions={actions}>
             <Tabs
               defaultValue="display"
-              className="w-full"
+              className="w-full flex flex-col flex-1 min-h-0"
             >
-              <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsList className="grid w-full grid-cols-3 mb-4 shrink-0 px-4 pt-4">
                 <TabsTrigger value="display">Lista</TabsTrigger>
                 <TabsTrigger value="form">Formulários</TabsTrigger>
                 <TabsTrigger
@@ -63,18 +63,27 @@ export function GroupFieldManagementSheet({
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="display">
+              <TabsContent
+                value="display"
+                className="flex-1 min-h-0 overflow-y-auto px-4 pb-4"
+              >
                 <FieldManagement.List visibilityKey="showInList" />
               </TabsContent>
 
-              <TabsContent value="form">
+              <TabsContent
+                value="form"
+                className="flex-1 min-h-0 overflow-y-auto px-4 pb-4"
+              >
                 <FieldManagement.List
                   visibilityKey="showInForm"
                   excludeNative
                 />
               </TabsContent>
 
-              <TabsContent value="trashed">
+              <TabsContent
+                value="trashed"
+                className="flex-1 min-h-0 overflow-y-auto px-4 pb-4"
+              >
                 <FieldManagement.TrashedList excludeNative />
               </TabsContent>
             </Tabs>

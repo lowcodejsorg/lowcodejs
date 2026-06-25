@@ -165,7 +165,7 @@ function SortableManagementItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex items-center justify-between gap-2 rounded-lg border p-3 shadow-sm',
+        'flex items-center justify-between gap-2 rounded-lg border p-3 shadow-sm min-w-0',
         {
           'bg-card': !dimmed,
           'bg-muted/50': dimmed,
@@ -176,7 +176,7 @@ function SortableManagementItem({
         value={resolveFieldLabel(field)}
         className="text-sm font-medium"
       />
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 shrink-0">
         {widthKey && onWidthChange && (
           <Input
             inputMode="numeric"
@@ -390,7 +390,7 @@ function FieldManagementRoot({
     <FieldManagementProvider value={actions}>
       <div
         data-test-id="field-management"
-        className="flex flex-col h-full overflow-hidden"
+        className="flex flex-col flex-1 min-h-0 overflow-hidden"
       >
         {children}
       </div>
@@ -430,12 +430,12 @@ function FieldManagementTabs(): React.JSX.Element {
   const trashedCount = nonNativeFields.filter((f) => f.trashed).length;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-auto relative p-4">
+    <div className="flex-1 flex flex-col min-h-0 relative">
       <Tabs
         defaultValue="display"
-        className="w-full max-w-6xl mx-auto"
+        className="w-full max-w-6xl mx-auto flex flex-col flex-1 min-h-0"
       >
-        <TabsList className="grid w-full grid-cols-5 mb-4">
+        <TabsList className="grid w-full grid-cols-5 mb-4 shrink-0 px-4 pt-4">
           <TabsTrigger value="display">Lista</TabsTrigger>
           <TabsTrigger value="filter">Filtros</TabsTrigger>
           <TabsTrigger value="form">Formulários</TabsTrigger>
@@ -448,26 +448,41 @@ function FieldManagementTabs(): React.JSX.Element {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="display">
+        <TabsContent
+          value="display"
+          className="flex-1 min-h-0 overflow-y-auto px-4 pb-4"
+        >
           <FieldManagementList visibilityKey="showInList" />
         </TabsContent>
 
-        <TabsContent value="filter">
+        <TabsContent
+          value="filter"
+          className="flex-1 min-h-0 overflow-y-auto px-4 pb-4"
+        >
           <FieldManagementList visibilityKey="showInFilter" />
         </TabsContent>
 
-        <TabsContent value="form">
+        <TabsContent
+          value="form"
+          className="flex-1 min-h-0 overflow-y-auto px-4 pb-4"
+        >
           <FieldManagementList
             visibilityKey="showInForm"
             excludeNative
           />
         </TabsContent>
 
-        <TabsContent value="detail">
+        <TabsContent
+          value="detail"
+          className="flex-1 min-h-0 overflow-y-auto px-4 pb-4"
+        >
           <FieldManagementList visibilityKey="showInDetail" />
         </TabsContent>
 
-        <TabsContent value="trashed">
+        <TabsContent
+          value="trashed"
+          className="flex-1 min-h-0 overflow-y-auto px-4 pb-4"
+        >
           <FieldManagementTrashedList excludeNative />
         </TabsContent>
       </Tabs>

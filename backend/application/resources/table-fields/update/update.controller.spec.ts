@@ -118,5 +118,78 @@ describe('E2E Table Field Update Controller', () => {
       expect(response.body.widthInForm).toBe(75);
       expect(response.body.widthInList).toBe(30);
     });
+
+    it('deve persistir label customizado em campo nativo', async () => {
+      const { cookies, user } = await createAuthenticatedUser();
+
+      const fieldPayload: FieldCreatePayload = {
+        category: [],
+        dropdown: [],
+        defaultValue: null,
+        showInFilter: true,
+        permissions: buildFieldPermissions(true, true, true),
+        format: 'dd/MM/yyyy HH:mm:ss',
+        group: null,
+        locked: true,
+        allowCreateRelationshipRecords: false,
+        multiple: false,
+        required: false,
+        relationship: null,
+        name: 'Modificado em',
+        slug: 'updatedAt',
+        type: E_FIELD_TYPE.UPDATED_AT,
+        widthInForm: null,
+        widthInList: null,
+        widthInDetail: null,
+      };
+
+      const field = await Field.create({ ...fieldPayload, native: true });
+
+      const tablePayload: TableCreatePayload = {
+        owner: user._id,
+        fieldOrderForm: [],
+        fieldOrderList: [],
+        style: E_TABLE_STYLE.LIST,
+        name: 'My Table',
+        slug: 'my-table',
+        fields: [field._id.toString()],
+        _schema: schemaBuilder.build([
+          {
+            ...field.toJSON(),
+            _id: field._id.toString(),
+          },
+        ]),
+        description: 'My description',
+        logo: null,
+        methods: {
+          beforeSave: { code: null },
+          afterSave: { code: null },
+          onLoad: { code: null },
+        },
+        type: E_TABLE_TYPE.TABLE,
+      };
+
+      const table = await Table.create(tablePayload);
+
+      const response = await supertest(kernel.server)
+        .put(`/tables/${table.slug}/fields/${field._id}`)
+        .set('Cookie', cookies)
+        .send({
+          name: 'Modificado em',
+          type: E_FIELD_TYPE.UPDATED_AT,
+          label: 'Atualizado em',
+          showInFilter: true,
+          permissions: buildFieldPermissions(true, true, true),
+          widthInForm: 50,
+          widthInList: 10,
+          widthInDetail: 50,
+        });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.label).toBe('Atualizado em');
+
+      const persisted = await Field.findById(field._id);
+      expect(persisted?.label).toBe('Atualizado em');
+    });
   });
 });
