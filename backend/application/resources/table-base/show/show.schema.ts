@@ -158,9 +158,16 @@ export const TableShowSchema: FastifySchema = {
                 description: 'O campo é nativo',
               },
               label: {
-                type: 'string',
+                type: 'object',
                 nullable: true,
-                description: 'Rótulo customizado de exibição do campo',
+                description:
+                  'Rótulo customizado por contexto de exibição do campo',
+                properties: {
+                  list: { type: 'string', nullable: true },
+                  filter: { type: 'string', nullable: true },
+                  form: { type: 'string', nullable: true },
+                  detail: { type: 'string', nullable: true },
+                },
               },
               defaultValue: {
                 anyOf: [
