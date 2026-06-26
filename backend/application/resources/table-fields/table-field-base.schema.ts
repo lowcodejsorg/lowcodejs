@@ -67,6 +67,8 @@ const Relationship = z.object({
   side: z.enum(['source', 'target']).nullable().optional(),
   // Modo no formulário: select (multi-select) | manage (tabelas internas).
   formMode: z.enum(['select', 'manage']).optional(),
+  // Limite numerico de vinculos neste lado (null = ilimitado, so para multiple).
+  max: z.number().int().positive().nullable().optional(),
 });
 
 const Dropdown = z.object({

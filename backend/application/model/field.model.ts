@@ -130,6 +130,11 @@ const Relationship = new mongoose.Schema(
       ),
       default: null,
     },
+    // Limite numerico de vinculos neste lado (null = ilimitado).
+    max: {
+      type: Number,
+      default: null,
+    },
   },
   {
     _id: false,

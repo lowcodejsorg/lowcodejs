@@ -475,6 +475,8 @@ export type IFieldConfigurationRelationship = {
     visible: boolean;
     label?: string;
   };
+  /** Limite numerico de vinculos neste lado. null = ilimitado. */
+  max?: number | null;
 };
 
 export type IFieldConfigurationGroup = {
