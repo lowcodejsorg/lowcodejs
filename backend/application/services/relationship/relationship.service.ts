@@ -240,6 +240,32 @@ export default class RelationshipService implements RelationshipContractService 
       }
     }
 
+    // Cardinalidade numerica no lado source (so aplica em campos multiplos).
+    if (sourceField.multiple && sourceField.relationship?.max != null) {
+      const used = await this.linkRepository.count(definition._id, { sourceId });
+      if (used >= sourceField.relationship.max) {
+        return left(
+          HTTPException.Conflict(
+            'Limite máximo de vínculos atingido neste lado',
+            'RELATIONSHIP_SOURCE_MAX',
+          ),
+        );
+      }
+    }
+
+    // Cardinalidade numerica no lado target.
+    if (targetField.multiple && targetField.relationship?.max != null) {
+      const used = await this.linkRepository.count(definition._id, { targetId });
+      if (used >= targetField.relationship.max) {
+        return left(
+          HTTPException.Conflict(
+            'Limite máximo de vínculos atingido neste lado',
+            'RELATIONSHIP_TARGET_MAX',
+          ),
+        );
+      }
+    }
+
     return right(true);
   }
 

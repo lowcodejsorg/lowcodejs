@@ -654,18 +654,19 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
   // cardinalidade (`multiple`) em canLink.
   private async endpointFields(
     definition: IRelationshipDefinition,
-    field: Pick<IField, 'multiple'>,
+    field: Pick<IField, 'multiple' | 'relationship'>,
     side: RelationshipLinkSide,
   ): Promise<{
-    sourceField: Pick<IField, 'multiple'>;
-    targetField: Pick<IField, 'multiple'>;
+    sourceField: Pick<IField, 'multiple' | 'relationship'>;
+    targetField: Pick<IField, 'multiple' | 'relationship'>;
   }> {
     let mirrorFieldId = definition.source.field._id;
     if (side === 'source') mirrorFieldId = definition.target.field._id;
 
     const mirror = await this.fieldRepository.findById(mirrorFieldId);
-    const mirrorField: Pick<IField, 'multiple'> = {
+    const mirrorField: Pick<IField, 'multiple' | 'relationship'> = {
       multiple: Boolean(mirror?.multiple),
+      relationship: mirror?.relationship ?? null,
     };
 
     if (side === 'source') {

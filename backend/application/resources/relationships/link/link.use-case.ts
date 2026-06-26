@@ -73,8 +73,14 @@ export default class RelationshipLinkUseCase {
 
       const result = await this.relationship.link({
         definition,
-        sourceField: { multiple: sourceField.multiple },
-        targetField: { multiple: targetField.multiple },
+        sourceField: {
+          multiple: sourceField.multiple,
+          relationship: sourceField.relationship,
+        },
+        targetField: {
+          multiple: targetField.multiple,
+          relationship: targetField.relationship,
+        },
         sourceId,
         targetId,
         metadata: payload.metadata ?? null,

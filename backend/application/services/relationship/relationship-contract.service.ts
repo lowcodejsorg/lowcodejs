@@ -13,8 +13,8 @@ import type { RelationshipLinkSide } from '@application/repositories/relationshi
 
 export type RelationshipCanLinkParams = {
   definition: IRelationshipDefinition;
-  sourceField: Pick<IField, 'multiple'>;
-  targetField: Pick<IField, 'multiple'>;
+  sourceField: Pick<IField, 'multiple' | 'relationship'>;
+  targetField: Pick<IField, 'multiple' | 'relationship'>;
   sourceId: string;
   targetId: string;
 };
@@ -41,8 +41,8 @@ export type RelationshipReplaceParams = {
   recordId: string;
   side: RelationshipLinkSide;
   desiredIds: string[];
-  sourceField: Pick<IField, 'multiple'>;
-  targetField: Pick<IField, 'multiple'>;
+  sourceField: Pick<IField, 'multiple' | 'relationship'>;
+  targetField: Pick<IField, 'multiple' | 'relationship'>;
 };
 
 export abstract class RelationshipContractService {

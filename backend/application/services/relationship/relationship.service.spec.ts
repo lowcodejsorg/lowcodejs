@@ -199,8 +199,8 @@ describe('RelationshipService', () => {
     it('rejeita auto-vinculo trivial (sourceId === targetId)', async () => {
       const result = await service.canLink({
         definition,
-        sourceField: { multiple: true },
-        targetField: { multiple: true },
+        sourceField: { multiple: true, relationship: null },
+        targetField: { multiple: true, relationship: null },
         sourceId: 'x',
         targetId: 'x',
       });
@@ -217,8 +217,8 @@ describe('RelationshipService', () => {
       });
       const result = await service.canLink({
         definition,
-        sourceField: { multiple: true },
-        targetField: { multiple: true },
+        sourceField: { multiple: true, relationship: null },
+        targetField: { multiple: true, relationship: null },
         sourceId: 'a',
         targetId: 'b',
       });
@@ -235,8 +235,8 @@ describe('RelationshipService', () => {
       });
       const result = await service.canLink({
         definition,
-        sourceField: { multiple: false },
-        targetField: { multiple: true },
+        sourceField: { multiple: false, relationship: null },
+        targetField: { multiple: true, relationship: null },
         sourceId: 'a',
         targetId: 'c',
       });
@@ -253,8 +253,8 @@ describe('RelationshipService', () => {
       });
       const result = await service.canLink({
         definition,
-        sourceField: { multiple: true },
-        targetField: { multiple: false },
+        sourceField: { multiple: true, relationship: null },
+        targetField: { multiple: false, relationship: null },
         sourceId: 'c',
         targetId: 'b',
       });
@@ -266,12 +266,77 @@ describe('RelationshipService', () => {
     it('aceita vinculo valido em N:N', async () => {
       const result = await service.canLink({
         definition,
-        sourceField: { multiple: true },
-        targetField: { multiple: true },
+        sourceField: { multiple: true, relationship: null },
+        targetField: { multiple: true, relationship: null },
         sourceId: 'a',
         targetId: 'b',
       });
       expect(result.isRight()).toBe(true);
+    });
+
+    describe('cardinalidade numérica (max)', () => {
+      it('rejeita quando source atingiu o max', async () => {
+        await links.create({ relationshipId: 'rel-1', sourceId: 'src1', targetId: 't1' });
+        await links.create({ relationshipId: 'rel-1', sourceId: 'src1', targetId: 't2' });
+        await links.create({ relationshipId: 'rel-1', sourceId: 'src1', targetId: 't3' });
+
+        const result = await service.canLink({
+          definition,
+          sourceField: { multiple: true, relationship: { max: 3 } as never },
+          targetField: { multiple: true, relationship: null },
+          sourceId: 'src1',
+          targetId: 't4',
+        });
+
+        expect(result.isLeft()).toBe(true);
+        if (result.isLeft())
+          expect(result.value.cause).toBe('RELATIONSHIP_SOURCE_MAX');
+      });
+
+      it('permite quando abaixo do max', async () => {
+        await links.create({ relationshipId: 'rel-1', sourceId: 'src2', targetId: 't1' });
+
+        const result = await service.canLink({
+          definition,
+          sourceField: { multiple: true, relationship: { max: 3 } as never },
+          targetField: { multiple: true, relationship: null },
+          sourceId: 'src2',
+          targetId: 't2',
+        });
+
+        expect(result.isRight()).toBe(true);
+      });
+
+      it('rejeita quando target atingiu o max', async () => {
+        await links.create({ relationshipId: 'rel-1', sourceId: 's1', targetId: 'tgt1' });
+
+        const result = await service.canLink({
+          definition,
+          sourceField: { multiple: true, relationship: null },
+          targetField: { multiple: true, relationship: { max: 1 } as never },
+          sourceId: 's2',
+          targetId: 'tgt1',
+        });
+
+        expect(result.isLeft()).toBe(true);
+        if (result.isLeft())
+          expect(result.value.cause).toBe('RELATIONSHIP_TARGET_MAX');
+      });
+
+      it('ignora max quando relationship e null (sem limite)', async () => {
+        await links.create({ relationshipId: 'rel-1', sourceId: 'srcX', targetId: 't1' });
+        await links.create({ relationshipId: 'rel-1', sourceId: 'srcX', targetId: 't2' });
+
+        const result = await service.canLink({
+          definition,
+          sourceField: { multiple: true, relationship: null },
+          targetField: { multiple: true, relationship: null },
+          sourceId: 'srcX',
+          targetId: 't3',
+        });
+
+        expect(result.isRight()).toBe(true);
+      });
     });
   });
 
@@ -279,15 +344,15 @@ describe('RelationshipService', () => {
     it('cria vinculo apendando order na lista do source', async () => {
       const first = await service.link({
         definition,
-        sourceField: { multiple: true },
-        targetField: { multiple: true },
+        sourceField: { multiple: true, relationship: null },
+        targetField: { multiple: true, relationship: null },
         sourceId: 'a',
         targetId: 'b',
       });
       const second = await service.link({
         definition,
-        sourceField: { multiple: true },
-        targetField: { multiple: true },
+        sourceField: { multiple: true, relationship: null },
+        targetField: { multiple: true, relationship: null },
         sourceId: 'a',
         targetId: 'c',
       });
