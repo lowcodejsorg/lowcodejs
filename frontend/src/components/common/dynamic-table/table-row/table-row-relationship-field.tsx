@@ -731,7 +731,8 @@ function DefaultRelationshipField({
     maxLinks !== null && isMultiple && selectedItems.length >= maxLinks;
 
   let comboboxPlaceholder = `Adicionar ${resolveFieldLabel(field, 'form').toLowerCase()}`;
-  if (isAtMax) comboboxPlaceholder = `Limite de ${maxLinks} vínculo(s) atingido`;
+  if (isAtMax)
+    comboboxPlaceholder = `Limite de ${maxLinks} vínculo(s) atingido`;
 
   const items = React.useMemo(() => {
     const idsInList = new Set(allItems.map((row) => row._id));
@@ -949,9 +950,7 @@ function DefaultRelationshipField({
                     </React.Fragment>
                   )}
                 </ComboboxValue>
-                <ComboboxChipsInput
-                  placeholder={comboboxPlaceholder}
-                />
+                <ComboboxChipsInput placeholder={comboboxPlaceholder} />
               </ComboboxChips>
               <ComboboxContent anchor={anchorRef}>
                 <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
