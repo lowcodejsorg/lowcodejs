@@ -174,7 +174,8 @@ export default class RowInMemoryRepository implements RowContractRepository {
   ): Promise<number> {
     const collection = this.getCollection(table.slug);
     const filters = rawFilters ?? {};
-    const excludeSet = excludeIds && excludeIds.length > 0 ? new Set(excludeIds) : null;
+    const excludeSet =
+      excludeIds && excludeIds.length > 0 ? new Set(excludeIds) : null;
 
     return collection.filter((item) => {
       const row = item as Record<string, unknown>;

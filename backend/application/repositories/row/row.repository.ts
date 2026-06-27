@@ -239,11 +239,15 @@ export default class RowMongooseRepository implements RowContractRepository {
       getDataConnection(),
     );
     const parts: Record<string, unknown>[] = [baseQuery];
-    if (guardQuery && Object.keys(guardQuery).length > 0) parts.push(guardQuery);
+    if (guardQuery && Object.keys(guardQuery).length > 0)
+      parts.push(guardQuery);
     if (excludeIds && excludeIds.length > 0) {
-      parts.push({ _id: { $nin: excludeIds.map((id) => new mongoose.Types.ObjectId(id)) } });
+      parts.push({
+        _id: { $nin: excludeIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      });
     }
-    const query: Record<string, unknown> = parts.length === 1 ? parts[0] : { $and: parts };
+    const query: Record<string, unknown> =
+      parts.length === 1 ? parts[0] : { $and: parts };
     return model.countDocuments(query);
   }
 
