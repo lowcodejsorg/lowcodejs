@@ -815,11 +815,11 @@ export const UpdateFieldFormFields = withForm({
                       placeholder="Ilimitado"
                       disabled={isDisabled || lockAllControls}
                       value={field.state.value ?? ''}
-                      onChange={(e): void =>
-                        field.handleChange(
-                          e.target.value ? Number(e.target.value) : null,
-                        )
-                      }
+                      onChange={(e): void => {
+                        let maxVal: number | null = null;
+                        if (e.target.value) maxVal = Number(e.target.value);
+                        field.handleChange(maxVal);
+                      }}
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     <p className="text-xs text-muted-foreground">

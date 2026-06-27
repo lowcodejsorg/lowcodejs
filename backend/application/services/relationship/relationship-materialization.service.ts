@@ -81,8 +81,9 @@ export default class RelationshipMaterializationService implements RelationshipM
     });
 
     // N:N: ambos multiple=true → espelho gerenciável (formMode=manage).
-    const mirrorFormMode: 'select' | 'manage' =
-      Boolean(sourceField.multiple) && mirrorMultiple ? 'manage' : 'select';
+    let mirrorFormMode: 'select' | 'manage' = 'select';
+    if (Boolean(sourceField.multiple) && mirrorMultiple)
+      mirrorFormMode = 'manage';
 
     // 1. Campo-espelho no target (lado oposto).
     const mirror = await this.fieldRepository.create({
@@ -265,10 +266,9 @@ export default class RelationshipMaterializationService implements RelationshipM
       definition.target.field._id,
     );
     if (mirror) {
-      const mirrorFormMode: 'select' | 'manage' =
-        Boolean(params.sourceField.multiple) && params.mirrorMultiple
-          ? 'manage'
-          : 'select';
+      let mirrorFormMode: 'select' | 'manage' = 'select';
+      if (Boolean(params.sourceField.multiple) && params.mirrorMultiple)
+        mirrorFormMode = 'manage';
 
       await this.fieldRepository.update({
         _id: mirror._id,

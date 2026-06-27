@@ -90,7 +90,7 @@ export default class TableRowPaginatedUseCase {
         if (definition) {
           excludeIds = await this.relationshipBuilder.findOccupiedIds(
             definition,
-            payload.excludeSide as RelationshipLinkSide,
+            payload.excludeSide,
             payload.excludeForRecordId,
           );
         }

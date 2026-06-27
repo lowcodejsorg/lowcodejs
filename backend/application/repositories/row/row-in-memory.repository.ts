@@ -148,22 +148,20 @@ export default class RowInMemoryRepository implements RowContractRepository {
       return true;
     });
 
-    const filtered =
-      payload.excludeIds && payload.excludeIds.length > 0
-        ? result.filter((row) => {
-            const excludeSet = new Set(payload.excludeIds);
-            return !excludeSet.has(
-              String((row as Record<string, unknown>)['_id']),
-            );
-          })
-        : result;
+    let filtered = result;
+    if (payload.excludeIds && payload.excludeIds.length > 0) {
+      const excludeSet = new Set(payload.excludeIds);
+      filtered = result.filter((row) => !excludeSet.has(String(row._id)));
+    }
 
     // limit <= 0 significa "sem limite" (busca todos), espelhando o
     // comportamento do Mongoose .limit(0).
-    const sliced =
-      payload.limit <= 0
-        ? filtered.slice(payload.skip)
-        : filtered.slice(payload.skip, payload.skip + payload.limit);
+    let sliced: IRow[];
+    if (payload.limit <= 0) {
+      sliced = filtered.slice(payload.skip);
+    } else {
+      sliced = filtered.slice(payload.skip, payload.skip + payload.limit);
+    }
 
     return sliced.map((r) => ({ ...r }));
   }

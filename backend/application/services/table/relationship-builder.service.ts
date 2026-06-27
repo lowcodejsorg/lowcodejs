@@ -610,22 +610,26 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
 
       // Remove do resultado os IDs já vinculados a excludeForRecordId
       // (seleção atual do registro em edição deve permanecer visível).
-      const oppSide: RelationshipLinkSide =
-        queriedSide === 'source' ? 'target' : 'source';
-      const myLinks =
-        oppSide === 'source'
-          ? await this.linkRepository.findBySource(
-              definition._id,
-              excludeForRecordId,
-            )
-          : await this.linkRepository.findByTarget(
-              definition._id,
-              excludeForRecordId,
-            );
+      let oppSide: RelationshipLinkSide = 'source';
+      if (queriedSide === 'source') oppSide = 'target';
+
+      let myLinks: IRelationshipLink[];
+      if (oppSide === 'source') {
+        myLinks = await this.linkRepository.findBySource(
+          definition._id,
+          excludeForRecordId,
+        );
+      } else {
+        myLinks = await this.linkRepository.findByTarget(
+          definition._id,
+          excludeForRecordId,
+        );
+      }
       const myIds = new Set(
-        myLinks.map((l) =>
-          queriedSide === 'source' ? l.sourceId : l.targetId,
-        ),
+        myLinks.map((l) => {
+          if (queriedSide === 'source') return l.sourceId;
+          return l.targetId;
+        }),
       );
       return allLinked.filter((id) => !myIds.has(id));
     }
@@ -653,10 +657,12 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
     // Para OWNS_FK com queriedSide='source': os IDs ocupados são as próprias rows
     // da coleção dona (elas já têm uma FK). Para queriedSide='target': são os
     // valores da FK (os alvos já vinculados).
-    const isSideOwner =
-      role === E_RELATIONSHIP_STORAGE.OWNS_FK
-        ? queriedSide === 'source'
-        : queriedSide === 'target';
+    let isSideOwner: boolean;
+    if (role === E_RELATIONSHIP_STORAGE.OWNS_FK) {
+      isSideOwner = queriedSide === 'source';
+    } else {
+      isSideOwner = queriedSide === 'target';
+    }
 
     if (isSideOwner) {
       // OWNS_FK do queriedSide: os IDs ocupados são as rows que JÁ têm FK.

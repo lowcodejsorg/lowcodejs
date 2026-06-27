@@ -648,7 +648,6 @@ function CascadeRelationshipField({
 function DefaultRelationshipField({
   field,
   disabled,
-  tableSlug,
 }: TableRowRelationshipFieldProps): React.JSX.Element {
   const queryClient = useQueryClient();
   const formField = useFieldContext<Array<SearchableOption>>();
@@ -676,8 +675,8 @@ function DefaultRelationshipField({
     !isMultiple &&
     !relConfig?.mirror?.multiple &&
     Boolean(relConfig?.relationshipId);
-  const excludeSide: 'source' | 'target' =
-    relConfig?.side === 'target' ? 'source' : 'target';
+  let excludeSide: 'source' | 'target' = 'target';
+  if (relConfig?.side === 'target') excludeSide = 'source';
 
   // Debounce search query
   React.useEffect(() => {
@@ -730,6 +729,9 @@ function DefaultRelationshipField({
 
   const isAtMax =
     maxLinks !== null && isMultiple && selectedItems.length >= maxLinks;
+
+  let comboboxPlaceholder = `Adicionar ${resolveFieldLabel(field, 'form').toLowerCase()}`;
+  if (isAtMax) comboboxPlaceholder = `Limite de ${maxLinks} vínculo(s) atingido`;
 
   const items = React.useMemo(() => {
     const idsInList = new Set(allItems.map((row) => row._id));
@@ -948,11 +950,7 @@ function DefaultRelationshipField({
                   )}
                 </ComboboxValue>
                 <ComboboxChipsInput
-                  placeholder={
-                    isAtMax
-                      ? `Limite de ${maxLinks} vínculo(s) atingido`
-                      : `Adicionar ${resolveFieldLabel(field, 'form').toLowerCase()}`
-                  }
+                  placeholder={comboboxPlaceholder}
                 />
               </ComboboxChips>
               <ComboboxContent anchor={anchorRef}>
@@ -994,7 +992,8 @@ function DefaultRelationshipField({
             <p
               className={cn(
                 'text-xs',
-                isAtMax ? 'text-destructive' : 'text-muted-foreground',
+                isAtMax && 'text-destructive',
+                !isAtMax && 'text-muted-foreground',
               )}
             >
               {selectedItems.length}/{maxLinks} vínculo(s)
