@@ -383,6 +383,7 @@ function FieldUpdateContent({
         mirrorLabel: data.relationship?.mirror?.label ?? '',
         onDelete: data.relationship?.onDelete ?? 'SET_NULL',
         formMode: data.relationship?.formMode ?? 'select',
+        max: data.relationship?.max ?? null,
       },
       category: data.category ?? [],
       multiple: data.multiple,
@@ -479,6 +480,7 @@ function FieldUpdateContent({
                 label: value.relationship.mirrorLabel || undefined,
               },
               formMode: value.relationship.formMode,
+              max: value.relationship.max ?? null,
             }
           : null,
         category: hasCategory ? value.category : [],

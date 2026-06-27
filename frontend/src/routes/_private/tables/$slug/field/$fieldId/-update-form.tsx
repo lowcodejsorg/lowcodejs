@@ -111,6 +111,7 @@ export const FieldUpdateSchema = z.object({
     mirrorLabel: z.string().default(''),
     onDelete: z.string().default('SET_NULL'),
     formMode: z.enum(['select', 'manage']).default('select'),
+    max: z.coerce.number().int().min(1).nullable().default(null),
   }),
   category: z.array(z.custom<ICategory>()).default([]),
   multiple: z.boolean().default(false),
@@ -178,6 +179,7 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
     mirrorLabel: '',
     onDelete: 'SET_NULL',
     formMode: 'select',
+    max: null,
   },
   category: [],
   multiple: false,
@@ -680,7 +682,6 @@ export const UpdateFieldFormFields = withForm({
                 label="Tabela de relacionamento"
                 placeholder="Selecione uma tabela"
                 disabled={isDisabled || lockAllControls}
-                excludeTableSlug={tableSlug}
                 onTableChange={(slug) => {
                   form.setFieldValue('relationship.tableSlug', slug);
                   form.setFieldValue('relationship.fieldId', '');
@@ -691,6 +692,15 @@ export const UpdateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {isRelationship &&
+          relationshipTableSlug &&
+          relationshipTableSlug === tableSlug && (
+            <div className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
+              Auto-relacionamento: este campo vincula registros da própria
+              tabela.
+            </div>
+          )}
 
         {/* Campo Ordem (Relacionamento) */}
         {isRelationship && (
@@ -786,6 +796,39 @@ export const UpdateFieldFormFields = withForm({
                   )}
                 </form.AppField>
               </>
+            )}
+
+            {fieldMultiple && (
+              <form.AppField name="relationship.max">
+                {(field) => (
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      htmlFor={field.name}
+                      className="text-sm font-medium"
+                    >
+                      Máximo de vínculos por registro
+                    </label>
+                    <input
+                      id={field.name}
+                      type="number"
+                      min={1}
+                      placeholder="Ilimitado"
+                      disabled={isDisabled || lockAllControls}
+                      value={field.state.value ?? ''}
+                      onChange={(e): void =>
+                        field.handleChange(
+                          e.target.value ? Number(e.target.value) : null,
+                        )
+                      }
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Limite de vínculos por registro neste lado. Vazio =
+                      ilimitado.
+                    </p>
+                  </div>
+                )}
+              </form.AppField>
             )}
 
             <form.AppField name="relationship.onDelete">

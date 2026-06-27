@@ -13,6 +13,10 @@ interface UseRelationshipRowsReadPaginatedInfiniteParams {
   fieldSlug: string;
   search?: string;
   perPage?: number;
+  excludeLinked?: boolean;
+  relationshipId?: string;
+  excludeSide?: 'source' | 'target';
+  excludeForRecordId?: string;
 }
 
 export function useRelationshipRowsReadPaginatedInfinite(

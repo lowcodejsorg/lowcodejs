@@ -648,6 +648,7 @@ function CascadeRelationshipField({
 function DefaultRelationshipField({
   field,
   disabled,
+  tableSlug,
 }: TableRowRelationshipFieldProps): React.JSX.Element {
   const queryClient = useQueryClient();
   const formField = useFieldContext<Array<SearchableOption>>();
@@ -668,6 +669,16 @@ function DefaultRelationshipField({
   const relatedTable = useReadTable({ slug: relConfig?.table?.slug ?? '' });
   const relatedPermission = useTablePermission(relatedTable.data);
 
+  const maxLinks = relConfig?.max ?? null;
+
+  // excludeLinked: ativo em relacionamentos 1:1 (single + mirror single) com PIVOT
+  const shouldExcludeLinked =
+    !isMultiple &&
+    !relConfig?.mirror?.multiple &&
+    Boolean(relConfig?.relationshipId);
+  const excludeSide: 'source' | 'target' =
+    relConfig?.side === 'target' ? 'source' : 'target';
+
   // Debounce search query
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -682,6 +693,11 @@ function DefaultRelationshipField({
       fieldSlug: field.slug,
       search: debouncedQuery,
       perPage: 10,
+      ...(shouldExcludeLinked && {
+        excludeLinked: true,
+        relationshipId: relConfig?.relationshipId ?? undefined,
+        excludeSide,
+      }),
     });
 
   const allItems: Array<IRow> = React.useMemo(
@@ -711,6 +727,9 @@ function DefaultRelationshipField({
       })
       .filter((row): row is IRow => row !== null);
   }, [formField.state.value, selectedCache, allItems]);
+
+  const isAtMax =
+    maxLinks !== null && isMultiple && selectedItems.length >= maxLinks;
 
   const items = React.useMemo(() => {
     const idsInList = new Set(allItems.map((row) => row._id));
@@ -903,7 +922,7 @@ function DefaultRelationshipField({
               inputValue={searchQuery}
               onInputValueChange={setSearchQuery}
               itemToStringLabel={(row: IRow) => getRowLabel(row)}
-              disabled={disabled}
+              disabled={disabled || isAtMax}
             >
               <ComboboxChips
                 ref={anchorRef}
@@ -929,7 +948,11 @@ function DefaultRelationshipField({
                   )}
                 </ComboboxValue>
                 <ComboboxChipsInput
-                  placeholder={`Adicionar ${resolveFieldLabel(field, 'form').toLowerCase()}`}
+                  placeholder={
+                    isAtMax
+                      ? `Limite de ${maxLinks} vínculo(s) atingido`
+                      : `Adicionar ${resolveFieldLabel(field, 'form').toLowerCase()}`
+                  }
                 />
               </ComboboxChips>
               <ComboboxContent anchor={anchorRef}>
@@ -967,6 +990,16 @@ function DefaultRelationshipField({
               </div>
             )}
           </div>
+          {maxLinks !== null && (
+            <p
+              className={cn(
+                'text-xs',
+                isAtMax ? 'text-destructive' : 'text-muted-foreground',
+              )}
+            >
+              {selectedItems.length}/{maxLinks} vínculo(s)
+            </p>
+          )}
           {isInvalid && (
             <FieldError
               id={errorId}

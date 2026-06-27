@@ -214,6 +214,7 @@ function RouteComponent(): React.JSX.Element {
                 label: value.relationship.mirrorLabel || undefined,
               },
               formMode: value.relationship.formMode,
+              max: value.relationship.max ?? null,
             }
           : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],

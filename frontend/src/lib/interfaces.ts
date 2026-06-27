@@ -249,6 +249,8 @@ export type IFieldConfigurationRelationship = {
    * `select`.
    */
   formMode?: 'select' | 'manage';
+  /** Limite numérico de vínculos neste lado. null = ilimitado. */
+  max?: number | null;
 };
 
 /** Vínculo entre dois registros (pivô) gerido pelos endpoints `/links`. */

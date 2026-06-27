@@ -385,12 +385,18 @@ export const relationshipRowsInfiniteOptions = (params: {
   fieldSlug: string;
   search?: string;
   perPage?: number;
+  excludeLinked?: boolean;
+  relationshipId?: string;
+  excludeSide?: 'source' | 'target';
+  excludeForRecordId?: string;
 }) =>
   infiniteQueryOptions({
     queryKey: queryKeys.relationships.infinite(
       params.fieldSlug,
       params.tableSlug,
       params.search,
+      params.excludeLinked,
+      params.excludeForRecordId,
     ),
     queryFn: async ({ pageParam }) => {
       const response = await API.get<Paginated<IRow>>(
@@ -400,6 +406,16 @@ export const relationshipRowsInfiniteOptions = (params: {
             page: pageParam,
             perPage: params.perPage ?? 10,
             ...(params.search && { search: params.search }),
+            ...(params.excludeLinked &&
+              params.relationshipId &&
+              params.excludeSide && {
+                excludeLinked: 'true',
+                relationshipId: params.relationshipId,
+                excludeSide: params.excludeSide,
+                ...(params.excludeForRecordId && {
+                  excludeForRecordId: params.excludeForRecordId,
+                }),
+              }),
           },
         },
       );

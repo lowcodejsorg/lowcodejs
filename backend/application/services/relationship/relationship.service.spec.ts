@@ -276,9 +276,21 @@ describe('RelationshipService', () => {
 
     describe('cardinalidade numérica (max)', () => {
       it('rejeita quando source atingiu o max', async () => {
-        await links.create({ relationshipId: 'rel-1', sourceId: 'src1', targetId: 't1' });
-        await links.create({ relationshipId: 'rel-1', sourceId: 'src1', targetId: 't2' });
-        await links.create({ relationshipId: 'rel-1', sourceId: 'src1', targetId: 't3' });
+        await links.create({
+          relationshipId: 'rel-1',
+          sourceId: 'src1',
+          targetId: 't1',
+        });
+        await links.create({
+          relationshipId: 'rel-1',
+          sourceId: 'src1',
+          targetId: 't2',
+        });
+        await links.create({
+          relationshipId: 'rel-1',
+          sourceId: 'src1',
+          targetId: 't3',
+        });
 
         const result = await service.canLink({
           definition,
@@ -294,7 +306,11 @@ describe('RelationshipService', () => {
       });
 
       it('permite quando abaixo do max', async () => {
-        await links.create({ relationshipId: 'rel-1', sourceId: 'src2', targetId: 't1' });
+        await links.create({
+          relationshipId: 'rel-1',
+          sourceId: 'src2',
+          targetId: 't1',
+        });
 
         const result = await service.canLink({
           definition,
@@ -308,7 +324,11 @@ describe('RelationshipService', () => {
       });
 
       it('rejeita quando target atingiu o max', async () => {
-        await links.create({ relationshipId: 'rel-1', sourceId: 's1', targetId: 'tgt1' });
+        await links.create({
+          relationshipId: 'rel-1',
+          sourceId: 's1',
+          targetId: 'tgt1',
+        });
 
         const result = await service.canLink({
           definition,
@@ -324,8 +344,16 @@ describe('RelationshipService', () => {
       });
 
       it('ignora max quando relationship e null (sem limite)', async () => {
-        await links.create({ relationshipId: 'rel-1', sourceId: 'srcX', targetId: 't1' });
-        await links.create({ relationshipId: 'rel-1', sourceId: 'srcX', targetId: 't2' });
+        await links.create({
+          relationshipId: 'rel-1',
+          sourceId: 'srcX',
+          targetId: 't1',
+        });
+        await links.create({
+          relationshipId: 'rel-1',
+          sourceId: 'srcX',
+          targetId: 't2',
+        });
 
         const result = await service.canLink({
           definition,

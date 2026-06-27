@@ -26,13 +26,21 @@ export const queryKeys = {
     all: ['relationships'] as const,
     rows: (fieldSlug: string, tableSlug: string, search?: string) =>
       [...queryKeys.relationships.all, fieldSlug, tableSlug, search] as const,
-    infinite: (fieldSlug: string, tableSlug: string, search?: string) =>
+    infinite: (
+      fieldSlug: string,
+      tableSlug: string,
+      search?: string,
+      excludeLinked?: boolean,
+      excludeForRecordId?: string,
+    ) =>
       [
         ...queryKeys.relationships.all,
         'infinite',
         fieldSlug,
         tableSlug,
         search,
+        excludeLinked,
+        excludeForRecordId,
       ] as const,
     links: (relationshipId: string, side: string, recordId: string) =>
       [
