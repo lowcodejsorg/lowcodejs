@@ -78,4 +78,10 @@ export abstract class RelationshipLinkContractRepository {
   ): Promise<void>;
   // Remove todos os vinculos de uma definicao (delete de tabela §9).
   abstract deleteByRelationship(relationshipId: string): Promise<void>;
+  // Retorna todos os IDs do lado `side` que possuem pelo menos um vinculo
+  // nesta relationship. Usado pelo filtro excludeLinked no autocomplete 1:1.
+  abstract findAllLinkedIds(
+    relationshipId: string,
+    side: RelationshipLinkSide,
+  ): Promise<string[]>;
 }

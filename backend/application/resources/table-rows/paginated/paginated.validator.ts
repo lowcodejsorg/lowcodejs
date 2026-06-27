@@ -7,6 +7,14 @@ export const TableRowPaginatedQueryValidator = z
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),
     search: z.string().trim().optional(),
+    // Filtro excludeLinked: oculta registros já vinculados (autocomplete 1:1/N:N).
+    excludeLinked: z
+      .enum(['true', 'false'])
+      .transform((v) => v === 'true')
+      .optional(),
+    relationshipId: z.string().trim().optional(),
+    excludeSide: z.enum(['source', 'target']).optional(),
+    excludeForRecordId: z.string().trim().optional(),
   })
   .loose();
 

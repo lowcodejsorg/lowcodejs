@@ -159,6 +159,23 @@ export default class RelationshipLinkMongooseRepository implements RelationshipL
     await Model.deleteMany({ relationshipId });
   }
 
+  async findAllLinkedIds(
+    relationshipId: string,
+    side: RelationshipLinkSide,
+  ): Promise<string[]> {
+    const field = side === 'source' ? 'sourceId' : 'targetId';
+    const links = await Model.find(
+      { relationshipId },
+      { [field]: 1, _id: 0 },
+    ).lean();
+    const ids: string[] = [];
+    for (const link of links) {
+      const id = link[field as keyof typeof link];
+      if (id) ids.push(String(id));
+    }
+    return ids;
+  }
+
   private sideWhere(
     relationshipId: string,
     side: RelationshipLinkPaginatePayload['side'],

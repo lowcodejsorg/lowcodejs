@@ -16,6 +16,7 @@ import {
 import type HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { RelationshipDefinitionContractRepository } from '@application/repositories/relationship-definition/relationship-definition-contract.repository';
+import { RelationshipLinkContractRepository } from '@application/repositories/relationship-link/relationship-link-contract.repository';
 import type { RelationshipLinkSide } from '@application/repositories/relationship-link/relationship-link-contract.repository';
 import { RelationshipContractService } from '@application/services/relationship/relationship-contract.service';
 import { buildRelationshipRequiredError } from '@application/services/relationship/relationship.service';
@@ -45,6 +46,7 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
     private readonly relationship: RelationshipContractService,
     private readonly definitionRepository: RelationshipDefinitionContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly linkRepository: RelationshipLinkContractRepository,
   ) {}
 
   hasManagedRelationships(fields: IField[]): boolean {
@@ -583,6 +585,97 @@ export default class MongooseRelationshipBuilder implements RelationshipBuilderC
     });
     if (siblings <= 1) return left(buildRelationshipRequiredError());
     return right(true);
+  }
+
+  async findOccupiedIds(
+    definition: IRelationshipDefinition,
+    queriedSide: RelationshipLinkSide,
+    excludeForRecordId?: string,
+  ): Promise<string[]> {
+    const { sourceField, targetField } =
+      await this.loadEndpointMultiples(definition);
+    const role = this.relationship.storageRoleOf(
+      queriedSide,
+      sourceField,
+      targetField,
+    );
+
+    // PIVOT (N:N): usa repositório de links.
+    if (role === E_RELATIONSHIP_STORAGE.PIVOT) {
+      const allLinked = await this.linkRepository.findAllLinkedIds(
+        definition._id,
+        queriedSide,
+      );
+      if (!excludeForRecordId || allLinked.length === 0) return allLinked;
+
+      // Remove do resultado os IDs já vinculados a excludeForRecordId
+      // (seleção atual do registro em edição deve permanecer visível).
+      const oppSide: RelationshipLinkSide =
+        queriedSide === 'source' ? 'target' : 'source';
+      const myLinks =
+        oppSide === 'source'
+          ? await this.linkRepository.findBySource(
+              definition._id,
+              excludeForRecordId,
+            )
+          : await this.linkRepository.findByTarget(
+              definition._id,
+              excludeForRecordId,
+            );
+      const myIds = new Set(
+        myLinks.map((l) =>
+          queriedSide === 'source' ? l.sourceId : l.targetId,
+        ),
+      );
+      return allLinked.filter((id) => !myIds.has(id));
+    }
+
+    // FK-inline (OWNS_FK/REVERSE): a FK vive na coleção dona.
+    const owner = this.relationship.ownerOf(
+      definition,
+      sourceField,
+      targetField,
+    );
+    const db = getDataConnection().db;
+    if (!owner || !db) return [];
+
+    const collection = db.collection<Record<string, unknown>>(owner.tableSlug);
+    const baseFilter: Record<string, unknown> = {
+      [owner.fieldSlug]: { $ne: null, $exists: true },
+      trashedAt: null,
+    };
+    if (excludeForRecordId) {
+      baseFilter['_id'] = {
+        $ne: new mongoose.Types.ObjectId(excludeForRecordId),
+      };
+    }
+
+    // Para OWNS_FK com queriedSide='source': os IDs ocupados são as próprias rows
+    // da coleção dona (elas já têm uma FK). Para queriedSide='target': são os
+    // valores da FK (os alvos já vinculados).
+    const isSideOwner =
+      role === E_RELATIONSHIP_STORAGE.OWNS_FK
+        ? queriedSide === 'source'
+        : queriedSide === 'target';
+
+    if (isSideOwner) {
+      // OWNS_FK do queriedSide: os IDs ocupados são as rows que JÁ têm FK.
+      const rows = await collection
+        .find(baseFilter, { projection: { _id: 1 } })
+        .toArray();
+      return rows.map((r) => String(r['_id']));
+    }
+
+    // O queriedSide guarda os alvos da FK → coletar os valores da FK.
+    const rows = await collection
+      .find(baseFilter, { projection: { [owner.fieldSlug]: 1, _id: 0 } })
+      .toArray();
+    const ids: string[] = [];
+    for (const row of rows) {
+      const fk = row[owner.fieldSlug];
+      if (fk) ids.push(String(fk));
+    }
+    return ids;
   }
 
   // Monta o link sintético: `_id` = id da row dona da FK (p/ o unlink);

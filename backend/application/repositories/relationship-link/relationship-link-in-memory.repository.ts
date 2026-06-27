@@ -152,6 +152,16 @@ export default class RelationshipLinkInMemoryRepository implements RelationshipL
     );
   }
 
+  async findAllLinkedIds(
+    relationshipId: string,
+    side: RelationshipLinkSide,
+  ): Promise<string[]> {
+    const field = side === 'source' ? 'sourceId' : 'targetId';
+    return this.items
+      .filter((link) => link.relationshipId === relationshipId)
+      .map((link) => link[field]);
+  }
+
   private bySide(
     relationshipId: string,
     side: RelationshipLinkPaginatePayload['side'],

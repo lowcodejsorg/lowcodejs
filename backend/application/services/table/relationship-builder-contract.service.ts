@@ -110,4 +110,13 @@ export abstract class RelationshipBuilderContractService {
     definition: IRelationshipDefinition,
     linkId: string,
   ): Promise<Either<HTTPException, true>>;
+
+  // IDs do lado `queriedSide` ja ocupados (vinculados) nesta relationship.
+  // excludeForRecordId: remove do resultado os IDs vinculados a este registro
+  // (mantém a seleção atual visível no autocomplete durante edição).
+  abstract findOccupiedIds(
+    definition: IRelationshipDefinition,
+    queriedSide: RelationshipLinkSide,
+    excludeForRecordId?: string,
+  ): Promise<string[]>;
 }

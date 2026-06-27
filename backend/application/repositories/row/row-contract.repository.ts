@@ -33,6 +33,8 @@ export type RowFindManyPayload = {
   sortDirection?: 'asc' | 'desc';
   /** Fragmento extra de query Mongo (e.g. do row-access-guard). Mesclado via $and no filtro final. */
   guardQuery?: Record<string, unknown>;
+  /** IDs a excluir do resultado (filtro excludeLinked no autocomplete 1:1/N:N). */
+  excludeIds?: string[];
 };
 
 export type RowUpdatePayload = {

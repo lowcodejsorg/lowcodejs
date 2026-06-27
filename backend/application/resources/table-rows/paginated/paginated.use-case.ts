@@ -5,11 +5,14 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IMeta, IRow, Paginated } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { RelationshipDefinitionContractRepository } from '@application/repositories/relationship-definition/relationship-definition-contract.repository';
+import type { RelationshipLinkSide } from '@application/repositories/relationship-link/relationship-link-contract.repository';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { FieldVisibilityContractService } from '@application/services/field-visibility/field-visibility-contract.service';
 import { RowAccessGuardContractService } from '@application/services/row-access-guard/row-access-guard-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
+import { RelationshipBuilderContractService } from '@application/services/table/relationship-builder-contract.service';
 import { RowContextBuilderContractService } from '@application/services/table/row-context-builder-contract.service';
 
 import type { TableRowPaginatedPayload } from './paginated.validator';
@@ -31,6 +34,8 @@ export default class TableRowPaginatedUseCase {
     private readonly rowContextBuilder: RowContextBuilderContractService,
     private readonly fieldVisibility: FieldVisibilityContractService,
     private readonly rowAccessGuard: RowAccessGuardContractService,
+    private readonly relationshipBuilder: RelationshipBuilderContractService,
+    private readonly definitionRepository: RelationshipDefinitionContractRepository,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -72,12 +77,32 @@ export default class TableRowPaginatedUseCase {
           `guardQuery=${JSON.stringify(guardQuery)} skip=${skip} limit=${limit}`,
       );
 
+      // Filtro excludeLinked: oculta registros já vinculados (autocomplete 1:1/N:N).
+      let excludeIds: string[] | undefined;
+      if (
+        payload.excludeLinked &&
+        payload.relationshipId &&
+        payload.excludeSide
+      ) {
+        const definition = await this.definitionRepository.findById(
+          payload.relationshipId,
+        );
+        if (definition) {
+          excludeIds = await this.relationshipBuilder.findOccupiedIds(
+            definition,
+            payload.excludeSide as RelationshipLinkSide,
+            payload.excludeForRecordId,
+          );
+        }
+      }
+
       const rows = await this.rowRepository.findMany({
         table,
         rawFilters: payload,
         skip,
         limit,
         guardQuery: guardQueryArg,
+        excludeIds,
       });
 
       const total = await this.rowRepository.count(

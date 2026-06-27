@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
+import mongoose from 'mongoose';
 
 import type { IField, IRow } from '@application/core/entity.core';
 import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
@@ -165,12 +166,17 @@ export default class RowMongooseRepository implements RowContractRepository {
 
     // Mescla fragmento do guardQuery via $and para que o row-access-guard
     // possa restringir a listagem sem conhecer a query base.
-    const query: Record<string, unknown> =
+    let query: Record<string, unknown> =
       payload.guardQuery && Object.keys(payload.guardQuery).length > 0
-        ? {
-            $and: [baseQuery, payload.guardQuery],
-          }
+        ? { $and: [baseQuery, payload.guardQuery] }
         : baseQuery;
+
+    if (payload.excludeIds && payload.excludeIds.length > 0) {
+      const excludeObjectIds = payload.excludeIds.map(
+        (id) => new mongoose.Types.ObjectId(id),
+      );
+      query = { $and: [query, { _id: { $nin: excludeObjectIds } }] };
+    }
 
     const sort = this.query.order(
       payload.rawFilters ?? {},
