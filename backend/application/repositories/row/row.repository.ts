@@ -84,12 +84,14 @@ export default class RowMongooseRepository implements RowContractRepository {
     table: RowTableContext,
   ): ReturnType<PopulateBuilderContractService['build']> {
     const rootId = table._id?.toString();
+    let ancestors: Set<string> | undefined;
+    if (rootId) ancestors = new Set([rootId]);
     return this.populate.build(
       table.fields,
       table.groups,
       getDataConnection(),
       undefined,
-      rootId ? new Set([rootId]) : undefined,
+      ancestors,
     );
   }
 

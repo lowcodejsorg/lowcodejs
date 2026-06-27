@@ -294,7 +294,15 @@ describe('RelationshipService', () => {
 
         const result = await service.canLink({
           definition,
-          sourceField: { multiple: true, relationship: { max: 3 } as never },
+          sourceField: {
+            multiple: true,
+            relationship: {
+              table: { _id: 'tid', slug: 'stub' },
+              field: { _id: 'fid', slug: 'stub' },
+              order: 'asc',
+              max: 3,
+            },
+          },
           targetField: { multiple: true, relationship: null },
           sourceId: 'src1',
           targetId: 't4',
@@ -314,7 +322,15 @@ describe('RelationshipService', () => {
 
         const result = await service.canLink({
           definition,
-          sourceField: { multiple: true, relationship: { max: 3 } as never },
+          sourceField: {
+            multiple: true,
+            relationship: {
+              table: { _id: 'tid', slug: 'stub' },
+              field: { _id: 'fid', slug: 'stub' },
+              order: 'asc',
+              max: 3,
+            },
+          },
           targetField: { multiple: true, relationship: null },
           sourceId: 'src2',
           targetId: 't2',
@@ -333,7 +349,15 @@ describe('RelationshipService', () => {
         const result = await service.canLink({
           definition,
           sourceField: { multiple: true, relationship: null },
-          targetField: { multiple: true, relationship: { max: 1 } as never },
+          targetField: {
+            multiple: true,
+            relationship: {
+              table: { _id: 'tid', slug: 'stub' },
+              field: { _id: 'fid', slug: 'stub' },
+              order: 'asc',
+              max: 1,
+            },
+          },
           sourceId: 's2',
           targetId: 'tgt1',
         });
