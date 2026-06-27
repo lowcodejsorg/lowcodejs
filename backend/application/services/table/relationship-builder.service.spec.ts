@@ -69,6 +69,7 @@ describe('MongooseRelationshipBuilder', () => {
       service,
       definitionRepository,
       fieldRepository,
+      linkRepository,
     );
 
     // 1:N — source (pedidos) aceita multiplos; target (produtos) nao.
