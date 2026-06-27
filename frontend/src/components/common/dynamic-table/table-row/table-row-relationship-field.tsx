@@ -70,6 +70,7 @@ interface TableRowRelationshipFieldProps {
   field: IField;
   disabled?: boolean;
   tableSlug?: string;
+  rowId?: string;
 }
 
 interface RelatedRowCreateDialogProps {
@@ -648,6 +649,7 @@ function CascadeRelationshipField({
 function DefaultRelationshipField({
   field,
   disabled,
+  rowId,
 }: TableRowRelationshipFieldProps): React.JSX.Element {
   const queryClient = useQueryClient();
   const formField = useFieldContext<Array<SearchableOption>>();
@@ -696,6 +698,7 @@ function DefaultRelationshipField({
         excludeLinked: true,
         relationshipId: relConfig?.relationshipId ?? undefined,
         excludeSide,
+        ...(rowId && { excludeForRecordId: rowId }),
       }),
     });
 
@@ -1101,6 +1104,7 @@ export function TableRowRelationshipField({
   field,
   disabled,
   tableSlug,
+  rowId,
 }: TableRowRelationshipFieldProps): React.JSX.Element {
   const cascadeConfig = useCascadeDropdownConfig({
     tableSlug: tableSlug ?? '',
@@ -1144,6 +1148,7 @@ export function TableRowRelationshipField({
       field={field}
       disabled={disabled}
       tableSlug={tableSlug}
+      rowId={rowId}
     />
   );
 }

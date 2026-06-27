@@ -605,6 +605,7 @@ function AutoSaveRowFormContent({
             fields={visibleFields}
             tableSlug={slug}
             disabled={false}
+            rowId={persistedRowId}
           />
         )}
 

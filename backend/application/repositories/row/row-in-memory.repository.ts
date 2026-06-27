@@ -170,13 +170,16 @@ export default class RowInMemoryRepository implements RowContractRepository {
     table: RowTableContext,
     rawFilters?: Record<string, unknown>,
     guardQuery?: Record<string, unknown>,
+    excludeIds?: string[],
   ): Promise<number> {
     const collection = this.getCollection(table.slug);
     const filters = rawFilters ?? {};
+    const excludeSet = excludeIds && excludeIds.length > 0 ? new Set(excludeIds) : null;
 
     return collection.filter((item) => {
       const row = item as Record<string, unknown>;
       if (row['trashedAt'] != null) return false;
+      if (excludeSet && excludeSet.has(String(row['_id']))) return false;
       for (const [key, value] of Object.entries(filters)) {
         if (
           key === 'page' ||

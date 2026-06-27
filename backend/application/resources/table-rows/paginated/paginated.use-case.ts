@@ -109,6 +109,7 @@ export default class TableRowPaginatedUseCase {
         table,
         payload,
         guardQueryArg,
+        excludeIds,
       );
 
       console.info(

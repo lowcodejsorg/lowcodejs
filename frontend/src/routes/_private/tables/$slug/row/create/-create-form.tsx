@@ -219,6 +219,7 @@ interface RowFormFieldsProps {
   fields: Array<IField>;
   disabled: boolean;
   tableSlug: string;
+  rowId?: string;
 }
 
 export function RowFormFields({
@@ -226,6 +227,7 @@ export function RowFormFields({
   fields,
   disabled,
   tableSlug,
+  rowId,
 }: RowFormFieldsProps): React.JSX.Element {
   return (
     <section
@@ -320,6 +322,7 @@ export function RowFormFields({
                         field={field}
                         disabled={disabled}
                         tableSlug={tableSlug}
+                        rowId={rowId}
                       />
                     );
                   case E_FIELD_TYPE.CATEGORY:

@@ -228,6 +228,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     table: RowTableContext,
     rawFilters?: Record<string, unknown>,
     guardQuery?: Record<string, unknown>,
+    excludeIds?: string[],
   ): Promise<number> {
     const model = await this.getModel(table);
     const baseQuery = await this.query.build(
@@ -237,10 +238,12 @@ export default class RowMongooseRepository implements RowContractRepository {
       table.slug,
       getDataConnection(),
     );
-    const query: Record<string, unknown> =
-      guardQuery && Object.keys(guardQuery).length > 0
-        ? { $and: [baseQuery, guardQuery] }
-        : baseQuery;
+    const parts: Record<string, unknown>[] = [baseQuery];
+    if (guardQuery && Object.keys(guardQuery).length > 0) parts.push(guardQuery);
+    if (excludeIds && excludeIds.length > 0) {
+      parts.push({ _id: { $nin: excludeIds.map((id) => new mongoose.Types.ObjectId(id)) } });
+    }
+    const query: Record<string, unknown> = parts.length === 1 ? parts[0] : { $and: parts };
     return model.countDocuments(query);
   }
 

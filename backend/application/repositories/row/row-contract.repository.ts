@@ -93,6 +93,7 @@ export abstract class RowContractRepository {
     table: RowTableContext,
     rawFilters?: Record<string, unknown>,
     guardQuery?: Record<string, unknown>,
+    excludeIds?: string[],
   ): Promise<number>;
 
   /**
