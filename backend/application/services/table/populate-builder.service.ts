@@ -98,7 +98,14 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
     };
 
     const ancestors: ReadonlySet<string> = visited ?? new Set<string>();
-    return this.buildPopulateTree(fields, groups, conn, depth, caches, ancestors);
+    return this.buildPopulateTree(
+      fields,
+      groups,
+      conn,
+      depth,
+      caches,
+      ancestors,
+    );
   }
 
   /**
