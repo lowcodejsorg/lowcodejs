@@ -86,8 +86,9 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
     groups?: IGroupConfiguration[],
     conn?: mongoose.Connection,
     depth: number = MongoosePopulateBuilder.MAX_RELATIONSHIP_DEPTH,
-    // Vestigial: o guard de ciclo agora é o próprio `depth` decrementando até a
-    // base; mantido na assinatura por compat com o contrato.
+    // Ancestor table IDs na cadeia atual de populate — rompe ciclos quando a
+    // tabela alvo já aparece no caminho. O caller passa o ID da tabela raiz
+    // para que qualquer campo que aponte de volta para ela também seja cortado.
     visited?: Set<string>,
   ): Promise<mongoose.PopulateOptions[]> {
     const caches: PopulateBuildCaches = {
@@ -96,7 +97,8 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
       subtree: new Map(),
     };
 
-    return this.buildPopulateTree(fields, groups, conn, depth, caches);
+    const ancestors: ReadonlySet<string> = visited ?? new Set<string>();
+    return this.buildPopulateTree(fields, groups, conn, depth, caches, ancestors);
   }
 
   /**
@@ -158,6 +160,7 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
     conn: mongoose.Connection | undefined,
     depth: number,
     caches: PopulateBuildCaches,
+    ancestors: ReadonlySet<string> = new Set(),
   ): Promise<mongoose.PopulateOptions[]> {
     const relacionamentos = this.getRelationships(fields);
     const populate: mongoose.PopulateOptions[] = [];
@@ -235,11 +238,20 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
             caches,
           );
 
+          // Ciclo detectado: tabela alvo já está na cadeia de ancestors.
+          // Popula o campo para resolver o label imediato, mas sem sub-populate.
+          if (ancestors.has(nextTableId)) {
+            populate.push({ path: field.slug, model: relationModel });
+            continue;
+          }
+
+          const nextAncestors = new Set([...ancestors, nextTableId]);
           const relationshipPopulate = await this.resolveSubtree(
             relationshipTable,
             conn,
             depth,
             caches,
+            nextAncestors,
           );
 
           populate.push({
@@ -262,18 +274,21 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
 
   /**
    * Subárvore de populate dos relacionamentos do alvo, memoizada por
-   * `(tableId, depth)`. A subárvore é idêntica independente do caminho que
-   * chegou no alvo, então é montada 1× e reusada entre todos os ramos irmãos.
-   * A recursão termina por `depth`: na base (`depth <= 1`) não aprofunda.
+   * `(tableId, depth, ancestors)`. A subárvore depende do conjunto de
+   * ancestors porque o cycle-detection corta caminhos distintos de formas
+   * distintas — ramos com ancestors diferentes podem gerar subárvores diferentes.
+   * A recursão termina por `depth <= 1` ou ciclo detectado.
    */
   private async resolveSubtree(
     table: RelationshipTableDoc,
     conn: mongoose.Connection,
     depth: number,
     caches: PopulateBuildCaches,
+    ancestors: ReadonlySet<string>,
   ): Promise<mongoose.PopulateOptions[]> {
     const nextDepth = depth - 1;
-    const key = `${table._id.toString()}:${nextDepth}`;
+    const ancestorKey = [...ancestors].sort().join(',');
+    const key = `${table._id.toString()}:${nextDepth}:${ancestorKey}`;
 
     const cached = caches.subtree.get(key);
     if (cached) return cached;
@@ -286,6 +301,7 @@ export default class MongoosePopulateBuilder implements PopulateBuilderContractS
         conn,
         nextDepth,
         caches,
+        ancestors,
       );
     }
 

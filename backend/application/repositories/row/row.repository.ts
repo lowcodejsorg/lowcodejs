@@ -83,7 +83,13 @@ export default class RowMongooseRepository implements RowContractRepository {
   private async getPopulate(
     table: RowTableContext,
   ): ReturnType<PopulateBuilderContractService['build']> {
-    return this.populate.build(table.fields, table.groups, getDataConnection());
+    return this.populate.build(
+      table.fields,
+      table.groups,
+      getDataConnection(),
+      undefined,
+      new Set([table._id.toString()]),
+    );
   }
 
   private transformRow(doc: unknown, fields: IField[] = []): IRow {
