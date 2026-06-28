@@ -45,6 +45,10 @@ export class DraftTable {
 
   static from(table: ITable): ITable {
     const draft = structuredClone(table);
+    // Sentinel: força cache miss no ModelBuilder. O cache usa updatedAt como
+    // versão; um timestamp diferente garante que o draft model (required: false
+    // em todos os campos) nunca reutilize o model original (required: true).
+    draft.updatedAt = new Date(0);
 
     if (draft._schema) {
       DraftTable.relaxTableSchema(draft._schema);
