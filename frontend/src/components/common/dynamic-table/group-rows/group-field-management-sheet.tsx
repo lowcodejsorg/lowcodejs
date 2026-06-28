@@ -52,7 +52,8 @@ export function GroupFieldManagementSheet({
               defaultValue="display"
               className="w-full flex flex-col flex-1 min-h-0"
             >
-              <TabsList className="grid w-full grid-cols-3 mb-4 shrink-0 px-4 pt-4">
+              <div className="px-4 pt-4 shrink-0">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="display">Lista</TabsTrigger>
                 <TabsTrigger value="form">Formulários</TabsTrigger>
                 <TabsTrigger
@@ -62,6 +63,7 @@ export function GroupFieldManagementSheet({
                   Lixeira{trashedCount > 0 && ` (${trashedCount})`}
                 </TabsTrigger>
               </TabsList>
+              </div>
 
               <TabsContent
                 value="display"

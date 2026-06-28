@@ -435,7 +435,8 @@ function FieldManagementTabs(): React.JSX.Element {
         defaultValue="display"
         className="w-full max-w-6xl mx-auto flex flex-col flex-1 min-h-0"
       >
-        <TabsList className="grid w-full grid-cols-5 mb-4 shrink-0 px-4 pt-4">
+        <div className="px-4 pt-4 shrink-0">
+        <TabsList className="grid w-full grid-cols-5 mb-4">
           <TabsTrigger value="display">Lista</TabsTrigger>
           <TabsTrigger value="filter">Filtros</TabsTrigger>
           <TabsTrigger value="form">Formulários</TabsTrigger>
@@ -447,6 +448,7 @@ function FieldManagementTabs(): React.JSX.Element {
             Lixeira{trashedCount > 0 && ` (${trashedCount})`}
           </TabsTrigger>
         </TabsList>
+        </div>
 
         <TabsContent
           value="display"
