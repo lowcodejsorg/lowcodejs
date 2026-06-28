@@ -4,14 +4,6 @@ import React from 'react';
 import { toast } from 'sonner';
 
 import { TableRowCategoryCell } from '../table-cells/table-row-category-cell';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { TableRowDateCell } from '../table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '../table-cells/table-row-dropdown-cell';
 import { TableRowFileCell } from '../table-cells/table-row-file-cell';
@@ -21,10 +13,19 @@ import { TableRowTextShortCell } from '../table-cells/table-row-text-short-cell'
 import { TableRowUserCell } from '../table-cells/table-row-user-cell';
 
 import { RelationshipItemSheet } from './relationship-item-sheet';
+import { RelationshipSelectExistingSheet } from './relationship-select-existing-sheet';
 import { otherIdOf } from './relationship-rows-inline';
 
 import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useRelationshipLinkDelete } from '@/hooks/tanstack-query/use-relationship-link-delete';
@@ -71,7 +72,10 @@ export function RelationshipRowsDataTable({
   const [perPage, setPerPage] = React.useState<number>(10);
   const [sheetOpen, setSheetOpen] = React.useState<boolean>(false);
   const [editRow, setEditRow] = React.useState<IRow | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = React.useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = React.useState<string | null>(
+    null,
+  );
+  const [selectSheetOpen, setSelectSheetOpen] = React.useState<boolean>(false);
 
   const relatedTable = useReadTable({ slug: otherTableSlug });
 
@@ -177,7 +181,16 @@ export function RelationshipRowsDataTable({
       className="space-y-2"
     >
       {canEdit && (
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={(): void => setSelectSheetOpen(true)}
+            disabled={singleLocked || !relatedTable.data}
+          >
+            <span>Vincular existente</span>
+          </Button>
           <Button
             type="button"
             variant="outline"
@@ -186,7 +199,7 @@ export function RelationshipRowsDataTable({
             disabled={singleLocked || !relatedTable.data}
           >
             <PlusIcon className="size-4" />
-            <span>Adicionar item</span>
+            <span>Criar novo</span>
           </Button>
         </div>
       )}
@@ -341,6 +354,20 @@ export function RelationshipRowsDataTable({
       </Dialog>
 
       {relatedTable.data && (
+        <RelationshipSelectExistingSheet
+          open={selectSheetOpen}
+          onOpenChange={setSelectSheetOpen}
+          field={field}
+          relatedTable={relatedTable.data}
+          parentTableSlug={parentTableSlug}
+          relationshipId={relationshipId}
+          side={side}
+          recordId={recordId}
+          onChanged={invalidate}
+        />
+      )}
+
+      {relatedTable.data && (
         <RelationshipItemSheet
           open={sheetOpen}
           onOpenChange={(open: boolean): void => {
@@ -361,7 +388,7 @@ export function RelationshipRowsDataTable({
   );
 }
 
-function RenderRelationshipCell({
+export function RenderRelationshipCell({
   field,
   row,
 }: {

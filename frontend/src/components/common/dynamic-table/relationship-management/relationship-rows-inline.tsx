@@ -40,6 +40,8 @@ import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
+import { RelationshipSelectExistingSheet } from './relationship-select-existing-sheet';
+
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRelationshipLink, IRow, ITable } from '@/lib/interfaces';
@@ -157,6 +159,7 @@ export function RelationshipRowsInline(
   const [orderedLinks, setOrderedLinks] = React.useState<
     Array<IRelationshipLink>
   >([]);
+  const [selectSheetOpen, setSelectSheetOpen] = React.useState<boolean>(false);
 
   const relatedTable = useReadTable({ slug: otherTableSlug });
 
@@ -346,19 +349,29 @@ export function RelationshipRowsInline(
           {resolveFieldLabel(field, 'detail')}
         </span>
         {showAdd && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={adding}
-            onClick={(): void => {
-              void handleAdd();
-            }}
-          >
-            {adding && <Spinner />}
-            {!adding && <PlusIcon className="size-4" />}
-            <span>Adicionar item</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(): void => setSelectSheetOpen(true)}
+            >
+              <span>Vincular existente</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={adding}
+              onClick={(): void => {
+                void handleAdd();
+              }}
+            >
+              {adding && <Spinner />}
+              {!adding && <PlusIcon className="size-4" />}
+              <span>Criar novo</span>
+            </Button>
+          </div>
         )}
       </div>
 
@@ -458,6 +471,20 @@ export function RelationshipRowsInline(
         <p className="text-xs text-muted-foreground">
           Este lado aceita apenas um item. Remova o atual para trocar.
         </p>
+      )}
+
+      {relatedTable.data && (
+        <RelationshipSelectExistingSheet
+          open={selectSheetOpen}
+          onOpenChange={setSelectSheetOpen}
+          field={field}
+          relatedTable={relatedTable.data}
+          parentTableSlug={parentTableSlug}
+          relationshipId={relationshipId}
+          side={side}
+          recordId={recordId}
+          onChanged={invalidateRows}
+        />
       )}
     </div>
   );
