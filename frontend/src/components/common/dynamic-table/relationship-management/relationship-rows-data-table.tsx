@@ -13,8 +13,8 @@ import { TableRowTextShortCell } from '../table-cells/table-row-text-short-cell'
 import { TableRowUserCell } from '../table-cells/table-row-user-cell';
 
 import { RelationshipItemSheet } from './relationship-item-sheet';
-import { RelationshipSelectExistingSheet } from './relationship-select-existing-sheet';
 import { otherIdOf } from './relationship-rows-inline';
+import { RelationshipSelectExistingSheet } from './relationship-select-existing-sheet';
 
 import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';

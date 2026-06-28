@@ -22,6 +22,8 @@ import { GripVerticalIcon, PlusIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
+import { RelationshipSelectExistingSheet } from './relationship-select-existing-sheet';
+
 import {
   UploadingProvider,
   useIsUploading,
@@ -40,8 +42,6 @@ import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
-import { RelationshipSelectExistingSheet } from './relationship-select-existing-sheet';
-
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRelationshipLink, IRow, ITable } from '@/lib/interfaces';

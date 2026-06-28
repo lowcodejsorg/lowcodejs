@@ -19,8 +19,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { useRelationshipLinkCreate } from '@/hooks/tanstack-query/use-relationship-link-create';
 import { useRelationshipLinksList } from '@/hooks/tanstack-query/use-relationship-links-list';
 import { useRelationshipRowsReadPaginated } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated';
-import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import { useFieldVisibility } from '@/hooks/use-field-visibility';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 
