@@ -32,9 +32,6 @@ export function TableRowRelationshipCell({
   if (Array.isArray(raw)) total = raw.length;
 
   if (isManage) {
-    if (total === 0) {
-      return <span className="text-muted-foreground text-sm">-</span>;
-    }
     return (
       <Badge
         data-slot="table-row-relationship-cell"

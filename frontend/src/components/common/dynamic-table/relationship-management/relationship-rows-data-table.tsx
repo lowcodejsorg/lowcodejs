@@ -60,7 +60,7 @@ export function RelationshipRowsDataTable({
   const queryClient = useQueryClient();
   const { isFieldVisible } = useFieldVisibility();
   const [page, setPage] = React.useState<number>(1);
-  const [perPage, setPerPage] = React.useState<number>(6);
+  const [perPage, setPerPage] = React.useState<number>(10);
   const [sheetOpen, setSheetOpen] = React.useState<boolean>(false);
   const [editRow, setEditRow] = React.useState<IRow | null>(null);
 
