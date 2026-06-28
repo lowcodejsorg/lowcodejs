@@ -4,6 +4,14 @@ import React from 'react';
 import { toast } from 'sonner';
 
 import { TableRowCategoryCell } from '../table-cells/table-row-category-cell';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { TableRowDateCell } from '../table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '../table-cells/table-row-dropdown-cell';
 import { TableRowFileCell } from '../table-cells/table-row-file-cell';
@@ -63,6 +71,7 @@ export function RelationshipRowsDataTable({
   const [perPage, setPerPage] = React.useState<number>(10);
   const [sheetOpen, setSheetOpen] = React.useState<boolean>(false);
   const [editRow, setEditRow] = React.useState<IRow | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = React.useState<string | null>(null);
 
   const relatedTable = useReadTable({ slug: otherTableSlug });
 
@@ -265,7 +274,7 @@ export function RelationshipRowsDataTable({
                             e: React.MouseEvent<HTMLButtonElement>,
                           ): void => {
                             e.stopPropagation();
-                            deleteLink.mutate({ linkId: linked.linkId });
+                            setConfirmDeleteId(linked.linkId);
                           }}
                         >
                           <TrashIcon className="size-3.5" />
@@ -292,6 +301,44 @@ export function RelationshipRowsDataTable({
           }}
         />
       )}
+
+      <Dialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open: boolean): void => {
+          if (!open) setConfirmDeleteId(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Desvincular registro</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja desvincular este registro? Esta ação não
+              exclui o registro, apenas remove o vínculo.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={(): void => setConfirmDeleteId(null)}
+              disabled={deleteLink.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteLink.isPending}
+              onClick={(): void => {
+                if (confirmDeleteId !== null) {
+                  deleteLink.mutate({ linkId: confirmDeleteId });
+                  setConfirmDeleteId(null);
+                }
+              }}
+            >
+              Desvincular
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {relatedTable.data && (
         <RelationshipItemSheet

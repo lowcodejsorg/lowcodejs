@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
@@ -157,6 +158,10 @@ function RelationshipItemSheetContent({
           {isEdit && 'Editar item'}
           {!isEdit && 'Adicionar item'}
         </SheetTitle>
+        <SheetDescription className="sr-only">
+          {isEdit && 'Formulário para editar o registro relacionado'}
+          {!isEdit && 'Formulário para adicionar um novo registro relacionado'}
+        </SheetDescription>
       </SheetHeader>
 
       <form
