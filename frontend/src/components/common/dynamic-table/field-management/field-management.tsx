@@ -436,18 +436,18 @@ function FieldManagementTabs(): React.JSX.Element {
         className="w-full max-w-6xl mx-auto flex flex-col flex-1 min-h-0"
       >
         <div className="px-4 pt-4 shrink-0">
-        <TabsList className="grid w-full grid-cols-5 mb-4">
-          <TabsTrigger value="display">Lista</TabsTrigger>
-          <TabsTrigger value="filter">Filtros</TabsTrigger>
-          <TabsTrigger value="form">Formulários</TabsTrigger>
-          <TabsTrigger value="detail">Detalhes</TabsTrigger>
-          <TabsTrigger
-            value="trashed"
-            disabled={trashedCount === 0}
-          >
-            Lixeira{trashedCount > 0 && ` (${trashedCount})`}
-          </TabsTrigger>
-        </TabsList>
+          <TabsList className="grid w-full grid-cols-5 mb-4">
+            <TabsTrigger value="display">Lista</TabsTrigger>
+            <TabsTrigger value="filter">Filtros</TabsTrigger>
+            <TabsTrigger value="form">Formulários</TabsTrigger>
+            <TabsTrigger value="detail">Detalhes</TabsTrigger>
+            <TabsTrigger
+              value="trashed"
+              disabled={trashedCount === 0}
+            >
+              Lixeira{trashedCount > 0 && ` (${trashedCount})`}
+            </TabsTrigger>
+          </TabsList>
         </div>
 
         <TabsContent
