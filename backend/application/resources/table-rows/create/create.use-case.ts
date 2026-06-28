@@ -153,6 +153,9 @@ export default class TableRowCreateUseCase {
       const createData: Record<string, any> = {
         ...payload,
         creator: payload.creator ?? null,
+        // Espelha creator em updater para que "Modificado por" apareça
+        // imediatamente após criação, sem precisar de um PUT subsequente.
+        updater: payload.creator ?? null,
         // Salvar via create publica o registro (fonte de verdade = status).
         status: E_ROW_STATUS.PUBLISHED,
         draftAt: null,
