@@ -183,7 +183,7 @@ function RouteComponent(): React.JSX.Element {
       )}
 
       {/* Content */}
-      <PageShell.Content>
+      <PageShell.Content className="overflow-hidden">
         {_read.status === 'error' && (
           <LoadError
             message="Houve um erro ao buscar dados do campo"

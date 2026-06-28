@@ -318,7 +318,7 @@ function MenuUpdateContent({
         <PageShell.Content>
           <form
             data-test-id="menu-update-form"
-            className="flex-1 flex flex-col min-h-0 overflow-auto"
+            className="flex-1 flex flex-col"
             onSubmit={(e) => {
               e.preventDefault();
               form.handleSubmit();

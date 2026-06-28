@@ -130,7 +130,7 @@ function RouteComponent(): React.JSX.Element {
       </PageShell.Header>
 
       {/* Content */}
-      <PageShell.Content>
+      <PageShell.Content className="overflow-hidden">
         <StorageMigrationCard />
         <UploadingProvider>
           <SettingUpdateContent
