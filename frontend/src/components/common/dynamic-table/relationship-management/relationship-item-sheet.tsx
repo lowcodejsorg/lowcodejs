@@ -58,7 +58,7 @@ export function RelationshipItemSheet(
     >
       <SheetContent
         side="right"
-        className="sm:max-w-2xl w-full overflow-y-auto px-4"
+        className="sm:max-w-2xl w-full gap-0 p-0"
       >
         <UploadingProvider>
           <RelationshipItemSheetContent {...props} />
@@ -152,7 +152,7 @@ function RelationshipItemSheetContent({
 
   return (
     <React.Fragment>
-      <SheetHeader className="px-0">
+      <SheetHeader>
         <SheetTitle>
           {isEdit && 'Editar item'}
           {!isEdit && 'Adicionar item'}
@@ -160,7 +160,7 @@ function RelationshipItemSheetContent({
       </SheetHeader>
 
       <form
-        className="flex flex-wrap gap-4"
+        className="flex-1 min-h-0 overflow-auto px-4 flex flex-wrap gap-4 content-start"
         onSubmit={(e: React.FormEvent<HTMLFormElement>): void => {
           e.preventDefault();
           void form.handleSubmit();

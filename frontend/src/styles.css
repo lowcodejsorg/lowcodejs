@@ -285,6 +285,13 @@ select:-webkit-autofill:focus {
   @apply text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground;
 }
 
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* Gradiente de marca */
 .bg-brand-gradient {
   background-image: linear-gradient(
