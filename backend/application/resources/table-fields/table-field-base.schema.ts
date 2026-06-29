@@ -118,6 +118,11 @@ export const FieldTipSchema = z
   .nullable()
   .default(null)
   .transform((value) => (value && value.length > 0 ? value : null));
+export const FieldHtmlContentSchema = z
+  .string()
+  .trim()
+  .nullable()
+  .default(null);
 export const FieldLockedSchema = z.boolean().default(false);
 // Rotulo customizado por contexto. SEM default no objeto: ausente permanece
 // `undefined` para que callers que omitem `label` (ex.: toggle de visibilidade)
@@ -253,6 +258,7 @@ export const TableFieldBaseSchema = z.object({
   widthInList: FieldWidthInListSchema,
   widthInDetail: FieldWidthInDetailSchema,
   tip: FieldTipSchema,
+  htmlContent: FieldHtmlContentSchema,
   locked: FieldLockedSchema,
   label: FieldLabelSchema,
   defaultValue: FieldDefaultValueSchema,

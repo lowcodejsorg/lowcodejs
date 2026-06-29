@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
+import { E_FIELD_TYPE } from '@application/core/entity.core';
 import { getValidationRule } from '@application/core/validations/registry';
 import type { ValidationDeps } from '@application/core/validations/rule.contract';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
@@ -55,6 +56,7 @@ export default class FieldValidationService implements FieldValidationContractSe
 
     for (const field of table.fields ?? []) {
       if (field.native) continue;
+      if (field.type === E_FIELD_TYPE.HTML_CONTENT) continue;
       if (!field.validations || field.validations.length === 0) continue;
       if (options.skipMissing && !(field.slug in payload)) continue;
 
