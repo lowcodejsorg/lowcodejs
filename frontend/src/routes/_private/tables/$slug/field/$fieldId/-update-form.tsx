@@ -6,6 +6,12 @@ import z from 'zod';
 import { TableFieldRelationshipCardinality } from '@/components/common/dynamic-table/table-config/table-field-relationship-cardinality';
 import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import { ExtensionSlot } from '@/components/common/extension-slot';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Switch } from '@/components/ui/switch';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
@@ -317,47 +323,61 @@ export const UpdateFieldFormFields = withForm({
           data-test-id="field-update-form-fields"
           className="space-y-4 p-2"
         >
-          <div className="space-y-3 rounded-lg border p-3">
-            <p className="text-sm font-medium text-muted-foreground">
-              Rótulos por contexto
-            </p>
-            <form.AppField name="label.list">
-              {(field) => (
-                <field.FieldText
-                  label="Na listagem"
-                  placeholder={nativePlaceholder}
-                  disabled={isDisabled}
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="label.filter">
-              {(field) => (
-                <field.FieldText
-                  label="Nos filtros"
-                  placeholder={nativePlaceholder}
-                  disabled={isDisabled}
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="label.form">
-              {(field) => (
-                <field.FieldText
-                  label="No formulário"
-                  placeholder={nativePlaceholder}
-                  disabled={isDisabled}
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="label.detail">
-              {(field) => (
-                <field.FieldText
-                  label="Nos detalhes"
-                  placeholder={nativePlaceholder}
-                  disabled={isDisabled}
-                />
-              )}
-            </form.AppField>
-          </div>
+          <Accordion
+            type="single"
+            collapsible
+            defaultValue="labels"
+            className="rounded-lg border"
+          >
+            <AccordionItem
+              value="labels"
+              className="px-3"
+            >
+              <AccordionTrigger className="py-3 text-sm font-medium text-muted-foreground hover:no-underline">
+                Rótulos por contexto
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-3">
+                  <form.AppField name="label.list">
+                    {(field) => (
+                      <field.FieldText
+                        label="Na listagem"
+                        placeholder={nativePlaceholder}
+                        disabled={isDisabled}
+                      />
+                    )}
+                  </form.AppField>
+                  <form.AppField name="label.filter">
+                    {(field) => (
+                      <field.FieldText
+                        label="Nos filtros"
+                        placeholder={nativePlaceholder}
+                        disabled={isDisabled}
+                      />
+                    )}
+                  </form.AppField>
+                  <form.AppField name="label.form">
+                    {(field) => (
+                      <field.FieldText
+                        label="No formulário"
+                        placeholder={nativePlaceholder}
+                        disabled={isDisabled}
+                      />
+                    )}
+                  </form.AppField>
+                  <form.AppField name="label.detail">
+                    {(field) => (
+                      <field.FieldText
+                        label="Nos detalhes"
+                        placeholder={nativePlaceholder}
+                        disabled={isDisabled}
+                      />
+                    )}
+                  </form.AppField>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </section>
       );
     }
@@ -392,47 +412,61 @@ export const UpdateFieldFormFields = withForm({
           )}
         </form.AppField>
 
-        <div className="space-y-3 rounded-lg border p-3">
-          <p className="text-sm font-medium text-muted-foreground">
-            Rótulos por contexto
-          </p>
-          <form.AppField name="label.list">
-            {(field) => (
-              <field.FieldText
-                label="Na listagem"
-                placeholder={fieldName || 'Igual ao título exibido'}
-                disabled={isDisabled || isLocked}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="label.filter">
-            {(field) => (
-              <field.FieldText
-                label="Nos filtros"
-                placeholder={fieldName || 'Igual ao título exibido'}
-                disabled={isDisabled || isLocked}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="label.form">
-            {(field) => (
-              <field.FieldText
-                label="No formulário"
-                placeholder={fieldName || 'Igual ao título exibido'}
-                disabled={isDisabled || isLocked}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="label.detail">
-            {(field) => (
-              <field.FieldText
-                label="Nos detalhes"
-                placeholder={fieldName || 'Igual ao título exibido'}
-                disabled={isDisabled || isLocked}
-              />
-            )}
-          </form.AppField>
-        </div>
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue="labels"
+          className="rounded-lg border"
+        >
+          <AccordionItem
+            value="labels"
+            className="px-3"
+          >
+            <AccordionTrigger className="py-3 text-sm font-medium text-muted-foreground hover:no-underline">
+              Rótulos por contexto
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-3">
+                <form.AppField name="label.list">
+                  {(field) => (
+                    <field.FieldText
+                      label="Na listagem"
+                      placeholder={fieldName || 'Igual ao título exibido'}
+                      disabled={isDisabled || isLocked}
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="label.filter">
+                  {(field) => (
+                    <field.FieldText
+                      label="Nos filtros"
+                      placeholder={fieldName || 'Igual ao título exibido'}
+                      disabled={isDisabled || isLocked}
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="label.form">
+                  {(field) => (
+                    <field.FieldText
+                      label="No formulário"
+                      placeholder={fieldName || 'Igual ao título exibido'}
+                      disabled={isDisabled || isLocked}
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="label.detail">
+                  {(field) => (
+                    <field.FieldText
+                      label="Nos detalhes"
+                      placeholder={fieldName || 'Igual ao título exibido'}
+                      disabled={isDisabled || isLocked}
+                    />
+                  )}
+                </form.AppField>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         <form.AppField
           name="slug"

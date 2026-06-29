@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { getDropdownContrastStyle } from '@/components/common/dynamic-table/table-cells/utils';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import {
   DATE_FORMAT_OPTIONS,
@@ -68,27 +74,41 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
 
       {/* Rótulos por contexto */}
       {data.label && (
-        <div className="space-y-2 rounded-lg border p-3">
-          <p className="text-sm font-medium">Rótulos por contexto</p>
-          <div className="grid gap-2 text-sm">
-            <div className="flex justify-between gap-2">
-              <span className="text-muted-foreground">Listagem</span>
-              <span>{data.label.list ?? '-'}</span>
-            </div>
-            <div className="flex justify-between gap-2">
-              <span className="text-muted-foreground">Filtros</span>
-              <span>{data.label.filter ?? '-'}</span>
-            </div>
-            <div className="flex justify-between gap-2">
-              <span className="text-muted-foreground">Formulário</span>
-              <span>{data.label.form ?? '-'}</span>
-            </div>
-            <div className="flex justify-between gap-2">
-              <span className="text-muted-foreground">Detalhes</span>
-              <span>{data.label.detail ?? '-'}</span>
-            </div>
-          </div>
-        </div>
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue="labels"
+          className="rounded-lg border"
+        >
+          <AccordionItem
+            value="labels"
+            className="px-3"
+          >
+            <AccordionTrigger className="py-3 text-sm font-medium hover:no-underline">
+              Rótulos por contexto
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="grid gap-2 text-sm">
+                <div className="flex justify-between gap-2">
+                  <span className="text-muted-foreground">Listagem</span>
+                  <span>{data.label.list ?? '-'}</span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-muted-foreground">Filtros</span>
+                  <span>{data.label.filter ?? '-'}</span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-muted-foreground">Formulário</span>
+                  <span>{data.label.form ?? '-'}</span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-muted-foreground">Detalhes</span>
+                  <span>{data.label.detail ?? '-'}</span>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       )}
 
       <div className="space-y-1">
