@@ -438,7 +438,9 @@ describe('Clone Table Use Case', () => {
 
     expect(result.value.code).toBe(409);
     expect(result.value.cause).toBe('TABLE_ALREADY_EXISTS');
-    expect(result.value.errors).toEqual({ name: 'Já existe uma tabela com este nome' });
+    expect(result.value.errors).toEqual({
+      name: 'Já existe uma tabela com este nome',
+    });
   });
 
   it('deve retornar erro OWNER_ID_REQUIRED quando ownerId nao for informado', async () => {
