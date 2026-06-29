@@ -82,6 +82,24 @@ export default class CloneTableUseCase {
         );
       }
 
+      if (!payload.baseTableIds?.length) {
+        const slug = slugify(payload.name, {
+          lower: true,
+          strict: true,
+          trim: true,
+        });
+        const existingTable = await this.tableRepository.findBySlug(slug);
+        if (existingTable) {
+          return left(
+            HTTPException.Conflict(
+              'Já existe uma tabela com este nome',
+              'TABLE_ALREADY_EXISTS',
+              { name: 'Já existe uma tabela com este nome' },
+            ),
+          );
+        }
+      }
+
       const templateDeps = this.getTemplateDeps();
 
       if (payload.baseTableId === KANBAN_TEMPLATE_ID) {
