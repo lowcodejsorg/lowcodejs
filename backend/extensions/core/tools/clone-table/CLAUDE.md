@@ -38,6 +38,7 @@ referência canônica do modelo de tools.
 | Code | Cause | Quando |
 |------|-------|--------|
 | 400 | OWNER_ID_REQUIRED | Owner ID ausente (nao deveria ocorrer com auth) |
+| 409 | TABLE_ALREADY_EXISTS | Ja existe tabela com o mesmo slug (single clone via baseTableId) |
 | 404 | TABLE_NOT_FOUND | Tabela base nao encontrada |
 | 500 | CLONE_TABLE_ERROR | Erro interno durante clonagem |
 

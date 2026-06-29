@@ -418,6 +418,29 @@ describe('Clone Table Use Case', () => {
     });
   });
 
+  it('deve retornar erro TABLE_ALREADY_EXISTS quando slug ja existe', async () => {
+    await tableInMemoryRepository.create({
+      name: 'Tabela Existente',
+      slug: 'tabela-existente',
+      type: 'TABLE',
+      owner: 'owner-id',
+      style: 'LIST',
+    });
+
+    const result = await sut.execute({
+      baseTableId: 'qualquer-id',
+      name: 'Tabela Existente',
+      ownerId: 'owner-id',
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(409);
+    expect(result.value.cause).toBe('TABLE_ALREADY_EXISTS');
+    expect(result.value.errors).toEqual({ name: 'Já existe uma tabela com este nome' });
+  });
+
   it('deve retornar erro OWNER_ID_REQUIRED quando ownerId nao for informado', async () => {
     const result = await sut.execute({
       baseTableId: 'some-id',
