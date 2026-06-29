@@ -1,3 +1,5 @@
+import { ValidationMultiSelect } from './validation-multi-select';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Field,
@@ -11,7 +13,6 @@ import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { E_FIELD_VALIDATION, FIELD_VALIDATION_OPTIONS } from '@/lib/constant';
 import type { IFieldValidation, ValueOf } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { ValidationMultiSelect } from './validation-multi-select';
 
 interface TableFieldValidationsFieldProps {
   // Aceita string crua (vem do store do form) — comparada contra E_FIELD_TYPE.
@@ -86,13 +87,13 @@ export function TableFieldValidationsField({
     .filter((v) => !(CONFIG_RULES as ReadonlyArray<string>).includes(v.rule))
     .map((v) => v.rule);
 
-  function handleSimpleChange(rules: string[]): void {
+  function handleSimpleChange(rules: Array<string>): void {
     const configValidations = value.filter((v) =>
       (CONFIG_RULES as ReadonlyArray<string>).includes(v.rule),
     );
     const newSimple: Array<IFieldValidation> = rules.map((r) => ({
       rule: r as ValueOf<typeof E_FIELD_VALIDATION>,
-      config: {} as Record<string, unknown>,
+      config: {},
     }));
     field.handleChange([...newSimple, ...configValidations]);
   }
@@ -175,33 +176,32 @@ export function TableFieldValidationsField({
                   )}
                 </div>
 
-                {checked &&
-                  option.value === E_FIELD_VALIDATION.IS_IN_RANGE && (
-                    <div className="ml-6 flex items-center gap-2">
-                      <Input
-                        type="number"
-                        placeholder="Mínimo"
-                        disabled={disabled}
-                        value={readConfigString(selected!.config, 'min')}
-                        onChange={(event) =>
-                          updateConfig(option.value, {
-                            min: event.target.value,
-                          })
-                        }
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Máximo"
-                        disabled={disabled}
-                        value={readConfigString(selected!.config, 'max')}
-                        onChange={(event) =>
-                          updateConfig(option.value, {
-                            max: event.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  )}
+                {checked && option.value === E_FIELD_VALIDATION.IS_IN_RANGE && (
+                  <div className="ml-6 flex items-center gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Mínimo"
+                      disabled={disabled}
+                      value={readConfigString(selected!.config, 'min')}
+                      onChange={(event) =>
+                        updateConfig(option.value, {
+                          min: event.target.value,
+                        })
+                      }
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Máximo"
+                      disabled={disabled}
+                      value={readConfigString(selected!.config, 'max')}
+                      onChange={(event) =>
+                        updateConfig(option.value, {
+                          max: event.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
 
                 {checked && option.value === E_FIELD_VALIDATION.IS_NOT && (
                   <div className="ml-6">

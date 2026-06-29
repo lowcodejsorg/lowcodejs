@@ -20,9 +20,9 @@ interface ValidationOption {
 }
 
 interface ValidationMultiSelectProps {
-  options: ValidationOption[];
-  value?: string[];
-  onValueChange?: (value: string[]) => void;
+  options: Array<ValidationOption>;
+  value?: Array<string>;
+  onValueChange?: (value: Array<string>) => void;
   placeholder?: string;
   disabled?: boolean;
 }
@@ -48,7 +48,7 @@ export function ValidationMultiSelect({
       items={options}
       multiple
       value={selectedOptions}
-      onValueChange={(newOptions: ValidationOption[]) => {
+      onValueChange={(newOptions: Array<ValidationOption>) => {
         onValueChange?.(newOptions.map((o) => o.value));
       }}
       itemToStringLabel={(opt: ValidationOption) => opt.label}
@@ -56,8 +56,9 @@ export function ValidationMultiSelect({
     >
       <ComboboxChips ref={anchorRef}>
         <ComboboxValue>
-          {(selectedValue: ValidationOption[]): React.ReactNode => {
-            const chipsPlaceholder = selectedValue.length > 0 ? '' : placeholder;
+          {(selectedValue: Array<ValidationOption>): React.ReactNode => {
+            const chipsPlaceholder =
+              selectedValue.length > 0 ? '' : placeholder;
             return (
               <React.Fragment>
                 {selectedValue.map((opt) => (
