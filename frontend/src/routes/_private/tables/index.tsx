@@ -6,7 +6,7 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
 import type { ISetting } from '@/lib/interfaces';
 
-const defaultSearch = { page: 1, perPage: 50 };
+const defaultSearch = { page: 1 };
 
 export const Route = createFileRoute('/_private/tables/')({
   beforeLoad: async ({ context, location }) => {
