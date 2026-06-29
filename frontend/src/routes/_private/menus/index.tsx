@@ -58,7 +58,7 @@ export const Route = createFileRoute('/_private/menus/')({
   ),
   validateSearch: z.object({
     page: z.coerce.number().default(1),
-    perPage: z.coerce.number().default(50),
+    perPage: z.coerce.number().optional(),
     search: z.string().optional(),
     trashed: z
       .preprocess(
