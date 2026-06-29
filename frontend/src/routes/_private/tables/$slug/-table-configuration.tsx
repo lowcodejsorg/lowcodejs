@@ -230,7 +230,7 @@ export function TableConfigurationDropdown({
                   <span>Gerenciar campos</span>
                 </DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
-                  <DropdownMenuSubContent className="max-h-80">
+                  <DropdownMenuSubContent>
                     <DropdownMenuItem
                       className="inline-flex space-x-1 w-full"
                       onClick={() => {
@@ -242,24 +242,26 @@ export function TableConfigurationDropdown({
                       <span>Gerenciar</span>
                     </DropdownMenuItem>
 
-                    {activeFields.map((field) => (
-                      <DropdownMenuItem
-                        key={field._id}
-                        onClick={() => {
-                          closeMenu();
-                          router.navigate({
-                            to: '/tables/$slug/field/$fieldId',
-                            params: { slug, fieldId: field._id },
-                          });
-                        }}
-                      >
-                        <PencilIcon className="size-4" />
-                        <span className="inline-flex min-w-0 gap-1">
-                          <span>Editar</span>
-                          <FieldTitle value={resolveFieldLabel(field)} />
-                        </span>
-                      </DropdownMenuItem>
-                    ))}
+                    <div className="overflow-y-auto max-h-60">
+                      {activeFields.map((field) => (
+                        <DropdownMenuItem
+                          key={field._id}
+                          onClick={() => {
+                            closeMenu();
+                            router.navigate({
+                              to: '/tables/$slug/field/$fieldId',
+                              params: { slug, fieldId: field._id },
+                            });
+                          }}
+                        >
+                          <PencilIcon className="size-4" />
+                          <span className="inline-flex min-w-0 gap-1">
+                            <span>Editar</span>
+                            <FieldTitle value={resolveFieldLabel(field)} />
+                          </span>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>
