@@ -230,7 +230,7 @@ export function TableConfigurationDropdown({
                   <span>Gerenciar campos</span>
                 </DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
+                  <DropdownMenuSubContent className="max-h-80">
                     <DropdownMenuItem
                       className="inline-flex space-x-1 w-full"
                       onClick={() => {
