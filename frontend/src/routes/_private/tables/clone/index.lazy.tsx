@@ -15,6 +15,8 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { useCloneTable } from '@/hooks/tanstack-query/use-clone-table';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 
 export const Route = createLazyFileRoute('/_private/tables/clone/')({
@@ -45,6 +47,7 @@ function RouteComponent(): React.JSX.Element {
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao clonar tabela',
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -64,6 +67,8 @@ function RouteComponent(): React.JSX.Element {
       });
     },
   });
+
+  useApiErrorAutoClear(form);
 
   const isPending = _clone.status === 'pending';
 

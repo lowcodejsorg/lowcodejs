@@ -78,6 +78,10 @@ export default function CloneTableTool(): React.JSX.Element {
             toast.error('Ferramenta inativa', {
               description: 'A extensão Clonar Tabela foi desativada',
             }),
+          TABLE_ALREADY_EXISTS: (errorData) =>
+            toast.error('Nome já existe', {
+              description: errorData.message,
+            }),
         },
       });
     },
