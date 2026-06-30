@@ -62,6 +62,7 @@ const UPDATE_PAYLOAD_BASE = {
   group: null,
   relationship: null,
   format: null,
+  htmlContent: null,
 };
 
 describe('Group Field Update - USER', () => {

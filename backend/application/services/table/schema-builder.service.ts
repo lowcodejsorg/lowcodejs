@@ -52,6 +52,9 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
     [E_FIELD_TYPE.UPDATER]: E_SCHEMA_TYPE.OBJECT_ID,
     [E_FIELD_TYPE.TRASHED_AT]: E_SCHEMA_TYPE.DATE,
     [E_FIELD_TYPE.STATUS]: E_SCHEMA_TYPE.STRING,
+
+    // HTML_CONTENT e display-only — nao grava dados em row
+    [E_FIELD_TYPE.HTML_CONTENT]: E_SCHEMA_TYPE.STRING,
   };
 
   // Schema do path RELATIONSHIP por role. OWNS_FK grava FK single na propria row
@@ -265,7 +268,8 @@ export default class MongooseSchemaBuilder implements SchemaBuilderContractServi
       if (
         field.type === E_FIELD_TYPE.IDENTIFIER ||
         field.type === E_FIELD_TYPE.CREATED_AT ||
-        field.type === E_FIELD_TYPE.UPDATED_AT
+        field.type === E_FIELD_TYPE.UPDATED_AT ||
+        field.type === E_FIELD_TYPE.HTML_CONTENT
       ) {
         continue;
       }
