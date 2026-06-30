@@ -137,6 +137,7 @@ export const FieldUpdateSchema = z.object({
   trashed: z.boolean().default(false),
   widthInForm: z.number().default(50),
   widthInList: z.number().default(10),
+  htmlContent: z.string().default(''),
 });
 
 export type FieldUpdateFormValues = z.infer<typeof FieldUpdateSchema>;
@@ -199,6 +200,7 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   trashed: false,
   widthInForm: 50,
   widthInList: 10,
+  htmlContent: '',
 };
 
 export const UpdateFieldFormFields = withForm({
@@ -238,6 +240,7 @@ export const UpdateFieldFormFields = withForm({
     const isReaction = fieldType === E_FIELD_TYPE.REACTION;
     const isEvaluation = fieldType === E_FIELD_TYPE.EVALUATION;
     const isUser = fieldType === E_FIELD_TYPE.USER;
+    const isHtmlContent = fieldType === E_FIELD_TYPE.HTML_CONTENT;
 
     // useStore para reatividade - re-renderiza quando tableSlug muda
     const relationshipTableSlug = useStore(
@@ -293,7 +296,7 @@ export const UpdateFieldFormFields = withForm({
 
     const showMultiple =
       isDropdown || isFile || isFieldGroup || isCategory || isUser;
-    const showRequired = !isReaction && !isEvaluation;
+    const showRequired = !isReaction && !isEvaluation && !isHtmlContent;
 
     const isDisabled = mode === 'show' || isPending;
     const lockAllControls = isLocked && !isDropdown;
@@ -511,6 +514,18 @@ export const UpdateFieldFormFields = withForm({
                 placeholder="Tipo do campo"
                 disabled={true}
                 blockedTypes={[]}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Conteúdo HTML (HTML_CONTENT) */}
+        {isHtmlContent && (
+          <form.AppField name="htmlContent">
+            {(field) => (
+              <field.FieldEditor
+                label="Conteúdo HTML"
+                defaultMode="rich"
               />
             )}
           </form.AppField>

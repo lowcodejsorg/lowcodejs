@@ -109,7 +109,8 @@ export function buildCreateRowDefaultValues(
     if (
       field.type === E_FIELD_TYPE.REACTION ||
       field.type === E_FIELD_TYPE.EVALUATION ||
-      field.type === E_FIELD_TYPE.FIELD_GROUP
+      field.type === E_FIELD_TYPE.FIELD_GROUP ||
+      field.type === E_FIELD_TYPE.HTML_CONTENT
     ) {
       continue;
     }
@@ -190,7 +191,8 @@ export function buildUpdateRowDefaultValues(
     if (
       field.type === E_FIELD_TYPE.REACTION ||
       field.type === E_FIELD_TYPE.EVALUATION ||
-      field.type === E_FIELD_TYPE.FIELD_GROUP
+      field.type === E_FIELD_TYPE.FIELD_GROUP ||
+      field.type === E_FIELD_TYPE.HTML_CONTENT
     ) {
       continue;
     }
@@ -290,7 +292,8 @@ export function buildRowPayload(
     if (
       field.type === E_FIELD_TYPE.REACTION ||
       field.type === E_FIELD_TYPE.EVALUATION ||
-      field.type === E_FIELD_TYPE.FIELD_GROUP
+      field.type === E_FIELD_TYPE.FIELD_GROUP ||
+      field.type === E_FIELD_TYPE.HTML_CONTENT
     ) {
       continue;
     }
