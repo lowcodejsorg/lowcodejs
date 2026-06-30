@@ -31,6 +31,9 @@ docker-compose.override.yml
 .claude/settings.json
 .claude/settings.local.json
 
+# Agentes locais do Claude Code (não versionar)
+.claude/agents/
+
 !backend/application/resources/logs/
 !backend/application/resources/logs/**
 
