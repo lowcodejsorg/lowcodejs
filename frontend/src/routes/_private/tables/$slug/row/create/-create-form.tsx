@@ -1,3 +1,4 @@
+import { TableRowHtmlContentField } from '@/components/common/dynamic-table/table-row/table-row-html-content-field';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IStorage } from '@/lib/interfaces';
 import { buildFieldValidator, isManagedRelationship } from '@/lib/table';
@@ -251,6 +252,17 @@ export function RowFormFields({
         // Só N:N 'manage' é renderizado pelo repetidor; 1:1/1:N caem no combobox.
         if (isManagedRelationship(field)) {
           return null;
+        }
+
+        if (field.type === E_FIELD_TYPE.HTML_CONTENT) {
+          return (
+            <div
+              key={field._id}
+              style={{ width: '100%' }}
+            >
+              <TableRowHtmlContentField field={field} />
+            </div>
+          );
         }
 
         return (

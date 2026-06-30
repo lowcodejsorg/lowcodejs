@@ -21,6 +21,7 @@ import { TableRowRelationshipCell } from '@/components/common/dynamic-table/tabl
 import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { TableRowHtmlContentField } from '@/components/common/dynamic-table/table-row/table-row-html-content-field';
 import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -135,6 +136,8 @@ function renderCell(
           field={field}
         />
       );
+    case E_FIELD_TYPE.HTML_CONTENT:
+      return <TableRowHtmlContentField field={field} />;
     default: {
       const rawValue: unknown = row[field.slug];
       return (
