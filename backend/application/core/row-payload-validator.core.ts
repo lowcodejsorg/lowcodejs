@@ -197,7 +197,7 @@ export class RowPayloadValidator {
 
       case E_FIELD_TYPE.REACTION:
       case E_FIELD_TYPE.EVALUATION:
-        // These are system-managed fields, skip validation
+      case E_FIELD_TYPE.HTML_CONTENT:
         return null;
 
       default:
@@ -220,7 +220,8 @@ export class RowPayloadValidator {
       if (
         field.type === E_FIELD_TYPE.REACTION ||
         field.type === E_FIELD_TYPE.EVALUATION ||
-        field.type === E_FIELD_TYPE.RELATIONSHIP
+        field.type === E_FIELD_TYPE.RELATIONSHIP ||
+        field.type === E_FIELD_TYPE.HTML_CONTENT
       ) {
         continue;
       }

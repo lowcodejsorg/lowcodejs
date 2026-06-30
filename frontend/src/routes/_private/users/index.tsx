@@ -10,7 +10,7 @@ import { hasAreaCapability } from '@/lib/menu/menu-access-permissions';
 import { createRouteHead } from '@/lib/seo';
 import { useAuthStore } from '@/stores/authentication';
 
-const defaultSearch = { page: 1, perPage: 50 };
+const defaultSearch = { page: 1 };
 
 export const Route = createFileRoute('/_private/users/')({
   beforeLoad: async ({ context, location }) => {
@@ -58,7 +58,7 @@ export const Route = createFileRoute('/_private/users/')({
   validateSearch: z.object({
     search: z.string().optional(),
     page: z.coerce.number().default(1),
-    perPage: z.coerce.number().default(50),
+    perPage: z.coerce.number().optional(),
     trashed: z
       .preprocess(
         (v) => {

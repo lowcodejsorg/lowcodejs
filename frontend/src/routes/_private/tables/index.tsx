@@ -6,7 +6,7 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
 import type { ISetting } from '@/lib/interfaces';
 
-const defaultSearch = { page: 1, perPage: 50 };
+const defaultSearch = { page: 1 };
 
 export const Route = createFileRoute('/_private/tables/')({
   beforeLoad: async ({ context, location }) => {
@@ -60,7 +60,7 @@ export const Route = createFileRoute('/_private/tables/')({
   validateSearch: z.object({
     search: z.string().optional(),
     page: z.coerce.number().default(1),
-    perPage: z.coerce.number().default(50),
+    perPage: z.coerce.number().optional(),
     name: z.string().optional(),
     trashed: z
       .preprocess(

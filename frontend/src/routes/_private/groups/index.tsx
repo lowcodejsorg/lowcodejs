@@ -9,7 +9,7 @@ import type { ISetting } from '@/lib/interfaces';
 import { hasAreaCapability } from '@/lib/menu/menu-access-permissions';
 import { createRouteHead } from '@/lib/seo';
 
-const defaultSearch = { page: 1, perPage: 50 };
+const defaultSearch = { page: 1 };
 
 export const Route = createFileRoute('/_private/groups/')({
   beforeLoad: async ({ context, location }) => {
@@ -51,7 +51,7 @@ export const Route = createFileRoute('/_private/groups/')({
   validateSearch: z.object({
     search: z.string().optional(),
     page: z.coerce.number().default(1),
-    perPage: z.coerce.number().default(50),
+    perPage: z.coerce.number().optional(),
     trashed: z
       .preprocess(
         (v) => {

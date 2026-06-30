@@ -63,6 +63,7 @@ const UPDATE_PAYLOAD_BASE = {
   group: null,
   multiple: false,
   relationship: null,
+  htmlContent: null,
 };
 
 describe('Group Field Update - TEXT_SHORT', () => {

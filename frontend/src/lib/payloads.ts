@@ -232,6 +232,7 @@ export type FieldCreatePayload = {
   widthInForm?: number | null;
   widthInList?: number | null;
   tip?: string | null;
+  htmlContent?: string;
   defaultValue?: string | Array<string> | null;
   relationship?: {
     table: { _id: string; slug: string };
@@ -270,6 +271,7 @@ export type FieldUpdatePayload = {
   widthInForm?: number | null;
   widthInList?: number | null;
   tip?: string | null;
+  htmlContent?: string;
   // Rotulo customizado de exibicao. null limpa (volta ao name); ausente preserva.
   label?: string | null;
   defaultValue?: string | Array<string> | null;

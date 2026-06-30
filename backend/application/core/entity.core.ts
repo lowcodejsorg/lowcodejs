@@ -39,6 +39,7 @@ export const E_FIELD_TYPE = {
   EVALUATION: 'EVALUATION',
   CATEGORY: 'CATEGORY',
   USER: 'USER',
+  HTML_CONTENT: 'HTML_CONTENT',
 
   // NATIVE
   CREATOR: 'CREATOR',
@@ -530,6 +531,7 @@ export type IField = Merge<
     widthInList: number | null;
     widthInDetail: number | null;
     tip?: string | null;
+    htmlContent?: string | null;
     defaultValue: string | string[] | null;
     locked?: boolean;
     native?: boolean;

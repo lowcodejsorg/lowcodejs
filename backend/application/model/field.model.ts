@@ -307,6 +307,10 @@ export const Schema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    htmlContent: {
+      type: String,
+      default: null,
+    },
     relationship: {
       type: Relationship,
       default: null,

@@ -1,3 +1,5 @@
+import { ValidationMultiSelect } from './validation-multi-select';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Field,
@@ -21,6 +23,11 @@ interface TableFieldValidationsFieldProps {
 }
 
 type ValidationOption = (typeof FIELD_VALIDATION_OPTIONS)[number];
+
+const CONFIG_RULES = [
+  E_FIELD_VALIDATION.IS_IN_RANGE,
+  E_FIELD_VALIDATION.IS_NOT,
+] as const satisfies ReadonlyArray<ValueOf<typeof E_FIELD_VALIDATION>>;
 
 function isMultipleOnly(option: ValidationOption): boolean {
   return 'multipleOnly' in option && option.multipleOnly === true;
@@ -69,6 +76,28 @@ export function TableFieldValidationsField({
     appliesToField(option, fieldType, multiple),
   );
 
+  const simpleOptions = options.filter(
+    (o) => !(CONFIG_RULES as ReadonlyArray<string>).includes(o.value),
+  );
+  const configOptions = options.filter((o) =>
+    (CONFIG_RULES as ReadonlyArray<string>).includes(o.value),
+  );
+
+  const simpleActive = value
+    .filter((v) => !(CONFIG_RULES as ReadonlyArray<string>).includes(v.rule))
+    .map((v) => v.rule);
+
+  function handleSimpleChange(rules: Array<string>): void {
+    const configValidations = value.filter((v) =>
+      (CONFIG_RULES as ReadonlyArray<string>).includes(v.rule),
+    );
+    const newSimple: Array<IFieldValidation> = rules.map((r) => ({
+      rule: r as ValueOf<typeof E_FIELD_VALIDATION>,
+      config: {},
+    }));
+    field.handleChange([...newSimple, ...configValidations]);
+  }
+
   function toggle(
     rule: ValueOf<typeof E_FIELD_VALIDATION>,
     checked: boolean,
@@ -106,7 +135,16 @@ export function TableFieldValidationsField({
 
       {options.length > 0 && (
         <div className="flex flex-col gap-3">
-          {options.map((option) => {
+          {simpleOptions.length > 0 && (
+            <ValidationMultiSelect
+              options={simpleOptions}
+              value={simpleActive}
+              onValueChange={handleSimpleChange}
+              disabled={disabled}
+            />
+          )}
+
+          {configOptions.map((option) => {
             const selected = value.find((item) => item.rule === option.value);
             const checked = Boolean(selected);
             const checkboxId = 'validation-' + option.value;

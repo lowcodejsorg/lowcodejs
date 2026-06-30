@@ -23,12 +23,13 @@ export const TableFieldCreateParamsValidator = z.object({
 
 export type TableFieldCreatePayload = Omit<
   z.infer<typeof TableFieldCreateBodyValidator>,
-  'allowCustomDropdownOptions' | 'tip' | 'slug' | 'validations'
+  'allowCustomDropdownOptions' | 'tip' | 'htmlContent' | 'slug' | 'validations'
 > & {
   slug?: string;
   tableSlug?: string;
   allowCustomDropdownOptions?: boolean;
   tip?: string | null;
+  htmlContent?: string | null;
   // Opcional no tipo (specs/clients podem omitir); runtime sempre [] via zod.
   validations?: IFieldValidation[];
 };

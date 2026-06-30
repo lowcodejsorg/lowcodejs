@@ -6,6 +6,12 @@ import z from 'zod';
 import { TableFieldRelationshipCardinality } from '@/components/common/dynamic-table/table-config/table-field-relationship-cardinality';
 import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Switch } from '@/components/ui/switch';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
@@ -128,6 +134,7 @@ export const FieldCreateSchema = z.object({
   required: z.boolean().default(false),
   widthInForm: z.number().default(50),
   widthInList: z.number().default(10),
+  htmlContent: z.string().default(''),
 });
 
 export type FieldCreateFormValues = z.infer<typeof FieldCreateSchema>;
@@ -172,6 +179,7 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   required: false,
   widthInForm: 50,
   widthInList: 10,
+  htmlContent: '',
 };
 
 export const CreateFieldFormFields = withForm({
@@ -254,6 +262,7 @@ export const CreateFieldFormFields = withForm({
     const isReaction = fieldType === E_FIELD_TYPE.REACTION;
     const isEvaluation = fieldType === E_FIELD_TYPE.EVALUATION;
     const isUser = fieldType === E_FIELD_TYPE.USER;
+    const isHtmlContent = fieldType === E_FIELD_TYPE.HTML_CONTENT;
 
     useEffect(() => {
       if (slugManuallyEdited.current) return;
@@ -274,7 +283,7 @@ export const CreateFieldFormFields = withForm({
 
     const showMultiple =
       isDropdown || isFile || isFieldGroup || isCategory || isUser;
-    const showRequired = !isReaction && !isEvaluation;
+    const showRequired = !isReaction && !isEvaluation && !isHtmlContent;
 
     return (
       <section
@@ -306,47 +315,61 @@ export const CreateFieldFormFields = withForm({
           )}
         </form.AppField>
 
-        <div className="space-y-3 rounded-lg border p-3">
-          <p className="text-sm font-medium text-muted-foreground">
-            Rótulos por contexto
-          </p>
-          <form.AppField name="label.list">
-            {(field) => (
-              <field.FieldText
-                label="Na listagem"
-                placeholder={fieldName || 'Igual ao título exibido'}
-                disabled={isPending}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="label.filter">
-            {(field) => (
-              <field.FieldText
-                label="Nos filtros"
-                placeholder={fieldName || 'Igual ao título exibido'}
-                disabled={isPending}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="label.form">
-            {(field) => (
-              <field.FieldText
-                label="No formulário"
-                placeholder={fieldName || 'Igual ao título exibido'}
-                disabled={isPending}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="label.detail">
-            {(field) => (
-              <field.FieldText
-                label="Nos detalhes"
-                placeholder={fieldName || 'Igual ao título exibido'}
-                disabled={isPending}
-              />
-            )}
-          </form.AppField>
-        </div>
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue="labels"
+          className="rounded-lg border"
+        >
+          <AccordionItem
+            value="labels"
+            className="px-3"
+          >
+            <AccordionTrigger className="py-3 text-sm font-medium text-muted-foreground hover:no-underline">
+              Rótulos por contexto
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-3">
+                <form.AppField name="label.list">
+                  {(field) => (
+                    <field.FieldText
+                      label="Na listagem"
+                      placeholder={fieldName || 'Igual ao título exibido'}
+                      disabled={isPending}
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="label.filter">
+                  {(field) => (
+                    <field.FieldText
+                      label="Nos filtros"
+                      placeholder={fieldName || 'Igual ao título exibido'}
+                      disabled={isPending}
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="label.form">
+                  {(field) => (
+                    <field.FieldText
+                      label="No formulário"
+                      placeholder={fieldName || 'Igual ao título exibido'}
+                      disabled={isPending}
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="label.detail">
+                  {(field) => (
+                    <field.FieldText
+                      label="Nos detalhes"
+                      placeholder={fieldName || 'Igual ao título exibido'}
+                      disabled={isPending}
+                    />
+                  )}
+                </form.AppField>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         <form.AppField
           name="slug"
@@ -416,6 +439,7 @@ export const CreateFieldFormFields = withForm({
                     'relationship.order',
                     'allowCustomDropdownOptions',
                     'allowCreateRelationshipRecords',
+                    'htmlContent',
                   ];
                   for (const conditionalField of conditionalFields) {
                     if (form.getFieldMeta(conditionalField)) {
@@ -438,6 +462,9 @@ export const CreateFieldFormFields = withForm({
                     'relationship',
                     fieldCreateFormDefaultValues.relationship,
                   );
+                  if (type === E_FIELD_TYPE.HTML_CONTENT) {
+                    form.setFieldValue('widthInForm', 100);
+                  }
                 }}
               />
             )}
@@ -451,6 +478,18 @@ export const CreateFieldFormFields = withForm({
             configurados nas configurações da tabela em "Gerenciar grupo de
             campos".
           </p>
+        )}
+
+        {/* Conteúdo HTML (HTML_CONTENT) */}
+        {isHtmlContent && (
+          <form.AppField name="htmlContent">
+            {(field) => (
+              <field.FieldEditor
+                label="Conteúdo HTML"
+                defaultMode="rich"
+              />
+            )}
+          </form.AppField>
         )}
 
         {/* Campo Formato (TEXT_SHORT) */}

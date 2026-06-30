@@ -105,6 +105,7 @@ describe('Group Field Update Use Case', () => {
       widthInDetail: null,
       trashed: false,
       trashedAt: null,
+      htmlContent: null,
     });
 
     expect(result.isRight()).toBe(true);
@@ -141,6 +142,7 @@ describe('Group Field Update Use Case', () => {
       widthInDetail: null,
       trashed: false,
       trashedAt: null,
+      htmlContent: null,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -181,6 +183,7 @@ describe('Group Field Update Use Case', () => {
       widthInDetail: null,
       trashed: false,
       trashedAt: null,
+      htmlContent: null,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -228,6 +231,7 @@ describe('Group Field Update Use Case', () => {
       widthInDetail: null,
       trashed: false,
       trashedAt: null,
+      htmlContent: null,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -263,6 +267,7 @@ describe('Group Field Update Use Case', () => {
       widthInDetail: null,
       trashed: false,
       trashedAt: null,
+      htmlContent: null,
     });
 
     expect(result.isLeft()).toBe(true);
