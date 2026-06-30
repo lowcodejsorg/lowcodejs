@@ -487,7 +487,6 @@ export const CreateFieldFormFields = withForm({
               <field.FieldEditor
                 label="Conteúdo HTML"
                 defaultMode="rich"
-                showPreview
               />
             )}
           </form.AppField>
