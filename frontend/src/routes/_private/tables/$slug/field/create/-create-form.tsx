@@ -134,6 +134,7 @@ export const FieldCreateSchema = z.object({
   required: z.boolean().default(false),
   widthInForm: z.number().default(50),
   widthInList: z.number().default(10),
+  htmlContent: z.string().default(''),
 });
 
 export type FieldCreateFormValues = z.infer<typeof FieldCreateSchema>;
@@ -178,6 +179,7 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   required: false,
   widthInForm: 50,
   widthInList: 10,
+  htmlContent: '',
 };
 
 export const CreateFieldFormFields = withForm({
@@ -260,6 +262,7 @@ export const CreateFieldFormFields = withForm({
     const isReaction = fieldType === E_FIELD_TYPE.REACTION;
     const isEvaluation = fieldType === E_FIELD_TYPE.EVALUATION;
     const isUser = fieldType === E_FIELD_TYPE.USER;
+    const isHtmlContent = fieldType === E_FIELD_TYPE.HTML_CONTENT;
 
     useEffect(() => {
       if (slugManuallyEdited.current) return;
@@ -280,7 +283,7 @@ export const CreateFieldFormFields = withForm({
 
     const showMultiple =
       isDropdown || isFile || isFieldGroup || isCategory || isUser;
-    const showRequired = !isReaction && !isEvaluation;
+    const showRequired = !isReaction && !isEvaluation && !isHtmlContent;
 
     return (
       <section
@@ -436,6 +439,7 @@ export const CreateFieldFormFields = withForm({
                     'relationship.order',
                     'allowCustomDropdownOptions',
                     'allowCreateRelationshipRecords',
+                    'htmlContent',
                   ];
                   for (const conditionalField of conditionalFields) {
                     if (form.getFieldMeta(conditionalField)) {
@@ -458,6 +462,9 @@ export const CreateFieldFormFields = withForm({
                     'relationship',
                     fieldCreateFormDefaultValues.relationship,
                   );
+                  if (type === E_FIELD_TYPE.HTML_CONTENT) {
+                    form.setFieldValue('widthInForm', 100);
+                  }
                 }}
               />
             )}
@@ -471,6 +478,19 @@ export const CreateFieldFormFields = withForm({
             configurados nas configurações da tabela em "Gerenciar grupo de
             campos".
           </p>
+        )}
+
+        {/* Conteúdo HTML (HTML_CONTENT) */}
+        {isHtmlContent && (
+          <form.AppField name="htmlContent">
+            {(field) => (
+              <field.FieldEditor
+                label="Conteúdo HTML"
+                defaultMode="rich"
+                showPreview
+              />
+            )}
+          </form.AppField>
         )}
 
         {/* Campo Formato (TEXT_SHORT) */}
