@@ -35,13 +35,14 @@ export const TableFieldUpdateParamsValidator = z.object({
 
 export type TableFieldUpdatePayload = Omit<
   z.infer<typeof TableFieldUpdateBodyValidator>,
-  'allowCustomDropdownOptions' | 'tip' | 'slug' | 'validations'
+  'allowCustomDropdownOptions' | 'tip' | 'htmlContent' | 'slug' | 'validations'
 > & {
   _id: string;
   slug?: string;
   tableSlug?: string;
   allowCustomDropdownOptions?: boolean;
   tip?: string | null;
+  htmlContent?: string | null;
   // Opcional no tipo (specs/clients podem omitir); runtime sempre [] via zod.
   validations?: IFieldValidation[];
 };

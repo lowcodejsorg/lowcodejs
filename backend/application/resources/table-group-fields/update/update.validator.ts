@@ -33,7 +33,7 @@ export const GroupFieldUpdateParamsValidator = z.object({
 
 export type GroupFieldUpdatePayload = Omit<
   z.infer<typeof GroupFieldUpdateBodyValidator>,
-  'allowCustomDropdownOptions' | 'tip' | 'slug' | 'validations'
+  'allowCustomDropdownOptions' | 'tip' | 'htmlContent' | 'slug' | 'validations'
 > & {
   slug?: string;
   tableSlug?: string;
@@ -41,6 +41,7 @@ export type GroupFieldUpdatePayload = Omit<
   fieldId: string;
   allowCustomDropdownOptions?: boolean;
   tip?: string | null;
+  htmlContent?: string | null;
   // Opcional no tipo (specs/clients podem omitir); runtime sempre [] via zod.
   validations?: IFieldValidation[];
 };
