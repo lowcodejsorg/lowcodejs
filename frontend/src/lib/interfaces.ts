@@ -310,6 +310,7 @@ export type IField = Merge<
     widthInList: number | null;
     widthInDetail: number | null;
     tip?: string | null;
+    htmlContent?: string;
     defaultValue: string | Array<string> | null;
     locked?: boolean;
     native?: boolean;
