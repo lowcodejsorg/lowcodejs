@@ -44,7 +44,66 @@ export default class RelationshipDeletionService implements RelationshipDeletion
 
   async cleanupTable(tableId: string): Promise<void> {
     const definitions = await this.definitionRepository.findByTable(tableId);
+    const now = new Date();
+
     for (const definition of definitions) {
+      let mirrorFieldId: string | null = null;
+      let mirrorTableId: string | null = null;
+
+      if (
+        definition.source.table._id === tableId &&
+        definition.target.table._id !== tableId
+      ) {
+        mirrorFieldId = definition.target.field._id;
+        mirrorTableId = definition.target.table._id;
+      }
+      if (
+        definition.target.table._id === tableId &&
+        definition.source.table._id !== tableId
+      ) {
+        mirrorFieldId = definition.source.field._id;
+        mirrorTableId = definition.source.table._id;
+      }
+
+      if (mirrorFieldId !== null && mirrorTableId !== null) {
+        const mirrorField = await this.fieldRepository.findById(mirrorFieldId);
+        const mirrorTable = await this.tableRepository.findById(mirrorTableId);
+
+        if (mirrorField !== null && mirrorTable !== null) {
+          await this.fieldRepository.update({
+            _id: mirrorField._id,
+            trashed: true,
+            trashedAt: now,
+          });
+
+          const _schema = Object.fromEntries(
+            Object.entries(mirrorTable._schema ?? {}).filter(
+              ([key]) => key !== mirrorField.slug,
+            ),
+          );
+
+          await this.tableRepository.update({
+            _id: mirrorTable._id,
+            fields: (mirrorTable.fields ?? [])
+              .map((f) => f._id)
+              .filter((id) => id !== mirrorField._id),
+            fieldOrderList: (mirrorTable.fieldOrderList ?? []).filter(
+              (id) => id !== mirrorField._id,
+            ),
+            fieldOrderForm: (mirrorTable.fieldOrderForm ?? []).filter(
+              (id) => id !== mirrorField._id,
+            ),
+            fieldOrderFilter: (mirrorTable.fieldOrderFilter ?? []).filter(
+              (id) => id !== mirrorField._id,
+            ),
+            fieldOrderDetail: (mirrorTable.fieldOrderDetail ?? []).filter(
+              (id) => id !== mirrorField._id,
+            ),
+            _schema,
+          });
+        }
+      }
+
       await this.linkRepository.deleteByRelationship(definition._id);
       await this.definitionRepository.delete(definition._id);
     }

@@ -54,7 +54,6 @@ let sut: RelationshipDeletionService;
 let pedidos: ITable;
 let produtos: ITable;
 let sourceFieldId: string;
-let targetFieldId: string;
 
 async function setup(
   onDelete: ValueOf<typeof E_RELATIONSHIP_ON_DELETE>,
@@ -76,7 +75,6 @@ async function setup(
     multiple: targetMultiple,
   });
   sourceFieldId = sourceField._id;
-  targetFieldId = targetField._id;
 
   const definition = await definitionRepository.create({
     name: 'Pedidos ↔ Produtos',
@@ -298,7 +296,7 @@ describe('RelationshipDeletionService', () => {
     expect(definition._id).toBeTruthy();
   });
 
-  it('cleanupTable remove definitions e links que tocam a tabela', async () => {
+  it('cleanupTable remove definitions e links e quarentena mirror de outras tabelas', async () => {
     const relationshipId = await setup(
       E_RELATIONSHIP_ON_DELETE.SET_NULL,
       true,
@@ -314,6 +312,9 @@ describe('RelationshipDeletionService', () => {
 
     expect(await definitionRepository.findById(relationshipId)).toBeNull();
     expect(linkRepository.items).toHaveLength(0);
-    expect([sourceFieldId, targetFieldId]).toHaveLength(2);
+
+    // sourceField é o mirror em pedidos (tabela sobrevivente) — deve ser quarentenado
+    const mirror = fieldRepository.items.find((f) => f._id === sourceFieldId);
+    expect(mirror?.trashed).toBe(true);
   });
 });
