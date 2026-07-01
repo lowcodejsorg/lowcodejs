@@ -522,7 +522,11 @@ export const TableFieldCreateSchema: FastifySchema = {
             },
           },
         },
-        htmlContent: { type: 'string', nullable: true, description: 'Conteúdo HTML do campo' },
+        htmlContent: {
+          type: 'string',
+          nullable: true,
+          description: 'Conteúdo HTML do campo',
+        },
         trashed: {
           type: 'boolean',
           enum: [false],
