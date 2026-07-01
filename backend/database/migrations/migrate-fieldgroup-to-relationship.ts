@@ -526,7 +526,7 @@ async function migrate(): Promise<void> {
           _id: new mongoose.Types.ObjectId(),
           createdAt: now,
           updatedAt: now,
-          status: 'active',
+          status: 'published',
           trashedAt: null,
         };
         if (row.creator) record.creator = row.creator;

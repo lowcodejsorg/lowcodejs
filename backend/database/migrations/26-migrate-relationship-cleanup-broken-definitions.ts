@@ -120,6 +120,18 @@ async function cleanupBrokenDefinitions(
         { $set: { trashed: true, trashedAt: now } },
       );
 
+      // Captura a tabela pai ANTES do $pull para poder fazer o $unset do _schema.
+      const parentTable = await tablesCol.findOne(
+        { fields: field._id },
+        { projection: { _id: 1 } },
+      );
+      const tableWithGroup = parentTable
+        ? null
+        : await tablesCol.findOne(
+            { 'groups.fields': field._id },
+            { projection: { _id: 1 } },
+          );
+
       await tablesCol.updateMany(
         { fields: field._id },
         {
@@ -133,30 +145,24 @@ async function cleanupBrokenDefinitions(
         },
       );
 
-      const parentTable = await tablesCol.findOne({ fields: field._id });
-      if (!parentTable) {
-        const tableWithGroup = await tablesCol.findOne({
-          'groups.fields': field._id,
-        });
-        if (tableWithGroup) {
-          await tablesCol.updateOne(
-            { _id: tableWithGroup._id },
-            {
-              $pull: { 'groups.$[g].fields': field._id } as Record<
-                string,
-                unknown
-              >,
-            },
-            { arrayFilters: [{ 'g.fields': field._id }] },
-          );
-          await tablesCol.updateOne(
-            { _id: tableWithGroup._id },
-            { $unset: { [`_schema.${field.slug}`]: '' } },
-          );
-        }
-      } else {
+      if (parentTable) {
         await tablesCol.updateOne(
           { _id: parentTable._id },
+          { $unset: { [`_schema.${field.slug}`]: '' } },
+        );
+      } else if (tableWithGroup) {
+        await tablesCol.updateOne(
+          { _id: tableWithGroup._id },
+          {
+            $pull: { 'groups.$[g].fields': field._id } as Record<
+              string,
+              unknown
+            >,
+          },
+          { arrayFilters: [{ 'g.fields': field._id }] },
+        );
+        await tablesCol.updateOne(
+          { _id: tableWithGroup._id },
           { $unset: { [`_schema.${field.slug}`]: '' } },
         );
       }
