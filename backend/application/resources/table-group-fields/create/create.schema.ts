@@ -50,6 +50,7 @@ export const GroupFieldCreateSchema: FastifySchema = {
           'FILE',
           'CATEGORY',
           'USER',
+          'HTML_CONTENT',
         ],
         description: 'Tipo do campo',
       },

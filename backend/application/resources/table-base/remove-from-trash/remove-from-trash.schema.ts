@@ -68,6 +68,7 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                   'EVALUATION',
                   'CATEGORY',
                   'USER',
+                  'HTML_CONTENT',
                   'CREATOR',
                   'IDENTIFIER',
                   'CREATED_AT',
@@ -217,6 +218,7 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                   slug: { type: 'string', nullable: true },
                 },
               },
+              htmlContent: { type: 'string', nullable: true },
               trashed: {
                 type: 'boolean',
                 description: 'Se o campo está na lixeira',

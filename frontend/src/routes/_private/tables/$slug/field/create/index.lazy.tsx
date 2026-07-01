@@ -140,6 +140,11 @@ function RouteComponent(): React.JSX.Element {
       const hasDropdown = (value.dropdown?.length ?? 0) > 0;
       const hasCategory = (value.category?.length ?? 0) > 0;
 
+      let htmlContent: string | null = null;
+      if (value.type === E_FIELD_TYPE.HTML_CONTENT) {
+        htmlContent = value.htmlContent || null;
+      }
+
       // Rótulo por contexto: vazio → null (volta ao name naquele contexto).
       const labelList = value.label.list?.trim() || null;
       const labelFilter = value.label.filter?.trim() || null;
@@ -218,6 +223,7 @@ function RouteComponent(): React.JSX.Element {
             }
           : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],
+        htmlContent,
       };
 
       if (groupSlug) {
