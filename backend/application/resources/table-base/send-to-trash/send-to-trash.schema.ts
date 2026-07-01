@@ -97,6 +97,42 @@ export const TableSendToTrashSchema: FastifySchema = {
                 type: 'boolean',
                 description: 'Permitir filtragem',
               },
+              permissions: {
+                type: 'object',
+                nullable: true,
+                properties: {
+                  list: {
+                    type: 'object',
+                    properties: {
+                      kind: {
+                        type: 'string',
+                        enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                      },
+                      group: { type: 'string', nullable: true },
+                    },
+                  },
+                  form: {
+                    type: 'object',
+                    properties: {
+                      kind: {
+                        type: 'string',
+                        enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                      },
+                      group: { type: 'string', nullable: true },
+                    },
+                  },
+                  detail: {
+                    type: 'object',
+                    properties: {
+                      kind: {
+                        type: 'string',
+                        enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                      },
+                      group: { type: 'string', nullable: true },
+                    },
+                  },
+                },
+              },
               tip: {
                 type: 'string',
                 nullable: true,

@@ -162,6 +162,42 @@ export const TablePaginatedSchema: FastifySchema = {
                       type: 'boolean',
                       description: 'Permitir filtragem',
                     },
+                    permissions: {
+                      type: 'object',
+                      nullable: true,
+                      properties: {
+                        list: {
+                          type: 'object',
+                          properties: {
+                            kind: {
+                              type: 'string',
+                              enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                            },
+                            group: { type: 'string', nullable: true },
+                          },
+                        },
+                        form: {
+                          type: 'object',
+                          properties: {
+                            kind: {
+                              type: 'string',
+                              enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                            },
+                            group: { type: 'string', nullable: true },
+                          },
+                        },
+                        detail: {
+                          type: 'object',
+                          properties: {
+                            kind: {
+                              type: 'string',
+                              enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                            },
+                            group: { type: 'string', nullable: true },
+                          },
+                        },
+                      },
+                    },
                     widthInForm: {
                       type: 'number',
                       nullable: true,
@@ -418,6 +454,42 @@ export const TablePaginatedSchema: FastifySchema = {
                           multiple: { type: 'boolean' },
                           format: { type: 'string', nullable: true },
                           showInFilter: { type: 'boolean' },
+                          permissions: {
+                            type: 'object',
+                            nullable: true,
+                            properties: {
+                              list: {
+                                type: 'object',
+                                properties: {
+                                  kind: {
+                                    type: 'string',
+                                    enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                                  },
+                                  group: { type: 'string', nullable: true },
+                                },
+                              },
+                              form: {
+                                type: 'object',
+                                properties: {
+                                  kind: {
+                                    type: 'string',
+                                    enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                                  },
+                                  group: { type: 'string', nullable: true },
+                                },
+                              },
+                              detail: {
+                                type: 'object',
+                                properties: {
+                                  kind: {
+                                    type: 'string',
+                                    enum: ['PUBLIC', 'NOBODY', 'GROUP'],
+                                  },
+                                  group: { type: 'string', nullable: true },
+                                },
+                              },
+                            },
+                          },
                           widthInForm: { type: 'number', nullable: true },
                           widthInList: { type: 'number', nullable: true },
                           widthInDetail: { type: 'number', nullable: true },

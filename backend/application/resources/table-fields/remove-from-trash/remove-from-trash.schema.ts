@@ -48,6 +48,33 @@ export const TableFieldRemoveFromTrashSchema: FastifySchema = {
         },
         format: { type: 'string', nullable: true, description: 'Formato' },
         showInFilter: { type: 'boolean', description: 'Disponível em filtros' },
+        permissions: {
+          type: 'object',
+          nullable: true,
+          properties: {
+            list: {
+              type: 'object',
+              properties: {
+                kind: { type: 'string', enum: ['PUBLIC', 'NOBODY', 'GROUP'] },
+                group: { type: 'string', nullable: true },
+              },
+            },
+            form: {
+              type: 'object',
+              properties: {
+                kind: { type: 'string', enum: ['PUBLIC', 'NOBODY', 'GROUP'] },
+                group: { type: 'string', nullable: true },
+              },
+            },
+            detail: {
+              type: 'object',
+              properties: {
+                kind: { type: 'string', enum: ['PUBLIC', 'NOBODY', 'GROUP'] },
+                group: { type: 'string', nullable: true },
+              },
+            },
+          },
+        },
         widthInForm: { type: 'number', nullable: true },
         widthInList: { type: 'number', nullable: true },
         widthInDetail: { type: 'number', nullable: true },
