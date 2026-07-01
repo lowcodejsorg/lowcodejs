@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { ContentViewer } from '@/components/common/rich-editor';
 import { getDropdownContrastStyle } from '@/components/common/dynamic-table/table-cells/utils';
+import { ContentViewer } from '@/components/common/rich-editor';
 import {
   Accordion,
   AccordionContent,
