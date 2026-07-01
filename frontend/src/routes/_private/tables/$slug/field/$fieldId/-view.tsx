@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
+import { ContentViewer } from '@/components/common/rich-editor';
 import { getDropdownContrastStyle } from '@/components/common/dynamic-table/table-cells/utils';
 import {
   Accordion,
@@ -132,6 +133,14 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
         <p className="text-sm font-medium">Tipo</p>
         <p className="text-sm text-muted-foreground">{typeLabel}</p>
       </div>
+
+      {/* Conteúdo HTML (HTML_CONTENT) */}
+      {data.type === E_FIELD_TYPE.HTML_CONTENT && (
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Conteúdo HTML</p>
+          <ContentViewer content={data.htmlContent ?? ''} />
+        </div>
+      )}
 
       {/* Formato (condicional) */}
       {formatLabel && (

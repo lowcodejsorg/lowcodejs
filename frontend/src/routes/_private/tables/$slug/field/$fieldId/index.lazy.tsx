@@ -397,6 +397,7 @@ function FieldUpdateContent({
       trashed: Boolean((data as IField & { trashed?: boolean }).trashed),
       widthInForm: data.widthInForm ?? 50,
       widthInList: data.widthInList ?? 10,
+      htmlContent: data.htmlContent ?? '',
     },
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: validationSchema, onSubmit: validationSchema },
@@ -484,6 +485,10 @@ function FieldUpdateContent({
             }
           : null,
         category: hasCategory ? value.category : [],
+        htmlContent:
+          value.type === E_FIELD_TYPE.HTML_CONTENT
+            ? (value.htmlContent || null)
+            : null,
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,
       };

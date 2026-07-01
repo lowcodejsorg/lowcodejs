@@ -1,6 +1,4 @@
-import DOMPurify from 'dompurify';
-import React from 'react';
-
+import { ContentViewer } from '@/components/common/rich-editor';
 import type { IField } from '@/lib/interfaces';
 
 interface TableRowHtmlContentFieldProps {
@@ -9,14 +7,6 @@ interface TableRowHtmlContentFieldProps {
 
 export function TableRowHtmlContentField({
   field,
-}: TableRowHtmlContentFieldProps): React.JSX.Element | null {
-  if (!field.htmlContent) return null;
-  const clean = DOMPurify.sanitize(field.htmlContent);
-  if (!clean) return null;
-  return (
-    <div
-      className="prose prose-sm max-w-none dark:prose-invert"
-      dangerouslySetInnerHTML={{ __html: clean }}
-    />
-  );
+}: TableRowHtmlContentFieldProps): React.JSX.Element {
+  return <ContentViewer content={field.htmlContent ?? ''} />;
 }

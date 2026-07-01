@@ -218,6 +218,10 @@ function RouteComponent(): React.JSX.Element {
             }
           : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],
+        htmlContent:
+          value.type === E_FIELD_TYPE.HTML_CONTENT
+            ? (value.htmlContent || null)
+            : null,
       };
 
       if (groupSlug) {
