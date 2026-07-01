@@ -68,6 +68,7 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                   'EVALUATION',
                   'CATEGORY',
                   'USER',
+                  'HTML_CONTENT',
                   'CREATOR',
                   'IDENTIFIER',
                   'CREATED_AT',
