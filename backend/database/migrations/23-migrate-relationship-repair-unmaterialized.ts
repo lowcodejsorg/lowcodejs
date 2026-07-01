@@ -388,16 +388,19 @@ async function materializeField(
   field: FieldDoc,
   now: Date,
   logger: TaskLogger,
-): Promise<'materialized' | 'orphan' | 'failed'> {
+): Promise<'materialized' | 'orphan' | 'deleted' | 'failed'> {
   const tablesCol = systemDb.collection<TableDoc>('tables');
   const fieldsCol = systemDb.collection<FieldDoc>('fields');
   const defsCol = systemDb.collection('relationship-definitions');
   const linksCol = systemDb.collection('relationship-links');
 
-  const sourceTable = await tablesCol.findOne({ fields: field._id });
+  const sourceTable = await tablesCol.findOne({
+    $or: [{ fields: field._id }, { 'groups.fields': field._id }],
+  });
   if (!sourceTable) {
-    logger.item(`${field.slug} — tabela source não encontrada, pulado`);
-    return 'failed';
+    await fieldsCol.deleteOne({ _id: field._id });
+    logger.item(`${field.slug} — campo órfão (sem tabela): deletado`);
+    return 'deleted';
   }
 
   const targetRef = field.relationship?.table;
@@ -660,6 +663,7 @@ async function migrate(): Promise<void> {
         await quarantineOrphan(systemDb, field, now, logger);
         orphaned++;
       }
+      if (result === 'deleted') orphaned++;
     }
 
     logger.done(

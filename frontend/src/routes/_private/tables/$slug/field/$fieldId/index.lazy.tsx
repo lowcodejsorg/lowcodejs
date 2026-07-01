@@ -5,7 +5,7 @@ import {
   useParams,
   useSearch,
 } from '@tanstack/react-router';
-import { PencilIcon } from 'lucide-react';
+import { PencilIcon, Trash2Icon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 import type { z } from 'zod';
@@ -181,6 +181,14 @@ function RouteComponent(): React.JSX.Element {
           nome interno e o identificador permanecem fixos.
         </p>
       )}
+      {_read.status === 'success' &&
+        _read.data.type === E_FIELD_TYPE.RELATIONSHIP &&
+        !_read.data.relationship?.table?._id && (
+          <p className="text-sm text-destructive px-2 pb-2">
+            Relacionamento não configurado: a tabela vinculada foi removida.
+            Este campo pode ser enviado para a lixeira usando o botão abaixo.
+          </p>
+        )}
 
       {/* Content */}
       <PageShell.Content className="overflow-hidden">
@@ -272,6 +280,29 @@ function FieldUpdateContent({
       onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
     });
   };
+
+  const isBrokenRelationship =
+    data.type === E_FIELD_TYPE.RELATIONSHIP &&
+    !data.relationship?.table?._id &&
+    !(data as IField & { trashed?: boolean }).trashed;
+
+  const _trash = useMutation({
+    mutationFn: async () => {
+      await API.patch(`/tables/${slug}/fields/${data._id}/trash`);
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tables.detail(slug),
+      });
+      toast.warning('Campo enviado para lixeira', {
+        description: 'O campo foi enviado para a lixeira.',
+      });
+      goBack();
+    },
+    onError(error: Error) {
+      handleApiError(error, { context: 'Erro ao enviar campo para lixeira' });
+    },
+  });
 
   const _update = useMutation({
     mutationFn: async (
@@ -529,6 +560,19 @@ function FieldUpdateContent({
       {mode === 'show' && (
         <PageShell.Footer className="bg-sidebar">
           <div className="flex justify-end gap-2">
+            {isBrokenRelationship && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="px-2 cursor-pointer max-w-40 w-full"
+                disabled={_trash.status === 'pending'}
+                onClick={() => _trash.mutate()}
+              >
+                <Trash2Icon className="size-4 mr-1" />
+                <span>Enviar para lixeira</span>
+              </Button>
+            )}
             <Button
               type="button"
               variant="outline"
