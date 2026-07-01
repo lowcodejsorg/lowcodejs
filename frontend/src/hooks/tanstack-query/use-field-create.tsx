@@ -46,10 +46,10 @@ export function useFieldCreate(
         return {
           ...old,
           fields: [...old.fields, response],
-          fieldOrderForm: [...(old.fieldOrderForm ?? []), response.slug],
-          fieldOrderList: [...(old.fieldOrderList ?? []), response.slug],
-          fieldOrderFilter: [...(old.fieldOrderFilter ?? []), response.slug],
-          fieldOrderDetail: [...(old.fieldOrderDetail ?? []), response.slug],
+          fieldOrderForm: [...(old.fieldOrderForm ?? []), response._id],
+          fieldOrderList: [...(old.fieldOrderList ?? []), response._id],
+          fieldOrderFilter: [...(old.fieldOrderFilter ?? []), response._id],
+          fieldOrderDetail: [...(old.fieldOrderDetail ?? []), response._id],
         };
       });
 
