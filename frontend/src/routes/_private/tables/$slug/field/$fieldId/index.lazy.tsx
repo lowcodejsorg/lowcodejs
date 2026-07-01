@@ -408,6 +408,11 @@ function FieldUpdateContent({
       const hasDropdown = (value.dropdown?.length ?? 0) > 0;
       const hasCategory = (value.category?.length ?? 0) > 0;
 
+      let htmlContent: string | null = null;
+      if (value.type === E_FIELD_TYPE.HTML_CONTENT) {
+        htmlContent = value.htmlContent || null;
+      }
+
       // Rótulo por contexto: vazio → null (volta ao name naquele contexto).
       const labelList = value.label.list?.trim() || null;
       const labelFilter = value.label.filter?.trim() || null;
@@ -485,10 +490,7 @@ function FieldUpdateContent({
             }
           : null,
         category: hasCategory ? value.category : [],
-        htmlContent:
-          value.type === E_FIELD_TYPE.HTML_CONTENT
-            ? (value.htmlContent || null)
-            : null,
+        htmlContent,
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,
       };
