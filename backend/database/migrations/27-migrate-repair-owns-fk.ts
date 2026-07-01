@@ -101,7 +101,8 @@ async function repairDefinition(
   let ownerSide: Side = 'source';
   if (sourceMultiple && !targetMultiple) ownerSide = 'target';
 
-  const ownerEndpoint = ownerSide === 'source' ? def.source : def.target;
+  let ownerEndpoint = def.source;
+  if (ownerSide === 'target') ownerEndpoint = def.target;
   const ownerFieldSlug = ownerEndpoint.field.slug;
   const ownerCol = dataDb.collection(ownerEndpoint.table.slug);
 
@@ -109,8 +110,10 @@ async function repairDefinition(
   let restored = 0;
 
   for (const link of links) {
-    const ownerRowId = ownerSide === 'source' ? link.sourceId : link.targetId;
-    const otherId = ownerSide === 'source' ? link.targetId : link.sourceId;
+    let ownerRowId = link.sourceId;
+    if (ownerSide === 'target') ownerRowId = link.targetId;
+    let otherId = link.targetId;
+    if (ownerSide === 'target') otherId = link.sourceId;
 
     const ownerRow = await ownerCol.findOne(
       { _id: ownerRowId },
