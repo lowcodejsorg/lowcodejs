@@ -84,7 +84,11 @@ type TableDoc = {
 
 type DefinitionDoc = {
   _id: ObjectId;
-  source?: { table?: { slug?: string }; field?: { slug?: string } };
+  source?: {
+    table?: { slug?: string };
+    field?: { _id?: ObjectId; slug?: string };
+  };
+  target?: { field?: { _id?: ObjectId } };
 };
 
 function toIdArray(value: unknown): string[] {
@@ -532,6 +536,9 @@ async function materializeField(
 
 // Passo 1: reconstrói links de definitions já materializadas a partir do
 // embedded sobrevivente em `row[source.field.slug]` (caso `tarefas`).
+// Só processa N:N (ambos os lados múltiplos): definitions 1:1/1:N já foram
+// convertidas para FK inline pela migration 17 — recriar links desfaria esse
+// trabalho e apagaria as FKs das rows.
 async function backfillExistingDefinitions(
   systemDb: mongoose.mongo.Db,
   dataDb: mongoose.mongo.Db,
@@ -541,6 +548,7 @@ async function backfillExistingDefinitions(
   const defsCol = systemDb.collection<DefinitionDoc>(
     'relationship-definitions',
   );
+  const fieldsCol = systemDb.collection<FieldDoc>('fields');
   const linksCol = systemDb.collection('relationship-links');
 
   const definitions = await defsCol.find({ trashed: { $ne: true } }).toArray();
@@ -551,6 +559,22 @@ async function backfillExistingDefinitions(
     const sourceSlug = definition.source?.table?.slug;
     const fieldSlug = definition.source?.field?.slug;
     if (!sourceSlug || !fieldSlug) continue;
+
+    // Só N:N — OWNS_FK/REVERSE já convertidos pela migration 17 para FK inline
+    const sourceFieldId = definition.source?.field?._id;
+    const targetFieldId = definition.target?.field?._id;
+    if (!sourceFieldId || !targetFieldId) continue;
+    const sourceField = await fieldsCol.findOne(
+      { _id: sourceFieldId },
+      { projection: { multiple: 1 } },
+    );
+    const targetField = await fieldsCol.findOne(
+      { _id: targetFieldId },
+      { projection: { multiple: 1 } },
+    );
+    const isNtoN =
+      sourceField?.multiple === true && targetField?.multiple === true;
+    if (!isNtoN) continue;
 
     const { linksEnsured, failedRows } = await backfillLinksFromEmbedded(
       dataDb,
