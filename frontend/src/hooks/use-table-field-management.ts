@@ -210,6 +210,9 @@ export function useTableFieldManagement(
     },
     onSuccess: ({ data: response, visibilityKey }) => {
       updateFieldInTableCache(queryClient, tableSlug, response);
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tables.detail(tableSlug),
+      });
       const label = VISIBILITY_LABELS[visibilityKey];
       let shown = Boolean(response.showInFilter);
       const context = CONTEXT_BY_VISIBILITY_KEY[visibilityKey];

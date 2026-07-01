@@ -516,10 +516,6 @@ function FieldManagementList({
     isSavingOrder,
   } = useFieldManagement();
 
-  const activeFields = allFields.filter((f) =>
-    isManageableField(f, excludeNative),
-  );
-
   const orderArray = React.useMemo(() => {
     if (visibilityKey === 'showInList') return fieldOrderList;
     if (visibilityKey === 'showInForm') return fieldOrderForm;
@@ -534,22 +530,36 @@ function FieldManagementList({
     fieldOrderDetail,
   ]);
 
-  const sortedActiveFields = React.useMemo(() => {
-    if (orderArray.length === 0) return activeFields;
-    return [...activeFields].sort((a, b) => {
-      const idxA = orderArray.indexOf(a._id);
-      const idxB = orderArray.indexOf(b._id);
-      return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
-    });
-  }, [activeFields, orderArray]);
+  const managedFields = React.useMemo(
+    () => allFields.filter((f) => isManageableField(f, excludeNative)),
+    [allFields, excludeNative],
+  );
 
-  const [fields, setFields] = useState<Array<IField>>(sortedActiveFields);
+  const [orderedIds, setOrderedIds] = useState<Array<string>>(() => {
+    if (orderArray.length === 0) return managedFields.map((f) => f._id);
+    return [...managedFields]
+      .sort((a, b) => {
+        const idxA = orderArray.indexOf(a._id);
+        const idxB = orderArray.indexOf(b._id);
+        return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
+      })
+      .map((f) => f._id);
+  });
   const [hasChanges, setHasChanges] = useState(false);
 
-  const visibleFields = fields.filter((f) =>
+  const orderedFields = React.useMemo(() => {
+    if (orderedIds.length === 0) return managedFields;
+    return [...managedFields].sort((a, b) => {
+      const idxA = orderedIds.indexOf(a._id);
+      const idxB = orderedIds.indexOf(b._id);
+      return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
+    });
+  }, [managedFields, orderedIds]);
+
+  const visibleFields = orderedFields.filter((f) =>
     fieldVisibilityValue(f, visibilityKey),
   );
-  const hiddenFields = fields.filter(
+  const hiddenFields = orderedFields.filter(
     (f) => !fieldVisibilityValue(f, visibilityKey),
   );
 
@@ -573,8 +583,8 @@ function FieldManagementList({
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const activeField = fields.find((f) => f._id === active.id);
-    const overField = fields.find((f) => f._id === over.id);
+    const activeField = orderedFields.find((f) => f._id === active.id);
+    const overField = orderedFields.find((f) => f._id === over.id);
     if (!activeField || !overField) return;
 
     // Bloqueia mover entre as secoes (visivel/oculto); olho faz essa troca.
@@ -585,17 +595,17 @@ function FieldManagementList({
       return;
     }
 
-    setFields((items) => {
-      const oldIndex = items.findIndex((item) => item._id === active.id);
-      const newIndex = items.findIndex((item) => item._id === over.id);
-      return arrayMove(items, oldIndex, newIndex);
+    setOrderedIds((prev) => {
+      const oldIndex = prev.indexOf(String(active.id));
+      const newIndex = prev.indexOf(String(over.id));
+      return arrayMove(prev, oldIndex, newIndex);
     });
     setHasChanges(true);
   }
 
   function handleSave(): void {
-    const orderedIds = [...visibleFields, ...hiddenFields].map((f) => f._id);
-    onSaveOrder(visibilityKey, orderedIds);
+    const ids = [...visibleFields, ...hiddenFields].map((f) => f._id);
+    onSaveOrder(visibilityKey, ids);
     setHasChanges(false);
   }
 
@@ -609,19 +619,15 @@ function FieldManagementList({
     onChangeWidth(field, widthKey, newWidth);
   }
 
-  // Sync fields when context fields change (after mutation responses)
+  // Sincroniza IDs quando campos são adicionados ou removidos (não para toggle).
   useEffect(() => {
-    const updated = allFields.filter((f) =>
-      isManageableField(f, excludeNative),
-    );
-
-    setFields((prev) => {
-      const kept = prev
-        .filter((pf) => updated.some((uf) => uf._id === pf._id))
-        .map((pf) => updated.find((uf) => uf._id === pf._id) ?? pf);
-      const added = updated.filter(
-        (uf) => !prev.some((pf) => pf._id === uf._id),
-      );
+    const updatedIds = allFields
+      .filter((f) => isManageableField(f, excludeNative))
+      .map((f) => f._id);
+    setOrderedIds((prev) => {
+      const kept = prev.filter((id) => updatedIds.includes(id));
+      const added = updatedIds.filter((id) => !prev.includes(id));
+      if (kept.length === prev.length && added.length === 0) return prev;
       return [...kept, ...added];
     });
   }, [allFields, excludeNative]);
@@ -690,7 +696,7 @@ function FieldManagementList({
         </div>
       </DndContext>
 
-      {fields.length === 0 && (
+      {orderedFields.length === 0 && (
         <p className="text-center text-sm text-muted-foreground py-4">
           Nenhum campo cadastrado
         </p>
