@@ -307,6 +307,7 @@ export const TableShowSchema: FastifySchema = {
                   },
                 },
               },
+              htmlContent: { type: 'string', nullable: true },
               trashed: {
                 type: 'boolean',
                 description: 'Se o campo está na lixeira',
@@ -512,6 +513,7 @@ export const TableShowSchema: FastifySchema = {
                       type: 'array',
                       items: { type: 'object', additionalProperties: true },
                     },
+                    htmlContent: { type: 'string', nullable: true },
                     trashed: { type: 'boolean' },
                     trashedAt: {
                       type: 'string',

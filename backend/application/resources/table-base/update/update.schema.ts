@@ -306,6 +306,7 @@ export const TableUpdateSchema: FastifySchema = {
                 nullable: true,
                 description: 'Configuração de grupo de campos',
               },
+              htmlContent: { type: 'string', nullable: true },
               trashed: {
                 type: 'boolean',
                 description: 'Se o campo está na lixeira',
@@ -497,6 +498,7 @@ export const TableUpdateSchema: FastifySchema = {
                       nullable: true,
                       additionalProperties: true,
                     },
+                    htmlContent: { type: 'string', nullable: true },
                     trashed: { type: 'boolean' },
                     trashedAt: {
                       type: 'string',
