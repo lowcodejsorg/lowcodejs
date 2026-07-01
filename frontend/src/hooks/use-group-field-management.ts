@@ -75,6 +75,13 @@ function buildGroupFieldPayload(
         slug: field.relationship.field.slug,
       },
       order: field.relationship.order,
+      relationshipId: field.relationship.relationshipId ?? null,
+      side: field.relationship.side ?? null,
+      formMode: field.relationship.formMode,
+      visible: field.relationship.visible,
+      onDelete: field.relationship.onDelete,
+      mirror: field.relationship.mirror ?? null,
+      max: field.relationship.max ?? null,
     };
   }
 
