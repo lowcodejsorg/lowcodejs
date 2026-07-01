@@ -185,8 +185,8 @@ function RouteComponent(): React.JSX.Element {
         _read.data.type === E_FIELD_TYPE.RELATIONSHIP &&
         !_read.data.relationship?.table?._id && (
           <p className="text-sm text-destructive px-2 pb-2">
-            Relacionamento não configurado: a tabela vinculada foi removida. Este
-            campo pode ser enviado para a lixeira usando o botão abaixo.
+            Relacionamento não configurado: a tabela vinculada foi removida.
+            Este campo pode ser enviado para a lixeira usando o botão abaixo.
           </p>
         )}
 

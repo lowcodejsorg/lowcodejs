@@ -73,9 +73,7 @@ async function cleanupBrokenDefinitions(
   const fieldsCol = db.collection<FieldDoc>('fields');
   const tablesCol = db.collection<TableDoc>('tables');
 
-  const definitions = await defsCol
-    .find({ trashed: { $ne: true } })
-    .toArray();
+  const definitions = await defsCol.find({ trashed: { $ne: true } }).toArray();
 
   let cleanedDefinitions = 0;
   let cleanedFields = 0;
@@ -143,7 +141,12 @@ async function cleanupBrokenDefinitions(
         if (tableWithGroup) {
           await tablesCol.updateOne(
             { _id: tableWithGroup._id },
-            { $pull: { 'groups.$[g].fields': field._id } as Record<string, unknown> },
+            {
+              $pull: { 'groups.$[g].fields': field._id } as Record<
+                string,
+                unknown
+              >,
+            },
             { arrayFilters: [{ 'g.fields': field._id }] },
           );
           await tablesCol.updateOne(
@@ -158,7 +161,9 @@ async function cleanupBrokenDefinitions(
         );
       }
 
-      logger.item(`campo ${field.slug} quarentenado (definition quebrada ${definition._id})`);
+      logger.item(
+        `campo ${field.slug} quarentenado (definition quebrada ${definition._id})`,
+      );
       cleanedFields++;
     }
 
@@ -186,7 +191,12 @@ async function migrate(): Promise<void> {
   const db = conn.db!;
 
   const SettingMarkerSchema = new mongoose.Schema(
-    { MIGRATION_RELATIONSHIP_BROKEN_DEFINITIONS_AT: { type: Date, default: null } },
+    {
+      MIGRATION_RELATIONSHIP_BROKEN_DEFINITIONS_AT: {
+        type: Date,
+        default: null,
+      },
+    },
     { strict: false, collection: 'settings' },
   );
   const SettingMarker = conn.model<SettingMarkerDoc>(
