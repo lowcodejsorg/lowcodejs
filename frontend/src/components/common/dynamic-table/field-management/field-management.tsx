@@ -541,7 +541,9 @@ function FieldManagementList({
       .sort((a, b) => {
         const idxA = orderArray.indexOf(a._id);
         const idxB = orderArray.indexOf(b._id);
-        return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
+        return (
+          (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB)
+        );
       })
       .map((f) => f._id);
   });
